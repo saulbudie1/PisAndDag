@@ -1,0 +1,18 @@
+Items: {
+	Handswitch: {
+		DisplayName: Handswitch
+		Tooltip: Trades lifeforce for powerful shots
+	}
+
+	BladeOfMors: {
+		DisplayName: Blade Of Mors
+		Tooltip: ""
+	}
+}
+
+Projectiles: {
+	Handswitch_Proj.DisplayName: Handswitch
+	Marksman_WhiteDeath.DisplayName: Marksman_ White Death
+}
+
+NPCs.WhiteDeath.DisplayName: White Death
