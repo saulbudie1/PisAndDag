@@ -36,6 +36,11 @@ namespace PisAndDag.Content.NPCs.WhiteDeath
 			NPC.DeathSound = new SoundStyle?(SoundID.NPCDeath1);  
 		}
 		public int timer = 0;
+
+		// One volley every 45 ticks (0.75s). The old code compared timer against 1/46/91
+		// literally, so the boss fired three shots and then idled forever as timer climbed.
+		private const int MarksmanInterval = 45;
+
         public override void AI()
         {
             float lifeRatio = (float)NPC.life / (float)NPC.lifeMax;
@@ -45,8 +50,18 @@ namespace PisAndDag.Content.NPCs.WhiteDeath
                 NPC.TargetClosest(true);
             }
             Player player = Main.player[NPC.target];
+
+            // Nobody left to fight — leave rather than hanging around forever.
+            if (!player.active || player.dead)
+            {
+                NPC.velocity.Y -= 0.4f;
+                NPC.noTileCollide = true;
+                NPC.EncourageDespawn(10);
+                return;
+            }
+
             timer += 1;
-            if (timer == 1 || timer == 46 || timer == 91)
+            if (timer % MarksmanInterval == 1)
 			{
 				Vector2 randomized_pos = new Vector2(player.position.X + Main.rand.Next(player.width), player.position.Y + Main.rand.Next(player.height));
                 int a = Projectile.NewProjectile(base.NPC.GetSource_FromAI(null), randomized_pos, Vector2.Zero, ModContent.ProjectileType<Projectiles.NPCs.Marksman_WhiteDeath>(), 0,0);

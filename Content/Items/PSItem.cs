@@ -17,7 +17,6 @@ namespace PisAndDag.Content.Items
         public int ShotFired = 0;
         public int ReloadTimer;
         public int ReloadTime;
-        public bool WingsAllowed = false;
         public override bool InstancePerEntity => true;
         public void Magazine(int mag, int reloadtime)
         {
@@ -44,9 +43,14 @@ namespace PisAndDag.Content.Items
                 string unit = value == 1f ? "second" : "seconds"; 
                 tooltips.Add(new TooltipLine(Mod, "Reload", $"Item takes {timeText} {unit} to reload"));
             }
-            if(!WingsAllowed && item.wingSlot != -1 || item.type == ItemID.EmpressFlightBooster)
+            // && binds tighter than ||, so the old condition read
+            //   (!WingsAllowed && item.wingSlot != -1) || item.type == EmpressFlightBooster
+            // and the booster always showed the line regardless of the flag. The per-item
+            // WingsAllowed field was also never set true by anything — the real state lives
+            // on PisPlayer, so read it from there.
+            bool grounded = !Main.LocalPlayer.PIS().AllowedWings;
+            if (grounded && (item.wingSlot != -1 || item.type == ItemID.EmpressFlightBooster))
             {
-
                 tooltips.Add(new TooltipLine(Mod, "wing", "'However, you are bounded to the ground'"));
             }
         } 
@@ -55,7 +59,6 @@ namespace PisAndDag.Content.Items
         {
             if (!player.PIS().AllowedWings && item.wingSlot!=-1)
             {
-                WingsAllowed = false;
                 player.wingTime = 0;
                 player.wingTimeMax = 0;
                 player.noFallDmg = false;
@@ -63,7 +66,6 @@ namespace PisAndDag.Content.Items
             }
             if (!player.PIS().AllowedWings && item.type == ItemID.EmpressFlightBooster)
             {
-                WingsAllowed = false;
                 player.wingTime = 0;
                 player.wingTimeMax = 0;
                 player.noFallDmg = false;

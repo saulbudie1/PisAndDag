@@ -8,6 +8,11 @@ Items: {
 		DisplayName: Blade Of Mors
 		Tooltip: ""
 	}
+
+	MeleeDecider: {
+		DisplayName: Melee Decider
+		Tooltip: ""
+	}
 }
 
 Projectiles: {

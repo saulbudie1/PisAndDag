@@ -24,7 +24,7 @@ namespace PisAndDag.Content.Items.LoreItem
             Item.useStyle = ItemUseStyleID.Swing; 
             Item.value = 0;
             Item.rare = ItemRarityID.Blue;
-            Item.UseSound = SoundEngine.PlaySound(new SoundStyle("PisAndDag/Content/Items/LoreItem"));
+            Item.UseSound = SoundID.AbigailCry;
             Item.autoReuse = true;
         } 
         public override bool? UseItem(Player player)
