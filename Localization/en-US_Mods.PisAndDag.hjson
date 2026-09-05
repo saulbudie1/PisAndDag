@@ -6,18 +6,27 @@ Items: {
 
 	BladeOfMors: {
 		DisplayName: Blade Of Mors
-		Tooltip:
-			'''
-			Upon hitting an enemy, the blade charges with dark energy
-			Once fully charged, it can unleash a devastating attack
-			'''
+		Tooltip: ""
 	}
 
 	MeleeDecider: {
 		DisplayName: Melee Decider
 		Tooltip: ""
 	}
+
+	GameChangingOrb: {
+		DisplayName: Ominous Orb
+		Tooltip:
+			'''
+			Can only be set upon an anvil
+			Once placed, it cannot be taken back
+			Breaking it will cause the protection to become unstable, inviting new threats to the world
+			This will also give player new features and rewards
+			'''
+	}
 }
+
+Tiles.Game_Changing_Orb.MapEntry: Game Changing Orb
 
 Projectiles: {
 	Handswitch_Proj.DisplayName: Handswitch
