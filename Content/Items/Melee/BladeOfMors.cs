@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using PisAndDag.Content.Particles;
+using PisAndDag.Content.Projectiles.Melee;
 using System;
 using System.Collections.Generic;
 using Terraria;
@@ -28,8 +29,19 @@ namespace PisAndDag.Content.Items.Melee
         private float Meterlogy = 0f;
 
         private bool Full = false;
-         
+
         private float dropletBudget;
+
+        /// <summary>Ticks a second click still counts as a double click.</summary>
+        private const int DoubleClickWindow = 7;
+
+        /// <summary>Damage multiplier the release gets over a normal swing.</summary>
+        private const float ReleaseDamageScale = 3f;
+
+        private const float ReleaseSpeed = 13f;
+
+        private int clickWindow;
+        private int clickCount;
         public override void SetDefaults()
         {
             Item.damage = 30;
@@ -88,6 +100,11 @@ namespace PisAndDag.Content.Items.Melee
         /// </summary>
         public override void HoldItem(Player player)
         {
+            // Deliberately outside the Legends gate — the charge and its release are not
+            // conditional on the world mode, only the visual aura below is.
+            if (player.whoAmI == Main.myPlayer)
+                UpdateReleaseInput(player);
+
             if (PADWorld.Legends)
             {
                 // Purely decorative and client-side — never run it on a server.
@@ -133,6 +150,59 @@ namespace PisAndDag.Content.Items.Melee
                 // A faint red wash on the player sells the charge even between droplets.
                 Lighting.AddLight(player.Center, BloodColor.ToVector3() * 0.45f * charge);
             }
+        }
+
+        /// <summary>
+        /// Watches for a double left click and releases the charge on the second one.
+        /// </summary>
+        private void UpdateReleaseInput(Player player)
+        {
+            if (clickWindow > 0)
+                clickWindow--;
+            else
+                clickCount = 0;
+
+            // True only on the frame the button goes down. Without the release check,
+            // holding the button to autoswing would read as sixty clicks a second.
+            if (!Main.mouseLeft || !Main.mouseLeftRelease)
+                return;
+
+            clickCount++;
+            clickWindow = DoubleClickWindow;
+
+            if (clickCount < 2 || !Full)
+                return;
+
+            ReleaseCharge(player);
+            clickCount = 0;
+            clickWindow = 0;
+        }
+
+        /// <summary>
+        /// Throws the stored death out as a projectile and empties the meter.
+        /// </summary>
+        private void ReleaseCharge(Player player)
+        {
+            Vector2 velocity = (Main.MouseWorld - player.Center)
+                .SafeNormalize(new Vector2(player.direction, 0f)) * ReleaseSpeed;
+
+            Projectile.NewProjectile(
+                player.GetSource_ItemUse(Item),
+                player.Center,
+                velocity,
+                ModContent.ProjectileType<BladeOfMorsProj>(),
+                (int)(Item.damage * ReleaseDamageScale),
+                10f,
+                player.whoAmI);
+
+            SoundEngine.PlaySound(SoundID.Item1, player.Center);
+            player.PIS().AddScreenShake(6f, 18);
+
+            // Spend the charge. dropletBudget goes too, or the aura would keep paying
+            // out droplets it no longer has the meter for.
+            Meterlogy = 0f;
+            Full = false;
+            dropletBudget = 0f;
         }
 
         public override bool CanUseItem(Player player)

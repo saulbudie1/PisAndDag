@@ -24,6 +24,12 @@ namespace PisAndDag.Content.Tiles
         /// </summary>
         private static readonly int[] ValidAnvils = { TileID.Anvils, TileID.MythrilAnvil };
 
+        /// <summary>
+        /// How long the world reacts to the orb breaking: 3 seconds. The shake and the
+        /// screen filter share this so they cannot drift apart.
+        /// </summary>
+        private const int StirDurationTicks = 180;
+
         public override void SetStaticDefaults()
         {
             // Furniture-style tile: carries its own placement frame, nothing anchors to it,
@@ -131,11 +137,16 @@ namespace PisAndDag.Content.Tiles
             else if (Main.netMode == NetmodeID.Server)
                 ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral(message), color);
 
-            // 3 seconds at 180 ticks. PisPlayer holds the shake at full strength for the
-            // duration and only then decays it, so this reads as a sustained tremor
-            // rather than a single jolt.
             if (Main.netMode != NetmodeID.Server)
-                Main.LocalPlayer.PIS().AddScreenShake(12f, 180);
+            {
+                // PisPlayer holds the shake at full strength for the whole duration and
+                // only then decays it, so this reads as a sustained tremor, not a jolt.
+                Main.LocalPlayer.PIS().AddScreenShake(12f, StirDurationTicks);
+
+                // Same duration, so the screen finishes bleeding red exactly as the
+                // ground stops moving.
+                LegendsScreenSystem.Trigger(StirDurationTicks);
+            }
         }
     }
 }
