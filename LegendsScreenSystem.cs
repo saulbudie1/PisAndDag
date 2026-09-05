@@ -27,6 +27,12 @@ namespace PisAndDag
         /// <summary>What solid things turn into.</summary>
         private static readonly Vector3 SolidColor = Vector3.Zero;
 
+        /// <summary>Progress at which the effect has finished ramping up to full.</summary>
+        private const float RampIn = 0.3f;
+
+        /// <summary>Progress at which it starts easing back down.</summary>
+        private const float RampOut = 0.7f;
+
         private static int timer;
         private static int duration;
 
@@ -58,10 +64,26 @@ namespace PisAndDag
             // 0 at the start, 1 at the end.
             float progress = 1f - (float)timer / duration;
 
-            // sin(progress * pi) is 0 at both ends and 1 in the middle, so one curve
-            // gives the fade in, the hold and the fade back out. Same shape the orbiting
-            // motes use, for the same reason.
-            float intensity = MathF.Sin(progress * MathHelper.Pi); 
+            // A trapezoid with eased corners: ramp up to full by RampIn, sit at full
+            // until RampOut, then ease back down. Unlike a sine, which only touches 1
+            // for an instant at the midpoint, this actually holds the effect at maximum
+            // for the middle 40% of its life.
+            float intensity;
+
+            if (progress < RampIn)
+            {
+                // SmoothStep is cubic, so it leaves 0 and arrives at 1 with no visible
+                // corner — a plain linear ramp reads as a hard switch-on.
+                intensity = MathHelper.SmoothStep(0f, 1f, progress / RampIn);
+            }
+            else if (progress < RampOut)
+            {
+                intensity = 1f;
+            }
+            else
+            {
+                intensity = MathHelper.SmoothStep(1f, 0f, (progress - RampOut) / (1f - RampOut));
+            }
 
             if (!Filters.Scene[FilterKey].IsActive())
                 Filters.Scene.Activate(FilterKey);

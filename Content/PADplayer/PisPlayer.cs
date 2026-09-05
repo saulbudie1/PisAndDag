@@ -13,28 +13,42 @@ namespace PisAndDag.Content.PADplayer
         public int shakeTime = 0;
         public override void ResetEffects()
         {
-            AllowedWings = false;
+            if (PADWorld.Legends)
+            {
+
+                AllowedWings = false;
+            }
 
         }
         public override void UpdateDead()
         {
-            AllowedWings = false;
+            if (PADWorld.Legends)
+            {
+
+                AllowedWings = false;
+            }
         }
         public void AddScreenShake(float power, int duration)
         {
             screenShake = MathHelper.Clamp(power, 0f, 60f); // cap max so it doesn’t get insane
             shakeTime = duration;
-        } 
+        }
 
         public override void PreUpdateMovement()
-        { 
-            // Check if mounted and the mount can fly
-            if (Player.mount.Active && !AllowedWings)
+        {
+            if (PADWorld.Legends)
             {
-                var mountData = Player.mount;
-                 
-                if (mountData.FlyTime!=0  )
-                { 
+                // CanFly() asks whether this mount is CAPABLE of flight. The old test used
+                // FlyTime, which is the REMAINING flight counter — ResetFlightTime refills
+                // it from horizontal velocity, so it reads full while you stand on the
+                // ground and often zero in mid-air. That is why mounting after a jump
+                // slipped straight past the check.
+                //
+                // CanHover covers mounts that hold altitude without burning flight time.
+                // Drop that half of the condition if you want hovering mounts allowed.
+                if (Player.mount.Active && !AllowedWings
+                    && (Player.mount.CanFly() || Player.mount.CanHover()))
+                {
                     Player.mount.Dismount(Player);
                 }
             }
