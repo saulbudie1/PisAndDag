@@ -6,7 +6,11 @@ Items: {
 
 	BladeOfMors: {
 		DisplayName: Blade Of Mors
-		Tooltip: ""
+		Tooltip:
+			'''
+			Upon hitting an enemy, the blade charges with dark energy
+			Once fully charged, it can unleash a devastating attack
+			'''
 	}
 
 	MeleeDecider: {

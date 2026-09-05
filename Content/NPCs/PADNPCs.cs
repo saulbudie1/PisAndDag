@@ -10,7 +10,7 @@ namespace PisAndDag.Content.NPCs
 {
     public class PADNPCs : GlobalNPC
     {
-        private const string GuideLine = "I can only help you with crafting right now, I can not tell you anything else";
+        private static string GuideLine = "I am sorry, " + Main.player[Main.myPlayer].name + ", but I can only help you with crafting right now, I can not tell you anything else";
          
         public override void Load()
         {
