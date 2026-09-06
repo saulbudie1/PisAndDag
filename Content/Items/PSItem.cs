@@ -1,11 +1,15 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json.Linq;
+using PisAndDag.Content.Particles;
+using ReLogic.Content;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
+using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -18,11 +22,32 @@ namespace PisAndDag.Content.Items
         public int ReloadTimer;
         public int ReloadTime;
         public override bool InstancePerEntity => true;
+
+        /// <summary>True for weapons that use the magazine system at all.</summary>
+        public bool HasMagazine => MagCount > 0;
+
+        public bool Reloading => ReloadTimer > 0;
+
+        public int ShotsLeft => MagCount - ShotFired;
+
         public void Magazine(int mag, int reloadtime)
         {
             MagCount = mag;
             ReloadTime = reloadtime;
 
+        }
+
+        /// <summary>
+        /// Begins a reload. Does nothing on a full magazine or one already reloading, so
+        /// it is safe to call from a keybind held down.
+        /// </summary>
+        public bool StartReload()
+        {
+            if (!HasMagazine || Reloading || ShotFired <= 0)
+                return false;
+
+            ReloadTimer = ReloadTime;
+            return true;
         }
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
@@ -72,10 +97,21 @@ namespace PisAndDag.Content.Items
                 
             }
         } 
-        public override void HoldItem(Item item, Player player)
+        /// <summary>
+        /// UpdateInventory, not HoldItem — HoldItem only ticks the item currently in hand,
+        /// so swapping weapons mid-reload used to freeze the timer until you switched back.
+        /// </summary>
+        public override void UpdateInventory(Item item, Player player)
         {
-            if (ReloadTimer > 0)
-                ReloadTimer--;
+            if (ReloadTimer <= 0)
+                return;
+
+            ReloadTimer--;
+
+            // Reset the count when the reload FINISHES. Doing it at the start made the
+            // tooltip read a full magazine for the whole reload.
+            if (ReloadTimer <= 0)
+                ShotFired = 0;
         }
         public override void SetDefaults(Item item)
         {
@@ -200,20 +236,93 @@ namespace PisAndDag.Content.Items
             }
             return base.CanUseItem(item, player);
         }
+        /// <summary>
+        /// True for anything that fires bullets — vanilla or modded, this mod's or not.
+        /// The muzzle effects hang off this rather than a per-weapon opt-in, so every gun
+        /// in the game gets them for free.
+        /// </summary>
+        private static bool IsBulletGun(Item item) =>
+            item.useAmmo == AmmoID.Bullet && item.DamageType == DamageClass.Ranged;
+
+        /// <summary>
+        /// Where the muzzle sits on a gun's sprite.
+        ///   X = fraction of the sprite's width, forward from the hand
+        ///   Y = pixels perpendicular to the barrel (negative is up when facing right)
+        ///
+        /// Scaling by sprite width handles a BIG gun, but not a differently SHAPED one.
+        /// A pistol's barrel ends near the middle of its sprite; a rifle's ends at the
+        /// very front because the stock fills the back half. One ratio cannot serve both,
+        /// so anything that looks wrong gets an entry here instead of a new constant.
+        /// </summary>
+        private static readonly Dictionary<int, Vector2> MuzzleOverrides = new Dictionary<int, Vector2>
+        {
+            // Long guns: the barrel runs almost the whole sprite.
+            [ItemID.Megashark] = new Vector2(0.95f, -2f),
+            [ItemID.Minishark] = new Vector2(0.95f, -2f),
+            [ItemID.ChainGun] = new Vector2(0.95f, -1f),
+            [ItemID.SDMG] = new Vector2(0.95f, -2f),
+            [ItemID.VenusMagnum] = new Vector2(0.9f, -1f),
+            [ItemID.TacticalShotgun] = new Vector2(0.92f, 0f),
+            [ItemID.Gatligator] = new Vector2(0.92f, 0f),
+
+            // Short guns: barrel ends much sooner.
+            [ItemID.Handgun] = new Vector2(0.7f, 0f),
+            [ItemID.PhoenixBlaster] = new Vector2(0.7f, 0f),
+            [ItemID.Revolver] = new Vector2(0.75f, 0f),
+        };
+
+        /// <summary>Used by any gun without an override. Suits a mid-length weapon.</summary>
+        private static readonly Vector2 DefaultMuzzle = new Vector2(0.85f, 0f);
+
+        /// <summary>
+        /// Shoot's `position` is the player's hand, not the end of the gun — it carries no
+        /// information about the sprite at all, which is why effects spawned there appear
+        /// to come out of the player's chest.
+        /// </summary>
+        private static Vector2 BarrelTip(Item item, Player player, Vector2 position, Vector2 direction)
+        {
+            // item.width is the dropped-item hitbox and only approximates the sprite, so
+            // prefer the actual texture when it has finished loading.
+            float length = item.width;
+
+            Asset<Texture2D> texture = TextureAssets.Item[item.type];
+            if (texture != null && texture.IsLoaded)
+                length = texture.Value.Width;
+
+            if (!MuzzleOverrides.TryGetValue(item.type, out Vector2 spec))
+                spec = DefaultMuzzle;
+
+            // Perpendicular to the shot, mirrored with facing: Terraria flips a held gun
+            // vertically when aiming left, so a barrel drawn above centre stays above
+            // centre on screen and the offset has to follow it.
+            Vector2 perpendicular = new Vector2(-direction.Y, direction.X) * player.direction;
+
+            return position
+                + direction * (length * item.scale * spec.X)
+                + perpendicular * (spec.Y * item.scale);
+        }
+
         public override bool Shoot(Item item, Player player, EntitySource_ItemUse_WithAmmo source, Vector2 position, Vector2 velocity, int type, int damage, float knockback)
         {
+            // Decoration only, so never on a server.
+            if (!Main.dedServ && IsBulletGun(item))
+            {
+                Vector2 direction = velocity.SafeNormalize(Vector2.UnitX);
+                Vector2 muzzle = BarrelTip(item, player, position, direction);
+
+                MuzzleFlash.Spawn(muzzle, direction);
+                MuzzleSmoke.Spawn(muzzle, direction);
+            }
+
             if (MagCount != 0)
             {
 
                 ShotFired++;
 
-                // If magazine reached 6 shots → start reload
+                // Magazine empty — start the reload. ShotFired is deliberately NOT reset
+                // here; UpdateInventory clears it when the timer runs out.
                 if (ShotFired >= MagCount)
-                {
-                    ShotFired = 0;
-                    ReloadTimer = ReloadTime; // 1.5 seconds (60 ticks = 1 second)
-                     
-                }
+                    ReloadTimer = ReloadTime;
 
                 return true;
             }

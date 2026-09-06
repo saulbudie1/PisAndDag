@@ -26,7 +26,10 @@ Items: {
 	}
 }
 
-Tiles.Game_Changing_Orb.MapEntry: Game Changing Orb
+Tiles: {
+	Game_Changing_Orb.MapEntry: Game Changing Orb
+	BladeOfMorsInStone.MapEntry: Blade Of Mors In Stone
+}
 
 Projectiles: {
 	Handswitch_Proj.DisplayName: Handswitch
@@ -35,3 +38,4 @@ Projectiles: {
 }
 
 NPCs.WhiteDeath.DisplayName: White Death
+Keybinds.Reload.DisplayName: Reload
