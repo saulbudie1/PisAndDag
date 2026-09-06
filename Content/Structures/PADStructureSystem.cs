@@ -49,6 +49,10 @@ namespace PisAndDag.Content.Structures
                     // so asking the item is the only way to be sure of getting it right.
                     [5] = StructureTile.FromItem(ItemID.RichMahoganyBeam),
                     [ShrineChest] = StructureTile.ChestFromItem(ItemID.LivingWoodChest),
+
+                    // A candle stands on the floor, so it defers like the anvil does.
+                    [8] = StructureTile.ObjectFromItem(ItemID.WaterCandle),
+                    [9] = StructureTile.Of(TileID.IronBrick),
                 },
                 wallPalette: new Dictionary<int, int>
                 {
