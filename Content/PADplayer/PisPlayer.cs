@@ -17,6 +17,29 @@ namespace PisAndDag.Content.PADplayer
         public float screenShake = 0f;
         public int shakeTime = 0;
 
+        // Camera focus. Static because it belongs to the view, not to any one player —
+        // whoever is looking at the screen is the local player by definition.
+        private static Vector2 cameraFocus;
+        private static int cameraFocusTime;
+        private static float cameraFocusStrength;
+
+        /// <summary>
+        /// Pulls the camera toward a world point for a while. Call it repeatedly with a
+        /// short duration to track something that moves, or once with a long one to hold
+        /// on a fixed spot.
+        /// </summary>
+        public static void FocusCamera(Vector2 world, int ticks, float strength = 0.8f)
+        {
+            if (Main.dedServ)
+                return;
+
+            cameraFocus = world;
+            cameraFocusTime = ticks;
+            cameraFocusStrength = MathHelper.Clamp(strength, 0f, 1f);
+        }
+
+        public static void ReleaseCamera() => cameraFocusTime = 0;
+
         /// <summary>
         /// Keybind handling. ProcessTriggers only runs for the local player, so nothing
         /// here needs a whoAmI check.
@@ -65,7 +88,9 @@ namespace PisAndDag.Content.PADplayer
 
             Lightning.Spawn(Player.Center, target, new Color(120, 235, 255), width: 26f,
                 lifetime: 18, forks: 2);
-             
+
+            // The vanilla lightning bug zap, by path rather than by SoundID constant —
+            // three variants, so repeated casts do not sound identical.
             SoundStyle zap = new SoundStyle("Terraria/Sounds/Custom/dd2_lightning_bug_zap_" + Main.rand.Next(3))
             {
                 Volume = 0.5f,
@@ -73,7 +98,7 @@ namespace PisAndDag.Content.PADplayer
                 MaxInstances = -1
             };
 
-            SoundEngine.PlaySound(SoundID.Thunder, Player.Center);
+            SoundEngine.PlaySound(zap, Player.Center);
         }
 
         public override void ResetEffects()
@@ -128,6 +153,16 @@ namespace PisAndDag.Content.PADplayer
         }
         public override void ModifyScreenPosition()
         {
+            // Focus first, shake second, so the shake reads as camera wobble on top of
+            // wherever the camera is pointed rather than fighting it.
+            if (cameraFocusTime > 0)
+            {
+                cameraFocusTime--;
+
+                Vector2 wanted = cameraFocus - new Vector2(Main.screenWidth, Main.screenHeight) * 0.5f;
+                Main.screenPosition = Vector2.Lerp(Main.screenPosition, wanted, cameraFocusStrength * 0.12f);
+            }
+
             if (screenShake > 0f)
             {
                 Main.screenPosition += new Vector2(

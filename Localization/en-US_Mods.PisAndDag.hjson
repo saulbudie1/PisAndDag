@@ -35,9 +35,14 @@ Projectiles: {
 	Handswitch_Proj.DisplayName: Handswitch
 	Marksman_WhiteDeath.DisplayName: Marksman_ White Death
 	BladeOfMorsProj.DisplayName: Blade Of Mors
+	MegasharkBullet.DisplayName: Megashark Bullet
+	MegasharkMusket.DisplayName: Megashark Musket
 }
 
-NPCs.WhiteDeath.DisplayName: White Death
+NPCs: {
+	WhiteDeath.DisplayName: White Death
+	Megashark.DisplayName: Megashark
+}
 
 Keybinds: {
 	Reload.DisplayName: Reload
