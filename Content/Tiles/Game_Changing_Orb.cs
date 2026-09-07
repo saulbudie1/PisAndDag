@@ -78,43 +78,27 @@ namespace PisAndDag.Content.Tiles
         {
             yield break;
         }
-
-        /// <summary>
-        /// Ambient glow. Runs each tick for every copy of this tile near the player.
-        /// </summary>
+         
         public override void NearbyEffects(int i, int j, bool closer)
         {
             if (Main.dedServ)
                 return;
-
-            // Tile coordinates to the sprite's world centre. The +2 matches DrawYOffset,
-            // so the motes leave from where the orb actually appears.
+             
             Vector2 anchor = new Vector2(i * 16 + 8, j * 16 + 8 + 2);
 
             Lighting.AddLight(anchor, new Vector3(0.55f, 0.18f, 0.52f));
-
-            // This hook fires every tick, so without a gate one orb would emit sixty
-            // motes a second. Roughly three a second instead.
+             
             if (Main.rand.NextBool(18))
                 OrbLight.Spawn(anchor);
         }
-
-        /// <summary>
-        /// Breaking the orb is what switches the world into Legends mode, permanently.
-        /// </summary>
+         
         public override void KillTile(int i, int j, ref bool fail, ref bool effectOnly, ref bool noItem)
-        {
-            // Belt and braces alongside GetItemDrops.
+        { 
             noItem = true;
-
-            // KillTile also fires for hits that don't break the tile and for effect-only
-            // calls, so only the one that actually removes it should do anything.
+             
             if (fail || effectOnly)
                 return;
-
-            // In a world that is already Legends, the tile still breaks and still drops
-            // nothing — it simply does nothing else. No second announcement, no second
-            // tremor, and the flag is already set so there is nothing to change.
+             
             if (PADWorld.Legends)
                 return;
 
@@ -138,13 +122,9 @@ namespace PisAndDag.Content.Tiles
                 ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral(message), color);
 
             if (Main.netMode != NetmodeID.Server)
-            {
-                // PisPlayer holds the shake at full strength for the whole duration and
-                // only then decays it, so this reads as a sustained tremor, not a jolt.
+            { 
                 Main.LocalPlayer.PIS().AddScreenShake(12f, StirDurationTicks);
-
-                // Same duration, so the screen finishes bleeding red exactly as the
-                // ground stops moving.
+                 
                 LegendsScreenSystem.Trigger(StirDurationTicks);
             }
         }

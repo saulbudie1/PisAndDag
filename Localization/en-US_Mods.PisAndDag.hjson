@@ -38,4 +38,8 @@ Projectiles: {
 }
 
 NPCs.WhiteDeath.DisplayName: White Death
-Keybinds.Reload.DisplayName: Reload
+
+Keybinds: {
+	Reload.DisplayName: Reload
+	Lightning.DisplayName: Lightning
+}

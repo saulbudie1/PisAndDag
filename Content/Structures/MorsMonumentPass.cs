@@ -118,14 +118,14 @@ namespace PisAndDag.Content.Structures
         private const int FieldRadius = 90;
 
         /// <summary>How many ash trees stand around the blade.</summary>
-        private const int TreeMinCount = 5;
-        private const int TreeMaxCount = 9;
+        private const int TreeMinCount = 9;
+        private const int TreeMaxCount = 15;
 
         /// <summary>
         /// Gap between one tree and the next, in tiles. Wide enough that the hilltop
         /// reads as scattered growth rather than a planted row.
         /// </summary>
-        private const int TreeGapMin = 7;
+        private const int TreeGapMin = 5;
         private const int TreeGapMax = 13;
 
         /// <summary>Columns either side of centre kept clear of plants for the sword.</summary>
@@ -814,26 +814,13 @@ namespace PisAndDag.Content.Structures
         {
             WorldGen.GrowTreeSettings settings = WorldGen.GrowTreeSettings.Profiles.Tree_Ash;
 
-            settings.TreeHeightMin *= 2;
-            settings.TreeHeightMax *= 2;
-
-            // TreeTopPaddingNeeded is left alone on purpose: it is clearance for the
-            // crown sprite, not part of the trunk, and inflating it only makes the
-            // grower's space check harder to pass for no visual gain.
+            settings.TreeHeightMin *= 4;
+            settings.TreeHeightMax *= 5;
+             
 
             return settings;
         }
 
-        /// <summary>
-        /// Scatters fireblossoms around the blade — some fully grown, some still
-        /// seedlings. Kept to FieldRadius rather than the whole mound: 600 tiles of
-        /// flowers is a lawn, not a shrine.
-        ///
-        /// The tile ID and style come from the seed item rather than being named here.
-        /// All seven herbs share three tile IDs and differ only by an undocumented frame
-        /// number, so asking ItemID.FireblossomSeeds what it places is the only way to be
-        /// certain of getting fireblossom and not, say, shiverthorn.
-        /// </summary>
         private static void PlantField(int centerX, int[] surface)
         {
             Item seed = ContentSamples.ItemsByType[ItemID.FireblossomSeeds];
