@@ -1,4 +1,5 @@
 using System.IO;
+using Terraria;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 
@@ -18,6 +19,25 @@ namespace PisAndDag
         public static bool Legends;
 
         /// <summary>
+        /// Whether wings, boosters and flying mounts do anything at all.
+        ///
+        /// Reads the vanilla downed flag rather than a flag of our own, so a world that
+        /// beat the Empress before this mod was installed is already unlocked. Making
+        /// those players kill her a second time to get something they had already earned
+        /// would be the wrong answer.
+        /// </summary>
+        public static bool FlightUnlocked => NPC.downedEmpressOfLight;
+
+        /// <summary>
+        /// Whether the unlock has been announced in chat.
+        ///
+        /// Runtime only, and deliberately not saved: it is rebuilt from the vanilla downed
+        /// flag on load, which gives exactly the same answer a saved copy would without
+        /// putting another key in the world file.
+        /// </summary>
+        public static bool FlightAnnounced;
+
+        /// <summary>
         /// Runs whenever a world is loaded or generated, before LoadWorldData.
         /// Without this the static would leak between worlds inside one session — start a
         /// fresh character and it would still think Legends was on from your last world.
@@ -25,6 +45,17 @@ namespace PisAndDag
         public override void ClearWorld()
         {
             Legends = false;
+            FlightAnnounced = false;
+        }
+
+        /// <summary>
+        /// Runs after the world's own flags have loaded, so the vanilla downed flag can be
+        /// read here. A world that had already beaten the Empress has nothing to announce —
+        /// the ground rules there changed before anyone was watching.
+        /// </summary>
+        public override void OnWorldLoad()
+        {
+            FlightAnnounced = NPC.downedEmpressOfLight;
         }
 
         public override void SaveWorldData(TagCompound tag)

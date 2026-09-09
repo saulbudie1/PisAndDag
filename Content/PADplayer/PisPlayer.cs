@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Terraria;
 using Terraria.Audio;
+using Terraria.DataStructures;
 using Terraria.GameInput;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -14,6 +15,18 @@ namespace PisAndDag.Content.PADplayer
     public class PisPlayer:ModPlayer
     {
         public bool AllowedWings;
+
+        /// <summary>
+        /// What is left of a wing's flight time once the Empress has been beaten.
+        ///
+        /// The same fraction does both jobs: it scales whatever the wings claim, and it
+        /// scales the ceiling — so the cap is three fifths of the best wings in the game
+        /// rather than three fifths of whatever a modded pair asserts about itself.
+        /// </summary>
+        private const float FlightFraction = 3f / 5f;
+
+        /// <summary>Fallback ceiling, for the impossible case of no readable wing stats.</summary>
+        private const int SolarFlightFallback = 180;
         public float screenShake = 0f;
         public int shakeTime = 0;
 
@@ -149,22 +162,58 @@ namespace PisAndDag.Content.PADplayer
             SoundEngine.PlaySound(zap, Player.Center);
         }
 
+        /// <summary>
+        /// The one and only way flight is ever granted.
+        ///
+        /// Wings, the booster and flying mounts are all inert until the Empress of Light
+        /// falls; after that they work, but on the leash below. Written every frame rather
+        /// than latched, so the flag can never survive into a world where it is not earned.
+        /// </summary>
         public override void ResetEffects()
         {
-            if (PADWorld.Legends)
-            {
-
-                AllowedWings = false;
-            }
-
+            AllowedWings = PADWorld.FlightUnlocked;
         }
+
         public override void UpdateDead()
         {
-            if (PADWorld.Legends)
-            {
+            AllowedWings = PADWorld.FlightUnlocked;
+        }
 
-                AllowedWings = false;
-            }
+        /// <summary>
+        /// Trims flight time down to the mod's allowance.
+        ///
+        /// PostUpdateMiscEffects rather than PostUpdateEquips, because every accessory
+        /// bonus has landed by then — Calamity applies its own flight multiplier in this
+        /// same hook, and capping ahead of those would leave the ceiling behind.
+        /// </summary>
+        public override void PostUpdateMiscEffects()
+        {
+            if (!AllowedWings || Player.wingTimeMax <= 0)
+                return;
+
+            int ceiling = (int)(SolarFlightTime() * FlightFraction);
+
+            Player.wingTimeMax = Math.Min((int)(Player.wingTimeMax * FlightFraction), ceiling);
+
+            // The charge has to come down with the maximum too, or swapping to worse wings
+            // mid-air leaves the player flying on a tank the new pair never had.
+            if (Player.wingTime > Player.wingTimeMax)
+                Player.wingTime = Player.wingTimeMax;
+        }
+
+        /// <summary>
+        /// The best flight time the game currently offers, read at runtime.
+        ///
+        /// Read rather than hardcoded so the ceiling still means "the best wings there
+        /// are" if something rebalances them — Calamity rewrites a dozen wing stat lines
+        /// on load, and a literal 180 here would quietly stop matching its Solar Wings.
+        /// </summary>
+        private static int SolarFlightTime()
+        {
+            int slot = ContentSamples.ItemsByType[ItemID.WingsSolar].wingSlot;
+            WingStats[] stats = ArmorIDs.Wing.Sets.Stats;
+
+            return slot >= 0 && slot < stats.Length ? stats[slot].FlyTime : SolarFlightFallback;
         }
         public void AddScreenShake(float power, int duration)
         {
@@ -189,21 +238,21 @@ namespace PisAndDag.Content.PADplayer
             shakeTime = Math.Max(shakeTime, duration);
         }
 
+        /// <summary>
+        /// Grounds flying mounts on the same terms as wings.
+        ///
+        /// The Legends check this used to sit behind is gone: wings are blocked in every
+        /// world (PSItem does it unconditionally), so leaving a UFO flying outside Legends
+        /// was a hole in the rule rather than a feature of it. Once the Empress is down
+        /// AllowedWings is true and nothing here fires.
+        /// </summary>
         public override void PreUpdateMovement()
         {
-            if (PADWorld.Legends)
-            {
-                // Check if mounted and the mount can fly
-                if (Player.mount.Active && !AllowedWings)
-                {
-                    var mountData = Player.mount;
+            if (AllowedWings || !Player.mount.Active)
+                return;
 
-                    if (mountData.FlyTime != 0)
-                    {
-                        Player.mount.Dismount(Player);
-                    }
-                }
-            }
+            if (Player.mount.FlyTime != 0)
+                Player.mount.Dismount(Player);
         }
         public override void PostUpdate()
         {

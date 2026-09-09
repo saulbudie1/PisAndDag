@@ -2,8 +2,10 @@ using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using Terraria;
+using Terraria.Chat;
 using Terraria.GameContent;
 using Terraria.ID;
+using Terraria.Localization;
 using Terraria.ModLoader;
 
 namespace PisAndDag.Content.NPCs
@@ -40,6 +42,39 @@ namespace PisAndDag.Content.NPCs
                 return false;
             }
             return base.PreChatButtonClicked(npc, firstButton);
+        }
+
+        private const string FlightUnlockText = "Terrarians are no longer bounded to the ground.";
+
+        private static readonly Color FlightUnlockColor = new Color(230, 76, 160);
+
+        /// <summary>
+        /// Announces the flight unlock the first time the Empress of Light falls.
+        ///
+        /// Gated on PADWorld.FlightAnnounced rather than on NPC.downedEmpressOfLight,
+        /// because whether vanilla has set that flag by the time OnKill runs is an
+        /// ordering detail — depending on it would either announce twice or never. Our own
+        /// flag answers the question directly, and is rebuilt on load so a world that had
+        /// already beaten her stays quiet.
+        /// </summary>
+        public override void OnKill(NPC npc)
+        {
+            if (npc.type != NPCID.HallowBoss || PADWorld.FlightAnnounced)
+                return;
+
+            PADWorld.FlightAnnounced = true;
+
+            // The server does the talking in multiplayer; a client saying it too would
+            // print the line twice for whoever is hosting.
+            if (Main.netMode == NetmodeID.Server)
+            {
+                ChatHelper.BroadcastChatMessage(
+                    NetworkText.FromLiteral(FlightUnlockText), FlightUnlockColor);
+            }
+            else if (Main.netMode == NetmodeID.SinglePlayer)
+            {
+                Main.NewText(FlightUnlockText, FlightUnlockColor);
+            }
         }
 
         public override void GetChat(NPC npc, ref string chat)

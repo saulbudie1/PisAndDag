@@ -270,9 +270,21 @@ namespace PisAndDag.Content.NPCs.MegaShark
 
         private const int P3Wait = 120;
 
-        private const int P3SparkGap = 72;
         private const int P3SparkCount = 5;
-        private const int P3SparkWindow = P3SparkGap * P3SparkCount;
+
+        /// <summary>
+        /// The whole spark leg, in ticks. Four seconds, and the five sparks are spaced
+        /// randomly inside it rather than evenly — but the TOTAL is fixed, which is what
+        /// lets Phase3Length stay a compile-time constant and the camera legs stay in
+        /// step with the sequence no matter how the gaps come out.
+        /// </summary>
+        private const int P3SparkWindow = 240;
+
+        /// <summary>
+        /// Floor on any one gap. Without it two sparks can roll onto the same handful of
+        /// frames and read as one bigger spark, which loses a beat of the five.
+        /// </summary>
+        private const int P3SparkMinGap = 24;
 
         private const int P3PanBack = 90;
 
@@ -298,37 +310,94 @@ namespace PisAndDag.Content.NPCs.MegaShark
         /// <summary>Ticks from the sight appearing to the shot leaving.</summary>
         private const int ScopeTime = 90;
 
+        /// <summary>
+        /// What the beam sits at for almost all of its life.
+        ///
+        /// Flat, and well short of full — a sight that is still brightening is a sight the
+        /// player is still waiting on. Holding it here means the only thing left to
+        /// happen is the flash, and the flash means the shot.
+        /// </summary>
+        private const float ScopeHold = 0.7f;
+
+        // The rest of the envelope, as tick marks within one shot's leg. Written as
+        // absolute positions rather than durations because the shape is easier to read
+        // and to move that way — every one of these is a moment on a 90-tick timeline.
+
+        /// <summary>End of the flat hold; the flash starts here.</summary>
+        private const int ScopeLockEnd = 65;
+
+        /// <summary>Top of the flash.</summary>
+        private const int ScopePeak = 75;
+
+        /// <summary>Back down to the hold level, before the beam goes out.</summary>
+        private const int ScopeSettle = 80;
+
+        /// <summary>
+        /// The round leaves on the last frame of the leg — after the beam has faded,
+        /// not while it is still lit. The sight finishing IS the cue.
+        /// </summary>
+        private const int ScopeShotAt = ScopeTime - 1;
+
         /// <summary>How much of that it spends still following the player.</summary>
-        private const int ScopeTrack = 55;
+        private const int ScopeTrack = 45;
 
         private const int ScopeShotCount = 3;
 
         private static readonly Color ScopeColor = new Color(184, 18, 65);
 
+        /// <summary>
+        /// Opacity along the beam, muzzle end to far end, before the lock's own alpha is
+        /// applied on top.
+        ///
+        /// The beam runs off the screen now rather than stopping at the player, so a flat
+        /// opacity would put a solid bar across the whole view. The ramp keeps the far
+        /// half — the half that says where this is going — the readable one.
+        /// </summary>
+        private const float ScopeNearAlpha = 0.65f;
+        private const float ScopeFarAlpha = 1f;
+
+        /// <summary>
+        /// Pieces the beam is drawn in. A stretched pixel takes exactly one colour, so a
+        /// gradient has to be built out of segments; two dozen is past the point where the
+        /// banding is visible and still one draw call each.
+        /// </summary>
+        private const int ScopeSegments = 24;
+
+        /// <summary>
+        /// Beam length, as a fraction of the screen's diagonal.
+        ///
+        /// Two thirds: still well past the player and clearly a line being sighted along,
+        /// but it stops short of the edge instead of cutting the whole view in half.
+        /// </summary>
+        private const float ScopeReach = 2f / 3f;
+         
+        private const float ScopeBands = 3f;
+        private const float ScopeScrollSpeed = 1.6f;
+        private const float ScopePulseDepth = 0.35f;
+
         private const int Phase3ScopeTime = ScopeHoverTime + ScopeBrake + ScopeShotCount * ScopeTime;
 
         // Attack 2 — the wild barrage
         private const int Phase3BarrageBrake = 30;
-
-        /// <summary>Two seconds planted and shaking before a round leaves the barrel.</summary>
+         
         private const int Phase3BarrageShake = 120;
 
         private const int Phase3BarrageTime = 240;
-        private const int Phase3BarrageInterval = 5;
+        private const int Phase3BarrageInterval = 8;
 
         /// <summary>
         /// Half what it was. At two or three rounds a burst the wide cone was filling the
         /// screen rather than threatening a part of it — tightening the scatter is what
         /// turns it back into something with a side to step to.
         /// </summary>
-        private const float Phase3Spread = 7f;
+        private const float Phase3Spread = 4f;
 
         // Attack 3 — vent, then dash
         private const int SmokeWindup = 90;
         private const int Phase3DashTime = 480;
 
         /// <summary>Contact damage multiplier on the phase 3 dash.</summary>
-        private const float Phase3DashDamage = 1.5f;
+        private const float Phase3DashDamage = 1.1f;
 
         // Attack 4 — the ring
         private const int Phase3OrbitTime = 600;
@@ -489,6 +558,12 @@ namespace PisAndDag.Content.NPCs.MegaShark
 
         /// <summary>Where it finally went. The outro pan starts from here.</summary>
         private Vector2 deathAt;
+
+        /// <summary>
+        /// Tick offsets, within the spark leg, that the phase 3 sparks fire on. Rolled
+        /// fresh each time the hand-over starts.
+        /// </summary>
+        private readonly int[] sparkTimes = new int[P3SparkCount];
 
         // The dash trail, recorded here rather than read from NPC.oldPos/oldRot. The
         // vanilla cache did not carry rotation the way its trailing modes suggest, so
@@ -864,6 +939,48 @@ namespace PisAndDag.Content.NPCs.MegaShark
             {
                 orbitFrom = NPC.Center;
                 orbitAngle = (NPC.Center - Main.player[NPC.target].Center).ToRotation();
+            }
+
+            if (next == State.Phase3Intro)
+                RollSparkTimes();
+        }
+
+        /// <summary>
+        /// Spaces the five phase 3 sparks randomly across their leg without letting the
+        /// leg's length move.
+        ///
+        /// Done by splitting the SLACK — whatever is left of the window once every gap
+        /// has its minimum — at four random cut points and handing each gap the distance
+        /// between two of them. The differences between sorted cuts always add back up to
+        /// the slack exactly, so the gaps are genuinely random while their total is fixed
+        /// by construction. Rolling four independent gaps and making the fifth the
+        /// remainder would work too, but the fifth would carry all the accumulated error
+        /// and end up shaped nothing like the other four.
+        /// </summary>
+        private void RollSparkTimes()
+        {
+            int slack = P3SparkWindow - P3SparkCount * P3SparkMinGap;
+
+            int[] cuts = new int[P3SparkCount - 1];
+
+            for (int i = 0; i < cuts.Length; i++)
+                cuts[i] = Main.rand.Next(slack + 1);
+
+            Array.Sort(cuts);
+
+            int at = 0;
+            int previous = 0;
+
+            for (int i = 0; i < P3SparkCount; i++)
+            {
+                int cut = i < cuts.Length ? cuts[i] : slack;
+                int share = cut - previous;
+                previous = cut;
+
+                // The first spark opens the leg; each later one lands a gap after the
+                // one before it, and the last gap is the tail before the camera leaves.
+                sparkTimes[i] = at;
+                at += P3SparkMinGap + share;
             }
         }
 
@@ -1331,7 +1448,7 @@ namespace PisAndDag.Content.NPCs.MegaShark
             // The sparks, one leg and one beat later.
             float sparkAt = since - P3BoltWindow - P3Wait;
 
-            if (sparkAt >= 0f && sparkAt < P3SparkWindow && sparkAt % P3SparkGap == 0f)
+            if (sparkAt >= 0f && sparkAt < P3SparkWindow && IsSparkTick(sparkAt))
             {
                 // Rupture brings its own shake, scaled to the 0.65 above. Adding a
                 // second one here just stacked two jolts on the same frame.
@@ -1347,6 +1464,18 @@ namespace PisAndDag.Content.NPCs.MegaShark
 
             if (Timer >= Phase3Length)
                 SwitchTo(State.ScopeShots, Phase3ScopeTime);
+        }
+
+        /// <summary>True on exactly the ticks the rolled spark times land on.</summary>
+        private bool IsSparkTick(float at)
+        {
+            for (int i = 0; i < P3SparkCount; i++)
+            {
+                if (at == sparkTimes[i])
+                    return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -1491,22 +1620,14 @@ namespace PisAndDag.Content.NPCs.MegaShark
                 SoundEngine.PlaySound(SoundID.Item33 with { Volume = 0.5f, Pitch = 0.6f }, NPC.Center);
             }
 
+            // Still hunting: eased toward the player rather than snapped. After this it
+            // stops moving, and the point it stopped on is where the round goes.
             if (step < ScopeTrack)
-            {
-                // Still hunting. Eased toward the player rather than snapped, and held
-                // dim, because a sight that is bright while it still moves reads as a
-                // threat the player cannot act on yet.
                 scopeTarget = Vector2.Lerp(scopeTarget, player.Center, 0.16f);
-                scopeAlpha = step / ScopeTrack * 0.5f;
-            }
-            else
-            {
-                // Locked: the point stops moving and only the brightness changes. That
-                // is the entire tell, and it lasts about half a second.
-                scopeAlpha = MathHelper.Lerp(0.5f, 1f, (step - ScopeTrack) / (ScopeTime - ScopeTrack));
-            }
 
-            if (step == ScopeTime - 1f)
+            scopeAlpha = ScopeEnvelope(step);
+
+            if (step == ScopeShotAt)
             {
                 Vector2 velocity = (scopeTarget - Muzzle()).SafeNormalize(Vector2.UnitX) * 19f;
 
@@ -1516,11 +1637,46 @@ namespace PisAndDag.Content.NPCs.MegaShark
                 Fire(ProjectileID.BulletHighVelocity, velocity,
                     ShotDamage(120f * PhaseOneDamage, 180f * PhaseOneDamage, 300f * PhaseOneDamage));
 
-                scopeAlpha = 0f;
-
                 if (!Main.dedServ)
                     Shake(3f, 8);
             }
+        }
+
+        /// <summary>
+        /// The beam's opacity over one shot's worth of ticks.
+        ///
+        /// Five legs: fade in to the hold while it hunts, flat at the hold while locked,
+        /// a flash up to full, back down to the hold, and out — and only then the round.
+        ///
+        /// The flat middle is what the whole shape is for: while it is locked there is
+        /// nothing to read but position, so the moment the flash begins there is no
+        /// ambiguity left about what happens next. Dropping back to the hold before the
+        /// fade rather than firing at the peak is what turns the flash into a count-in
+        /// instead of the event itself.
+        /// </summary>
+        private static float ScopeEnvelope(float step)
+        {
+            if (step < ScopeTrack)
+                return step / ScopeTrack * ScopeHold;
+
+            if (step < ScopeLockEnd)
+                return ScopeHold;
+
+            if (step < ScopePeak)
+            {
+                return MathHelper.Lerp(ScopeHold, 1f,
+                    (step - ScopeLockEnd) / (float)(ScopePeak - ScopeLockEnd));
+            }
+
+            if (step < ScopeSettle)
+            {
+                return MathHelper.Lerp(1f, ScopeHold,
+                    (step - ScopePeak) / (float)(ScopeSettle - ScopePeak));
+            }
+
+            return MathHelper.Clamp(
+                ScopeHold * (1f - (step - ScopeSettle) / (float)(ScopeTime - ScopeSettle)),
+                0f, 1f);
         }
 
         // ---------------------------------------------------------------- phase 3 attack 2
@@ -2625,26 +2781,51 @@ namespace PisAndDag.Content.NPCs.MegaShark
             Rectangle source = new Rectangle(0, 0, 1, 1);
 
             Vector2 from = Muzzle();
-            Vector2 line = scopeTarget - from;
+            Vector2 direction = (scopeTarget - from).SafeNormalize(Vector2.UnitX);
 
-            float length = line.Length();
+            // Measured off the screen's diagonal rather than off the distance to the
+            // player, so the beam reads as a line the boss is sighting ALONG rather than
+            // one that happens to stop where the player is standing.
+            //
+            // No zoom maths: Terraria's zoom only ever shrinks the visible world, so the
+            // raw backbuffer diagonal is always the generous reading of "a screen across".
+            float length = MathF.Sqrt(
+                (float)Main.screenWidth * Main.screenWidth +
+                (float)Main.screenHeight * Main.screenHeight) * ScopeReach;
 
-            if (length < 1f)
-                return;
+            float rotation = direction.ToRotation();
+            float time = Main.GlobalTimeWrappedHourly;
 
-            float thickness = MathHelper.Lerp(1.5f, 3.5f, scopeAlpha);
+            // Breathes even while the alpha is holding flat, so a locked sight never sits
+            // on screen as a still image.
+            float thickness = MathHelper.Lerp(1.5f, 4f, scopeAlpha) *
+                (1f + 0.12f * MathF.Sin(time * 9f));
 
-            // Origin on the left edge, centred vertically: the stretch runs from the
-            // muzzle outward and the thickness grows evenly either side of the line.
-            spriteBatch.Draw(pixel, from - screenPos, source,
-                ScopeColor * (scopeAlpha * 0.8f), line.ToRotation(),
-                new Vector2(0f, 0.5f), new Vector2(length, thickness), SpriteEffects.None, 0f);
+            float step = length / ScopeSegments;
+            float scroll = time * ScopeScrollSpeed;
 
-            float dot = MathHelper.Lerp(5f, 16f, scopeAlpha);
+            for (int i = 0; i < ScopeSegments; i++)
+            {
+                float t = i / (float)(ScopeSegments - 1);
 
-            spriteBatch.Draw(pixel, scopeTarget - screenPos, source,
-                ScopeColor * scopeAlpha, MathHelper.PiOver4,
-                new Vector2(0.5f, 0.5f), new Vector2(dot, dot), SpriteEffects.None, 0f);
+                float fade = MathHelper.Lerp(ScopeNearAlpha, ScopeFarAlpha, t);
+
+                // Bands running muzzle-outward. Subtracting the scroll from the position
+                // along the beam is what sends them that way rather than back down it.
+                float pulse = 1f + ScopePulseDepth *
+                    MathF.Sin((t * ScopeBands - scroll) * MathHelper.TwoPi);
+
+                float alpha = MathHelper.Clamp(scopeAlpha * fade * pulse, 0f, 1f);
+
+                // Origin on the left edge, centred vertically: each piece stretches away
+                // from its own start and thickens evenly either side of the line. The
+                // extra pixel of length overlaps the next piece, or the seams read as
+                // dashes once the beam is thin.
+                spriteBatch.Draw(pixel, from + direction * (step * i) - screenPos, source,
+                    ScopeColor * alpha, rotation,
+                    new Vector2(0f, 0.5f), new Vector2(step + 1f, thickness),
+                    SpriteEffects.None, 0f);
+            }
         }
 
         /// <summary>
