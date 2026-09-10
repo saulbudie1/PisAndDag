@@ -72,6 +72,8 @@ namespace PisAndDag.Content.Items.Melee
             Item.useStyle = ItemUseStyleID.Swing;
             Item.knockBack = 5f;
             Item.value = 10000;
+            Item.PAD().Lore = true;
+            Item.PAD().LoreText = "A blade meant not to kill, but to finish what death had already begun.\r\nIts former bearer walked beside the dying, carrying no banner and seeking no glory.\r\nStrangely, none remember his name.";
             Item.rare = ItemRarityID.Blue;
             Item.UseSound = SoundID.Item1;
             Item.useTurn = true; 

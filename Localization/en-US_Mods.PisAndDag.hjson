@@ -24,10 +24,17 @@ Items: {
 			This will also give player new features and rewards
 			'''
 	}
+
+	Accessories: {
+		RageOfAThunder: {
+			DisplayName: Rage Of A Thunder
+			Tooltip: ""
+		}
+	}
 }
 
 Tiles: {
-	Game_Changing_Orb.MapEntry: Game Changing Orb
+	Game_Changing_Orb.MapEntry: Ominous Orb
 	BladeOfMorsInStone.MapEntry: Blade Of Mors In Stone
 }
 
@@ -37,6 +44,7 @@ Projectiles: {
 	BladeOfMorsProj.DisplayName: Blade Of Mors
 	MegasharkBullet.DisplayName: Megashark Bullet
 	MegasharkMusket.DisplayName: Megashark Musket
+	SurgeArc.DisplayName: Surge Arc
 }
 
 NPCs: {
