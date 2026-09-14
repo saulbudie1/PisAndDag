@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Terraria;
+using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.Utilities;
 
@@ -94,6 +95,9 @@ namespace PisAndDag.Content.Items
         public override bool? PrefixChance(Item item, int pre, UnifiedRandom rand)
         {
             return Lore ? false : null;
+        }
+        public override void SetDefaults(Item item)
+        { 
         }
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)

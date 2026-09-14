@@ -2,6 +2,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PisAndDag.Content.PADplayer;
+using PisAndDag.Content.Particles;
 using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
@@ -470,16 +471,6 @@ namespace PisAndDag.Content.NPCs.Legends
         private const int DeathEnd = BackAt + DeathBack;
 
         /// <summary>
-        /// How far along the cut the leading end is by the time it has fully extended, as
-        /// a fraction of the slash beat.
-        ///
-        /// Short on purpose: the line is supposed to arrive rather than be drawn, so the
-        /// head covers the whole diagonal in about a fifth of a second and everything
-        /// after that is the tail catching up.
-        /// </summary>
-        private const float SlashHeadSpan = 0.12f;
-
-        /// <summary>
         /// How long the cut is actually on screen, inside its beat.
         ///
         /// Half a second of the two. The rest of the beat is deliberately empty — the
@@ -489,12 +480,11 @@ namespace PisAndDag.Content.NPCs.Legends
         /// </summary>
         private const int SlashShow = 30;
 
-        /// <summary>When the trailing end sets off. The gap between the two IS the line.</summary>
-        private const float SlashTailDelay = 0.16f;
-
+        /// <summary>
+        /// Thickness of the cut's middle layer. The particle builds its bloom and its
+        /// core off this one number.
+        /// </summary>
         private const float SlashWidth = 26f;
-        private static readonly Color SlashGlow = new Color(90, 170, 255);
-        private static readonly Color SlashMid = new Color(190, 230, 255);
 
         /// <summary>How many slimes are left standing where the King was.</summary>
         private const int DeathSlimes = 16;
@@ -1617,74 +1607,6 @@ namespace PisAndDag.Content.NPCs.Legends
                 npc.velocity.X * 0.05f, ninja.Size() * 0.5f, 1f, SpriteEffects.None, 0f);
         }
 
-        /// <summary>
-        /// The cut, drawn after the King so it lies on top of him rather than inside him.
-        ///
-        /// PostDraw is safe for this: the slash beat runs while PreDraw is still returning
-        /// true, and by the time the body is being suppressed the slash is long finished.
-        /// </summary>
-        public override void PostDraw(NPC npc, SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
-        {
-            if (!PADWorld.Legends || !dying)
-                return;
-
-            float t = (deathTimer - SlashAt) / (float)SlashShow;
-
-            if (t < 0f || t > 1f)
-                return;
-
-            // Down and to the right, through him, and longer than he is — so it reads as
-            // something that passed through rather than something drawn on.
-            Vector2 along = new Vector2(1f, 1f).SafeNormalize(Vector2.UnitX);
-            float reach = npc.Size.Length() * 1.15f;
-
-            Vector2 from = npc.Center - along * reach;
-            Vector2 to = npc.Center + along * reach;
-
-            // The head reaches the far end within a fifth of a second; the tail then
-            // chases it down the same line. The line IS the gap between them, so it snaps
-            // into existence at full length and then shortens itself out of existence.
-            float head = Ease(MathHelper.Clamp(t / SlashHeadSpan, 0f, 1f));
-            float tail = Ease(MathHelper.Clamp((t - SlashTailDelay) / (1f - SlashTailDelay), 0f, 1f));
-
-            Vector2 a = Vector2.Lerp(from, to, tail) - screenPos;
-            Vector2 b = Vector2.Lerp(from, to, head) - screenPos;
-
-            // Dims over the last stretch as well, so it thins AND fades instead of being
-            // switched off on one frame.
-            float alpha = 1f - Ease(MathHelper.Clamp((t - 0.75f) / 0.25f, 0f, 1f));
-
-            DrawSlash(spriteBatch, a, b, alpha);
-        }
-
-        private static void DrawSlash(SpriteBatch spriteBatch, Vector2 a, Vector2 b, float alpha)
-        {
-            Vector2 line = b - a;
-            float length = line.Length();
-
-            if (length < 1f || alpha <= 0.01f)
-                return;
-
-            Texture2D pixel = TextureAssets.MagicPixel.Value;
-            Rectangle source = new Rectangle(0, 0, 1, 1);
-            float rotation = line.ToRotation();
-
-            // Three passes, widest and dimmest underneath. One quad is a bar; stacking
-            // them is what makes it a glow with something bright buried in it.
-            Bar(spriteBatch, pixel, source, a, rotation, length, SlashWidth, SlashGlow * (0.35f * alpha));
-            Bar(spriteBatch, pixel, source, a, rotation, length, SlashWidth * 0.45f, SlashMid * (0.7f * alpha));
-            Bar(spriteBatch, pixel, source, a, rotation, length, SlashWidth * 0.16f, Color.White * alpha);
-        }
-
-        private static void Bar(SpriteBatch spriteBatch, Texture2D pixel, Rectangle source,
-            Vector2 at, float rotation, float length, float width, Color color)
-        {
-            // Origin on the left edge, centred vertically, so the stretch runs from the
-            // start point and the width grows evenly either side of the line.
-            spriteBatch.Draw(pixel, at, source, color, rotation,
-                new Vector2(0f, 0.5f), new Vector2(length, width), SpriteEffects.None, 0f);
-        }
-
         // ---- death ----------------------------------------------------------
 
         /// <summary>
@@ -1788,7 +1710,15 @@ namespace PisAndDag.Content.NPCs.Legends
             PisPlayer.BlendCamera(npc.Center, blend);
         }
 
-        /// <summary>The cut lands. The line itself is drawn in PostDraw.</summary>
+        /// <summary>
+        /// The cut lands.
+        ///
+        /// The line itself is a SlashStreak particle rather than something drawn in
+        /// PostDraw. That buys two things: the particle handler draws it additively, which
+        /// is what makes it read as light rather than a painted bar, and it draws at the
+        /// dust layer — above the King — without this class having to close and reopen
+        /// the sprite batch mid-frame to change blend state.
+        /// </summary>
         private static void Cut(NPC npc)
         {
             if (Main.dedServ)
@@ -1797,9 +1727,16 @@ namespace PisAndDag.Content.NPCs.Legends
             SoundEngine.PlaySound(SoundID.Item1 with { Volume = 1f, Pitch = -0.6f }, npc.Center);
             Main.LocalPlayer.PIS().BumpScreenShake(8f, 20);
 
+            // Down and to the right, through him, and longer than he is — so it reads as
+            // something that passed through rather than something drawn on.
+            Vector2 along = new Vector2(1f, 1f).SafeNormalize(Vector2.UnitX);
+            float reach = npc.Size.Length() * 1.15f;
+
+            PADParticleHandler.SpawnParticle(
+                new SlashStreak(npc.Center, along, reach, SlashWidth, SlashShow, npc));
+
             // Thrown along the cut in both directions, so the spray follows the line
             // rather than blooming out of the middle of him.
-            Vector2 along = new Vector2(1f, 1f).SafeNormalize(Vector2.UnitX);
 
             for (int i = 0; i < 40; i++)
             {

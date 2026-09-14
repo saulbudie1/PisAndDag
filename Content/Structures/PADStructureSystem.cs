@@ -93,6 +93,12 @@ namespace PisAndDag.Content.Structures
             }
 
             tasks.Insert(index + 1, new BloodShrinePass("PisAndDag: Blood Shrine", 100.0));
+
+            // After the shrine, and for the same reason it is here at all: the graveyard
+            // levels ground and clears whatever is standing on it, so it has to run once
+            // the surface, its grass and its trees are final. Put it before them and the
+            // tree pass plants saplings straight through the markers.
+            tasks.Insert(index + 2, new GraveyardPass("PisAndDag: Shoreline Graveyard", 80.0));
         }
     }
 }

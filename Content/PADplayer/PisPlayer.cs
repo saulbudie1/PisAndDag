@@ -30,6 +30,71 @@ namespace PisAndDag.Content.PADplayer
         public float screenShake = 0f;
         public int shakeTime = 0;
 
+        // ---- Chlorophyte Rifle combo ------------------------------------------------
+        //
+        // This lives on PisPlayer and not PADPlayer for one reason: PADPlayer is wiped by
+        // ResetEffects every tick, and a combo that survives less than a frame is not a
+        // combo. Same rule as the camera and the shake — state that has to span ticks
+        // belongs on this side of the split.
+
+        /// <summary>Consecutive rifle rounds that have connected.</summary>
+        public int ChloCombo;
+
+        /// <summary>Ticks left before the streak lapses on its own.</summary>
+        public int ChloComboTimer;
+
+        /// <summary>True once the streak is long enough that the next shot bursts.</summary>
+        public bool ChloArmed;
+
+        /// <summary>Hits needed to arm the burst.</summary>
+        public const int ChloComboRequired = 5;
+
+        /// <summary>How long a streak survives without a hit. Three seconds.</summary>
+        public const int ChloComboDecay = 180;
+
+        /// <summary>Damage added per stack, and the number of stacks that count.</summary>
+        public const float ChloDamagePerStack = 0.1f;
+        public const int ChloMaxStacks = 5;
+
+        /// <summary>
+        /// Extra damage the current streak is worth, as a multiplier on the base.
+        /// Capped, so a long streak stops paying before it runs away.
+        /// </summary>
+        public float ChloDamageBonus =>
+            1f + Math.Min(ChloCombo, ChloMaxStacks) * ChloDamagePerStack;
+
+        /// <summary>A round connected. Called from PADGlobalProjectile on the owner only.</summary>
+        public void ChloRegisterHit()
+        {
+            ChloCombo++;
+            ChloComboTimer = ChloComboDecay;
+
+            if (ChloCombo >= ChloComboRequired)
+                ChloArmed = true;
+        }
+
+        /// <summary>
+        /// Streak over. Every path that ends one funnels through here rather than zeroing
+        /// the fields at four call sites — the reload path being missed is exactly how the
+        /// reload sound came to only play on a manual reload.
+        /// </summary>
+        public void ChloBreakCombo()
+        {
+            ChloCombo = 0;
+            ChloComboTimer = 0;
+            ChloArmed = false;
+        }
+
+        /// <summary>Consumes the armed state. Returns true if this shot should burst.</summary>
+        public bool ChloConsumeBurst()
+        {
+            if (!ChloArmed)
+                return false;
+
+            ChloBreakCombo();
+            return true;
+        }
+
         // Camera focus. Static because it belongs to the view, not to any one player —
         // whoever is looking at the screen is the local player by definition.
         private static Vector2 cameraFocus;
@@ -120,7 +185,12 @@ namespace PisAndDag.Content.PADplayer
 
         /// <summary>
         /// Manual reload. StartReload refuses a full or already-reloading magazine, so
-        /// mashing the key does nothing and the sound only plays on a real reload.
+        /// mashing the key does nothing.
+        ///
+        /// The sound is NOT played here. It used to be, which is exactly why an automatic
+        /// reload was silent: emptying a magazine starts its reload from PSItem.Shoot,
+        /// which never came through this method. The sound now belongs to the reload
+        /// itself, inside PSItem, so every way of starting one is audible.
         /// </summary>
         private void TryReload()
         {
@@ -128,8 +198,7 @@ namespace PisAndDag.Content.PADplayer
             if (held == null || held.IsAir)
                 return;
 
-            if (held.PIS().StartReload())
-                SoundEngine.PlaySound(SoundID.Item149, Player.Center);
+            held.PIS().StartReload(Player);
         }
 
         /// <summary>
@@ -177,6 +246,7 @@ namespace PisAndDag.Content.PADplayer
         public override void UpdateDead()
         {
             AllowedWings = PADWorld.FlightUnlocked;
+            ChloBreakCombo();
         }
 
         /// <summary>
@@ -264,6 +334,42 @@ namespace PisAndDag.Content.PADplayer
             {
                 screenShake *= 0.90f;
             }
+
+            TickChloCombo();
+        }
+
+        /// <summary>
+        /// Ages the rifle combo and drops it when the rifle is not in hand.
+        ///
+        /// The weapon-swap check is here rather than on the item because a ModItem stops
+        /// receiving hooks the moment it leaves the hotbar slot in use — the streak would
+        /// simply freeze and still be waiting when the rifle came back out.
+        /// </summary>
+        private void TickChloCombo()
+        {
+            if (ChloCombo <= 0 && !ChloArmed)
+                return;
+
+            Item held = Player.HeldItem;
+            bool holdingRifle = held != null && !held.IsAir
+                && held.ModItem is Content.Items.Ranged.Chlorophyte_Rifle;
+
+            if (!holdingRifle)
+            {
+                ChloBreakCombo();
+                return;
+            }
+
+            // Reloading deliberately does NOT end the streak.
+            //
+            // It was going to. It cannot: the rifle holds three rounds and the burst
+            // wants five consecutive hits, so a streak that died at every reload could
+            // never reach five and the burst would be unreachable by arithmetic. The
+            // decay timer below already stops a streak surviving a lull, which is the
+            // part that actually mattered.
+
+            if (--ChloComboTimer <= 0)
+                ChloBreakCombo();
         }
         public override void ModifyScreenPosition()
         {

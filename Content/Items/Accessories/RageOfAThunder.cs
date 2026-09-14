@@ -15,9 +15,8 @@ namespace PisAndDag.Content.Items.Accessories
             Item.width = 26;
             Item.height = 26;
             Item.value = 0;
-            Item.rare = ItemRarityID.Yellow;
-            Item.accessory = true;
-            Item.defense = 10;
+            Item.rare = ItemRarityID.Yellow; 
+            Item.accessory = true; 
             Item.expert = true;
         }
 

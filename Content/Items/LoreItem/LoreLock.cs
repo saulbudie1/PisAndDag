@@ -1,7 +1,10 @@
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
+using Terraria.ModLoader.IO;
 
 namespace PisAndDag.Content.Items.LoreItem
 {
@@ -24,12 +27,15 @@ namespace PisAndDag.Content.Items.LoreItem
     /// forty slots on the frames where a chest is on screen and nothing at all otherwise.
     /// Sweeping every chest in the world would be the thorough version and would also be
     /// eight thousand chests a tick.
+    ///
+    /// It also owns the codex shelf, and enforces that a lore item exists in exactly one
+    /// place: the pack or the shelf, never both.
     /// </summary>
     public class LoreLock : ModPlayer
     {
-        private const string Refusal = "You cannot dispose of Lore Items.";
+        private const string Refusal = "It refuses to leave your side.";
 
-        private const string Duplicate = "No duplications.";
+        private const string Duplicate = "There can only be one.";
 
         /// <summary>
         /// Slots swept for duplicates: the main grid, the coin row and the ammo row.
@@ -37,6 +43,56 @@ namespace PisAndDag.Content.Items.LoreItem
         /// the cursor, and a copy passing through it is mid-drag, not a second copy.
         /// </summary>
         private const int SweptSlots = 58;
+
+        private const string CodexTag = "PADCodex";
+
+        /// <summary>
+        /// The shelf behind the Lore Codex window.
+        ///
+        /// Lives on the player rather than in the world, so it travels with the character
+        /// between worlds — the point of a lore item is that this particular player found
+        /// it. Unbounded on purpose: the window scrolls, and there is no reason to invent
+        /// a ceiling the fiction does not have.
+        /// </summary>
+        public readonly List<Item> Codex = new List<Item>();
+
+        public override void SaveData(TagCompound tag)
+        {
+            if (Codex.Count == 0)
+                return;
+
+            // A lambda rather than the ItemIO.Save method group: Save has an optional
+            // second parameter, and a method group with one of those will not convert to
+            // a one-argument delegate.
+            tag[CodexTag] = Codex.Select(item => ItemIO.Save(item)).ToList();
+        }
+
+        public override void LoadData(TagCompound tag)
+        {
+            Codex.Clear();
+
+            if (!tag.ContainsKey(CodexTag))
+                return;
+
+            foreach (TagCompound entry in tag.GetList<TagCompound>(CodexTag))
+            {
+                Item item = ItemIO.Load(entry);
+
+                // A lore item whose mod is gone loads as air. Keeping it would leave a
+                // hole in the grid that cannot be clicked out of.
+                if (item.IsAir)
+                    continue;
+
+                // The shelf refuses a second copy when one is placed by hand, but a save
+                // written before the inventory and the shelf shared a uniqueness check
+                // may hold one anyway. Dropping it here means the fix repairs old
+                // characters instead of only preventing new breakage.
+                if (CodexHolds(item.type))
+                    continue;
+
+                Codex.Add(item);
+            }
+        }
 
         private static readonly Color RefusalColour = new Color(206, 176, 122);
 
@@ -64,6 +120,18 @@ namespace PisAndDag.Content.Items.LoreItem
             PurgeDuplicates();
         }
 
+        /// <summary>True if the codex shelf already holds this item type.</summary>
+        public bool CodexHolds(int type)
+        {
+            for (int i = 0; i < Codex.Count; i++)
+            {
+                if (Codex[i].type == type)
+                    return true;
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Keeps one of each lore item and destroys the rest.
         ///
@@ -77,6 +145,29 @@ namespace PisAndDag.Content.Items.LoreItem
         /// </summary>
         private void PurgeDuplicates()
         {
+            // The shelf counts. Uniqueness used to be checked inside the inventory and
+            // inside the codex separately, which meant neither ever saw the other and one
+            // copy on the shelf plus one in the pack passed both tests. "There can only be
+            // one" has to mean one across everything the player owns, or it means nothing.
+            //
+            // The shelved copy is the survivor: putting an item in the codex is a
+            // deliberate act, and a loose copy turning up afterwards is the newcomer.
+            // Anything the player pulls back OFF the shelf leaves the codex as it goes, so
+            // withdrawing never trips this.
+            if (Codex.Count > 0)
+            {
+                for (int i = 0; i < SweptSlots; i++)
+                {
+                    Item loose = Player.inventory[i];
+
+                    if (!IsLore(loose) || !CodexHolds(loose.type))
+                        continue;
+
+                    loose.TurnToAir();
+                    Scold(Duplicate);
+                }
+            }
+
             for (int i = 0; i < SweptSlots; i++)
             {
                 Item keep = Player.inventory[i];

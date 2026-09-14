@@ -17,8 +17,7 @@ namespace PisAndDag.Content.Items.Ranged
 			Item.width = 30;
 			Item.height = 20;
 			Item.useTime = 10;
-			Item.useAnimation = 10;
-
+			Item.useAnimation = 10; 
             Item.PIS().Magazine(10, 1 * 60);
 			Item.useStyle = ItemUseStyleID.Shoot;
 			Item.knockBack = 6;

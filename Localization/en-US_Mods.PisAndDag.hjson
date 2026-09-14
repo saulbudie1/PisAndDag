@@ -31,6 +31,16 @@ Items: {
 			Tooltip: ""
 		}
 	}
+
+	Chlorophyte_Rifle: {
+		DisplayName: Chlorophyte Rifle
+		Tooltip: ""
+	}
+
+	DentedMegashark: {
+		DisplayName: Dented Megashark
+		Tooltip: ""
+	}
 }
 
 Tiles: {
@@ -45,6 +55,7 @@ Projectiles: {
 	MegasharkBullet.DisplayName: Megashark Bullet
 	MegasharkMusket.DisplayName: Megashark Musket
 	SurgeArc.DisplayName: Surge Arc
+	ChlorophyteBullet.DisplayName: Chlorophyte Bullet
 }
 
 NPCs: {

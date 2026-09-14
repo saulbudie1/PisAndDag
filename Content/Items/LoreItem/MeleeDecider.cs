@@ -19,7 +19,7 @@ namespace PisAndDag.Content.Items.LoreItem
         {  
             Item.width = 40;
             Item.height = 40;
-            Item.useTime = 20;
+            Item.useTime = 20; 
             Item.useAnimation = 20;
             Item.useStyle = ItemUseStyleID.Swing; 
             Item.value = 0;

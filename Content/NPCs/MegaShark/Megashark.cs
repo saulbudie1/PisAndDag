@@ -672,52 +672,21 @@ namespace PisAndDag.Content.NPCs.MegaShark
                 BestiaryDatabaseNPCsPopulator.CommonTags.SpawnConditions.Biomes.Ocean
             });
         }
-
-        /// <summary>
-        /// The gun, and only the gun.
-        ///
-        /// Anything another mod's GlobalNPC bolts on afterwards is beyond reach from here,
-        /// but nothing in this mod adds to it and the coin drop is off in SetDefaults.
-        /// </summary>
+         
         public override void ModifyNPCLoot(NPCLoot npcLoot)
         {
             npcLoot.RemoveWhere(_ => true);
-            npcLoot.Add(ItemDropRule.Common(ItemID.Megashark));
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Content.Items.Ranged.DentedMegashark>()));
         }
-
-        // ---------------------------------------------------------------- damage
-
-        /// <summary>
-        /// Picks the value for the active difficulty and applies a multiplier.
-        ///
-        /// Master mode also reports expert, so master has to be tested first or every
-        /// master value silently falls back to the expert one.
-        /// </summary>
+        
         private static int Difficulty(int normal, int expert, int master, float multiplier = 1f)
         {
             int value = Main.masterMode ? master : Main.expertMode ? expert : normal;
             return Math.Max(1, (int)Math.Round(value * multiplier));
         }
-
-        /// <summary>
-        /// One knob for the whole boss. Below 1 softens every shot, above 1 hardens them.
-        /// Change this rather than the per-attack tables, which state intent.
-        /// </summary>
+         
         private const float ShotTrim = 1f;
-
-        /// <summary>
-        /// Turns an intended landed-damage figure into the number to hand NewProjectile.
-        ///
-        /// Two multiplications sit between the two. A hostile projectile's damage is
-        /// doubled on its way into the player, and the game mode multiplies again on top
-        /// of that — so in Master a shot spawned at 180 arrives at roughly 1080. Undoing
-        /// both here is what makes the tables above mean what they say.
-        ///
-        /// This replaced GetAttackDamage_ForProjectiles_MultiLerp, which sounded like the
-        /// right helper and was not: it left the aimed shot landing 800 against 62
-        /// defense. Doing the arithmetic in the open is worth more here than a vanilla
-        /// call whose behaviour has to be taken on trust.
-        /// </summary>
+         
         private static int ShotDamage(float normal, float expert, float master)
         {
             float intended = Main.masterMode ? master : Main.expertMode ? expert : normal;

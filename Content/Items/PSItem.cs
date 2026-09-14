@@ -37,17 +37,42 @@ namespace PisAndDag.Content.Items
 
         }
 
+        /// <summary>The click-clack. One place, so every reload sounds the same.</summary>
+        public static readonly SoundStyle ReloadSound = SoundID.Item149;
+
         /// <summary>
         /// Begins a reload. Does nothing on a full magazine or one already reloading, so
         /// it is safe to call from a keybind held down.
+        ///
+        /// Pass the player and the sound plays; pass null and it does not. Every path
+        /// that starts a reload goes through here — see BeginReload below for why.
         /// </summary>
-        public bool StartReload()
+        public bool StartReload(Player player)
         {
             if (!HasMagazine || Reloading || ShotFired <= 0)
                 return false;
 
-            ReloadTimer = ReloadTime;
+            BeginReload(player);
             return true;
+        }
+
+        /// <summary>
+        /// The single place a reload actually starts.
+        ///
+        /// It exists because there are two ways to begin one — the keybind, and running
+        /// the magazine dry mid-burst — and they used to be written separately: the
+        /// keybind called StartReload and played a sound at the call site, while Shoot
+        /// just assigned ReloadTimer directly. So an automatic reload was silent, and no
+        /// amount of looking at the manual path explained why.
+        ///
+        /// Anything that should happen on every reload goes in here, not at a call site.
+        /// </summary>
+        private void BeginReload(Player player)
+        {
+            ReloadTimer = ReloadTime;
+
+            if (player != null && !Main.dedServ)
+                SoundEngine.PlaySound(ReloadSound, player.Center);
         }
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
@@ -321,8 +346,13 @@ namespace PisAndDag.Content.Items
 
                 // Magazine empty — start the reload. ShotFired is deliberately NOT reset
                 // here; UpdateInventory clears it when the timer runs out.
+                //
+                // BeginReload, not a bare `ReloadTimer = ReloadTime`. The direct
+                // assignment was the bug: it skipped the sound that the keybind path
+                // played at its own call site, so running a magazine dry reloaded in
+                // silence while pressing R did not.
                 if (ShotFired >= MagCount)
-                    ReloadTimer = ReloadTime;
+                    BeginReload(player);
 
                 return true;
             }
