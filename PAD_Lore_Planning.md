@@ -51,12 +51,20 @@ Whichever it is, this is the fight where he draws the sword (§XXXI) — the onl
 
 ## 1.5 When the Jungle was poisoned
 
+**Resolved → before the Archmage.** The Court's attempt sits in the age before the Unremembering; everything the Jungle has done since is one uninterrupted reaction.
+
+### Original note
+
 Decides whether the five Low Court members are heirs or perpetrators.
 
 - **Ancient** — they live in the shadow of a crime none of them committed, working from instructions they inherited. More Souls.
 - **Recent, a few generations** — at least one of the five was there. More personal, less mythic.
 
 ## 1.6 Was the poison manufactured?
+
+**Resolved → yes, built.** Now stated in Bible §XVII.
+
+### Original note
 
 **Recommendation, not yet approved.** The Jungle poison should be a *built* thing — pumps, vats, pipes, out of the engineering traditions (§XXI / §XXV) — not a spreading metaphysical rot.
 
@@ -165,3 +173,34 @@ Text written before the lore-voice skill existed.
 
 - The orb's break announcement: *"The essence of \<world\> have been stirred"*.
 - The Guide's Legends line: *"I feel like the balance of the world is disturbed…"* — now specifically about being watched from above (§XXX), not about general ominousness.
+
+
+---
+
+# 7. Opened by the structural pass
+
+The pass that joined the two catastrophes closed a lot and opened these.
+
+## 7.1 Where the correspondence is found
+
+Bible §XXVII puts the Archmage's half in the Arcanum ruins and the houses' half beneath the world. Neither location is designed. The houses' half in particular wants a room the player can stand in.
+
+## 7.2 Does the Clerk's archive feed the restoration mechanically?
+
+§XIV says the ledgers are a copy of the memory that was taken, which makes them useful to Mors. Whether that is a quest item, a long fetch, or purely a thing the player realises is undecided — and it decides whether the Clerk is a character or a dungeon.
+
+## 7.3 Where the Archmage sits in progression
+
+He is locked as alive and as the opposition to the restoration (§XIII). Whether he is the last fight, a late-but-not-last fight, or something that is never fought at all is open. §XIII still carries the old boss proposal, which was written when he was optional.
+
+## 7.4 What the Low Court does about Nine Tenths
+
+§XIV says how the player treats him is how the Court takes an interest. The mechanism — whether they ask, take, or simply watch — is unwritten.
+
+## 7.5 Loi's third transgression
+
+Unchanged from 1.7, and now the only major undecided item left in Part II. The proposal on the table is that the third transgression is asking him something.
+
+## 7.6 The seven endings still have no levers
+
+§XXXII lists seven and most have no stated trigger. They are also not commensurate. Three or four with a concrete lever each is the recommendation.

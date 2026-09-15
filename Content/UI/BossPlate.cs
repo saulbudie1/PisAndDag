@@ -9,6 +9,7 @@ using ReLogic.Graphics;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.GameContent;
+using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.UI;
 
@@ -42,6 +43,12 @@ namespace PisAndDag.Content.UI
         /// otherwise: BossArrivalWait holds the boss still until the camera is home.
         /// </summary>
         public bool Waits = true;
+
+        /// <summary>
+        /// True for something vanilla gives a boss bar to that is not a boss — an event's
+        /// big enemy. It keeps the bar and the name at rest; it gets no arrival at all.
+        /// </summary>
+        public bool Plain;
     }
 
 
@@ -274,6 +281,32 @@ namespace PisAndDag.Content.UI
             { 125, "The Twins" }, { 126, "The Twins" },
             { 245, "Golem" }, { 246, "Golem" },
             { 396, "Moon Lord" }, { 397, "Moon Lord" }, { 398, "Moon Lord" },
+            { 393, "Martian Saucer" }, { 394, "Martian Saucer" }, { 395, "Martian Saucer" },
+            { 492, "The Flying Dutchman" },
+        };
+
+        // ============================================================
+        // WHAT IS NOT A BOSS
+        // ============================================================
+        //
+        // Vanilla hands a boss bar to anything with a boss head icon, which sweeps in the
+        // big enemies of the events — the Dutchman, the saucer, the moons' visitors, the
+        // Old One's Army's champions. They are not bosses and an arrival makes them look
+        // like ones: the world should not stop for a Mourning Wood. These keep the bar
+        // and the name at rest, and nothing else — no pan, no title, no hold, no glow.
+        //
+        // Never add a summoned true boss here (the Cultist, Deerclops); they earn it.
+
+        private static readonly HashSet<int> NotBosses = new()
+        {
+            NPCID.MourningWood, NPCID.Pumpking,                        // Pumpkin Moon
+            NPCID.Everscream, NPCID.IceQueen, NPCID.SantaNK1,          // Frost Moon
+            NPCID.MartianSaucer, NPCID.MartianSaucerTurret,            // Martian Madness
+            NPCID.MartianSaucerCannon, NPCID.MartianSaucerCore,
+            NPCID.PirateShip, NPCID.PirateShipCannon,                  // Pirate Invasion
+            NPCID.Mothron,                                             // Solar Eclipse
+            NPCID.DD2Betsy, NPCID.DD2DarkMageT1, NPCID.DD2DarkMageT3,  // Old One's Army
+            NPCID.DD2OgreT2, NPCID.DD2OgreT3,
         };
 
         // ============================================================
@@ -362,6 +395,16 @@ namespace PisAndDag.Content.UI
             Entry(npcType).Waits = false;
         }
 
+        /// <summary>
+        /// This type carries a boss bar but is not a boss — an event's big enemy. Bar and
+        /// name only: no arrival, no title, no hold. See NotBosses for the vanilla ones,
+        /// which need no call.
+        /// </summary>
+        public static void NotABoss(int npcType)
+        {
+            Entry(npcType).Plain = true;
+        }
+
         private static BossPlateEntry Entry(int npcType)
         {
             if (!registry.TryGetValue(npcType, out BossPlateEntry entry))
@@ -391,14 +434,16 @@ namespace PisAndDag.Content.UI
             Func<string> title = () => !string.IsNullOrEmpty(npc.PAD().BossTitle) ? npc.PAD().BossTitle : regTitle?.Invoke();
 
             bool ownIntro = own.OwnIntro || (reg?.OwnIntro?.Invoke(npc) ?? false);
+            bool plain = NotBosses.Contains(npc.type) || (reg?.Plain ?? false);
 
             return new BossPlateEntry
             {
                 Name = name,
-                Title = title,
+                Title = plain ? null : title,
                 OwnIntro = _ => ownIntro,
                 Intro = reg?.Intro,
                 Waits = reg?.Waits ?? true,
+                Plain = plain,
             };
         }
 
@@ -412,7 +457,7 @@ namespace PisAndDag.Content.UI
         {
             BossPlateEntry entry = Resolve(npc);
 
-            if (!entry.Waits || entry.OwnIntro(npc))
+            if (entry.Plain || !entry.Waits || entry.OwnIntro(npc))
                 return 0;
 
             bool titled = !string.IsNullOrWhiteSpace(entry.Title?.Invoke());
@@ -555,7 +600,13 @@ namespace PisAndDag.Content.UI
             drain = life;
             gap = 0;
 
-            if (current.OwnIntro(npc))
+            if (current.Plain)
+            {
+                // Not a boss. The bar fades up and the name is simply there; nothing
+                // takes the camera, nothing holds it still, nothing lights it.
+                nameFlightPending = false;
+            }
+            else if (current.OwnIntro(npc))
             {
                 // Its own camera work. The name still has to land — it rises the moment
                 // that camera work puts the boss in the middle of the screen, which is
@@ -613,7 +664,7 @@ namespace PisAndDag.Content.UI
         /// </summary>
         private static void Light(NPC npc)
         {
-            bool arriving = BossIntro.Running || nameFlightPending;
+            bool arriving = !(current?.Plain ?? false) && (BossIntro.Running || nameFlightPending);
 
             if (arriving)
             {
@@ -827,8 +878,14 @@ namespace PisAndDag.Content.UI
             Vector2 rest = NameRest();
 
             // The intro owns the name while it is flying it down from the boss.
-            bool flying = BossIntro.NamePlacement(rest, out Vector2 pos, out float alpha,
-                out float titleAlpha, out float scale, out bool centred);
+            Vector2 pos = rest;
+            float alpha = Alpha();
+            float titleAlpha = 0f;
+            float scale = 1f;
+            bool centred = false;
+
+            bool flying = !entry.Plain
+                && BossIntro.NamePlacement(rest, out pos, out alpha, out titleAlpha, out scale, out centred);
 
             if (!flying)
             {

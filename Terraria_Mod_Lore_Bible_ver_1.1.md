@@ -178,6 +178,19 @@ What that means in practice:
 - **Consequences land on people who did not consent.** That is the cost of every exception anyone has ever made to the rules of this world.
 - **Gods are approached, not summoned** (§IX).
 - **Questlines can be missed and the game does not say so** — after the restoration (§XIV).
+- **Nothing the player fights is in its prime.** See below.
+
+### Nothing in Its Prime
+
+**[LOCKED]**
+
+Every god, Lord and order the player meets is a late version of itself. Mors has lost his memory. Birth spent herself making Fishron. Life has grown past regulation because nothing prunes. The Kingdom of Grace is rubble, the Low Court inherited a library and lost it, and the Archmage is nine hundred years old and cannot rest.
+
+Two exceptions.
+
+The **Moon Lord** is the only power in the world still at full strength, which is why gods who are not are afraid of him.
+
+The **Mechanic** is the only mortal at hers, which is why she is the one who dies.
 
 ---
 
@@ -249,6 +262,16 @@ She can therefore manifest life in grotesque forms:
 
 Life regards Death not as an enemy worthy of hatred, but as an intolerable interruption.
 
+### Life and Mors
+
+**[LOCKED]**
+
+They were the working pair. She grew it, he ended it, and for an age that arrangement was the whole mechanism of the world. Neither resented the other. Ending is what makes room, and Life has always needed room.
+
+So Life is the god who lost most when he stopped. Nothing prunes. Growth with no edge to push against runs away from whoever is holding it, and she has been holding it for nine hundred years. The Jungle is not only the poison the Low Court put into it (§XVII). It is a forest that nothing finishes.
+
+Her quarrel is with Birth, and it is old. Birth begins things and walks away from them; Life will not let anything she has been handed stop. Between the two of them the world fills up with creatures neither will answer for.
+
 ### The Dryad
 
 **[PROPOSAL / DEVELOPING]**
@@ -318,6 +341,16 @@ The same instrument represents opposite philosophies:
 
 **Birth:**  
 > This one failed. Make another.
+
+### The Abominations
+
+**[LOCKED]**
+
+What Birth discards, Life refuses to let end, and Death can no longer finish.
+
+That recipe dates them: every abomination in the world is post-amnesia. Before the Archmage, a failed creation was discarded and it stayed discarded — the dagger worked, and Mors closed what she opened. Now her rejects are caught between a mother who has walked off and a goddess who will not permit an ending, and they keep going.
+
+They are not demons and not experiments. They are children nobody will finish.
 
 ### Duke Fishron
 
@@ -516,6 +549,16 @@ Shimmer says:
 
 It may therefore be older than the current divine hierarchy.
 
+### The Lock
+
+**[LOCKED]**
+
+Shimmer is the antidote to what was done to Mors, and the Archmage understood that before anyone else did.
+
+His crime was committed against an identity. Shimmer is the one force in the world that changes what a thing *is* — the only power that could give Death back the fact of being Death. So he sealed it, and sealed it early, while the world was still working out what had gone wrong.
+
+What the player finds in pools and seams is seepage from a bad lock. It works on small things, unreliably. The rest of it is somewhere else, and it is his second crime: the first one made the wound and this one made it permanent.
+
 ---
 
 ## §XII. The Lords
@@ -552,17 +595,33 @@ An Avatar may therefore be fought and killed without the underlying god ceasing 
 
 The Archmage is the mortal responsible for the mutilation of Death.
 
-He should not be a conventional evil wizard.
-
 He believed he had accomplished something miraculous:
 
 > **He freed humanity from permanent death.**
 
-His crime was committed out of conviction rather than malice.
+He acted out of conviction. On his own premises he was right, and nobody in this book has argued him down.
 
-He may eventually become a lore-heavy boss.
+### What He Learned from the Houses
 
-#### [PROPOSAL] The Archmage Boss
+**[LOCKED]**
+
+He was not one of the learned houses. He was the scholar they brought in (§XXVII, The Quiet Work), and he left that project carrying the method rather than the doctrine.
+
+Two things he learned building the Seal became his crime. The first is that nothing unkillable is out-fought — you find the rule that makes it unkillable and break that instead (§XVIII). The second he watched them do: the houses wrote the key into a bloodline in front of him, and so he learned that a person can be a container, and that what is kept in one can be reached.
+
+From there, memory as the place where finality lives is one step. His crime is the Seal's own method turned around, and the houses taught it to him.
+
+### He Did Not Die
+
+**[LOCKED]**
+
+He is still alive, nine hundred years on, living on his own injury. He is the only person in the world who remembers it working.
+
+He is frail in the way everything else in this book is frail (§IV). He is not hiding and he is not raising anything. He cannot stop, and he has had a very long time to think about that.
+
+He does not want the wound closed. Restoring Mors kills him and concedes that he was wrong, and he is still not certain that he was. That is the whole of his resistance, and it is enough: the player's central act is the one thing in the world that ends him.
+
+### [PROPOSAL] The Archmage Boss
 
 His fight could violate ordinary rules of reality:
 
@@ -605,6 +664,58 @@ Death works. It sticks, for everyone except the player (§XXXII.3).
 From that point a death is permanent and **takes whatever was unfinished with it.** The world has already told the player the rules changed: the town stopped fighting, the Nurse got serious, somebody said one line about it. That is fair warning in the way this book prefers to give it — the world said so, nothing put it in a tooltip.
 
 Note what this rules out: the town does **not** become invulnerable. The whole content of the restoration is that things can end now, and a town that suddenly cannot die would say the opposite at the exact moment it matters. NPCs can be killed and they stay killed. The lore-required deaths are not a special case — they are simply the first ones.
+
+### How Long
+
+**[LOCKED]**
+
+Nine hundred years, give or take, from the Archmage's working to the player's arrival.
+
+The length is doing work. Nobody alive remembers death functioning; permanent ending is a rumour, a heresy, and in some tellings a slander against the man who saved everybody. The Low Court had time to inherit a library and lose it. The Kingdom of Grace was already ruins when the Court convened. And nobody in town can be shocked by the amnesty, because none of them has known anything else. They can only be shocked by its ending.
+
+### What It Looks Like
+
+**[LOCKED]**
+
+The amnesty has to be visible or it is a rule in a document. Three things carry it, and none of them is explained.
+
+**The un-rotted.** Old battlefields where the dead are still lying where they fell, intact, because decay is an ending and endings do not land. Nothing has gone to bone. Nothing has gone to anything.
+
+**The recut stone.** Graves in the old yards carrying one name and four death-dates, each scratched out and carved again beneath the last. Somebody kept paying the mason.
+
+**The overstayed.** Things in those battlefields that come back together once after they are killed, and fight on. After the restoration they die properly, which is the only announcement the change ever gets.
+
+### Who Wants It Back
+
+**[LOCKED]**
+
+The restoration has opposition, and the opposition is sympathetic. Everyone alive is living on the amnesty and most of them are glad of it.
+
+**Against.** The Party Girl, cheerfully, which is the worst of them. The Tax Collector, who came back from Hell and keeps accounts for people who would rather he did not stop (§XVII). Anybody in the world with a child back.
+
+**For.** The Princess, raised inside a claim of divine favour that was never true, who wants a finite life on purpose (§XX). Truffle, whose whole ecology requires endings (§XXVIII). The Nurse, who has seen what comes back. The Heretic, who worked it out alone and has not got the nerve to say so (§XVII).
+
+The player is never polled. The town simply starts saying different things once it knows what is being carried.
+
+### Two Who Live On It
+
+**[LOCKED]**
+
+Two mortals have built a life out of the wound. Both are found underground. Neither is a boss.
+
+**The Clerk.** He decided that if Death cannot remember, a man will. He has been recording every death in the world for nine hundred years — in books, properly, with dates — and he calls himself the Second Memory. Everybody calls him the Clerk, which annoys him. He is a pedant. He will correct the player's phrasing and explain his margin system.
+
+To record a death properly he has to witness it. A completionist with an unfinishable list begins arranging to be present, and then arranging more often. His archive is the only accurate record of the era, which makes the best historical source in the world a trophy list — and makes it useful to Mors, because it is a copy of the memory that was taken. The cure was assembled out of murders.
+
+**Nine Tenths.** A butcher who is his own stock. Nothing ends, so he eats himself, and he comes back, and he sells the difference. He has prices. He has a preferred cut. He will tell the player which part of him is best this season and he will not be wrong.
+
+He has never eaten anyone else. He is firm about it and genuinely offended by the suggestion — one scruple, kept scrupulously, inside a practice with no other scruples available. It hurts every time, as much as the first. He has priced that in.
+
+The act is never shown. What the player sees is a counter, a sign, and the stock.
+
+The Low Court would like him ended: a mortal who has made himself unfinishable is the abomination they were founded to hunt, and he is a tradesman in a cave. How the player treats him is how the Court first takes an interest (§XVII).
+
+Both of them die when Death remembers. Neither is a villain, and the game never says which way mercy runs.
 
 ---
 
@@ -738,7 +849,7 @@ This is why a body that large never leaks: **you cannot confess a doctrine you w
 
 This is the fact the whole order is built on top of and never says out loud.
 
-Their evidence that gods can be felled is a single attempt: **they poisoned the Jungle** in order to wound the God of Life. It did not kill her. Life answered the way Life answers everything —
+Their evidence that gods can be felled is a single attempt: **they poisoned the Jungle** in order to wound the God of Life. It was built rather than cursed — pumps, vats, pipes, an industry run for as long as it took — and that is how the player tells their work from the infectious absolutes of §XXVI. Metaphysical forces do not leave machinery. It did not kill her. Life answered the way Life answers everything —
 
 > **She adapted.**
 
@@ -798,6 +909,16 @@ However, they eventually confront a distinction:
 > **There are gods. And then there is Death.**
 
 Death is not simply another divine monarch that can be assassinated.
+
+### How the Player Meets Them
+
+**[LOCKED]**
+
+They never ambush anybody. Ambush is not their register (§IV) and they have never needed it.
+
+Their mark is in the world from the first hour — chipped faces on angel statues, names scratched off shrines — long before there is an order to attach it to. The altar the orb sits in carries it (§XXX). The Tax Collector says the one thing he should not know. A courier lies dead on a road with a sealed letter in a script the player cannot read. And after the first Quietus (§XVI), one of the five simply meets the player: not hostile, interested, offering something genuinely useful that costs somebody else.
+
+The escalation is not danger. It is that every important room the player walks into has a chair already pulled out.
 
 ---
 
@@ -984,6 +1105,10 @@ She is not killed and she is not punished. When Death's memory comes back, death
 The framing is tragedy and consequence rather than punishment or romanticized sacrifice. She is not the only one; she is the one the player knows.
 
 A possible catalyst remains that she creates or encounters something she realizes she **cannot control, understand, or repair** (§XXII is the obvious candidate).
+
+She works it out before the player does. She has the Blade's measure, she knows what the restoration costs, and she knows that a world where endings land is a world she is not in. She hands the work over anyway, and not nobly.
+
+> **If it works, it was worth making was never a rule about machines.**
 
 ---
 
@@ -1252,6 +1377,22 @@ Deliberately unresolved:
 - Whether the Guide's death breaks the Seal, or merely opens it.
 - Whether there are other lines.
 
+### The Quiet Work
+
+**[LOCKED — this is what joins the two catastrophes]**
+
+The Seal was not announced. The houses built it in secret and swore the work out of the record, and the secrecy was not modesty. It was the second lock. What nobody knows about, nobody tests; a bound thing the world has forgotten is bound twice.
+
+That half of the bargain is still holding. It held long after the flesh stopped being the only problem.
+
+The houses did not do it alone. They brought in a young scholar from outside — not a member, not sworn, a specialist consulted on the binding of things that cannot be killed. He did the work he was asked for and he left. What he took with him was the method (§XIII).
+
+So the two catastrophes in this book are one catastrophe. The Seal taught the Archmage how to break the rule that holds a thing together; he went and broke the rule that holds endings together; and everyone who could have recognised what he had done was sworn to silence about the only comparable working.
+
+**What the player finds:** a correspondence in two halves. His side is in the Arcanum ruins (§XXIV). Theirs is beneath the world. Neither half names him. Together they do.
+
+And the release is worse than it was built to be. Three absolutes wear each other down only if wearing down is available, and since the amnesty it has not been. What comes out of the broken Seal cannot be exhausted. Hardmode is an old plan meeting a wound its architects never heard about.
+
 ---
 
 ## §XXVIII. The Fungal Caves
@@ -1269,6 +1410,16 @@ They require it.
 The fungal ecosystem therefore exists in strange harmony with the proper function of Death.
 
 The giant mushrooms are fruiting bodies of immense interconnected mycelial networks.
+
+### Where Endings Still Land
+
+**[LOCKED]**
+
+Fungi do not reject death. They require it, and a network built on endings is the one system in the world that never stopped working when Death forgot.
+
+So the fungal caves are the only place where things finish. Everywhere else the dead lie intact in the fields they fell in; down here they go back into the ground on schedule and the mushrooms grow on what is done with. It is the last honest ecology in the world.
+
+That is why the network remembers the man who came asking where the dead go, and why nobody above ground does.
 
 ### Truffle
 
