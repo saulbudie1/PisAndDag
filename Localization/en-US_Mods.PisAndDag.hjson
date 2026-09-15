@@ -20,8 +20,7 @@ Items: {
 			'''
 			Can only be set upon an anvil
 			Once placed, it cannot be taken back
-			Breaking it will cause the protection to become unstable, inviting new threats to the world
-			This will also give player new features and rewards
+			Break it, and the world is asked a question it cannot refuse
 			'''
 	}
 

@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System.Collections.Generic;
 using PisAndDag.Content.Items.Ranged;
 using Terraria;
 using Terraria.Audio;
@@ -446,41 +445,13 @@ namespace PisAndDag.Content.UI
         }
     }
 
-    /// <summary>Hangs the answer line and the bench off the last interface layer.</summary>
+    /// <summary>
+    /// The bench is drawn from TalkOptionSystem's layer, after the answer lines. This only
+    /// covers the exit that layer cannot: a world unload with the bench open would strand
+    /// the item, since Close only ever runs from Draw and Draw stops being called.
+    /// </summary>
     public class MegasharkRepairSystem : ModSystem
     {
-        public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
-        {
-            // Before Mouse Text rather than after Inventory: Mouse Text is last, so this
-            // lands above the inventory AND above the chat panel, which the answer line
-            // needs. It is where Calamity hangs its enchant UI for the same reason.
-            int index = layers.FindIndex(layer => layer.Name == "Vanilla: Mouse Text");
-
-            if (index == -1)
-                return;
-
-            layers.Insert(index, new LegacyGameInterfaceLayer(
-                "PisAndDag: Megashark Repair",
-                () =>
-                {
-                    // Once, before anything reads it. Both the line and the bench take
-                    // their click from this.
-                    PADMouse.Tick();
-
-                    // They are never both up: the line needs the dialogue and the bench
-                    // clears it. One layer serves both.
-                    NPCs.MechanicRepairPrompt.Draw(Main.spriteBatch);
-                    MegasharkRepairUI.Draw(Main.spriteBatch);
-
-                    return true;
-                },
-                InterfaceScaleType.UI));
-        }
-
-        /// <summary>
-        /// A world unload with the bench open would strand the item, since Close only ever
-        /// runs from Draw and Draw stops being called.
-        /// </summary>
         public override void OnWorldUnload()
         {
             if (MegasharkRepairUI.Open)

@@ -16,8 +16,20 @@ namespace PisAndDag.Content.Items
 
             Item.width = 30;
             Item.height = 30;
-            Item.value = Item.buyPrice(gold: 1);
             Item.rare = ItemRarityID.Pink;
+
+            // Worthless on purpose: vanilla will not buy a worthless item, which closes
+            // the one hole LoreLock cannot undo (dragging it onto a shop slot).
+            Item.value = 0;
+
+            // Lore Bible §XXVIII. What it is, who held it, who found the other use, and
+            // the gap — what answered is the one thing nobody wrote down.
+            Item.PAD().Lore = true;
+            Item.PAD().LoreText =
+                "The old kingdom kept it under glass and called it Grace.\n" +
+                "Cut by the masons to hold a blessing.\n" +
+                "Those who judge gods found the other thing it could do.\n" +
+                "No one wrote down what answered.";
         }
 
         /// <summary>

@@ -14,8 +14,9 @@ namespace PisAndDag.Content.NPCs.Legends
     ///
     /// Vanilla resolves the whole thing in one frame: the burning doll strikes the Guide
     /// for 9999 and calls <see cref="NPC.SpawnWOF"/> on the very next line. This pulls
-    /// those apart into sixteen seconds — the camera goes to him, he smoulders, he comes
-    /// apart, and only once the shot is back on the player does the Wall arrive.
+    /// those apart — the camera goes to him, he smoulders, he comes apart, and only
+    /// once the shot is back on the player does the Wall arrive, far off, with its own
+    /// intro (WallOfFleshIntro) to walk in on.
     ///
     /// Nothing here waits for vanilla's version and then undoes it. The doll is consumed
     /// before vanilla's lava check can see it, so the strike and the summon simply never
@@ -29,6 +30,22 @@ namespace PisAndDag.Content.NPCs.Legends
     /// </summary>
     public class GuideSacrifice : ModSystem
     {
+        /// <summary>
+        /// The rite: the camera goes to the Guide, he smoulders and comes apart, the
+        /// shot walks home. With it off the doll is left to vanilla, which kills him
+        /// and summons the Wall in one frame. static readonly rather than const so the
+        /// guarded code is not flagged as unreachable by the compiler.
+        /// </summary>
+        public static readonly bool RitualEnabled = true;
+
+        /// <summary>
+        /// The old tail — a hush, a building quake, the Wall breaching at its peak, an
+        /// aftershock. OFF: the Wall now arrives the frame the shot is home, far away,
+        /// and its own intro (WallOfFleshIntro) supplies the one roar. Flip this to
+        /// have the ground build up to it again.
+        /// </summary>
+        public static readonly bool QuakeEnabled = false;
+
         // ---- the beats ------------------------------------------------------
 
         private const int PanOut = 7*60+30;
@@ -60,10 +77,15 @@ namespace PisAndDag.Content.NPCs.Legends
 
         private const int QuakeAt = PansDoneAt + Hush;
 
-        /// <summary>The peak, and the frame the Wall arrives on.</summary>
-        private const int BreachAt = QuakeAt + Quake;
+        /// <summary>
+        /// The frame the Wall arrives on: the quake's peak, or — with the quake off —
+        /// the frame the shot is home. Properties rather than consts only because
+        /// QuakeEnabled is a runtime switch.
+        /// </summary>
+        private static int BreachAt => QuakeEnabled ? QuakeAt + Quake : PansDoneAt;
 
-        private const int RiteEnd = BreachAt + Aftershock;
+        /// <summary>Done. With the quake off there is no aftershock to wait out.</summary>
+        private static int RiteEnd => QuakeEnabled ? BreachAt + Aftershock : BreachAt;
 
         private const float QuakeFloor = 1.5f;
         private const float QuakePeak = 18f;
@@ -170,7 +192,7 @@ namespace PisAndDag.Content.NPCs.Legends
         /// </summary>
         public static bool Begin(Vector2 dollPosition)
         {
-            if (Active || Main.netMode == NetmodeID.MultiplayerClient)
+            if (!RitualEnabled || Active || Main.netMode == NetmodeID.MultiplayerClient)
                 return false;
 
             int found = -1;
@@ -390,7 +412,7 @@ namespace PisAndDag.Content.NPCs.Legends
         /// </summary>
         private static void Tremor()
         {
-            if (Main.dedServ || timer < QuakeAt)
+            if (!QuakeEnabled || Main.dedServ || timer < QuakeAt)
                 return;
 
             float strength;
@@ -483,13 +505,65 @@ namespace PisAndDag.Content.NPCs.Legends
             }
         }
 
-        /// <summary>The peak. Whatever was pushing the ground up comes through it.</summary>
+        // ---- where the Wall comes from ------------------------------------
+
+        /// <summary>
+        /// Half a screen, in world pixels, at the usual 1920 width and zoom 1. A
+        /// constant rather than Main.screenWidth because the spawn is decided on the
+        /// server, which has no screen.
+        /// </summary>
+        private const float HalfScreen = 960f;
+
+        /// <summary>Slack on top of the maths, so "half a screen" is never a pixel short.</summary>
+        private const float SpawnMargin = 64f;
+
+        /// <summary>
+        /// The Wall's full-life speed, from its AI (NPC.cs, aiStyle 27): 1.5, expert
+        /// ×1.35 + 0.35, the good world ×1.1 + 0.2. Master runs the expert branch.
+        /// </summary>
+        private static float WallSpeed()
+        {
+            float speed = 1.5f;
+
+            if (Main.expertMode)
+                speed = speed * 1.35f + 0.35f;
+
+            if (Main.getGoodWorld)
+                speed = speed * 1.1f + 0.2f;
+
+            return speed;
+        }
+
+        /// <summary>
+        /// Far enough that when its intro is over — WallOfFleshIntro.Ticks of it
+        /// walking at the player the whole time — it is still half a screen away. Placed
+        /// on the side vanilla would put it (away from the world's centre, so it walks
+        /// inward), and handed to SpawnWOF, which keeps its own rules for depth and for
+        /// never landing within 1200 of anyone; this is always further than that.
+        /// </summary>
+        private static Vector2 FarSpot()
+        {
+            Player player = Main.player.IndexInRange(watcher) && Main.player[watcher].active
+                ? Main.player[watcher]
+                : Main.player[Player.FindClosest(wallSpot, 16, 16)];
+
+            float distance = WallSpeed() * WallOfFleshIntro.Ticks + HalfScreen + SpawnMargin;
+            int side = wallSpot.X < Main.maxTilesX * 8f ? -1 : 1;
+
+            return new Vector2(player.Center.X + side * distance, wallSpot.Y);
+        }
+
+        /// <summary>
+        /// The Wall arrives. With the quake on, this is its peak and the ground answers;
+        /// with it off, the shot has just come home and the Wall's own intro takes over
+        /// from here — its roar is the one this used to make.
+        /// </summary>
         private static void Breach()
         {
             if (Main.netMode != NetmodeID.MultiplayerClient)
-                NPC.SpawnWOF(wallSpot);
+                NPC.SpawnWOF(FarSpot());
 
-            if (Main.dedServ)
+            if (!QuakeEnabled || Main.dedServ)
                 return;
 
             SoundEngine.PlaySound(SoundID.ForceRoar with { Volume = 1f, Pitch = -0.55f }, Main.LocalPlayer.Center);
@@ -533,6 +607,11 @@ namespace PisAndDag.Content.NPCs.Legends
 
         public override void Update(Item item, ref float gravity, ref float maxFallSpeed)
         {
+            // Rite off: the doll is left to vanilla, which strikes the Guide and calls
+            // SpawnWOF in the same frame. The Wall's intro then finds the Wall.
+            if (!GuideSacrifice.RitualEnabled)
+                return;
+
             if (Main.netMode == NetmodeID.MultiplayerClient || GuideSacrifice.Active)
                 return;
 

@@ -95,11 +95,42 @@ namespace PisAndDag.Content.PADplayer
             return true;
         }
 
-        // Camera focus. Static because it belongs to the view, not to any one player —
-        // whoever is looking at the screen is the local player by definition.
+        // ---- camera --------------------------------------------------------------------
+        //
+        // Static because it belongs to the view, not to any one player — whoever is
+        // looking at the screen is the local player by definition.
+        //
+        // Two layers. Callers describe the SHOT, every tick, with whatever curve they
+        // like: a world point, and how far toward it the camera should sit. Underneath,
+        // the camera itself is a critically damped spring chasing that shot — so whatever
+        // the callers hand it (an eased pan, a hard hold on a boss that is dashing, a
+        // curve with a kink in it, a shot that starts sixteen pixels off where vanilla had
+        // the camera) the thing on screen never changes speed inside a single frame. And
+        // when a hold ends, however it ends, the camera walks home instead of snapping.
+
         private static Vector2 cameraFocus;
         private static int cameraFocusFrames;
         private static float cameraBlend;
+
+        /// <summary>Where the camera actually is (top-left) while this code is driving it.</summary>
+        private static Vector2 cam;
+        private static Vector2 camVelocity;
+
+        /// <summary>True when the previous frame was ours, so the next shot starts from cam.</summary>
+        private static bool driving;
+
+        /// <summary>
+        /// Time constant of the spring, in seconds. About five frames: short enough that
+        /// an authored pan keeps the shape that was written for it, long enough to take
+        /// the corner off a kink and the jitter out of a target that moves in steps.
+        /// </summary>
+        private const float SmoothTime = 0.08f;
+
+        /// <summary>Longest walk home when a hold ends without asking for one.</summary>
+        private const int ReleaseFrames = 40;
+
+        /// <summary>Pixels of walk home per frame, which sets how long a short one takes.</summary>
+        private const float ReleaseSpeed = 10f;
 
         /// <summary>
         /// Blends the camera between where it would normally sit and a world point.
@@ -107,14 +138,12 @@ namespace PisAndDag.Content.PADplayer
         /// 0 leaves the shot on the player, 1 centres it on the target, and anything
         /// between is a partial move. The blend is NOT a smoothing factor — the caller
         /// supplies the curve, which is what makes a timed pan possible rather than the
-        /// exponential drift a per-frame lerp toward a fixed strength produces.
-        ///
-        /// Vanilla has already placed the camera on the player by the time this is
-        /// applied, so the lerp starts from wherever the player actually is and the shot
-        /// keeps working if they move mid-pan.
+        /// exponential drift a per-frame lerp toward a fixed strength produces. The
+        /// smoothing that IS applied (see ModifyScreenPosition) is a fixed, short spring
+        /// on top of the result, the same for every caller.
         ///
         /// Only valid for the frame it is called on. Call it every tick for as long as
-        /// the shot should hold; stop calling it and the camera returns on its own.
+        /// the shot should hold; stop calling it and the camera walks home on its own.
         /// </summary>
         public static void BlendCamera(Vector2 world, float blend)
         {
@@ -131,7 +160,7 @@ namespace PisAndDag.Content.PADplayer
 
         public static void ReleaseCamera() => cameraFocusFrames = 0;
 
-        // The outro pan. Separate from the focus above because it has to keep running
+        // The walk home. Separate from the focus above because it has to keep running
         // after whatever was holding the camera is gone — the Megashark's death ends with
         // the boss no longer existing, and something still has to walk the shot home.
         private static Vector2 outroFrom;
@@ -143,15 +172,17 @@ namespace PisAndDag.Content.PADplayer
         /// <paramref name="frames"/> ticks, and keeps doing it whether or not anyone is
         /// still alive to ask.
         ///
-        /// Unlike BlendCamera this is fire-and-forget: it is called once, it owns the
-        /// camera for the whole pan, and it takes the hold off whatever had it.
+        /// Fire-and-forget: called once, it owns the camera for the whole pan and takes
+        /// the hold off whatever had it. If the camera is ours at the moment of the call
+        /// the walk starts from where it actually is, not from the point given, so there
+        /// is no cut between the hold and the walk.
         /// </summary>
         public static void PanHome(Vector2 from, int frames)
         {
             if (Main.dedServ)
                 return;
 
-            outroFrom = from;
+            outroFrom = driving ? cam : from - Half;
             outroLength = Math.Max(1, frames);
             outroFrames = outroLength;
 
@@ -159,12 +190,113 @@ namespace PisAndDag.Content.PADplayer
             cameraFocusFrames = 0;
         }
 
+        /// <summary>True while a walk home is running.</summary>
+        public static bool WalkingHome => outroFrames > 0;
+
+        private static Vector2 Half => new Vector2(Main.screenWidth, Main.screenHeight) * 0.5f;
+
         /// <summary>Smoothstep. Zero slope at both ends, so the pan starts and stops softly.</summary>
         private static float Ease(float t)
         {
             t = MathHelper.Clamp(t, 0f, 1f);
             return t * t * (3f - 2f * t);
         }
+
+        /// <summary>
+        /// Critically damped spring toward a target: Unity's SmoothDamp, whose polynomial
+        /// is the exp() approximation from Game Programming Gems 4. Never overshoots, and
+        /// its output is smooth in velocity no matter what the target does.
+        /// </summary>
+        private static Vector2 SmoothDamp(Vector2 current, Vector2 target, ref Vector2 velocity,
+            float smoothTime, float dt)
+        {
+            float omega = 2f / smoothTime;
+            float x = omega * dt;
+            float exp = 1f / (1f + x + 0.48f * x * x + 0.235f * x * x * x);
+
+            Vector2 change = current - target;
+            Vector2 temp = (velocity + omega * change) * dt;
+
+            velocity = (velocity - omega * temp) * exp;
+
+            Vector2 output = target + (change + temp) * exp;
+
+            // The approximation can cross the target by a hair at large steps; pin it.
+            if (Vector2.Dot(target - current, output - target) > 0f)
+            {
+                output = target;
+                velocity = Vector2.Zero;
+            }
+
+            return output;
+        }
+
+        // ---- interface -----------------------------------------------------------------
+
+        private static int hideUIFrames;
+        private static bool hidingUI;
+        private static bool uiWasHidden;
+
+        /// <summary>
+        /// True while the interface is hidden by a sequence rather than by the player's
+        /// own F11. The boss bar reads this to stay up through a cutscene and still go
+        /// away when the player actually asks for no UI.
+        /// </summary>
+        public static bool HidingUI => hidingUI;
+
+        /// <summary>
+        /// Hides the interface — hotbar, bars, minimap, boss bar, cursor: exactly what F11
+        /// hides — for as long as this keeps being called. Per tick, like BlendCamera, so
+        /// a sequence that dies mid-way cannot strand the player without a UI. Gives the
+        /// player's own F11 state back when it lets go, and stays hidden through a walk
+        /// home that began while hidden, so the UI comes back with the camera.
+        /// </summary>
+        public static void HideUI()
+        {
+            if (!Main.dedServ)
+                hideUIFrames = 2;
+        }
+
+        internal static void TickUI()
+        {
+            bool wanted = hideUIFrames > 0 || (hidingUI && WalkingHome);
+
+            if (hideUIFrames > 0)
+                hideUIFrames--;
+
+            if (wanted)
+            {
+                if (!hidingUI)
+                {
+                    hidingUI = true;
+                    uiWasHidden = Main.hideUI;
+                }
+
+                Main.hideUI = true;
+            }
+            else if (hidingUI)
+            {
+                hidingUI = false;
+                Main.hideUI = uiWasHidden;
+            }
+        }
+
+        /// <summary>World unload: hand everything back, or the next world inherits it.</summary>
+        internal static void ResetView()
+        {
+            cameraFocusFrames = 0;
+            outroFrames = 0;
+            driving = false;
+            camVelocity = Vector2.Zero;
+            hideUIFrames = 0;
+
+            if (hidingUI)
+            {
+                hidingUI = false;
+                Main.hideUI = uiWasHidden;
+            }
+        }
+
 
         /// <summary>
         /// Keybind handling. ProcessTriggers only runs for the local player, so nothing
@@ -371,28 +503,70 @@ namespace PisAndDag.Content.PADplayer
             if (--ChloComboTimer <= 0)
                 ChloBreakCombo();
         }
+        /// <summary>
+        /// Runs once per drawn frame, from Main.DoDraw_UpdateCameraPosition, after vanilla
+        /// has put the camera on the player and before it truncates the result to whole
+        /// pixels. Main.screenPosition on entry is therefore vanilla's own shot.
+        /// </summary>
         public override void ModifyScreenPosition()
         {
+            Vector2 live = Main.screenPosition;
+            bool drove = driving;
+            driving = false;
+
             // Focus first, shake second, so the shake reads as camera wobble on top of
             // wherever the camera is pointed rather than fighting it.
             if (cameraFocusFrames > 0)
             {
                 cameraFocusFrames--;
+                outroFrames = 0;
 
-                Vector2 wanted = cameraFocus - new Vector2(Main.screenWidth, Main.screenHeight) * 0.5f;
-                Main.screenPosition = Vector2.Lerp(Main.screenPosition, wanted, cameraBlend);
+                Vector2 wanted = Vector2.Lerp(live, cameraFocus - Half, cameraBlend);
+
+                // Picks up from wherever the camera was last frame — ours if we had it,
+                // vanilla's if not — so the spring never starts with a jump in it.
+                if (!drove)
+                {
+                    cam = live;
+                    camVelocity = Vector2.Zero;
+                }
+
+                cam = SmoothDamp(cam, wanted, ref camVelocity, SmoothTime, 1f / 60f);
+                Main.screenPosition = cam;
+                driving = true;
             }
-            else if (outroFrames > 0)
+            else
             {
-                outroFrames--;
+                // A hold that ended without asking to be walked home gets walked home
+                // anyway — from where the camera is, at a fixed speed, so a hold that had
+                // already eased itself back onto the player costs nothing and one that
+                // was cut off mid-boss takes as long as the distance deserves.
+                if (drove && outroFrames == 0)
+                {
+                    float distance = Vector2.Distance(cam, live);
 
-                // Main.screenPosition is the player's own shot at this point, so the pan
-                // eases from the held point ONTO it rather than toward a target computed
-                // here — which means it still lands correctly if the player is moving.
-                Vector2 held = outroFrom - new Vector2(Main.screenWidth, Main.screenHeight) * 0.5f;
-                float t = 1f - outroFrames / (float)outroLength;
+                    if (distance > 1.5f)
+                    {
+                        outroFrom = cam;
+                        outroLength = (int)MathHelper.Clamp(distance / ReleaseSpeed, 10f, ReleaseFrames);
+                        outroFrames = outroLength;
+                    }
+                }
 
-                Main.screenPosition = Vector2.Lerp(held, Main.screenPosition, Ease(t));
+                if (outroFrames > 0)
+                {
+                    outroFrames--;
+
+                    // Eases from the held point ONTO vanilla's live shot rather than toward
+                    // a target computed here, so it still lands if the player is moving.
+                    float t = 1f - outroFrames / (float)outroLength;
+                    cam = Vector2.Lerp(outroFrom, live, Ease(t));
+                    Main.screenPosition = cam;
+
+                    // Ours until the last frame of the walk, and not one frame longer —
+                    // or the frame after would read as another hold ending.
+                    driving = outroFrames > 0;
+                }
             }
 
             if (screenShake > 0f)
@@ -402,6 +576,26 @@ namespace PisAndDag.Content.PADplayer
                     Main.rand.NextFloat(-screenShake, screenShake)
                 );
             }
+        }
+    }
+
+    /// <summary>
+    /// Ticks the interface hold and hands the view back on unload. A ModSystem because
+    /// PostUpdateEverything is the one place that runs after every NPC and system has had
+    /// its say in a tick, which is when the keep-alives for this tick are all in.
+    /// </summary>
+    public class ViewSystem : ModSystem
+    {
+        public override void PostUpdateEverything()
+        {
+            if (!Main.dedServ)
+                PisPlayer.TickUI();
+        }
+
+        public override void OnWorldUnload()
+        {
+            if (!Main.dedServ)
+                PisPlayer.ResetView();
         }
     }
 }

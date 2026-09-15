@@ -518,7 +518,7 @@ Unresolved: `Player.ZoneBeach` comes from `SceneMetrics.ZoneBeach` (a **tile sca
 
 - **Subworld Library** — tML 1.4.3/1.4.4, 169 dependent mods, MP works via a subserver per subworld.
 - **Catch:** it **strips Space, both Oceans and the Underworld** from subworlds. The one biome a sky god wants is the one that isn't there.
-- **Lore argument raised against it** (from the Lore Bible §VIII and §XXIII): Loi *is* the sky, and the flight arc is explicitly about earning permission from *this world's* heavens. Leaving for a different sky undercuts the payoff the flight gating is already building toward.
+- **Lore argument raised against it** (from the Lore Bible §IX and §XXIX): Loi *is* the sky, and the flight arc is explicitly about earning permission from *this world's* heavens. Leaving for a different sky undercuts the payoff the flight gating is already building toward.
 - **Proposal:** two-stage. The **vessel** fights in the real Space layer of the world; the **true form** in a subworld that has no ground at all (where losing Ocean/Underworld costs nothing).
 
 ### 7.4 Claimed-region registry (offered, not built) — **recommended next**
@@ -538,9 +538,9 @@ Surface budget on Large: ~7,400 after oceans, minus ~2,750 of biomes → **~4,50
 `Terraria_Mod_Lore_Bible.md` sits in the mod root and is **also saved to the Claude Project** as `claude/Terraria_Mod_Lore_Bible.md`, so a fresh chat attached to the "Terraria Mod" project can read it with `project_read`.
 
 Things already implemented that the bible depends on:
-- **§XXIII Player Flight** — 3/5 wing time after Empress of Light, capped at 3/5 of Solar Wings; first-kill announcement *"Terrarians are no longer bounded to the ground."* in `(230, 76, 160)`. Lives in `PisPlayer` + `PADWorld` + `PADNPCs`.
-- **§XI Seal / Wall of Flesh** — the Guide sacrifice cutscene in `Content/NPCs/Legends/GuideSacrifice.cs`.
-- **§VI Blade of Mors** — lore text now wired.
+- **§XXIX Player Flight** — 3/5 wing time after Empress of Light, capped at 3/5 of Solar Wings; first-kill announcement *"Terrarians are no longer bounded to the ground."* in `(230, 76, 160)`. Lives in `PisPlayer` + `PADWorld` + `PADNPCs`.
+- **§XXVII Seal / Wall of Flesh** — the Guide sacrifice cutscene in `Content/NPCs/Legends/GuideSacrifice.cs`.
+- **§XVI The Death Daggers** — lore text now wired.
 
 ---
 
@@ -821,7 +821,7 @@ rusty gun in the pack that turns showroom-fresh the moment it is held.
 Borrows `Terraria/Images/Item_533` for now. A dented sprite is a `sprite-helper` job.
 
 **Not wired to the boss.** `Megashark.cs:685` still drops a pristine `ItemID.Megashark`,
-which sits oddly against Lore Bible §XVII (Megashark is a boss, not a craftable weapon) and
+which sits oddly against Lore Bible §XXII (Megashark is a boss, not a craftable weapon) and
 against `PADRecipes` deleting its recipe. Swapping the drop is one line.
 
 ---

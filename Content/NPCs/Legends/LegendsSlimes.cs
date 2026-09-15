@@ -411,7 +411,7 @@ namespace PisAndDag.Content.NPCs.Legends
 
         // ---- ritual ---------------------------------------------------------
 
-        private enum Rite { None, Gather, Approach, Rise, Withdraw, Done }
+        private enum Rite { None, Gather, Approach, Rise, Hold, Withdraw, Done }
 
         private Rite rite;
         private int riteTimer;
@@ -430,6 +430,30 @@ namespace PisAndDag.Content.NPCs.Legends
 
         private const int RitePan = 90;
         private const int RiteRise = 60;
+
+        /// <summary>
+        /// Held on him, fully formed, while his plate runs. The name is started by hand
+        /// on the burst (BossIntro.PlayNameOnly, in Approach), so the plate's own LOOK
+        /// is not waited for — the approach pan was the look. He has no line, but the
+        /// rite has earned the long plate (RiteProfile.FullPlate): from the burst that
+        /// is rise, read, fly and settle, with the swell (RiteRise, 60) spent inside
+        /// the rise, and a moment before Withdraw. Follows the plate's constants.
+        /// </summary>
+        private const int RiteHold = Content.UI.BossIntro.TitlePlateTicks - Content.UI.BossIntro.TitleLook - RiteRise + 17;
+
+        /// <summary>The push in over the swell. Small; the zoom is a lean, not a cut.</summary>
+        private const float RiteZoom = 1.15f;
+
+        /// <summary>
+        /// How his plate runs: the long one, a lean in over the rise, and the zoom let
+        /// go over the same length as Withdraw's pan, which it roughly rides.
+        /// </summary>
+        private static readonly Content.UI.BossIntroProfile RiteProfile = new()
+        {
+            FullPlate = true,
+            ZoomIn = RiteZoom,
+            ReturnTicks = RitePan,
+        };
 
         /// <summary>What the King swells out of. Barely a slime.</summary>
         private const float SeedScale = 0.2f;
@@ -591,18 +615,9 @@ namespace PisAndDag.Content.NPCs.Legends
         }
 
         /// <summary>
-        /// Net IDs, not types. Everything below BlueSlime is a NEGATIVE id — a variant
-        /// that has no NPC slot of its own — so these cannot be handed to NPC.NewNPC. The
-        /// slime is spawned as a plain blue one and then told what it really is, which is
-        /// exactly what vanilla does when the King sheds them.
+        /// Twenty blue slimes. One kind on purpose: a crowd of colours reads as a zoo,
+        /// and a crowd of the same thing reads as a congregation. They differ in size.
         /// </summary>
-        private static readonly int[] HeraldKinds =
-        {
-            NPCID.BlueSlime, NPCID.GreenSlime, NPCID.RedSlime, NPCID.PurpleSlime,
-            NPCID.YellowSlime, NPCID.IceSlime, NPCID.JungleSlime, NPCID.MotherSlime,
-            NPCID.BlackSlime, NPCID.BabySlime
-        };
-
         private void SummonHeralds(NPC king)
         {
             for (int i = 0; i < HeraldCount; i++)
@@ -622,14 +637,6 @@ namespace PisAndDag.Content.NPCs.Legends
                     continue;
 
                 NPC slime = Main.npc[index];
-
-                int kind = HeraldKinds[Main.rand.Next(HeraldKinds.Length)];
-
-                if (kind != NPCID.BlueSlime)
-                {
-                    slime.SetDefaults(kind);
-                    slime.position = new Vector2(x, y);
-                }
 
                 if (!slime.TryGetGlobalNPC(out LegendsSlime legends))
                     continue;
@@ -1505,6 +1512,12 @@ namespace PisAndDag.Content.NPCs.Legends
                     {
                         Burst();
 
+                        // The plate, now. The camera is on the altar and the heralds have
+                        // just gone; the name rises under the seed as he swells out of it.
+                        // Left to BossPlate's own trigger it would wait for him to be
+                        // centred, and a grown King's centre is not the altar.
+                        Content.UI.BossIntro.PlayNameOnly(npc.whoAmI, RiteProfile);
+
                         rite = Rite.Rise;
                         riteTimer = 0;
                     }
@@ -1520,6 +1533,17 @@ namespace PisAndDag.Content.NPCs.Legends
                     Anchor(npc);
 
                     if (riteTimer >= RiteRise)
+                    {
+                        rite = Rite.Hold;
+                        riteTimer = 0;
+                    }
+
+                    break;
+
+                case Rite.Hold:
+                    Look(altar, 1f);
+
+                    if (riteTimer >= RiteHold)
                     {
                         rite = Rite.Withdraw;
                         riteTimer = 0;
@@ -1656,6 +1680,7 @@ namespace PisAndDag.Content.NPCs.Legends
                 npc.velocity.X *= 0.8f;
 
             DeathCamera(npc);
+            PisPlayer.HideUI();
 
             if (deathTimer == SlashAt)
                 Cut(npc);
@@ -1829,6 +1854,7 @@ namespace PisAndDag.Content.NPCs.Legends
             if (Main.dedServ)
                 return;
 
+            // The rite keeps the interface up: the bar and the name are what it is for.
             PisPlayer.BlendCamera(at, blend);
         }
 

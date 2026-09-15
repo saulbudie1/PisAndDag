@@ -12,13 +12,39 @@ namespace PisAndDag.Content.NPCs
     /// enemy in the world, which is the kind of bug that only shows up once two of the
     /// same type are on screen.
     ///
-    /// Empty for now on purpose. This is the place per-enemy state goes when the first
-    /// piece of gear needs it — debuff stacks, marks, how long since something last hit
-    /// this body — rather than a static dictionary keyed by whoAmI, which breaks the
-    /// moment an NPC slot is reused.
+    /// Boss bar fields are set from the boss's own SetDefaults, one line each:
+    ///
+    ///     NPC.PAD().BossName  = "Megashark";
+    ///     NPC.PAD().BossTitle = "Built in a shed. Never signed.";
+    ///     NPC.PAD().OwnIntro  = true;     // only if the boss animates its own arrival
+    ///
+    /// No save, no sync: SetDefaults runs wherever the NPC is built, including on a
+    /// client that received it over the network, so the fields rebuild themselves.
+    /// The globals are instantiated before ModNPC.SetDefaults runs (tML's
+    /// GlobalLoaderUtils.SetDefaults), which is what makes writing them from there safe.
     /// </summary>
     public class PADGlobalNPC : GlobalNPC
     {
         public override bool InstancePerEntity => true;
+
+        /// <summary>
+        /// Gives this NPC a boss bar with this name on it. Null or empty means no bar.
+        /// Never withheld from the player — see BossPlate.
+        /// </summary>
+        public string BossName;
+
+        /// <summary>
+        /// The line under the name during the arrival only — it rises and flies with the
+        /// name and is gone when the name touches the bar. Null means the name goes alone.
+        /// Read live, so a boss can change it mid-fight by assigning it again.
+        /// </summary>
+        public string BossTitle;
+
+        /// <summary>
+        /// True when this boss animates its own arrival, so BossIntro's universal one
+        /// stays out of the way. Such a boss calls BossIntro.PlayNameOnly itself if it
+        /// wants the name and title to land on the bar the same way.
+        /// </summary>
+        public bool OwnIntro;
     }
 }

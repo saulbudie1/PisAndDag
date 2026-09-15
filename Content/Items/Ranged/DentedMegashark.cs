@@ -9,8 +9,7 @@ using Terraria.ModLoader;
 namespace PisAndDag.Content.Items.Ranged
 { 
     public class DentedMegashark : ModItem
-    { 
-        public override string Texture => "Terraria/Images/Item_" + ItemID.Megashark;
+    {  
 
         // ---- how much worse ---------------------------------------------------------
 
@@ -100,14 +99,20 @@ namespace PisAndDag.Content.Items.Ranged
              
             CombatText.NewText(player.Hitbox, new Color(170, 150, 120), "*clunk*");
         }
+         
+        private static readonly Color LoreColour = new Color(196, 180, 152);
 
         public override void ModifyTooltips(List<TooltipLine> tooltips)
         {
-            tooltips.Add(new TooltipLine(Mod, "DentedFlavour", "'Pulled from the wreck. It still fires, mostly.'")
-            { OverrideColor = new Color(170, 150, 120) });
 
             tooltips.Add(new TooltipLine(Mod, "DentedJam",
-                $"Bent barrel: rounds stray up to {SpreadDegrees:0}°, and the action jams now and then"));
+                "The action jams now and then"));
+             
+            tooltips.Add(new TooltipLine(Mod, "DentedMaker",
+                "Its maker would know where it bends. She may still sell the wires.")
+            {
+                OverrideColor = LoreColour
+            });
         }
 
         public override Vector2? HoldoutOffset()

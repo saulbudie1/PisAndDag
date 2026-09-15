@@ -86,8 +86,16 @@ namespace PisAndDag.Content.NPCs.MegaShark
         private const float RiseAbove = 140f;
 
         private const int PanOut = 60;
-        private const int RiseHold = 120;
+        /// <summary>
+        /// Long enough for the plate: BossPlate notices the camera has landed (3
+        /// ticks), then the shared plate — this boss has a line, so the seven-second
+        /// one — and a moment before the shot leaves. Follows the plate's constants.
+        /// </summary>
+        private const int RiseHold = 3 + Content.UI.BossIntro.TitlePlateTicks + 17;
         private const int PanBack = 60;
+
+        /// <summary>The push in over the plate's rise. Small; a lean, not a cut.</summary>
+        private const float RiseZoom = 1.12f;
 
         /// <summary>Ticks the whole entrance lasts, damage ramping in over the tail of it.</summary>
         private const int RiseLength = PanOut + RiseHold + PanBack;
@@ -597,6 +605,13 @@ namespace PisAndDag.Content.NPCs.MegaShark
             NPCID.Sets.MPAllowedEnemies[Type] = true;
             NPCID.Sets.BossBestiaryPriority.Add(Type);
 
+            // The plate rides the rise (BossPlate fires the name once the camera has
+            // landed); this only shapes it — a lean in, let go over the pan home.
+            Content.UI.BossPlate.Register(Type, intro: new Content.UI.BossIntroProfile
+            {
+                ZoomIn = RiseZoom,
+                ReturnTicks = PanBack,
+            });
         }
 
         public override void SetDefaults()
@@ -617,6 +632,12 @@ namespace PisAndDag.Content.NPCs.MegaShark
             NPC.noTileCollide = true;
             NPC.boss = true;
             NPC.npcSlots = 10f;
+
+            // The bar and the name. OwnIntro because the Rise cutscene below is the
+            // arrival; the name lands on its own the first tick this can be hurt.
+            NPC.PAD().BossName = "Megashark";
+            NPC.PAD().BossTitle = "Made because it could be.";
+            NPC.PAD().OwnIntro = true;
 
             NPC.HitSound = SoundID.NPCHit4;
             NPC.DeathSound = SoundID.NPCDeath14;
@@ -760,6 +781,11 @@ namespace PisAndDag.Content.NPCs.MegaShark
             // is dead. The enrage relies on this: it is meant to hunt you across the
             // world, which is exactly the situation that would otherwise time it out.
             NPC.timeLeft = NPC.activeTime;
+
+            // Interface off for the death only. The entrance and the hand-overs keep it:
+            // the bar and the name are the point of those, and the plate is not hidden.
+            if (Phase == State.Dying)
+                PisPlayer.HideUI();
 
             // The death animation owns the boss outright. Bypassing the rest of the AI
             // rather than guarding each piece of it is deliberate — phase checks, the

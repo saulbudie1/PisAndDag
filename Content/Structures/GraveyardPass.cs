@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.ID;
 using Terraria.IO;
@@ -9,12 +10,18 @@ using Terraria.WorldBuilding;
 namespace PisAndDag.Content.Structures
 {
     /// <summary>
-    /// Generates a natural-looking graveyard on a forest shelf behind
-    /// one of the ocean beaches.
+    /// Raises a graveyard hill behind one of the ocean beaches.
     ///
-    /// The graveyard is shaped into a broad, gently rolling hill rather
-    /// than a perfectly flat platform. Tombstones and wooden fencing are
-    /// placed afterwards and follow the resulting terrain.
+    /// A real hill: sixteen to twenty-two tiles above the land, a hundred
+    /// and ten wide, crown pushed off-centre so one flank is the long one,
+    /// with a little noise on the slopes so no two are the same silhouette.
+    /// The graves sit on the rounded crown inside an iron fence; an angel
+    /// and an armoured figure keep them; a worn track climbs the seaward
+    /// flank to the gate. One stone stands apart from the rest, outside
+    /// the fence, facing the water. One grave is open.
+    ///
+    /// The whole hill and the land around it is recorded as a quiet zone
+    /// (GraveyardZone) where nothing spawns.
     /// </summary>
     public class GraveyardPass : GenPass
     {
@@ -37,12 +44,13 @@ namespace PisAndDag.Content.Structures
         // BASIC SETTINGS
         // ============================================================
 
-        // Width of the graveyard, foot to foot.
+        // Width of the hill, foot to foot.
         //
-        // Wide is cheap now. The rise is only a few tiles, so the width
-        // is what decides how gentle the slope reads — the same 5 tiles
-        // over 92 columns is a mound, over 124 it is a swell in the land.
-        private const int PlotWidth = 70;
+        // Wide, because the grade is what the eye reads. With the crown
+        // sixteen to twenty tiles up, a hundred and fifty keeps the flanks
+        // under one tile of rise per two columns everywhere — a slow climb
+        // with a sloped tile on every riser, not a staircase.
+        private const int PlotWidth = 150;
 
         // How far inland from the beach the search begins.
         private const int InlandMargin = 24;
@@ -83,8 +91,8 @@ namespace PisAndDag.Content.Structures
         // TOMBSTONE SETTINGS
         // ============================================================
 
-        private const int MinStones = 6;
-        private const int MaxStones = 9;
+        private const int MinStones = 7;
+        private const int MaxStones = 11;
 
         // Minimum distance between tombstones.
         private const int MinStoneSpacing = 0;
@@ -100,22 +108,18 @@ namespace PisAndDag.Content.Structures
         // Remember: Terraria Y increases DOWNWARD, so rising means
         // subtracting.
 
-        // How many tiles the centre of the hill is lifted ABOVE THE
-        // GROUND IT STANDS ON. A height difference, not an elevation.
-        //
-        // Read as an elevation it made a mountain; read as a lift it
-        // cannot, because no column is ever raised further than this off
-        // its own ground. Five means five, on flat land and on a slope.
-        private const int MinCrownRise = 5;
-        private const int MaxCrownRise = 8;
+        // How many tiles the crown is lifted ABOVE THE LAND'S TREND. A
+        // height difference, not an elevation: read as an elevation it
+        // once made a mountain. Sixteen to twenty-two is a hill you see
+        // from the beach.
+        private const int MinCrownRise = 16;
+        private const int MaxCrownRise = 20;
 
 
-        // Share of the half-width that is dead flat crown before the
-        // falloff begins.
-        //
-        // Generous now. With only a few tiles of rise there is no corner
-        // to hide, and a broad flat top is the whole point — the ground
-        // should read as level with a slight lift, not as a summit.
+        // Share of each half-width that is dead flat before the falloff
+        // begins. Small: the cosine falloff starts so gently that the top
+        // thirty-odd columns are level to within a tile anyway, and a
+        // rounded crown reads as a hill where a shelf reads as a platform.
         private const float FlatFraction = 0.10f;
 
         // How much of the falloff is raised cosine rather than straight
@@ -124,14 +128,37 @@ namespace PisAndDag.Content.Structures
         // Back near Mors's half and half. Weighting the cosine made the
         // silhouette bulge, which is what read as "too curved"; the
         // straight ramp is what turns a dome into a long even rise.
-        private const float DomeWeight = 0.70f;
+        private const float DomeWeight = 0.75f;
+
+        // How far the crown may sit off the middle, as a fraction of the
+        // width. A hill with its top dead centre reads as a drawing.
+        private const float MaxSkew = 0.12f;
+
+        // Tiles of noise laid on the flanks. Zero at the crown and at the
+        // feet (see the envelope in the profile), full strength mid-slope,
+        // so the graves still get level ground and the feet still meet
+        // the land.
+        private const float NoiseAmplitude = 1.2f;
+
+        // Fewest columns between one riser and the next. Two means the
+        // integer profile never climbs faster than one tile per two
+        // columns, whatever the float curve under it is doing.
+        private const int MinRun = 2;
+
+        // Share of risers that get a sloped tile. Vanilla's own smoothing
+        // pass leaves half of them square for texture; this leaves fewer,
+        // because the hill is the one thing here that is meant to be
+        // gentle.
+        private const int SlopeChancePercent = 85;
+
+        // Columns the ground is averaged over to find the trend the hill
+        // follows. Wide enough to swallow a notch, narrow enough that a
+        // real change in the land still shows through.
+        private const int TrendRadius = 7;
 
         // Columns at each end kept clear of markers, so nothing stands on
         // the lip where the hill meets the untouched world.
-        private const int EdgeMargin = 4;
-
-        // Columns averaged at each foot to find the terrain's trend line.
-        private const int FootSample = 6;
+        private const int EdgeMargin = 10;
 
         // How big a drop at the foot still reads as ordinary terrain.
         // Above this the skirt keeps stepping outward.
@@ -141,15 +168,44 @@ namespace PisAndDag.Content.Structures
         // does not walk a ramp halfway across the world.
         private const int MaxSkirt = 48;
 
-        // Share of the plot the graves are allowed to occupy, centred on
-        // the crown. Scattering them the full width leaves stones stranded
-        // down the slopes; a cluster on the top reads as one graveyard.
-        private const float GraveSpread = 0.50f;
+        // Columns either side of the crown the graves may occupy. An
+        // absolute number, not a share of the width: the hill got wider
+        // and the graveyard is meant to stay the size it was.
+        private const int GraveHalfWidth = 22;
+
+        // Where the two figures stand, in columns from the crown — one
+        // seaward, one inland, facing each other across the stones.
+        private const int StatueNear = 6;
+        private const int StatueFar = 18;
+
+
+        // ============================================================
+        // LANDMARKS
+        // ============================================================
+
+        // Tiles kept between the hill and the dungeon — its entrance and
+        // the whole underground body. The hill was once built against the
+        // dungeon's tower, with its foundation packed into the roof.
+        private const int LandmarkMargin = 60;
+
+        // Tiles kept between the hill and the spawn point.
+        private const int SpawnMargin = 40;
+
+        // Padding asked of the StructureMap, where the other passes and
+        // vanilla register what they built.
+        private const int LandmarkPadding = 8;
 
 
         // ============================================================
         // LIVING TREES
         // ============================================================
+
+        // How far beyond the ground the hill touches to look for a living
+        // tree. A giant tree whose trunk stands outside the plot can still
+        // hang its canopy over it, and clearing the canopy alone leaves a
+        // stripped trunk standing. Finding one tile of it anywhere in this
+        // reach takes the whole tree.
+        private const int CanopyReach = 60;
 
         // How far above the hill to look for living wood. A living tree's
         // canopy sits well clear of the ground it grows from, and the
@@ -210,6 +266,11 @@ namespace PisAndDag.Content.Structures
         // entrance maths below needs room to pick a spot inside it.
         private const int MinFenceSpan = 14;
 
+        // Tallest a fence run may be, in panels stacked up from the
+        // ground. Each run rolls its own height, so the rail rises and
+        // falls along its length.
+        private const int MaxFenceHeight = 3;
+
         // Chance that a fence section is skipped.
         //
         // This makes the fence look old and imperfect instead of
@@ -238,6 +299,108 @@ namespace PisAndDag.Content.Structures
         // Iron. Iron is the rarer of the two, so it reads as the odd
         // section someone replaced rather than as a second material.
         private const int IronFenceRarity = 3;
+
+
+        // ============================================================
+        // DRESSING
+        // ============================================================
+
+        // Depth of the open grave, in tiles. Three is a hole you can fall
+        // in and climb out of.
+        private const int OpenGraveDepth = 3;
+
+        // Chance, per fence panel, of a cobweb hanging on it.
+        private const int WebOnFenceDenominator = 6;
+
+        // How far the lone stone stands outside the fence, down the
+        // seaward flank.
+        private const int LoneStoneOffset = 9;
+
+
+        // ============================================================
+        // EPITAPHS
+        // ============================================================
+        //
+        // Every stone Plant() sets gets "Name - Adjective Role". The lone
+        // stone outside the fence is left blank on purpose.
+
+        // Chance, per stone, of a short second line under the name.
+        // 0 turns second lines off.
+        private const int EpitaphSecondLineDenominator = 3;
+
+        // Vanilla town NPCs whose name pools are men's names, and women's.
+        // The names come from vanilla's own NPC name roll.
+        private static readonly int[] MenNamePools =
+        {
+            NPCID.Merchant,
+            NPCID.ArmsDealer,
+            NPCID.Guide,
+            NPCID.Demolitionist,
+            NPCID.Clothier,
+            NPCID.Wizard,
+            NPCID.DyeTrader,
+            NPCID.Painter,
+            NPCID.Pirate,
+            NPCID.TravellingMerchant,
+            NPCID.TaxCollector,
+            NPCID.DD2Bartender,
+            NPCID.Golfer,
+        };
+
+        private static readonly int[] WomenNamePools =
+        {
+            NPCID.Nurse,
+            NPCID.Dryad,
+            NPCID.Mechanic,
+            NPCID.Steampunker,
+            NPCID.PartyGirl,
+            NPCID.Stylist,
+            NPCID.BestiaryGirl,
+            NPCID.Princess,
+        };
+
+        private static readonly string[] Adjectives =
+        {
+            "Loving", "Caring", "Prideful", "Devoted", "Beloved", "Faithful",
+            "Gentle", "Patient", "Honest", "Humble", "Dutiful", "Cheerful",
+            "Stubborn", "Quiet", "Restless", "Stern", "Weary",
+        };
+
+        private static readonly string[] MenKin = { "Husband", "Father", "Brother", "Son" };
+        private static readonly string[] WomenKin = { "Wife", "Mother", "Sister", "Daughter" };
+
+        private static readonly string[] Trades =
+        {
+            "Miner", "Farmer", "Fisher", "Smith", "Weaver", "Baker", "Mason",
+            "Carter", "Healer", "Scribe", "Hunter", "Shepherd", "Cooper",
+            "Tanner", "Brewer", "Chandler", "Sexton", "Gravedigger",
+        };
+
+        private static readonly string[] SecondLines =
+        {
+            "Rest now.",
+            "Gone before the frost.",
+            "The hill keeps them.",
+            "Missed at every table.",
+            "Went out with the tide.",
+            "Never did learn to swim.",
+            "Sleep, and do not wake.",
+            "The bell rang once.",
+            "Found at dawn. Buried by noon.",
+            "The lamp is out.",
+        };
+
+
+        // ============================================================
+        // QUIET ZONE
+        // ============================================================
+
+        // How far past the hill's feet the silence reaches, in tiles.
+        private const int QuietMargin = 60;
+
+        // How far above the crown and below the feet.
+        private const int QuietAbove = 80;
+        private const int QuietBelow = 40;
 
 
         public GraveyardPass(
@@ -316,28 +479,47 @@ namespace PisAndDag.Content.Structures
                     20,
                     Main.maxTilesX - PlotWidth - 20);
 
-
-            // Deepest ground anywhere in the plot, or the surface layer
-            // itself if literally nothing reads.
+            int inlandStep = left ? PlotWidth / 2 : -PlotWidth / 2;
             int level = 0;
 
-            for (int x = plotLeft;
-                 x < plotLeft + PlotWidth;
-                 x++)
+            // Walks inland until the spot is clear of landmarks. Forcing
+            // is for "no good ground", never for "there is a dungeon
+            // here": a world without a graveyard beats a graveyard packed
+            // into the dungeon's roof.
+            for (int attempt = 0; ; attempt++)
             {
-                if (Surface(x, out int y, out _))
-                    level = Math.Max(level, y);
-            }
+                if (attempt >= 12 || plotLeft < 20 || plotLeft + PlotWidth >= Main.maxTilesX - 20)
+                {
+                    Log("no ground clear of landmarks for a forced graveyard — SKIPPED");
+                    return;
+                }
 
-            if (level <= 0)
-                level = (int)Main.worldSurface - 20;
+                // Deepest ground anywhere in the plot, or the surface
+                // layer itself if literally nothing reads.
+                level = 0;
+
+                for (int x = plotLeft; x < plotLeft + PlotWidth; x++)
+                {
+                    if (Surface(x, out int y, out _))
+                        level = Math.Max(level, y);
+                }
+
+                if (level <= 0)
+                    level = (int)Main.worldSurface - 20;
+
+                if (!Landmarked(plotLeft, level))
+                    break;
+
+                plotLeft += inlandStep;
+            }
 
 
             ResolvePalette(TileID.Dirt);
 
             Shave(
                 plotLeft,
-                level);
+                level,
+                left);
 
 
             Log(
@@ -476,7 +658,8 @@ namespace PisAndDag.Content.Structures
 
             Shave(
                 bestX,
-                bestLevel);
+                bestLevel,
+                left);
 
 
             Log(
@@ -520,6 +703,9 @@ namespace PisAndDag.Content.Structures
         /// </summary>
         private static int lastStoneMin = int.MaxValue;
         private static int lastStoneMax = int.MinValue;
+
+        /// <summary>Plot index of the gate the last BuildFence left, or -1.</summary>
+        private static int lastEntrance = -1;
 
 
         // ============================================================
@@ -630,6 +816,12 @@ namespace PisAndDag.Content.Structures
             // column, so it is always a hill and never a shelf cut into
             // the side of one.
             level = lowest;
+
+
+            // Never on, in, or against anything the world already put
+            // here. A landmark is not a score penalty; it is a veto.
+            if (Landmarked(plotLeft, level))
+                return false;
 
 
             int slope =
@@ -895,220 +1087,206 @@ namespace PisAndDag.Content.Structures
 
 
         // ============================================================
+        // LANDMARKS
+        // ============================================================
+
+        /// <summary>
+        /// Whether building here would touch something the world put
+        /// here first. Three checks, from cheap to thorough:
+        ///
+        /// Coordinates vanilla keeps — the spawn point, the dungeon's
+        /// entrance and the span of its body — each with a margin, so the
+        /// hill is not merely off the landmark but away from it.
+        ///
+        /// The StructureMap, where the mod's own passes (the shrine, the
+        /// monument) and some of vanilla's register what they built.
+        ///
+        /// And the tiles themselves, across everything the build would
+        /// clear or fill: dungeon brick or wall, temple brick, pyramid
+        /// brick. Nothing that can be a landmark is trusted to have
+        /// registered itself. Living trees are deliberately NOT in this
+        /// list — they are felled whole instead (FellLivingTrees).
+        /// </summary>
+        private static bool Landmarked(
+            int plotLeft,
+            int level)
+        {
+            int left = Math.Max(20, plotLeft - MaxSkirt);
+            int right = Math.Min(Main.maxTilesX - 20, plotLeft + PlotWidth + MaxSkirt);
+            int top = Math.Max(10, level - MaxCrownRise - HeadRoom - 20);
+            int bottom = Math.Min(Main.maxTilesY - 20, level + Foundation + 10);
+            int centre = plotLeft + PlotWidth / 2;
+
+            // ---- coordinates -------------------------------------------------------------
+
+            if (Math.Abs(centre - Main.spawnTileX) < PlotWidth / 2 + SpawnMargin)
+                return true;
+
+            if (Math.Abs(centre - Main.dungeonX) < PlotWidth / 2 + LandmarkMargin)
+                return true;
+
+            if (GenVars.dMaxX > GenVars.dMinX
+                && right >= GenVars.dMinX - LandmarkMargin
+                && left <= GenVars.dMaxX + LandmarkMargin)
+            {
+                return true;
+            }
+
+            // ---- what other passes registered ----------------------------------------
+
+            if (GenVars.structures != null
+                && !GenVars.structures.CanPlace(new Rectangle(left, top, right - left, bottom - top), LandmarkPadding))
+            {
+                return true;
+            }
+
+            // ---- what is actually in the ground --------------------------------------
+
+            for (int x = left; x <= right; x++)
+            {
+                for (int y = top; y <= bottom; y++)
+                {
+                    Tile tile = Main.tile[x, y];
+
+                    if (tile.HasTile)
+                    {
+                        int type = tile.TileType;
+
+                        if (Main.tileDungeon[type]
+                            || type == TileID.LihzahrdBrick
+                            || type == TileID.SandstoneBrick)
+                        {
+                            return true;
+                        }
+                    }
+
+                    int wall = tile.WallType;
+
+                    if (wall != WallID.None
+                        && (Main.wallDungeon[wall]
+                            || wall == WallID.LihzahrdBrick
+                            || wall == WallID.SandstoneBrick))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+
+        // ============================================================
         // BUILD TERRAIN
         // ============================================================
 
         private static void Shave(
             int plotLeft,
-            int level)
+            int level,
+            bool seaOnLeft)
         {
-            // --------------------------------------------------------
-            // Fell any living tree standing here, whole.
-            // --------------------------------------------------------
-            //
-            // A living tree is one connected mass that reaches far above
-            // and below the ground it grows from, so building through it
-            // removed the middle and left the canopy and the lower trunk
-            // hanging in the air with a wedge of hill driven through
-            // them. Half a tree looks far worse than no tree.
-
+            // Fell any living tree standing here, whole. A living tree is
+            // one connected mass that reaches far above and below the
+            // ground it grows from; building through it leaves the canopy
+            // hanging with a wedge of hill driven through it.
             FellLivingTrees(plotLeft, level);
 
-
-            // --------------------------------------------------------
-            // Generate the stepped hill.
-            // --------------------------------------------------------
+            // And the ordinary trees on the ground the hill and its skirts
+            // will clear — whole, not topped. HeadRoom used to cut the top
+            // off any tree on a skirt column and leave the trunk standing.
+            FellTrees(plotLeft, level);
 
             GenerateHillProfile(
                 plotLeft,
                 level,
                 out int[] heights,
-                out bool[] plantable);
+                out bool[] plantable,
+                out int crown);
 
+            int crownY = int.MaxValue;
 
-            // --------------------------------------------------------
-            // Modify terrain.
-            // --------------------------------------------------------
-
-            for (int i = 0;
-                 i < PlotWidth;
-                 i++)
+            for (int i = 0; i < PlotWidth; i++)
             {
-                int x =
-                    plotLeft + i;
-
-                int surface =
-                    heights[i];
-
-
-                // ----------------------------------------------------
-                // Clear above the new surface.
-                // ----------------------------------------------------
-
-                int clearTop =
-                    Math.Max(
-                        10,
-                        surface - HeadRoom);
-
-
-                for (int y = clearTop;
-                     y < surface;
-                     y++)
-                {
-                    Tile tile =
-                        Main.tile[x, y];
-
-
-                    tile.ClearTile();
-                    tile.LiquidAmount = 0;
-                }
-
-
-                // ----------------------------------------------------
-                // Fill underneath, unconditionally.
-                // ----------------------------------------------------
-                //
-                // The old loop stopped at the first solid tile it met,
-                // which bridged a chasm with a one-tile crust and left the
-                // hole underneath. Packing straight down to a fixed
-                // foundation instead is what lets the graveyard land on
-                // broken corruption ground: pits, crevices and the caves
-                // under them are simply filled in, and what is left is a
-                // solid hill of whatever that biome is made of.
-
-                int floor =
-                    Math.Min(
-                        Main.maxTilesY - 20,
-                        level + Foundation);
-
-
-                for (int y = surface;
-                     y <= floor;
-                     y++)
-                {
-                    Tile tile =
-                        Main.tile[x, y];
-
-
-                    tile.HasTile = true;
-                    tile.TileType = (ushort)fillTile;
-                    tile.Slope =
-                        SlopeType.Solid;
-                    tile.IsHalfBlock = false;
-                    tile.LiquidAmount = 0;
-                }
-
-
-                // ----------------------------------------------------
-                // Skin it in the local biome's surface tile.
-                // ----------------------------------------------------
-
-                Tile cap =
-                    Main.tile[x, surface];
-
-
-                cap.HasTile = true;
-                cap.TileType = (ushort)capTile;
-                cap.Slope =
-                    SlopeType.Solid;
-                cap.IsHalfBlock = false;
-                cap.LiquidAmount = 0;
+                ShapeColumn(plotLeft + i, heights[i], level);
+                crownY = Math.Min(crownY, heights[i]);
             }
 
-
-            // --------------------------------------------------------
-            // Walk the feet out until they meet the world.
-            // --------------------------------------------------------
-            //
-            // The arc's baseline is taken from the ground at the plot
-            // edges, but the ground a few tiles further out can be well
-            // below that — so the hill still ended in a visible ledge.
-            // This keeps stepping down past the plot until the drop is
-            // small enough to read as ordinary terrain.
-
+            // Walk the feet out until they meet the world. The profile
+            // ends on the land's trend, but the land a few tiles further
+            // out can still be well below that, and a ledge there is the
+            // one thing that gives the hill away.
             int skirtLeft =
-                BlendSkirt(
-                    plotLeft - 1,
-                    heights[0],
-                    -1,
-                    level);
+                BlendSkirt(plotLeft - 1, heights[0], -1, level);
 
             int skirtRight =
-                BlendSkirt(
-                    plotLeft + PlotWidth,
-                    heights[PlotWidth - 1],
-                    1,
-                    level);
+                BlendSkirt(plotLeft + PlotWidth, heights[PlotWidth - 1], 1, level);
 
+            // Frame everything touched. The top is taken from the CROWN,
+            // not from `level` — level is the lowest ground in the plot,
+            // and a hill twenty tiles above it would otherwise have its
+            // whole upper half left unframed.
+            int frameLeft = Math.Max(1, plotLeft - skirtLeft - 2);
+            int frameRight = Math.Min(Main.maxTilesX - 2, plotLeft + PlotWidth + skirtRight + 1);
+            int frameTop = Math.Max(10, crownY - HeadRoom - 2);
+            int frameBottom = Math.Min(Main.maxTilesY - 2, level + Foundation + 2);
 
-            // --------------------------------------------------------
-            // Frame the modified region.
-            // --------------------------------------------------------
+            for (int x = frameLeft; x <= frameRight; x++)
+                for (int y = frameTop; y <= frameBottom; y++)
+                    WorldGen.SquareTileFrame(x, y);
 
-            int frameLeft =
-                Math.Max(
-                    1,
-                    plotLeft - skirtLeft - 2);
+            // On the map for everyone after us — the same courtesy the
+            // shrine and the monument extend to this pass.
+            GenVars.structures?.AddProtectedStructure(
+                new Rectangle(frameLeft, frameTop, frameRight - frameLeft, frameBottom - frameTop),
+                LandmarkPadding);
 
-            int frameRight =
-                Math.Min(
-                    Main.maxTilesX - 2,
-                    plotLeft + PlotWidth + skirtRight + 1);
+            // ---- dressing, in an order where each thing takes what it needs first --------
 
+            // The two figures first: they each want one spot on the crown
+            // and there are only two of them. The angel on the seaward
+            // side, the armoured one inland, facing it across the graves.
+            int sea = seaOnLeft ? -1 : 1;
 
-            int frameTop =
-                Math.Max(
-                    10,
-                    level - HeadRoom - 2);
+            PlaceStatue(ItemID.AngelStatue, plotLeft, heights, plantable,
+                crown + sea * StatueFar, crown + sea * StatueNear);
+            PlaceStatue(ItemID.ArmorStatue, plotLeft, heights, plantable,
+                crown - sea * StatueNear, crown - sea * StatueFar);
 
-            int frameBottom =
-                Math.Min(
-                    Main.maxTilesY - 2,
-                    level + Foundation + 2);
+            // Then the hole, so the stones can't be planted over it. Where it
+            // is gets remembered: the first burial fills it.
+            int openGrave = OpenGrave(plotLeft, heights, plantable, crown);
 
+            Plant(plotLeft, heights, plantable, crown);
 
-            for (int x = frameLeft;
-                 x <= frameRight;
-                 x++)
-            {
-                for (int y = frameTop;
-                     y <= frameBottom;
-                     y++)
-                {
-                    WorldGen.SquareTileFrame(
-                        x,
-                        y);
-                }
-            }
+            BuildFence(plotLeft, heights);
 
+            // The track climbs from the seaward foot to the gate, so it is
+            // laid after the fence knows where the gate is.
+            WearPath(plotLeft, heights, seaOnLeft);
 
-            // --------------------------------------------------------
-            // Tombstones.
-            // --------------------------------------------------------
+            LoneStone(plotLeft, heights, plantable, seaOnLeft);
 
-            // The statue goes down BEFORE the graves. It is one object in
-            // the whole graveyard and wants the crown; the markers are
-            // many and can go anywhere. Placing it second would mean
-            // fighting whatever a tombstone happened to occupy.
-            PlaceAngel(
-                plotLeft,
-                heights,
-                plantable);
+            Cobwebs(plotLeft, heights);
 
+            // Last, once everything that needs a square block to stand on
+            // is standing on one: vanilla's "Smooth World" pass ran long
+            // before this one, so the risers are sloped here or not at all.
+            SmoothHill(plotLeft - skirtLeft, plotLeft + PlotWidth + skirtRight);
 
-            Plant(
-                plotLeft,
-                heights,
-                plantable);
+            // ---- the silence ---------------------------------------------------------------
 
+            GraveyardZone.Set(
+                plotLeft - QuietMargin,
+                plotLeft + PlotWidth + QuietMargin,
+                crownY - QuietAbove,
+                level + QuietBelow);
 
-            // --------------------------------------------------------
-            // Fence.
-            // --------------------------------------------------------
-
-            BuildFence(
-                plotLeft,
-                heights);
+            GraveyardZone.SetGraves(
+                plotLeft + crown - GraveHalfWidth,
+                plotLeft + crown + GraveHalfWidth,
+                crownY,
+                openGrave < 0 ? -1 : plotLeft + openGrave,
+                openGrave < 0 ? -1 : heights[openGrave]);
         }
 
 
@@ -1117,52 +1295,52 @@ namespace PisAndDag.Content.Structures
         // ============================================================
 
         /// <summary>
-        /// A hill: each column lifted from its own natural ground toward a
-        /// flat crown, by a bell that is 1 in the middle and 0 at the ends.
+        /// The hill.
         ///
-        ///                    ________________
-        ///                  /                  \
-        ///           ______/                    \______
-        ///      ____/                                   \____
+        ///                        _____
+        ///                   ____/     \___
+        ///              ____/              \____
+        ///         ____/                        \______
+        ///     ___/                                    \____
         ///
-        /// Two earlier shapes were wrong in instructive ways.
+        /// Three things make it a hill and not a bump, a crater or a
+        /// mountain — the three things earlier versions each got wrong.
         ///
-        /// A rolling profile around the AVERAGE ground could carve a dip
-        /// instead of a rise. Terraces measured up from the LOWEST ground
-        /// were worse: I claimed that guaranteed clearing the land around
-        /// it, which is only true when the rise exceeds the plot's slope
-        /// range. It often did not, so the "hill" sat BELOW its neighbours
-        /// and HeadRoom then excavated the higher ground above it — a
-        /// quarry, not a hill.
+        /// It is built on the land's TREND, not on the land: the ground
+        /// is read, then blurred over TrendRadius columns each side, and
+        /// the hill is added to that. A straight line between the feet
+        /// (the last version) ignored everything between them; raw ground
+        /// (the one before) reproduced every notch as a battlement.
         ///
-        /// Lifting off ground[i] fixes that by construction. The bell is
-        /// an AMOUNT added to each column's own height, so no column can
-        /// end up below where the land already was, and none can be
-        /// raised more than the lift. The ends need no special blending
-        /// either: the bell reaches 0 there, so they ARE the untouched
-        /// ground.
+        /// It is a LIFT off that trend, never an elevation, so nothing
+        /// can be dragged up to the plot's highest point, and the feet —
+        /// where the lift is zero — are the trend, which is the land.
         ///
-        /// Past the flat crown the falloff is half straight ramp and half
-        /// raised cosine, lifted from MorsMonumentPass. Pure cosine bulges
-        /// into a dome; pure linear creases where the slope meets the
-        /// plateau and again where it meets the ground.
+        /// And it is allowed to cut. The old "never dig" rule meant that
+        /// wherever the land already bulged above the arc the arc simply
+        /// wasn't there, and on rough shore ground that was most of it.
+        /// The shape is ours from foot to foot now; what was under it is
+        /// packed solid by ShapeColumn either way.
+        ///
+        /// The crown is pushed off-centre by up to MaxSkew, so one flank
+        /// is longer and shallower than the other, and two low sines are
+        /// laid on the slopes — faded to nothing at the crown, where the
+        /// graves need level pairs, and at the feet, where the land needs
+        /// to be met exactly.
         /// </summary>
         private static void GenerateHillProfile(
             int plotLeft,
             int level,
             out int[] heights,
-            out bool[] plantable)
+            out bool[] plantable,
+            out int crown)
         {
             heights = new int[PlotWidth];
             plantable = new bool[PlotWidth];
 
+            // ---- the land, then its trend ---------------------------------------------
 
-            // --------------------------------------------------------
-            // Read the land as it actually is.
-            // --------------------------------------------------------
-
-            int[] ground =
-                new int[PlotWidth];
+            int[] ground = new int[PlotWidth];
 
             for (int i = 0; i < PlotWidth; i++)
             {
@@ -1172,57 +1350,36 @@ namespace PisAndDag.Content.Structures
                         : level;
             }
 
+            float[] trend = new float[PlotWidth];
 
-            // --------------------------------------------------------
-            // The trend of the land, as a straight line.
-            // --------------------------------------------------------
-            //
-            // This is the part the last two attempts were missing.
-            //
-            // Lifting each column off its own ground made a hill that
-            // inherited every notch and ledge in the terrain under it —
-            // the battlements. Lerping toward the plot's highest point
-            // instead made a mountain. The answer is neither: take the
-            // ground at the two ENDS, run a straight line between them,
-            // and build the hill on that.
-            //
-            // The line meets real ground at both feet, so the hill blends
-            // exactly. Between them it is perfectly smooth, so nothing of
-            // the old surface shows through the top.
+            for (int i = 0; i < PlotWidth; i++)
+                trend[i] = AverageGround(ground, i - TrendRadius, i + TrendRadius + 1);
 
-            float leftGround =
-                AverageGround(ground, 0, FootSample);
+            // ---- the hill's own numbers -----------------------------------------------
 
-            float rightGround =
-                AverageGround(ground, PlotWidth - FootSample, PlotWidth);
+            int lift = WorldGen.genRand.Next(MinCrownRise, MaxCrownRise + 1);
 
+            float skew = WorldGen.genRand.NextFloat(-MaxSkew, MaxSkew);
+            float crownX = (PlotWidth - 1) * (0.5f + skew);
 
-            // --------------------------------------------------------
-            // Raise the arc off that line.
-            // --------------------------------------------------------
+            crown = (int)Math.Round(crownX);
 
-            int crownLift =
-                WorldGen.genRand.Next(
-                    MinCrownRise,
-                    MaxCrownRise + 1);
+            float phaseA = WorldGen.genRand.NextFloat(MathF.PI * 2f);
+            float phaseB = WorldGen.genRand.NextFloat(MathF.PI * 2f);
+            float cyclesA = WorldGen.genRand.NextFloat(1.6f, 2.6f);
+            float cyclesB = WorldGen.genRand.NextFloat(4f, 6f);
 
-            float middle =
-                (PlotWidth - 1) * 0.5f;
-
+            float[] wanted = new float[PlotWidth];
 
             for (int i = 0; i < PlotWidth; i++)
             {
-                float along =
-                    i / (float)(PlotWidth - 1);
+                float along = i / (float)(PlotWidth - 1);
 
-                float baseline =
-                    leftGround +
-                    (rightGround - leftGround) * along;
-
-
-                // 0 at the centre, 1 at either end.
-                float t =
-                    Math.Abs(i - middle) / middle;
+                // 0 at the crown, 1 at whichever foot this column is on
+                // the way to. The two halves have different lengths, which
+                // is the whole of the asymmetry.
+                float half = i < crownX ? crownX : (PlotWidth - 1) - crownX;
+                float t = half <= 0f ? 1f : Math.Abs(i - crownX) / half;
 
                 float shape;
 
@@ -1232,74 +1389,125 @@ namespace PisAndDag.Content.Structures
                 }
                 else
                 {
-                    float u =
-                        (t - FlatFraction) /
-                        (1f - FlatFraction);
-
+                    float u = (t - FlatFraction) / (1f - FlatFraction);
                     float straight = 1f - u;
+                    float eased = 0.5f + 0.5f * MathF.Cos(u * MathF.PI);
 
-                    float eased =
-                        0.5f +
-                        0.5f * MathF.Cos(u * MathF.PI);
-
-                    shape =
-                        DomeWeight * eased +
-                        (1f - DomeWeight) * straight;
+                    shape = DomeWeight * eased + (1f - DomeWeight) * straight;
                 }
 
+                // Two sines, one slow and one quicker, on an envelope that
+                // is zero at the crown and the feet and one halfway down.
+                float noise =
+                    (MathF.Sin(along * cyclesA * MathF.PI * 2f + phaseA)
+                    + 0.5f * MathF.Sin(along * cyclesB * MathF.PI * 2f + phaseB)) / 1.5f;
 
-                int raised =
-                    (int)Math.Round(baseline - crownLift * shape);
+                float envelope = 4f * shape * (1f - shape);
 
+                float bump = NoiseAmplitude * noise * envelope;
 
-                // Never dig. Where the old ground already stood higher
-                // than the arc, it is left exactly as it was — which is
-                // also what keeps the feet flush with the world.
-                heights[i] =
-                    Math.Min(raised, ground[i]);
+                // Y grows downward: lifting is subtracting.
+                wanted[i] = trend[i] - lift * shape - bump;
             }
 
-
-            // --------------------------------------------------------
-            // No step taller than one tile.
-            // --------------------------------------------------------
+            // ---- whole tiles, one riser per MinRun columns at most ---------------------
             //
-            // The arc is smooth; the clamp is here for where it was
-            // pinned back to a ragged patch of original ground. Two
-            // passes, one from each end, each only ever RAISING a column
-            // its neighbour outran — lowering could dig below the ground
-            // again, which is the thing this shape exists to avoid.
+            // Rounding the curve column by column gave a staircase wherever
+            // the slope passed a tile per column, and a 45° staircase is
+            // what a tile game shows as a cliff. This walks out from the
+            // crown instead and lets the integer profile take a step only
+            // when the curve has pulled a full tile away AND the last step
+            // is at least MinRun columns back. The curve is designed to
+            // stay under that grade, so the lag never exceeds a tile or so;
+            // where it briefly doesn't, the profile falls behind and
+            // catches up on the next gentler stretch.
 
-            for (int i = 1; i < PlotWidth; i++)
-            {
-                if (heights[i] < heights[i - 1] - 1)
-                    heights[i] = heights[i - 1] - 1;
-            }
+            heights[crown] = (int)Math.Round(wanted[crown]);
 
+            Quantise(wanted, heights, crown, 1);
+            Quantise(wanted, heights, crown, -1);
 
-            for (int i = PlotWidth - 2; i >= 0; i--)
-            {
-                if (heights[i] < heights[i + 1] - 1)
-                    heights[i] = heights[i + 1] - 1;
-            }
-
-
-            // --------------------------------------------------------
-            // Mark where a two-wide marker can stand.
-            // --------------------------------------------------------
+            // ---- where a two-wide object can stand ---------------------------------------
 
             for (int i = 0; i < PlotWidth; i++)
             {
-                bool hasPartner =
-                    i + 1 < PlotWidth &&
-                    heights[i + 1] == heights[i];
+                bool hasPartner = i + 1 < PlotWidth && heights[i + 1] == heights[i];
+                bool clearOfEdge = i >= EdgeMargin && i < PlotWidth - EdgeMargin;
 
-                bool clearOfEdge =
-                    i >= EdgeMargin &&
-                    i < PlotWidth - EdgeMargin;
+                plantable[i] = hasPartner && clearOfEdge;
+            }
+        }
 
-                plantable[i] =
-                    hasPartner && clearOfEdge;
+
+        /// <summary>
+        /// Walks from the crown to one foot, stepping the integer profile
+        /// toward the curve one tile at a time and never sooner than
+        /// MinRun columns after the last step.
+        /// </summary>
+        private static void Quantise(
+            float[] wanted,
+            int[] heights,
+            int crown,
+            int direction)
+        {
+            int lastStep = crown - MinRun * direction * 2;
+
+            for (int i = crown + direction; i >= 0 && i < PlotWidth; i += direction)
+            {
+                int previous = heights[i - direction];
+                float pull = wanted[i] - previous;
+
+                bool due = Math.Abs(i - lastStep) >= MinRun;
+
+                if (due && Math.Abs(pull) >= 1f)
+                {
+                    heights[i] = previous + Math.Sign(pull);
+                    lastStep = i;
+                }
+                else
+                {
+                    heights[i] = previous;
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Puts a sloped tile on every riser so the flanks read as slopes
+        /// rather than steps. The rules are vanilla's own, from its
+        /// "Smooth World" pass: a solid tile with solid ground under it,
+        /// solid to one side and air to the other, is cut toward the air.
+        /// Never a tile with something standing on it — a stone or statue
+        /// anchors to a square block and would come loose.
+        /// </summary>
+        private static void SmoothHill(
+            int from,
+            int to)
+        {
+            from = Math.Max(21, from);
+            to = Math.Min(Main.maxTilesX - 21, to);
+
+            for (int x = from; x <= to; x++)
+            {
+                if (!Surface(x, out int y, out _) || y < 12)
+                    continue;
+
+                if (Main.tile[x, y - 1].HasTile)
+                    continue;
+
+                if (!WorldGen.SolidTile(x, y + 1))
+                    continue;
+
+                if (!WorldGen.genRand.NextBool(SlopeChancePercent, 100))
+                    continue;
+
+                bool leftSolid = WorldGen.SolidTile(x - 1, y);
+                bool rightSolid = WorldGen.SolidTile(x + 1, y);
+
+                if (rightSolid && !leftSolid)
+                    WorldGen.SlopeTile(x, y, 2);
+                else if (leftSolid && !rightSolid)
+                    WorldGen.SlopeTile(x, y, 1);
             }
         }
 
@@ -1332,18 +1540,6 @@ namespace PisAndDag.Content.Structures
 
 
         // ============================================================
-        // TOMBSTONES
-        // ============================================================
-
-        /// <summary>
-        /// Stands one Angel Statue on the crown.
-        ///
-        /// Restricted to the middle third of the plot. The crown is where
-        /// the ground is flat and where the eye goes, and a memorial on
-        /// the slope with its back to the graves reads as clutter rather
-        /// than as the centrepiece.
-        /// </summary>
-        // ============================================================
         // LIVING TREES
         // ============================================================
 
@@ -1361,13 +1557,13 @@ namespace PisAndDag.Content.Structures
             int level)
         {
             int from =
-                Math.Max(20, plotLeft - MaxSkirt);
+                Math.Max(20, plotLeft - MaxSkirt - CanopyReach);
 
             int to =
-                Math.Min(Main.maxTilesX - 20, plotLeft + PlotWidth + MaxSkirt);
+                Math.Min(Main.maxTilesX - 20, plotLeft + PlotWidth + MaxSkirt + CanopyReach);
 
             int top =
-                Math.Max(10, level - HeadRoom - LivingTreeReach);
+                Math.Max(10, level - MaxCrownRise - HeadRoom - LivingTreeReach);
 
             int bottom =
                 Math.Min(Main.maxTilesY - 20, level + Foundation);
@@ -1383,6 +1579,34 @@ namespace PisAndDag.Content.Structures
                 {
                     if (IsLivingTree(x, y))
                         Fell(x, y, seen);
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Clears every ordinary tree — forest, palm, mushroom, gem, the
+        /// vanity kinds — standing on ground the build will touch, from the
+        /// band the hill can reach down to the foundation. Vanilla's tree
+        /// trunk set, so a tree added in a later version is still a tree.
+        /// </summary>
+        private static void FellTrees(
+            int plotLeft,
+            int level)
+        {
+            int from = Math.Max(20, plotLeft - MaxSkirt);
+            int to = Math.Min(Main.maxTilesX - 20, plotLeft + PlotWidth + MaxSkirt);
+            int top = Math.Max(10, level - MaxCrownRise - HeadRoom - 40);
+            int bottom = Math.Min(Main.maxTilesY - 20, level + Foundation);
+
+            for (int x = from; x <= to; x++)
+            {
+                for (int y = top; y <= bottom; y++)
+                {
+                    Tile tile = Main.tile[x, y];
+
+                    if (tile.HasTile && TileID.Sets.IsATreeTrunk[tile.TileType])
+                        tile.ClearTile();
                 }
             }
         }
@@ -1574,35 +1798,34 @@ namespace PisAndDag.Content.Structures
         }
 
 
-        private static void PlaceAngel(
+        /// <summary>
+        /// Stands one statue on a level pair of columns somewhere in the
+        /// given slice of the plot. A handful of tries rather than one,
+        /// because a column can be unusable for reasons the mask does not
+        /// know about.
+        /// </summary>
+        private static void PlaceStatue(
+            int itemId,
             int plotLeft,
             int[] heights,
-            bool[] plantable)
+            bool[] plantable,
+            int a,
+            int b)
         {
-            Item sample =
-                ContentSamples.ItemsByType[ItemID.AngelStatue];
+            Item sample = ContentSamples.ItemsByType[itemId];
 
             if (sample.createTile <= 0)
                 return;
 
+            int from = Math.Clamp(Math.Min(a, b), EdgeMargin, PlotWidth - EdgeMargin - 1);
+            int to = Math.Clamp(Math.Max(a, b) + 1, from + 1, PlotWidth - EdgeMargin);
 
-            int from =
-                (int)(PlotWidth * 0.34f);
-
-            int to =
-                (int)(PlotWidth * 0.66f);
-
-
-            // A handful of tries rather than one, because a column can be
-            // unusable for reasons the mask does not know about.
             for (int attempt = 0; attempt < 24; attempt++)
             {
-                int index =
-                    WorldGen.genRand.Next(from, to);
+                int index = WorldGen.genRand.Next(from, to);
 
                 if (!plantable[index])
                     continue;
-
 
                 int x = plotLeft + index;
                 int y = heights[index] - 1;
@@ -1610,32 +1833,301 @@ namespace PisAndDag.Content.Structures
                 if (y < 12)
                     continue;
 
-
-                // A statue is two wide, so both columns have to be clear.
-                if (Main.tile[x, y].HasTile ||
-                    Main.tile[x + 1, y].HasTile)
-                {
+                // Two wide, so both columns have to be clear.
+                if (Main.tile[x, y].HasTile || Main.tile[x + 1, y].HasTile)
                     continue;
-                }
 
-
-                WorldGen.PlaceObject(
-                    x,
-                    y,
-                    sample.createTile,
-                    true,
-                    sample.placeStyle);
+                WorldGen.PlaceObject(x, y, sample.createTile, true, sample.placeStyle);
 
                 if (Main.tile[x, y].HasTile)
+                {
+                    // Nothing else stands on or against it.
+                    for (int k = index - 1; k <= index + 2; k++)
+                        if (k >= 0 && k < PlotWidth)
+                            plantable[k] = false;
+
                     return;
+                }
             }
+        }
+
+
+        /// <summary>
+        /// One grave with nothing in it: a two-wide, three-deep hole on the
+        /// crown, dirt-walled, no stone. Dug before the stones go down so
+        /// none of them is planted across it.
+        /// </summary>
+        private static int OpenGrave(
+            int plotLeft,
+            int[] heights,
+            bool[] plantable,
+            int crown)
+        {
+            int reach = GraveHalfWidth;
+            int centre = crown;
+
+            for (int attempt = 0; attempt < 30; attempt++)
+            {
+                int index = WorldGen.genRand.Next(centre - reach, centre + reach);
+
+                if (index < EdgeMargin + 2 || index >= PlotWidth - EdgeMargin - 3)
+                    continue;
+
+                if (!plantable[index])
+                    continue;
+
+                int x = plotLeft + index;
+                int top = heights[index];
+
+                if (top < 12 || top + OpenGraveDepth >= Main.maxTilesY - 20)
+                    continue;
+
+                // Nothing standing on either lip.
+                if (Main.tile[x, top - 1].HasTile || Main.tile[x + 1, top - 1].HasTile)
+                    continue;
+
+                for (int dx = 0; dx < 2; dx++)
+                {
+                    for (int dy = 0; dy < OpenGraveDepth; dy++)
+                    {
+                        Tile tile = Main.tile[x + dx, top + dy];
+
+                        tile.ClearTile();
+                        tile.LiquidAmount = 0;
+                        tile.WallType = WallID.DirtUnsafe;
+                    }
+                }
+
+                // The lips and the hole itself are off-limits to everything
+                // that comes after.
+                for (int k = index - 2; k <= index + 3; k++)
+                    if (k >= 0 && k < PlotWidth)
+                        plantable[k] = false;
+
+                return index;
+            }
+
+            return -1;
+        }
+
+
+        /// <summary>
+        /// A worn track from the seaward foot up to the gate: the surface
+        /// tile of each column on the way swapped for clay, which reads as
+        /// bare packed earth and, unlike dirt, never grows grass back over
+        /// itself. The track wanders a column either way now and then so
+        /// it is not a ruled line up the slope.
+        /// </summary>
+        private static void WearPath(
+            int plotLeft,
+            int[] heights,
+            bool seaOnLeft)
+        {
+            // Nowhere to go if there is no gate.
+            if (lastEntrance < 0)
+                return;
+
+            int from = seaOnLeft ? 2 : PlotWidth - 3;
+            int to = lastEntrance;
+            int step = seaOnLeft ? 1 : -1;
+
+            if ((to - from) * step <= 0)
+                return;
+
+            for (int i = from; i != to; i += step)
+            {
+                int x = plotLeft + i;
+                int y = heights[i];
+
+                if (y < 12)
+                    continue;
+
+                Tile tile = Main.tile[x, y];
+
+                if (!tile.HasTile || !Main.tileSolid[tile.TileType])
+                    continue;
+
+                tile.TileType = TileID.ClayBlock;
+
+                // A second tile of width every so often, so the track has
+                // a ragged edge rather than a stitched one.
+                if (WorldGen.genRand.NextBool(3) && y + 1 < Main.maxTilesY - 20)
+                {
+                    Tile under = Main.tile[x, y + 1];
+
+                    if (under.HasTile && Main.tileSolid[under.TileType])
+                        under.TileType = TileID.ClayBlock;
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// The one that stands apart: a plain stone outside the fence, down
+        /// the seaward flank, facing the water. No name on it — none
+        /// remember his.
+        /// </summary>
+        private static void LoneStone(
+            int plotLeft,
+            int[] heights,
+            bool[] plantable,
+            bool seaOnLeft)
+        {
+            if (lastStoneMin > lastStoneMax)
+                return;
+
+            Item sample = ContentSamples.ItemsByType[ItemID.Tombstone];
+
+            if (sample.createTile <= 0)
+                return;
+
+            int fenceEdge = seaOnLeft
+                ? Math.Max(FenceInset, lastStoneMin - FenceMargin)
+                : Math.Min(PlotWidth - FenceInset - 1, lastStoneMax + 1 + FenceMargin);
+
+            int want = seaOnLeft ? fenceEdge - LoneStoneOffset : fenceEdge + LoneStoneOffset;
+
+            // Nearest level pair to where it wants to be, searching outward.
+            for (int d = 0; d < 8; d++)
+            {
+                foreach (int index in new[] { want - d, want + d })
+                {
+                    if (index < EdgeMargin || index >= PlotWidth - EdgeMargin)
+                        continue;
+
+                    if (!plantable[index])
+                        continue;
+
+                    int x = plotLeft + index;
+                    int y = heights[index] - 1;
+
+                    if (y < 12 || Main.tile[x, y].HasTile || Main.tile[x + 1, y].HasTile)
+                        continue;
+
+                    WorldGen.PlaceObject(x, y, sample.createTile, true, sample.placeStyle);
+
+                    if (Main.tile[x, y].HasTile)
+                    {
+                        plantable[index] = false;
+                        return;
+                    }
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Cobwebs: one on a fence panel here and there, and one in the
+        /// crook of anything standing on the crown. Placed last, into
+        /// empty tiles only, so nothing is ever webbed over.
+        /// </summary>
+        private static void Cobwebs(
+            int plotLeft,
+            int[] heights)
+        {
+            int wrought = ContentSamples.ItemsByType[ItemID.WroughtIronFence].createWall;
+            int iron = ContentSamples.ItemsByType[ItemID.IronFence].createWall;
+
+            for (int i = 1; i < PlotWidth - 1; i++)
+            {
+                int x = plotLeft + i;
+                int y = heights[i] - 1;
+
+                if (y < 12)
+                    continue;
+
+                Tile tile = Main.tile[x, y];
+
+                bool onFence = !tile.HasTile
+                    && (tile.WallType == wrought || tile.WallType == iron)
+                    && WorldGen.genRand.NextBool(WebOnFenceDenominator);
+
+                // Against a statue or a stone: the empty tile beside a
+                // standing object, at ground level.
+                bool againstSomething = !tile.HasTile
+                    && (Standing(x - 1, y) || Standing(x + 1, y))
+                    && WorldGen.genRand.NextBool(2);
+
+                if (onFence || againstSomething)
+                    WorldGen.PlaceTile(x, y, TileID.Cobweb, true);
+            }
+        }
+
+
+        private static bool Standing(int x, int y)
+        {
+            Tile tile = Main.tile[x, y];
+
+            return tile.HasTile
+                && (tile.TileType == TileID.Tombstones || tile.TileType == TileID.Statues);
+        }
+
+
+        // ------------------------------------------------------------
+        // Epitaphs.
+        // ------------------------------------------------------------
+        //
+        // Tombstones are sign tiles. ReadSign finds the stone's top-left
+        // from the tile's frame and makes the sign record if none exists
+        // (vanilla does the same when a dropped stone lands); TextSign
+        // writes it. Main.sign is saved with the world and sent to clients
+        // with the tile section, so nothing else is needed.
+
+        private static void Inscribe(int x, int y)
+        {
+            int sign = Sign.ReadSign(x, y, true);
+
+            if (sign >= 0)
+                Sign.TextSign(sign, Epitaph());
+        }
+
+
+        /// <summary>"Name - Adjective Role", the role matched to the name's sex.</summary>
+        private static string Epitaph()
+        {
+            bool man = WorldGen.genRand.NextBool();
+
+            int[] pools = man ? MenNamePools : WomenNamePools;
+
+            // 1.4.4's name roll is an instance method (1.4.5 made it static
+            // with a type argument), so a throwaway NPC of the right type
+            // does the asking. It is never spawned.
+            NPC namesake = new NPC();
+            namesake.SetDefaults(pools[WorldGen.genRand.Next(pools.Length)]);
+            string name = namesake.getNewNPCName();
+
+            string adjective = Adjectives[WorldGen.genRand.Next(Adjectives.Length)];
+
+            // Half kin, half trade.
+            string role;
+
+            if (WorldGen.genRand.NextBool())
+            {
+                string[] kin = man ? MenKin : WomenKin;
+                role = kin[WorldGen.genRand.Next(kin.Length)];
+            }
+            else
+            {
+                role = Trades[WorldGen.genRand.Next(Trades.Length)];
+            }
+
+            string text = name + " - " + adjective + " " + role;
+
+            if (EpitaphSecondLineDenominator > 0
+                && WorldGen.genRand.NextBool(EpitaphSecondLineDenominator))
+            {
+                text += "\n" + SecondLines[WorldGen.genRand.Next(SecondLines.Length)];
+            }
+
+            return text;
         }
 
 
         private static void Plant(
             int plotLeft,
             int[] heights,
-            bool[] plantable)
+            bool[] plantable,
+            int crown)
         {
             int wanted =
                 WorldGen.genRand.Next(
@@ -1660,10 +2152,9 @@ namespace PisAndDag.Content.Structures
                 // hill. Spread over the full width the stones end up
                 // stranded halfway down both slopes and read as litter;
                 // kept to the middle they read as one graveyard.
-                int reach =
-                    (int)(PlotWidth * GraveSpread * 0.5f);
+                int reach = GraveHalfWidth;
 
-                int centre = PlotWidth / 2;
+                int centre = crown;
 
                 int index =
                     WorldGen.genRand.Next(
@@ -1782,6 +2273,7 @@ namespace PisAndDag.Content.Structures
                     .HasTile)
                 {
                     placedX.Add(x);
+                    Inscribe(x, surface - 1);
                 }
             }
 
@@ -1842,6 +2334,8 @@ namespace PisAndDag.Content.Structures
                     lastStoneMax + 1 + FenceMargin);
 
 
+            lastEntrance = -1;
+
             // Nothing was planted — there is nothing to enclose.
             if (lastStoneMin > lastStoneMax ||
                 right - left < MinFenceSpan)
@@ -1864,6 +2358,8 @@ namespace PisAndDag.Content.Structures
                 WorldGen.genRand.Next(
                     2,
                     4);
+
+            lastEntrance = entrance;
 
 
             // --------------------------------------------------------
@@ -1958,11 +2454,16 @@ namespace PisAndDag.Content.Structures
 
                     if (y > 10)
                     {
-                        WorldGen.PlaceWall(
-                            x,
-                            y,
-                            FenceWall(),
-                            true);
+                        int wall = FenceWall();
+                        int height = FenceHeight();
+
+                        for (int k = 0; k < height; k++)
+                        {
+                            if (Main.tile[x, y - k].HasTile)
+                                break;
+
+                            WorldGen.PlaceWall(x, y - k, wall, true);
+                        }
                     }
                 }
             }
@@ -2041,6 +2542,9 @@ namespace PisAndDag.Content.Structures
 
             int skipLeft = 0;
 
+            // Each run has its own height, so the rail rises and falls.
+            int height = FenceHeight();
+
 
             for (int i = start;
                  i <= end;
@@ -2066,6 +2570,8 @@ namespace PisAndDag.Content.Structures
                         WorldGen.genRand.Next(
                             MinFenceRun,
                             MaxFenceRun + 1);
+
+                    height = FenceHeight();
 
                     continue;
                 }
@@ -2101,12 +2607,38 @@ namespace PisAndDag.Content.Structures
                     continue;
 
 
-                WorldGen.PlaceWall(
-                    x,
-                    y,
-                    FenceWall(),
-                    true);
+                // Stacked up from the ground, stopping at the first tile
+                // that is not empty air.
+                int wall = FenceWall();
+
+                for (int k = 0; k < height; k++)
+                {
+                    int yy = y - k;
+
+                    if (yy < 10 || Main.tile[x, yy].HasTile)
+                        break;
+
+                    WorldGen.PlaceWall(x, yy, wall, true);
+                }
             }
+        }
+
+
+        /// <summary>
+        /// How tall a fence run is. Mostly one or two panels; a full three
+        /// now and then, where someone once cared enough to build it up.
+        /// </summary>
+        private static int FenceHeight()
+        {
+            int roll = WorldGen.genRand.Next(10);
+
+            if (roll < 4)
+                return 1;
+
+            if (roll < 8)
+                return Math.Min(2, MaxFenceHeight);
+
+            return MaxFenceHeight;
         }
 
 
@@ -2132,24 +2664,190 @@ namespace PisAndDag.Content.Structures
                 return;
             }
 
-            Tile tile = Main.tile[x, y];
-
             // A fence is a WALL, not a tile.
             //
-            // Both kinds have to be checked now, and by the same item
-            // lookup that placed them — hardcoding one WallID here would
-            // silently leave every Iron panel standing.
+            // Both kinds have to be checked, and by the same item lookup
+            // that placed them — hardcoding one WallID here would silently
+            // leave every Iron panel standing. The whole stack goes, since
+            // a run can be up to MaxFenceHeight panels tall.
             int wrought =
                 ContentSamples.ItemsByType[ItemID.WroughtIronFence].createWall;
 
             int iron =
                 ContentSamples.ItemsByType[ItemID.IronFence].createWall;
 
-            if (tile.WallType == wrought ||
-                tile.WallType == iron)
+            for (int k = 0; k < MaxFenceHeight; k++)
             {
-                tile.WallType = WallID.None;
+                if (y - k < 10)
+                    break;
+
+                Tile tile = Main.tile[x, y - k];
+
+                if (tile.WallType == wrought ||
+                    tile.WallType == iron)
+                {
+                    tile.WallType = WallID.None;
+                }
             }
         }
     }
-} 
+
+
+    /// <summary>
+    /// The quiet. A rectangle of tiles around the graveyard, saved with the
+    /// world, inside which nothing spawns — no zombies, no eyes, none of the
+    /// ghosts and ravens the vanilla graveyard biome would otherwise send.
+    /// The mist and the music still come; the biome is the tombstones' doing
+    /// and is left alone. Only the company is kept away.
+    /// </summary>
+    public class GraveyardZone : ModSystem
+    {
+        public static int Left = -1;
+        public static int Right = -1;
+        public static int Top = -1;
+        public static int Bottom = -1;
+
+        /// <summary>Columns the graves occupy, and the crown's surface row.</summary>
+        public static int GraveLeft = -1;
+        public static int GraveRight = -1;
+        public static int CrownY = -1;
+
+        /// <summary>Left column and lip row of the open grave, or -1 once filled / never dug.</summary>
+        public static int OpenGraveX = -1;
+        public static int OpenGraveY = -1;
+
+        /// <summary>
+        /// Every player death in this world, from the first. Saved, and never
+        /// reset: the burials stop after the first few, the count does not.
+        /// </summary>
+        public static int Deaths;
+
+        public static bool Exists => Right > Left && Bottom > Top;
+
+        public static bool HasGraves => GraveRight > GraveLeft && CrownY > 0;
+
+        public static void SetGraves(int left, int right, int crownY, int openX, int openY)
+        {
+            GraveLeft = left;
+            GraveRight = right;
+            CrownY = crownY;
+            OpenGraveX = openX;
+            OpenGraveY = openY;
+        }
+
+        /// <summary>Recorded by the pass, in tile coordinates.</summary>
+        public static void Set(int left, int right, int top, int bottom)
+        {
+            Left = Math.Max(0, left);
+            Right = Math.Min(Main.maxTilesX - 1, right);
+            Top = Math.Max(0, top);
+            Bottom = Math.Min(Main.maxTilesY - 1, bottom);
+        }
+
+        public static bool Contains(Player player)
+        {
+            if (!Exists)
+                return false;
+
+            int x = (int)(player.Center.X / 16f);
+            int y = (int)(player.Center.Y / 16f);
+
+            return x >= Left && x <= Right && y >= Top && y <= Bottom;
+        }
+
+        public override void ClearWorld()
+        {
+            Left = Right = Top = Bottom = -1;
+            GraveLeft = GraveRight = CrownY = -1;
+            OpenGraveX = OpenGraveY = -1;
+            Deaths = 0;
+        }
+
+        public override void SaveWorldData(Terraria.ModLoader.IO.TagCompound tag)
+        {
+            tag["GraveyardDeaths"] = Deaths;
+
+            if (!Exists)
+                return;
+
+            tag["GraveyardLeft"] = Left;
+            tag["GraveyardRight"] = Right;
+            tag["GraveyardTop"] = Top;
+            tag["GraveyardBottom"] = Bottom;
+            tag["GraveyardGraveLeft"] = GraveLeft;
+            tag["GraveyardGraveRight"] = GraveRight;
+            tag["GraveyardCrownY"] = CrownY;
+            tag["GraveyardOpenX"] = OpenGraveX;
+            tag["GraveyardOpenY"] = OpenGraveY;
+        }
+
+        public override void LoadWorldData(Terraria.ModLoader.IO.TagCompound tag)
+        {
+            Deaths = tag.ContainsKey("GraveyardDeaths") ? tag.GetInt("GraveyardDeaths") : 0;
+
+            if (!tag.ContainsKey("GraveyardLeft"))
+                return;
+
+            Left = tag.GetInt("GraveyardLeft");
+            Right = tag.GetInt("GraveyardRight");
+            Top = tag.GetInt("GraveyardTop");
+            Bottom = tag.GetInt("GraveyardBottom");
+
+            // Worlds saved before the graves were recorded simply have none
+            // to bury in; the quiet still works.
+            if (tag.ContainsKey("GraveyardGraveLeft"))
+            {
+                GraveLeft = tag.GetInt("GraveyardGraveLeft");
+                GraveRight = tag.GetInt("GraveyardGraveRight");
+                CrownY = tag.GetInt("GraveyardCrownY");
+                OpenGraveX = tag.GetInt("GraveyardOpenX");
+                OpenGraveY = tag.GetInt("GraveyardOpenY");
+            }
+        }
+
+        public override void NetSend(System.IO.BinaryWriter writer)
+        {
+            writer.Write(Left);
+            writer.Write(Right);
+            writer.Write(Top);
+            writer.Write(Bottom);
+            writer.Write(GraveLeft);
+            writer.Write(GraveRight);
+            writer.Write(CrownY);
+            writer.Write(OpenGraveX);
+            writer.Write(OpenGraveY);
+            writer.Write(Deaths);
+        }
+
+        public override void NetReceive(System.IO.BinaryReader reader)
+        {
+            Left = reader.ReadInt32();
+            Right = reader.ReadInt32();
+            Top = reader.ReadInt32();
+            Bottom = reader.ReadInt32();
+            GraveLeft = reader.ReadInt32();
+            GraveRight = reader.ReadInt32();
+            CrownY = reader.ReadInt32();
+            OpenGraveX = reader.ReadInt32();
+            OpenGraveY = reader.ReadInt32();
+            Deaths = reader.ReadInt32();
+        }
+    }
+
+
+    /// <summary>
+    /// Nothing spawns on a player standing in the quiet. maxSpawns is what
+    /// vanilla checks against the count of NPCs already near the player
+    /// before rolling a spawn at all, so zero is not a low chance — it is
+    /// no roll. Critters included; the place is meant to be still.
+    /// </summary>
+    public class GraveyardHush : GlobalNPC
+    {
+        public override void EditSpawnRate(Player player, ref int spawnRate, ref int maxSpawns)
+        {
+            if (GraveyardZone.Contains(player))
+                maxSpawns = 0;
+        }
+    }
+}
+
