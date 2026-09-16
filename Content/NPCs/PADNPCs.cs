@@ -1,4 +1,6 @@
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using PisAndDag.Content.UI;
 using System;
 using System.Collections.Generic;
 using Terraria;
@@ -59,6 +61,16 @@ namespace PisAndDag.Content.NPCs
         /// </summary>
         public override void OnKill(NPC npc)
         {
+            if (npc.type == ModContent.NPCType<MegaShark.Megashark>() && !PADWorld.DownedMegashark)
+            {
+                // OnKill runs where kills are decided: singleplayer, or the server. The
+                // world-data packet carries the flag to everyone else.
+                PADWorld.DownedMegashark = true;
+
+                if (Main.netMode == NetmodeID.Server)
+                    NetMessage.SendData(MessageID.WorldData);
+            }
+
             if (npc.type != NPCID.HallowBoss || PADWorld.FlightAnnounced)
                 return;
 
@@ -75,6 +87,13 @@ namespace PisAndDag.Content.NPCs
             {
                 Main.NewText(FlightUnlockText, FlightUnlockColor);
             }
+        }
+
+        /// <summary>The bubble over anything Dialogue knows how to talk to.</summary>
+        public override void PostDraw(NPC npc, SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
+        {
+            if (Dialogue.IsSpeaker(npc.type))
+                Dialogue.DrawBubble(npc, spriteBatch, screenPos);
         }
 
         public override void GetChat(NPC npc, ref string chat)

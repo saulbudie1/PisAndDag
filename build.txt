@@ -1,3 +1,4 @@
 displayName = Pistols and Daggers
 author = Saulbudie
 version = 1.0
+buildIgnore = Tools\*, Content\Sounds\Trumpet_free\*, *.md, *.mxl, *.musicxml, *.exe, *.msi, *.fx

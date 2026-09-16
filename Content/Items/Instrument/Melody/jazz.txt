@@ -1,0 +1,12 @@
+bpm=100
+key=F
+swing
+major
+~:.5 Ah:.5 F:1 Dh:.5 Ch Ah:.5 |
+F D:.5 G:2.8 |
+F:.5 G:.5 Ah:.5 Dh Eh:.5 Fh:.5 |
+Ch:2.4 |
+~:.5 Ah:.5 F:1 Dh:.5 Ch Ah:.5 |
+F D:.5 G:2.8 |
+F:.5 G:.5 Ah:.5 Dh ~:.5 ~ |
+ 

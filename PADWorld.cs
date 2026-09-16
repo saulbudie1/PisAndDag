@@ -38,6 +38,13 @@ namespace PisAndDag
         public static bool FlightAnnounced;
 
         /// <summary>
+        /// Whether the Megashark has been killed in this world. Set by PADNPCs.OnKill
+        /// on the side that decides kills, saved, and sent to joining clients. Boss
+        /// Checklist reads it (BossLogSupport).
+        /// </summary>
+        public static bool DownedMegashark;
+
+        /// <summary>
         /// Runs whenever a world is loaded or generated, before LoadWorldData.
         /// Without this the static would leak between worlds inside one session — start a
         /// fresh character and it would still think Legends was on from your last world.
@@ -46,6 +53,7 @@ namespace PisAndDag
         {
             Legends = false;
             FlightAnnounced = false;
+            DownedMegashark = false;
         }
 
         /// <summary>
@@ -64,11 +72,15 @@ namespace PisAndDag
             // so worlds that never had it stay untouched.
             if (Legends)
                 tag["Legends"] = true;
+
+            if (DownedMegashark)
+                tag["DownedMegashark"] = true;
         }
 
         public override void LoadWorldData(TagCompound tag)
         {
             Legends = tag.ContainsKey("Legends");
+            DownedMegashark = tag.ContainsKey("DownedMegashark");
         }
 
         // Brings joining clients in line with the server. Inert in singleplayer, but it
@@ -76,11 +88,13 @@ namespace PisAndDag
         public override void NetSend(BinaryWriter writer)
         {
             writer.Write(Legends);
+            writer.Write(DownedMegashark);
         }
 
         public override void NetReceive(BinaryReader reader)
         {
             Legends = reader.ReadBoolean();
+            DownedMegashark = reader.ReadBoolean();
         }
     }
 }

@@ -17,15 +17,22 @@ namespace PisAndDag
             if (Main.dedServ)
                 return;
 
-            // RequestAssetIfExists, not Assets.Request. Request records the asset in the
-            // repository even when it fails, and tModLoader re-throws that later from
-            // Mod.TransferAllAssets() — so a try/catch at the call site does not help.
-            // This asks first and registers nothing when the file is absent.
-            //
-            // tModLoader does NOT compile .fx during a mod build. Effects/LegendsShader.fx
-            // is source only: run it through fxcompiler or EasyXnb and put the resulting
-            // LegendsShader.xnb beside it. Until that exists, the mod loads without the
-            // filter and logs the line below.
+            LoadLegendsFilter();
+            LoadMorsCloak();
+        }
+
+        // RequestAssetIfExists, not Assets.Request. Request records the asset in the
+        // repository even when it fails, and tModLoader re-throws that later from
+        // Mod.TransferAllAssets() — so a try/catch at the call site does not help.
+        // This asks first and registers nothing when the file is absent.
+        //
+        // tModLoader does NOT compile .fx during a mod build. Every .fx under Effects/
+        // is source only: run it through fxcompiler or EasyXnb and put the resulting
+        // .xnb beside it. Until that exists, the mod loads without that effect and
+        // logs a line saying so.
+
+        private void LoadLegendsFilter()
+        {
             if (!RequestAssetIfExists("Effects/LegendsShader", out Asset<Effect> legends))
             {
                 Logger.Warn(
@@ -44,6 +51,24 @@ namespace PisAndDag
 
             // Only now is it safe for the driver system to touch Filters.Scene.
             LegendsScreenSystem.Registered = true;
+        }
+
+        /// <summary>
+        /// The sway on Mors's cloak. A sprite shader, applied by MorsIdle itself at draw
+        /// time — nothing to register, it only has to exist. Missing means a still cloak.
+        /// </summary>
+        private void LoadMorsCloak()
+        {
+            if (!RequestAssetIfExists("Effects/MorsCloak", out Asset<Effect> cloak))
+            {
+                Logger.Warn(
+                    "Mors cloak sway disabled: Effects/MorsCloak.xnb is missing. " +
+                    "Compile Effects/MorsCloak.fx with fxcompiler or EasyXnb and place " +
+                    "the .xnb beside it.");
+                return;
+            }
+
+            Content.NPCs.Mors.MorsIdle.CloakEffect = cloak;
         }
     }
 }

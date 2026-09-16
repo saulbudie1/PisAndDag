@@ -118,15 +118,15 @@ namespace PisAndDag.Content.Structures
         private const int FieldRadius = 90;
 
         /// <summary>How many ash trees stand around the blade.</summary>
-        private const int TreeMinCount = 9;
-        private const int TreeMaxCount = 15;
+        private const int TreeMinCount = 12;
+        private const int TreeMaxCount = 16;
 
         /// <summary>
         /// Gap between one tree and the next, in tiles. Wide enough that the hilltop
         /// reads as scattered growth rather than a planted row.
         /// </summary>
         private const int TreeGapMin = 5;
-        private const int TreeGapMax = 13;
+        private const int TreeGapMax = 9;
 
         /// <summary>Columns either side of centre kept clear of plants for the sword.</summary>
         private const int SwordClearance = 2;

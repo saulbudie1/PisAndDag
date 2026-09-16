@@ -40,6 +40,24 @@ Items: {
 		DisplayName: Dented Megashark
 		Tooltip: ""
 	}
+
+	Instrument: {
+		Trumpet: {
+			DisplayName: Trumpet
+			Tooltip:
+				'''
+				Twelve bands down the screen, low at the bottom: where the cursor is, is the note
+				Left click plays it, right click plays it an octave up
+				Hold to sustain, drag to slide, fifteen seconds at most. Alt plays soft
+				'It has never once been played quietly.'
+				'''
+		}
+	}
+
+	Trumpet: {
+		DisplayName: Trumpet
+		Tooltip: ""
+	}
 }
 
 Tiles: {
@@ -60,9 +78,13 @@ Projectiles: {
 NPCs: {
 	WhiteDeath.DisplayName: White Death
 	Megashark.DisplayName: Megashark
+	MorsIdle.DisplayName: Mors
 }
+
+BossLog.Megashark.SpawnInfo: Once the three machines have fallen, twenty rounds from a Minishark into the sea. It comes up under you.
 
 Keybinds: {
 	Reload.DisplayName: Reload
 	Lightning.DisplayName: Lightning
+	Wind.DisplayName: Wind
 }

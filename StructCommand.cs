@@ -12,6 +12,7 @@ namespace PisAndDag
     ///
     ///   /struct                 stamp the Blood Shrine at the cursor
     ///   /struct "Blood Shrine"  stamp a named structure
+    ///   /struct update          generate whatever this world is missing (StructureUpdate)
     /// </summary>
     public class StructCommand : ModCommand
     {
@@ -19,12 +20,18 @@ namespace PisAndDag
 
         public override string Command => "struct";
 
-        public override string Usage => "/struct [name]";
+        public override string Usage => "/struct [name | update]";
 
         public override string Description => "Stamp a CSV structure at the cursor.";
 
         public override void Action(CommandCaller caller, string input, string[] args)
         {
+            if (args.Length == 1 && args[0].Equals("update", System.StringComparison.OrdinalIgnoreCase))
+            {
+                Update(caller);
+                return;
+            }
+
             string name = args.Length > 0
                 ? string.Join(" ", args)
                 : PADStructureSystem.BloodShrine;
@@ -57,6 +64,29 @@ namespace PisAndDag
             }
 
             caller.Reply($"Stamped \"{name}\" at {target.X}, {target.Y}.", Color.LightGreen);
+        }
+
+        /// <summary>
+        /// Generates whatever structures this world was made without. Where the world
+        /// is decided: singleplayer, or the server. Tiles are written directly, so in
+        /// multiplayer everyone has to rejoin to see them; sending the whole world
+        /// would be the same thing, slower.
+        /// </summary>
+        private static void Update(CommandCaller caller)
+        {
+            if (Main.netMode == NetmodeID.MultiplayerClient)
+            {
+                caller.Reply("Run this on the host.", Color.OrangeRed);
+                return;
+            }
+
+            caller.Reply("Checking the world...", Color.Gray);
+
+            foreach (string line in StructureUpdate.Run())
+                caller.Reply(line, line.EndsWith("placed.") ? Color.LightGreen : line.EndsWith("present.") ? Color.Gray : Color.OrangeRed);
+
+            if (Main.netMode == NetmodeID.Server)
+                caller.Reply("Players should rejoin to see the changes.", Color.Gray);
         }
     }
 }

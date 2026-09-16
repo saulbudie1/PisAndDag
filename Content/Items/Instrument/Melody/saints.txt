@@ -1,0 +1,6 @@
+bpm=120
+C E F G:4 |
+C E F G:4 |
+C E F G:2 E:2 C:2 E:2 D:4 |
+E E D:2 C:3 C E:2 G:2 G G:3 F:4 |
+E F G:2 E:2 C:2 D:2 C:4

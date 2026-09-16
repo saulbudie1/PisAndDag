@@ -362,3 +362,12 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /Claude outputs
+
+# PisAndDag: not part of the mod
+Tools/
+Content/Sounds/Trumpet_free/
+*.exe
+*.msi
+*.mxl
+*.musicxml
+*.tmod

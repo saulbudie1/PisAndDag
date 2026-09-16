@@ -1,0 +1,37 @@
+key=C
+swing
+major
+Ch:1.5 Bh:.75 Ah G:.75 |
+F G:1.5 Ah Ch |
+Bh:1.5 Ah:.75 G F:.75 |
+E:2.5 |
+Ah:1.5 G:.75 F E:.75 |
+D E:1.5 F Ah |
+G#:1.5 F:.75 E D:.75 |
+C:2.5 C# |
+D:.5 Ah |
+Ah:3 Ch Bh |
+G:5 B |
+C:.5 F |
+F:2 Ah:2 G |
+F:1 |
+E:3 ~:1 |
+Ch:1.5 Bh:.5 Ah G:.5 |
+F G:1.5 Ah Ch |
+Bh:1.5 Ah:.5 G F:.5 |
+E:4.5 |
+Ah:1.5 G:.5 F E:.5 |
+D E:1.5 F Ah |
+G#:1.5 F:.5 E D:.5 |
+C:2.5 C# |
+D:.5 Ah |
+Ah:4.5 Ch Bh |
+G:7 G# |
+Ah:.5 C |
+C:4.5 C D |
+C:4 |
+~:4 |
+Eh:5 Ch |
+Dh:.5 Ah |
+Ah:3 Bh Dh |
+Ch:8

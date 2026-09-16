@@ -29,6 +29,12 @@ namespace PisAndDag.Content.UI
         /// <summary>What happens when it is clicked. Usually a TalkOptions.Say.</summary>
         public readonly Action<NPC> Click;
 
+        /// <summary>
+        /// False for a line that is not really a line — "Leave" — so it is never marked
+        /// as heard and never goes grey.
+        /// </summary>
+        public bool Remembered = true;
+
         /// <summary>Label parsed once, on first draw.</summary>
         internal TextSnippet[] Snippets;
 
@@ -58,7 +64,7 @@ namespace PisAndDag.Content.UI
     /// Looks are Main.DrawNPCChatButtons: MouseText font, gold, swells on hover, ticks on
     /// entering and leaving. Lines stack under the dialogue box's bottom-right corner.
     /// A line the player has clicked before is grey instead of gold — still clickable,
-    /// just marked as heard. Heard lines are remembered per character (TalkMemory).
+    /// just marked as heard. Heard lines are remembered per world (TalkMemory).
     /// Clicks go through PADMouse, not Main.mouseLeftRelease / IgnoreMouseInterface — see
     /// there for why neither can be used from this late a layer with the inventory shut.
     /// </summary>
@@ -88,7 +94,7 @@ namespace PisAndDag.Content.UI
         private const int RightInset = 4;
 
         /// <summary>Space between stacked lines.</summary>
-        private const int RowGap = 4;
+        internal const int RowGap = 4;
 
         /// <summary>Vanilla's chat buttons are 0.9. The swell is a touch under vanilla's 1.2.</summary>
         public const float BaseScale = 0.9f;
@@ -274,6 +280,23 @@ namespace PisAndDag.Content.UI
             int panelRight = Main.screenWidth / 2 - panelWidth / 2 + panelWidth;
             int panelBottom = PanelTop + (lines + 1) * PanelLineHeight + PanelFootHeight;
 
+            hovered = DrawOptionLines(spriteBatch, options, npc, panelRight - RightInset,
+                panelBottom + GapBelowPanel, hovered, TalkMemory.Heard);
+        }
+
+        /// <summary>
+        /// The lines themselves: stacked down from <paramref name="top"/>, right edges on
+        /// <paramref name="right"/>, gold or heard-grey, swelling on hover, clicking
+        /// through PADMouse. Shared with Dialogue, which puts the same lines under its
+        /// own panel with a memory of its own. Returns which line is hovered now; pass it
+        /// back next frame so the enter/leave tick is right.
+        /// </summary>
+        internal static int DrawOptionLines(SpriteBatch spriteBatch, List<TalkOption> options, NPC npc,
+            float right, float top, int hoveredBefore, HashSet<string> heard)
+        {
+            Player player = Main.LocalPlayer;
+            DynamicSpriteFont font = FontAssets.MouseText.Value;
+
             // Gold, hovered or not — what vanilla's chat buttons are: GUIChatDrawInner sets
             // color2 = (num, num / 1.1, num / 2, num) before DrawNPCChatButtons, and
             // hovering changes their size, not their colour.
@@ -284,9 +307,7 @@ namespace PisAndDag.Content.UI
             int greyLevel = (int)(Main.mouseTextColor * HeardGrey);
             Color grey = new Color(greyLevel, greyLevel, greyLevel, Main.mouseTextColor);
 
-            TalkMemory memory = player.GetModPlayer<TalkMemory>();
-
-            float y = panelBottom + GapBelowPanel;
+            float y = top;
             int nowHovered = -1;
 
             for (int i = 0; i < options.Count; i++)
@@ -308,7 +329,7 @@ namespace PisAndDag.Content.UI
 
                 // Right-aligned to the box, centre anchored so the hover swell grows
                 // outward from the middle rather than past the border.
-                Vector2 centre = new Vector2(panelRight - RightInset - baseSize.X * 0.5f, y + baseSize.Y * 0.5f);
+                Vector2 centre = new Vector2(right - baseSize.X * 0.5f, y + baseSize.Y * 0.5f);
 
                 // Screen and mouse are both in UI space here: the layer is
                 // InterfaceScaleType.UI and PlayerInput.SetZoom_UI has already divided
@@ -347,8 +368,8 @@ namespace PisAndDag.Content.UI
                 ChatManager.DrawColorCodedStringShadow(spriteBatch, font, option.Snippets, topLeft,
                     Color.Black, 0f, Vector2.Zero, scale);
                 ChatManager.DrawColorCodedString(spriteBatch, font, option.Snippets, topLeft,
-                    memory.Heard.Contains(key) ? grey : gold, 0f, Vector2.Zero, scale, out _, -1f,
-                    ignoreColors: true);
+                    option.Remembered && heard.Contains(key) ? grey : gold, 0f, Vector2.Zero, scale,
+                    out _, -1f, ignoreColors: true);
 
                 y += baseSize.Y + RowGap;
 
@@ -356,7 +377,10 @@ namespace PisAndDag.Content.UI
                 {
                     PADMouse.Consume();
                     SoundEngine.PlaySound(SoundID.MenuTick);
-                    memory.Heard.Add(key);
+
+                    if (option.Remembered)
+                        heard.Add(key);
+
                     option.Click?.Invoke(npc);
 
                     // The click may have replaced the list under this loop.
@@ -365,36 +389,40 @@ namespace PisAndDag.Content.UI
             }
 
             // Vanilla ticks on both entering and leaving a chat button, not just entering.
-            if (nowHovered != hovered)
+            if (nowHovered != hoveredBefore)
                 SoundEngine.PlaySound(SoundID.MenuTick);
 
-            hovered = nowHovered;
+            return nowHovered;
         }
     }
 
     /// <summary>
-    /// Which lines this character has clicked, saved with the character. Keyed by NPC
-    /// type and label rather than by object, so the memory survives a reload and a
-    /// label that appears under two NPCs is two entries.
+    /// Which lines have been clicked in this world. Saved with the world, not the
+    /// character: what has been asked is part of the world's timeline, like every other
+    /// flag here, so a new world starts with every line gold and a second character in
+    /// an old one sees what was already asked. Keyed by NPC type and label rather than
+    /// by object, so a label that appears under two NPCs is two entries.
     /// </summary>
-    public class TalkMemory : ModPlayer
+    public class TalkMemory : ModSystem
     {
         private const string SaveKey = "PADTalkHeard";
 
-        public readonly HashSet<string> Heard = new();
+        public static readonly HashSet<string> Heard = new();
 
         public static string Key(int npcType, TalkOption option)
         {
             return npcType + "|" + option.Label;
         }
 
-        public override void SaveData(TagCompound tag)
+        public override void ClearWorld() => Heard.Clear();
+
+        public override void SaveWorldData(TagCompound tag)
         {
             if (Heard.Count > 0)
                 tag[SaveKey] = new List<string>(Heard);
         }
 
-        public override void LoadData(TagCompound tag)
+        public override void LoadWorldData(TagCompound tag)
         {
             Heard.Clear();
 
@@ -409,6 +437,7 @@ namespace PisAndDag.Content.UI
         public override void Unload()
         {
             TalkOptions.Clear();
+            Dialogue.Clear();
         }
 
         public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
@@ -432,6 +461,7 @@ namespace PisAndDag.Content.UI
                     // Never both up: the bench clears the dialogue while it is open, and
                     // the lines need the dialogue. One layer serves both.
                     TalkOptions.Draw(Main.spriteBatch);
+                    Dialogue.Draw(Main.spriteBatch);
                     MegasharkRepairUI.Draw(Main.spriteBatch);
 
                     return true;

@@ -24,6 +24,13 @@ namespace PisAndDag.Content.NPCs
     /// hold whenever any boss is waiting, so nothing swings while its owner stands
     /// still.
     ///
+    /// Worms are the exception to holding: a worm held is a worm in a heap, because
+    /// its body only strings out behind a head that moves. So a worm keeps its AI
+    /// through the wait, head and segments, and is merely slowed to a crawl and made
+    /// harmless. And a leader that appears while its own fight is already underway —
+    /// the Eater of Worlds throws off a new head every time it is cut — gets no wait
+    /// at all: the fight has been introduced once.
+    ///
     /// The wait is measured from the boss's first tick, but the hold does not start
     /// until the boss has SETTLED: its first tick always runs, because that is where
     /// it builds itself (a worm's body, Skeletron's hands, Golem's), and vanilla's own
@@ -152,6 +159,37 @@ namespace PisAndDag.Content.NPCs
             NPCID.EaterofWorldsHead,
         };
 
+        /// <summary>Leaders that keep their AI through the wait, slowed, instead of holding.</summary>
+        private static readonly HashSet<int> Worms = new()
+        {
+            NPCID.EaterofWorldsHead, NPCID.TheDestroyer,
+        };
+
+        /// <summary>Their segments: they follow the head and must keep following.</summary>
+        private static readonly HashSet<int> WormParts = new()
+        {
+            NPCID.EaterofWorldsBody, NPCID.EaterofWorldsTail,
+            NPCID.TheDestroyerBody, NPCID.TheDestroyerTail,
+        };
+
+        /// <summary>Fastest a waiting worm moves, in pixels a tick. Enough to string out, not enough to arrive.</summary>
+        private const float WormCrawl = 2.6f;
+
+        /// <summary>Which leader a part belongs to, for telling whether a fight is still alive.</summary>
+        private static readonly Dictionary<int, int> Family = new()
+        {
+            { NPCID.EaterofWorldsBody, NPCID.EaterofWorldsHead }, { NPCID.EaterofWorldsTail, NPCID.EaterofWorldsHead },
+            { NPCID.TheDestroyerBody, NPCID.TheDestroyer }, { NPCID.TheDestroyerTail, NPCID.TheDestroyer },
+            { NPCID.Probe, NPCID.TheDestroyer },
+        };
+
+        /// <summary>
+        /// Leader types whose arrival has finished and whose fight is still alive. A
+        /// leader of one of these types that appears now is a piece of that fight, not
+        /// a new one, and gets no wait. Kept by BossArrivalWaitSystem.
+        /// </summary>
+        internal static readonly HashSet<int> Underway = new();
+
         // ---- state -------------------------------------------------------------------
 
         /// <summary>True on the tick after any boss was waiting. What the parts read.</summary>
@@ -171,6 +209,9 @@ namespace PisAndDag.Content.NPCs
 
         private static bool Leads(NPC npc) => (npc.boss || Heads.Contains(npc.type)) && !Parts.Contains(npc.type);
 
+        /// <summary>The leader type a part belongs to; a leader is its own.</summary>
+        internal static int LeaderOf(int type) => Family.TryGetValue(type, out int leader) ? leader : type;
+
         public override bool PreAI(NPC npc)
         {
             if (Parts.Contains(npc.type))
@@ -181,17 +222,21 @@ namespace PisAndDag.Content.NPCs
 
             if (left < 0)
             {
-                left = BossPlate.ArrivalTicks(npc);
+                left = Underway.Contains(npc.type) ? 0 : BossPlate.ArrivalTicks(npc);
                 ticks = 0;
             }
 
             if (left == 0)
+            {
+                Underway.Add(npc.type);
                 return true;
+            }
 
             if (--left <= 0)
             {
                 // Home. The boss gets this tick.
                 Give(npc);
+                Underway.Add(npc.type);
                 return true;
             }
 
@@ -203,6 +248,10 @@ namespace PisAndDag.Content.NPCs
 
             ticks++;
             Take(npc);
+
+            // A worm keeps moving; PostAI reins it in.
+            if (Worms.Contains(npc.type))
+                return true;
 
             if (Hovers.Contains(npc.type) && Target(npc, out Player player))
                 Hover(npc, player);
@@ -232,6 +281,13 @@ namespace PisAndDag.Content.NPCs
                 return true;
             }
 
+            // A segment follows its head. Untouchable, but never still.
+            if (WormParts.Contains(npc.type))
+            {
+                Take(npc);
+                return true;
+            }
+
             int setup = PartSetup.TryGetValue(npc.type, out int p) ? p : PartSetupDefault;
 
             if (ticks++ < setup)
@@ -240,6 +296,18 @@ namespace PisAndDag.Content.NPCs
             Take(npc);
             Hold(npc);
             return false;
+        }
+
+        /// <summary>A waiting worm's head crawls: its own AI, capped.</summary>
+        public override void PostAI(NPC npc)
+        {
+            if (!holding || !Worms.Contains(npc.type))
+                return;
+
+            float speed = npc.velocity.Length();
+
+            if (speed > WormCrawl)
+                npc.velocity *= WormCrawl / speed;
         }
 
         /// <summary>Nothing touches the player while its owner is being introduced.</summary>
@@ -328,24 +396,37 @@ namespace PisAndDag.Content.NPCs
     /// </summary>
     public class BossArrivalWaitSystem : ModSystem
     {
+        private static readonly HashSet<int> alive = new();
+
         public override void PreUpdateNPCs()
         {
             bool any = false;
+            alive.Clear();
 
             foreach (NPC npc in Main.ActiveNPCs)
             {
                 if (npc.GetGlobalNPC<BossArrivalWait>().Waiting)
-                {
                     any = true;
-                    break;
-                }
+
+                alive.Add(BossArrivalWait.LeaderOf(npc.type));
             }
 
             BossArrivalWait.AnyWaiting = any;
+
+            // A fight is underway only while something of it is still here.
+            BossArrivalWait.Underway.RemoveWhere(type => !alive.Contains(type));
         }
 
-        public override void OnWorldLoad() => BossArrivalWait.AnyWaiting = false;
+        public override void OnWorldLoad()
+        {
+            BossArrivalWait.AnyWaiting = false;
+            BossArrivalWait.Underway.Clear();
+        }
 
-        public override void OnWorldUnload() => BossArrivalWait.AnyWaiting = false;
+        public override void OnWorldUnload()
+        {
+            BossArrivalWait.AnyWaiting = false;
+            BossArrivalWait.Underway.Clear();
+        }
     }
 }
