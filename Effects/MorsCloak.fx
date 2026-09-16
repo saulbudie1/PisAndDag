@@ -19,6 +19,12 @@
 //           the way a branch moves. A breeze. Also square in the hang: it bends.
 //   DRAG    a steady lean downwind. A windy day. The sway keeps going on top of it,
 //           faster, and the ripple runs faster too.
+//   FLUTTER a fast, small, row-by-row shiver at the hem: cloth snapping in a gale.
+//           Nothing at all on a still day.
+//
+// The lean of the whole cloth (up to 30 degrees in a gale) is not done here: MorsIdle
+// draws this layer turned about the shoulders. Everything the shader does is on top
+// of that, in the cloth's own frame.
 //
 // All of it is snapped to the 2px art grid, so a row moves by whole art pixels or
 // not at all.
@@ -31,9 +37,9 @@ float uAnchorV;     // v of the shoulder line the cloth hangs from
 
 float uRipple;      // ripple travel at the hem, texture pixels
 float uRippleRate;  // multiplier on the ripple's speed
-float uSway;        // sway travel at the hem, texture pixels
-float uSwayRate;    // radians a second
+float uSway;        // sway at the hem this frame, texture pixels, signed (MorsIdle works the wave out; it is the same for every row)
 float uDrag;        // steady lean at the hem, texture pixels, signed downwind
+float uFlutter;     // fast shiver at the hem, texture pixels
 
 float4 CloakPass(float2 coords : TEXCOORD0, float4 color : COLOR0) : COLOR0
 {
@@ -51,11 +57,12 @@ float4 CloakPass(float2 coords : TEXCOORD0, float4 color : COLOR0) : COLOR0
     float t = uTime * uRippleRate;
     float ripple = (sin(t * 2.1 + phase) * 0.7 + sin(t * 3.4 - phase * 1.7 + 1.3) * 0.3) * uRipple;
 
-    // Sway: one slow lean for the whole cloth, with a smaller second beat so it is
-    // not a metronome.
-    float sway = (sin(uTime * uSwayRate) * 0.8 + sin(uTime * uSwayRate * 2.3 + 0.7) * 0.2) * uSway;
+    // Flutter: quick, strongest on the lower half, so the hem snaps while the
+    // shoulders stay put. Compiled for ps_3_0: ps_2_0 runs out of instruction slots.
+    float snap = saturate((hang - 0.35) / 0.65);
+    float flutter = sin(uTime * 23.0 + row * 1.9) * uFlutter * snap * snap;
 
-    float shift = (ripple + sway + uDrag) * bend;
+    float shift = (ripple + uSway + uDrag) * bend + flutter;
 
     // Whole art pixels only.
     shift = floor(shift * 0.5 + 0.5) * 2.0;
@@ -72,6 +79,6 @@ technique Technique1
 {
     pass CloakPass
     {
-        PixelShader = compile ps_2_0 CloakPass();
+        PixelShader = compile ps_3_0 CloakPass();
     }
 }

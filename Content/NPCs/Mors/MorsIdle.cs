@@ -61,32 +61,42 @@ namespace PisAndDag.Content.NPCs.Mors
         // ---- the cloak and the weather --------------------------------------------
         //
         // Main.windSpeedCurrent runs to about ±0.35 on an ordinary day and up to ±0.85
-        // on a windy one (vanilla calls ≥0.4 windy). Three bands, blended:
-        //   still   ripple only
-        //   breeze  the lower cloth sways as one, ripple eases off
-        //   wind    a steady lean downwind, faster sway, faster ripple
-        // Underground there is no wind and he gets the still day.
+        // on a windy one (vanilla calls ≥0.4 windy). Everything scales with the wind,
+        // 0 to WindFull, and is capped there: a dead calm still ripples a little, a
+        // full gale turns the whole cloth thirty degrees downwind about the shoulders
+        // and snaps the hem. Underground there is no wind and he gets the calm.
 
-        /// <summary>Ripple at the hem on a still day, and what it eases to once the sway takes over. Texture px.</summary>
+        /// <summary>Wind at which the cloak is doing everything it can.</summary>
+        private const float WindFull = 0.85f;
+
+        /// <summary>The whole cloth's lean downwind in a full gale, about the shoulder line.</summary>
+        private const float LeanMax = MathHelper.Pi / 180f * 23f;
+
+        /// <summary>The lean gusts about its mean by this fraction in a gale, so it never sits still.</summary>
+        private const float LeanGust = 0.12f;
+
+        /// <summary>Ripple at the hem, calm to gale, texture px.</summary>
         private const float RippleStill = 5f;
-        private const float RippleWindy = 3f;
+        private const float RippleWindy = 9f;
 
-        /// <summary>Sway at the hem in a full breeze, and the wind band it comes in over.</summary>
+        /// <summary>Sway at the hem in a full gale.</summary>
         private const float SwayMax = 7f;
-        private const float SwayFrom = 0.12f;
-        private const float SwayTo = 0.35f;
 
-        /// <summary>Lean at the hem in a full wind, and the band it comes in over.</summary>
-        private const float DragMax = 10f;
-        private const float DragFrom = 0.35f;
-        private const float DragTo = 0.7f;
+        /// <summary>Extra lean at the hem, on top of the turn, in a full gale. Small: the margin is 8px.</summary>
+        private const float DragMax = 5f;
 
-        /// <summary>Sway rate, radians a second, still to full wind.</summary>
+        /// <summary>Sway rate, radians a second, calm to gale.</summary>
         private const float SwayRateStill = 1.0f;
-        private const float SwayRateWindy = 3.6f;
+        private const float SwayRateWindy = 4.2f;
 
-        /// <summary>The ripple runs this much faster at full wind.</summary>
-        private const float RippleRateWindy = 2.6f;
+        /// <summary>The ripple runs this much faster in a gale.</summary>
+        private const float RippleRateWindy = 4f;
+
+        /// <summary>Hem flutter in a gale, texture px. None in a calm.</summary>
+        private const float FlutterMax = 4f;
+
+        /// <summary>The point the cloth turns about: the middle of the shoulder line, on the canvas.</summary>
+        private static readonly Vector2 CloakPivot = new Vector2(CanvasWidth * 0.5f, 18f);
 
         // ============================================================
         // THE NECK
@@ -277,19 +287,32 @@ namespace PisAndDag.Content.NPCs.Mors
         /// it is mirrored.
         /// </summary>
         private void Weather(bool bodyFlip, out float ripple, out float rippleRate, out float sway,
-            out float swayRate, out float drag)
+            out float swayRate, out float drag, out float flutter, out float lean)
         {
             float wind = NPC.Center.Y > Main.worldSurface * 16f ? 0f : Main.windSpeedCurrent;
-            float strength = Math.Abs(wind);
+            float s = MathHelper.Clamp(Math.Abs(wind) / WindFull, 0f, 1f);
+            float downwind = Math.Sign(wind) * (bodyFlip ? -1f : 1f);
 
-            float breeze = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp((strength - SwayFrom) / (SwayTo - SwayFrom), 0f, 1f));
-            float gale = MathHelper.SmoothStep(0f, 1f, MathHelper.Clamp((strength - DragFrom) / (DragTo - DragFrom), 0f, 1f));
+            // The gentle things come in early, the violent ones late.
+            float soft = MathHelper.SmoothStep(0f, 1f, s);
+            float hard = s * s;
 
-            ripple = MathHelper.Lerp(RippleStill, RippleWindy, breeze);
-            rippleRate = MathHelper.Lerp(1f, RippleRateWindy, gale);
-            sway = SwayMax * breeze;
-            swayRate = MathHelper.Lerp(SwayRateStill, SwayRateWindy, Math.Max(breeze * 0.5f, gale));
-            drag = DragMax * gale * Math.Sign(wind) * (bodyFlip ? -1f : 1f);
+            ripple = MathHelper.Lerp(RippleStill, RippleWindy, soft);
+            rippleRate = MathHelper.Lerp(1f, RippleRateWindy, hard);
+            // The sway wave is the same for every row, so it is worked out here and the
+            // shader gets the number: one slow lean with a smaller second beat.
+            float rate = MathHelper.Lerp(SwayRateStill, SwayRateWindy, soft);
+            float now = Main.GlobalTimeWrappedHourly;
+            sway = SwayMax * soft * ((float)Math.Sin(now * rate) * 0.8f + (float)Math.Sin(now * rate * 2.3f + 0.7f) * 0.2f);
+            swayRate = rate;
+            drag = DragMax * hard * downwind;
+            flutter = FlutterMax * hard;
+
+            // The turn about the shoulders, gusting a little so it breathes. Screen
+            // clockwise is positive, which is a hem blown to the right.
+            float t = Main.GlobalTimeWrappedHourly;
+            float gust = 1f + LeanGust * hard * ((float)Math.Sin(t * 2.7f) * 0.7f + (float)Math.Sin(t * 6.1f + 1.0f) * 0.3f);
+            lean = LeanMax * hard * gust * Math.Sign(wind);
         }
 
         /// <summary>The neck's canvas position for the way the body stands.</summary>
@@ -357,7 +380,8 @@ namespace PisAndDag.Content.NPCs.Mors
             if (CloakEffect != null && CloakEffect.IsLoaded)
             {
                 Effect effect = CloakEffect.Value;
-                Weather(bodyFlip, out float ripple, out float rippleRate, out float sway, out float swayRate, out float drag);
+                Weather(bodyFlip, out float ripple, out float rippleRate, out float sway, out float swayRate,
+                    out float drag, out float flutter, out float lean);
 
                 effect.Parameters["uTime"].SetValue(Main.GlobalTimeWrappedHourly);
                 effect.Parameters["uTexel"].SetValue(new Vector2(1f / cloak.Width, 1f / cloak.Height));
@@ -365,14 +389,18 @@ namespace PisAndDag.Content.NPCs.Mors
                 effect.Parameters["uRipple"].SetValue(ripple);
                 effect.Parameters["uRippleRate"].SetValue(rippleRate);
                 effect.Parameters["uSway"].SetValue(sway);
-                effect.Parameters["uSwayRate"].SetValue(swayRate);
+                effect.Parameters["uSwayRate"]?.SetValue(swayRate);
                 effect.Parameters["uDrag"].SetValue(drag);
+                effect.Parameters["uFlutter"]?.SetValue(flutter);
 
                 spriteBatch.End();
                 spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, Main.DefaultSamplerState,
                     DepthStencilState.None, Main.Rasterizer, effect, Main.GameViewMatrix.TransformationMatrix);
 
-                spriteBatch.Draw(cloak, topLeft, null, drawColor, 0f, Vector2.Zero, 1f, bodyEffects, 0f);
+                // Turned about the shoulders. The origin is in texture space, so a
+                // mirrored cloak needs the mirrored pivot to land on the same point.
+                Vector2 pivot = bodyFlip ? new Vector2(cloak.Width - CloakPivot.X, CloakPivot.Y) : CloakPivot;
+                spriteBatch.Draw(cloak, topLeft + CloakPivot, null, drawColor, lean, pivot, 1f, bodyEffects, 0f);
 
                 spriteBatch.End();
                 spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState,
@@ -380,7 +408,10 @@ namespace PisAndDag.Content.NPCs.Mors
             }
             else
             {
-                spriteBatch.Draw(cloak, topLeft, null, drawColor, 0f, Vector2.Zero, 1f, bodyEffects, 0f);
+                // No shader: still cloth, but it still leans with the wind.
+                Weather(bodyFlip, out _, out _, out _, out _, out _, out _, out float lean);
+                Vector2 pivot = bodyFlip ? new Vector2(cloak.Width - CloakPivot.X, CloakPivot.Y) : CloakPivot;
+                spriteBatch.Draw(cloak, topLeft + CloakPivot, null, drawColor, lean, pivot, 1f, bodyEffects, 0f);
             }
 
             // 3. Head, on the neck, turned about it. The neck is wherever the body put

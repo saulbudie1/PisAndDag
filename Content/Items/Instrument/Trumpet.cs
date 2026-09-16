@@ -80,6 +80,101 @@ namespace PisAndDag.Content.Items.Instrument
         private static SlotId fading = SlotId.Invalid;
         private static int fadeTicks;
 
+        // ---- expression: what a player does without thinking about it --------------------
+        //
+        // All of it comes from timing and the mouse, nothing is a key. Pitch is ridden
+        // on the sounding note (ActiveSound.Pitch, -1..1 is an octave down..up) and
+        // the level on its Volume, on top of the Alt soft pedal.
+
+        /// <summary>A fresh attack after this much silence scoops up into the note; a quicker re-strike is tongued clean.</summary>
+        private const int FreshAfter = 10;
+
+        /// <summary>The scoop: starts this many semitones under and settles over ScoopTicks.</summary>
+        private const float ScoopDepth = 0.7f;
+        private const int ScoopTicks = 5;
+
+        /// <summary>A fresh note starts here and swells to full over SwellTicks. A tap never gets there.</summary>
+        private const float SwellFrom = 0.82f;
+        private const int SwellTicks = 90;
+
+        /// <summary>Vibrato: begins after VibratoAfter ticks of holding, grows in over VibratoGrow, at VibratoHz.</summary>
+        private const int VibratoAfter = 30;
+        private const int VibratoGrow = 40;
+        private const float VibratoHz = 5.3f;
+        private const float VibratoSemitones = 0.22f;
+        private const float VibratoLevel = 0.06f;
+
+        /// <summary>Letting go drops the pitch a touch as the sound dies; flicking the mouse down as you let go makes it a fall.</summary>
+        private const float ReleaseDrop = 0.35f;
+        private const float FallDrop = 2.5f;
+        private const int FallTicks = 12;
+        private const int FallFlick = 14;
+
+        private static uint lastEnd;
+        private static bool fresh;
+        private static float vibratoPhase;
+        private static float fall;
+        private static int releaseTicks = ReleaseTicks;
+        private static readonly int[] mouseY = new int[4];
+
+        /// <summary>An accent hits this much harder for its first AccentTicks.</summary>
+        private const float AccentGain = 1.12f;
+        private const int AccentTicks = 6;
+
+        /// <summary>The engine refuses a volume past 1; everything that sets one goes through here.</summary>
+        private static void SetVolume(ActiveSound sound, float volume)
+            => sound.Volume = MathHelper.Clamp(volume, 0f, 1f);
+
+        /// <summary>Pitch, in semitones, to ride on the note this tick.</summary>
+        private static float Expression(out float gain)
+        {
+            float semis = 0f;
+            gain = 1f;
+
+            // A score's marks, when one is playing: its dynamics, accents, straight notes.
+            bool auto = TrumpetAutoplay.Active;
+            bool accent = auto && TrumpetAutoplay.Accent;
+            bool straight = auto && TrumpetAutoplay.Straight;
+
+            if (auto)
+                gain *= TrumpetAutoplay.Level;
+
+            if (accent && TrumpetAutoplay.NoteAge < AccentTicks)
+                gain *= AccentGain;
+
+            if (fresh && !accent)
+            {
+                if (held < ScoopTicks)
+                    semis -= ScoopDepth * (1f - held / (float)ScoopTicks);
+
+                gain *= MathHelper.Lerp(SwellFrom, 1f, MathHelper.Clamp(held / (float)SwellTicks, 0f, 1f));
+            }
+
+            if (held > VibratoAfter && !straight)
+            {
+                float depth = MathHelper.Clamp((held - VibratoAfter) / (float)VibratoGrow, 0f, 1f);
+                vibratoPhase += MathHelper.TwoPi * VibratoHz / 60f;
+                float wave = (float)Math.Sin(vibratoPhase);
+                semis += VibratoSemitones * depth * wave;
+                gain *= 1f + VibratoLevel * depth * wave;
+            }
+
+            if (releasing > 0)
+                semis -= fall * (releasing / (float)releaseTicks);
+
+            return semis;
+        }
+
+        /// <summary>Pixels the mouse moved down over the last few ticks; negative is up.</summary>
+        private static int Flick()
+        {
+            for (int i = mouseY.Length - 1; i > 0; i--)
+                mouseY[i] = mouseY[i - 1];
+
+            mouseY[0] = PlayerInput.MouseY;
+            return mouseY[0] - mouseY[^1];
+        }
+
         public override void SetStaticDefaults()
         {
             notes = new SoundStyle[Bands * Octaves];
@@ -260,6 +355,12 @@ namespace PisAndDag.Content.Items.Instrument
             Playing = this;
             dynamic = WantsSoft() ? Soft : 1f;
 
+            // A breath before it, or straight off the last note?
+            fresh = Main.GameUpdateCount - lastEnd >= (uint)FreshAfter;
+            vibratoPhase = 0f;
+            fall = 0f;
+            releaseTicks = ReleaseTicks;
+
             Sound(player, BandUnderCursor());
         }
 
@@ -281,7 +382,13 @@ namespace PisAndDag.Content.Items.Instrument
             slot = SoundEngine.PlaySound(notes[Octave * Bands + band], player.Center);
 
             if (SoundEngine.TryGetActiveSound(slot, out ActiveSound sound))
-                sound.Volume = Loudness * dynamic;
+            {
+                SetVolume(sound, Loudness * dynamic * (fresh && held == 0 ? SwellFrom : 1f));
+
+                // A fresh note starts under the pitch and scoops up; Continue rides it from here.
+                if (fresh && held == 0)
+                    sound.Pitch = -ScoopDepth / 12f;
+            }
         }
 
         /// <summary>One tick of a press: follow the cursor, ride the fades, keep the pose, and end it.</summary>
@@ -293,7 +400,7 @@ namespace PisAndDag.Content.Items.Instrument
                 if (SoundEngine.TryGetActiveSound(fading, out ActiveSound old) && old.IsPlaying)
                 {
                     fadeTicks++;
-                    old.Volume = Loudness * dynamic * Math.Max(0f, 1f - fadeTicks / (float)HandoverTicks);
+                    SetVolume(old, Loudness * dynamic * Math.Max(0f, 1f - fadeTicks / (float)HandoverTicks));
 
                     if (fadeTicks >= HandoverTicks)
                     {
@@ -315,20 +422,31 @@ namespace PisAndDag.Content.Items.Instrument
 
             held++;
             sound.Position = player.Center;
+            int flick = Flick();
 
             // Alt is the soft pedal, and it can be pressed or let go mid-note.
             dynamic = MathHelper.Lerp(dynamic, WantsSoft() ? Soft : 1f, DynamicEase);
-            sound.Volume = Loudness * dynamic;
 
             if (releasing == 0 && (!stillHeld || held >= MaxHold))
+            {
                 releasing = 1;
+
+                // A downward flick as the note ends is a fall, or the score asked for one; otherwise it just settles.
+                bool falling = flick >= FallFlick || (TrumpetAutoplay.Active && TrumpetAutoplay.Fall);
+                fall = falling ? FallDrop : ReleaseDrop;
+                releaseTicks = falling ? FallTicks : ReleaseTicks;
+            }
+
+            float semis = Expression(out float gain);
+            sound.Pitch = MathHelper.Clamp(semis / 12f, -1f, 1f);
+            SetVolume(sound, Loudness * dynamic * gain);
 
             if (releasing > 0)
             {
-                sound.Volume = Loudness * dynamic * (1f - releasing / (float)ReleaseTicks);
+                SetVolume(sound, Loudness * dynamic * gain * (1f - releasing / (float)releaseTicks));
                 releasing++;
 
-                if (releasing > ReleaseTicks)
+                if (releasing > releaseTicks)
                 {
                     sound.Stop();
                     Silence();
@@ -386,6 +504,9 @@ namespace PisAndDag.Content.Items.Instrument
 
             if (fading.IsValid && SoundEngine.TryGetActiveSound(fading, out ActiveSound old))
                 old.Stop();
+
+            if (Band >= 0)
+                lastEnd = Main.GameUpdateCount;
 
             slot = SlotId.Invalid;
             fading = SlotId.Invalid;

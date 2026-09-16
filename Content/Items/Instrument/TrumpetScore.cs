@@ -34,13 +34,27 @@ namespace PisAndDag.Content.Items.Instrument
             public readonly int Band;      // 0..11, -1 for a rest
             public readonly int Octave;    // 0 low, 1 high
             public readonly int Ticks;
+            public readonly float Level;   // dynamics, 1 is as loud as a hand plays
+            public readonly bool Accent;   // >  hit it harder, no swell
+            public readonly bool Straight; // -  no vibrato
+            public readonly bool Fall;     // !  drop off the end
+            public readonly bool Restrike; // ,  before it: tongue it rather than slide in
 
-            public Note(int band, int octave, int ticks)
+            public Note(int band, int octave, int ticks, float level = 1f,
+                bool accent = false, bool straight = false, bool fall = false, bool restrike = false)
             {
                 Band = band;
                 Octave = octave;
                 Ticks = ticks;
+                Level = level;
+                Accent = accent;
+                Straight = straight;
+                Fall = fall;
+                Restrike = restrike;
             }
+
+            public Note With(int? band = null, int? octave = null, int? ticks = null)
+                => new Note(band ?? Band, octave ?? Octave, ticks ?? Ticks, Level, Accent, Straight, Fall, Restrike);
         }
 
         /// <summary>Ticks of silence between two of the same note in one phrase, so the second one strikes.</summary>
@@ -55,6 +69,16 @@ namespace PisAndDag.Content.Items.Instrument
         internal static bool Pressed { get; private set; }
         internal static int Octave { get; private set; }
         internal static int Band { get; private set; } = -1;
+
+        /// <summary>The sounding note's marks, for Trumpet's expression.</summary>
+        internal static float Level { get; private set; } = 1f;
+        internal static bool Accent { get; private set; }
+        internal static bool Straight { get; private set; }
+        internal static bool Fall { get; private set; }
+        internal static int NoteAge => noteTicks - left;
+
+        private static int noteTicks;
+        private static bool humanize;
 
         private static List<List<Note>> score;
         private static int phrase, note, left, gap;
@@ -79,6 +103,14 @@ namespace PisAndDag.Content.Items.Instrument
         //   key=C    the key the tune is written in (default C); key=F# and key=Bb work
         //   minor    the tune is written in the minor (default major); "major" says so
         //   swing    half beats play long-short (jazz); "straight" turns it back off
+        //
+        // Marks on a note, after the length:  E:2!  Gh>  D^  C:4_  A-
+        //   !  fall off the end        >  accent, hit harder      ^  short: half the length, then rest
+        //   _  fermata: held longer    -  straight, no vibrato
+        //   ,  between two notes: tongue the next one rather than slide into it
+        //   p mp mf f ff   dynamics from here on, lowercase (a capital F is the note)
+        //   humanize       a little human unevenness
+        //   rit            from here the tempo eases down to the end
         //
         // Beats become ticks at the tempo. "/trumpet play <score>" takes the same text.
         //
@@ -138,6 +170,11 @@ namespace PisAndDag.Content.Items.Instrument
             bool swing = false;
             float at = 0f; // beats into the phrase, for swing
             PhraseBeats.Clear();
+            humanize = false;
+            float level = 1f;
+            bool tongue = false;
+            int ritFrom = -1;
+            var all = new List<(int p, int i)>(); // every note in order, for rit
 
             // Any whitespace splits, so a pasted block with line breaks or tabs reads the same.
             string[] toks = text.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
@@ -158,6 +195,40 @@ namespace PisAndDag.Content.Items.Instrument
                 if (tok.Equals("major", StringComparison.OrdinalIgnoreCase)) { ParsedMinor = false; continue; }
                 if (tok.Equals("swing", StringComparison.OrdinalIgnoreCase)) { swing = true; continue; }
                 if (tok.Equals("straight", StringComparison.OrdinalIgnoreCase)) { swing = false; continue; }
+                if (tok.Equals("humanize", StringComparison.OrdinalIgnoreCase)) { humanize = true; continue; }
+                if (tok == ",") { tongue = true; continue; }
+                if (tok.Equals("rit", StringComparison.OrdinalIgnoreCase) || tok.Equals("rit.", StringComparison.OrdinalIgnoreCase)) { ritFrom = all.Count; continue; }
+
+                // Dynamics are lowercase; a capital F is the note. (Notes are otherwise case-free.)
+                switch (tok)
+                {
+                    case "pp": level = 0.45f; continue;
+                    case "p": level = 0.55f; continue;
+                    case "mp": level = 0.7f; continue;
+                    case "mf": level = 0.85f; continue;
+                    case "f": level = 1f; continue;
+                    case "ff": level = 1.15f; continue;
+                }
+
+                // "E, F": the comma after a note tongues the next one.
+                bool tongueNext = false;
+                if (tok.Length > 1 && tok[^1] == ',') { tongueNext = true; tok = tok[..^1]; }
+
+                // Marks hang off the end of a note: E:2!  Gh>  D^  C:4_  A-
+                bool fall = false, accent = false, straight = false, shortNote = false, fermata = false;
+
+                while (tok.Length > 1 && "!>-^_".IndexOf(tok[^1]) >= 0)
+                {
+                    switch (tok[^1])
+                    {
+                        case '!': fall = true; break;
+                        case '>': accent = true; break;
+                        case '-': straight = true; break;
+                        case '^': shortNote = true; break;
+                        case '_': fermata = true; break;
+                    }
+                    tok = tok[..^1];
+                }
 
                 // Key, same forgiveness as tempo: key=F#, key = Bb, key:G.
                 if (tok.StartsWith("key", StringComparison.OrdinalIgnoreCase))
@@ -242,6 +313,11 @@ namespace PisAndDag.Content.Items.Instrument
                     continue;
                 }
 
+                if (fermata) ticks = (int)(ticks * 1.6f);
+
+                int restAfter = 0;
+                if (shortNote) { restAfter = ticks - ticks / 2; ticks /= 2; }
+
                 int octave = 0;
 
                 if (head.EndsWith("h", StringComparison.OrdinalIgnoreCase))
@@ -258,10 +334,27 @@ namespace PisAndDag.Content.Items.Instrument
                     return null;
                 }
 
-                current.Add(new Note(band, octave, ticks));
+                all.Add((phrases.Count, current.Count));
+                current.Add(new Note(band, octave, Math.Max(1, ticks), level, accent, straight, fall, tongue));
+                tongue = tongueNext;
+
+                if (restAfter > 0)
+                    current.Add(new Note(-1, 0, restAfter));
             }
 
             if (current.Count > 0) { phrases.Add(current); PhraseBeats.Add(at); }
+
+            // rit: from that note to the last, each note a little longer than the one before, ending half again as long.
+            if (ritFrom >= 0 && all.Count > ritFrom + 1)
+            {
+                for (int k = ritFrom; k < all.Count; k++)
+                {
+                    float f = 1f + 0.5f * (k - ritFrom) / (float)(all.Count - 1 - ritFrom);
+                    (int p, int i) = all[k];
+                    Note n = phrases[p][i];
+                    phrases[p][i] = n.With(ticks: (int)(n.Ticks * f));
+                }
+            }
 
             if (phrases.Count == 0)
             {
@@ -317,7 +410,7 @@ namespace PisAndDag.Content.Items.Instrument
                     while (idx < 0) idx += Trumpet.Bands;
                     while (idx >= top) idx -= Trumpet.Bands;
 
-                    phrases[p][i] = new Note(idx % Trumpet.Bands, idx / Trumpet.Bands, n.Ticks);
+                    phrases[p][i] = n.With(band: idx % Trumpet.Bands, octave: idx / Trumpet.Bands);
                 }
             }
         }
@@ -370,7 +463,7 @@ namespace PisAndDag.Content.Items.Instrument
                     {
                         Note n = score[p][i];
                         int o = Math.Clamp(n.Octave + octaveShift, 0, Trumpet.Octaves - 1);
-                        score[p][i] = new Note(n.Band, o, n.Ticks);
+                        score[p][i] = n.With(octave: o);
                     }
                 }
             }
@@ -394,6 +487,8 @@ namespace PisAndDag.Content.Items.Instrument
             Pressed = false;
             Band = -1;
             score = null;
+            Level = 1f;
+            Accent = Straight = Fall = false;
         }
 
         /// <summary>Called by Trumpet.HoldItem each tick before it reads the buttons.</summary>
@@ -445,15 +540,27 @@ namespace PisAndDag.Content.Items.Instrument
                 Note n = current[note];
                 bool sameAgain = note > 0 && current[note - 1].Band == n.Band && current[note - 1].Octave == n.Octave;
 
-                if (sameAgain && Pressed)
+                if ((sameAgain || n.Restrike) && Pressed)
                 {
-                    // Lift for a moment so the repeat strikes, then come back to this note.
+                    // Lift for a moment so the repeat, or a tongued note, strikes; then come back to it.
                     gap = Restrike;
                     Pressed = false;
                     return;
                 }
 
                 left = n.Ticks;
+                Level = n.Level;
+                Accent = n.Accent;
+                Straight = n.Straight;
+                Fall = n.Fall;
+
+                if (humanize && n.Band >= 0)
+                {
+                    left += Main.rand.Next(-1, 2);
+                    Level *= Main.rand.NextFloat(0.97f, 1.03f);
+                }
+
+                noteTicks = left;
                 Band = n.Band;
                 Octave = n.Octave;
                 Pressed = n.Band >= 0;
