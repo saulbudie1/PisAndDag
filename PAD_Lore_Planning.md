@@ -31,7 +31,7 @@ Candidates:
 
 ## 1.2 The Pilgrim's name
 
-**Resolved → Bible §XXXI: Pugrim.**
+**Resolved → Bible §XXXI: Pugream.**
 
 ## 1.3 Where the Judge sits
 
@@ -143,6 +143,7 @@ What the lore now needs from the mod, roughly in the order it becomes buildable.
 - **TalkOptions** dialogue system + heard-line memory — built. Every NPC branch below runs on it.
 - **Ominous Orb / Legends mode** — built. Now means "the heavens are watching" (§XXX); the announcement line and the Guide's Legends line predate the voice and want rewriting.
 - **Blade of Mors** — built. §XVIII makes it the most important object class in the world.
+- **White Death** — the boss shell and its marked-spot volley are built and unkillable by construction. Section 8; the unwinnable first meeting is already most of the way there in code and has no lore attached to it at all.
 
 ## 4.2 Cheap and high value
 
@@ -204,3 +205,122 @@ Unchanged from 1.7, and now the only major undecided item left in Part II. The p
 ## 7.6 The seven endings still have no levers
 
 §XXXII lists seven and most have no stated trigger. They are also not commensurate. Three or four with a concrete lever each is the recommendation.
+
+
+---
+
+# 8. The Sniper — plan
+
+New. Nothing in the Bible yet. The shell is already in the mod.
+
+**Built:** `Content/NPCs/WhiteDeath/WhiteDeath.cs` — 500 life, `boss = true`, `AutoloadBossHead`, and both `CanBeHitByItem` and `CanBeHitByProjectile` returning **false**. He fires `Marksman_WhiteDeath` every 45 ticks at a point rolled inside the player's own hitbox, with the offset stashed in `ai[0]`/`ai[1]`. The unwinnable first meeting and the marked-spot telegraph exist as code. None of what follows does.
+
+## 8.1 What he is
+
+The best shot in the world. The Low Court want him and have never had him. He lives alone, and the word for it is not recluse — a sniper does not hide, he holds a position. He lives where he lives because it is the furthest point from which he can still cover a particular door.
+
+He is **not one of the five** (section 2). He is the one they never got, which keeps the five intact and makes him a standing failure of theirs.
+
+## 8.2 The first meeting
+
+Three shots, to 1 life. The report arrives **after** the wound — land all three, then play the sound, from a bearing that does not help.
+
+Then a debuff that stops regeneration. Working name **Held**: he is holding the player still, and he is holding his fire. It reads twice, it is plain, and the mod has no other debuff by that name.
+
+The debuff is the point of the scene. He fired three times and stopped, and the wound not closing is what makes stopping legible as a decision rather than as mercy. Three casings left on the ridge, pickable — §XXI makes the casing a receipt for a decision, and leaving the accounting where the player will find it is the character in one object.
+
+## 8.3 Why he turns the Court down
+
+§XVII: they have never killed a god. §XXI: the gun's verb is **stop**, not finish — only a Death Dagger ends anything (§XVI). So a rifle is no use to them against gods at all.
+
+What they actually want him for is **the mortals in the way**: witnesses, couriers, the Doubter when he finally says it out loud.
+
+So the refusal is not moral. He is an instrument with one function and they are asking him to be a different one. Accuracy as ethics, which is cold enough to be him.
+
+It also hooks their own structure: §XVII says the periphery carry letters and never ask what is in them. He is the one man who was sent a letter and did not open it.
+
+## 8.4 Why he cannot do it himself
+
+This is the load-bearing question of the whole questline and §XXI already answers it, in the Goblin Tinkerer's one line about the first gun:
+
+> *"The first one wasn't for killing. It was for a thing you couldn't walk up to. Then somebody walked up to something anyway."*
+
+He is the man who cannot walk up. The player is the somebody who does.
+
+Every gun in the mod takes something from its wielder (§XXI). His takes **proximity**. He has had that door in a scope for years and the scope is the whole problem.
+
+## 8.5 The wife
+
+A duchess of the Kingdom of Grace, blessed by the gods and by Shimmer.
+
+§XIX is explicit that Grace's good years fall **before** the Archmage's lock: the kingdom was drinking the live thing, and whatever the bloodline became it actually became. So she is not a woman who was told she was blessed. She was changed, back when Shimmer still asked its question — and she is therefore **the only surviving thing in the world that the working Shimmer altered.** Every other trace the player will ever touch is §XI's disarmed water.
+
+Which means the Low Court are holding the one live sample of the antidote to what was done to Mors (§XI), in jars, filed under anatomy.
+
+That is §XVII's error run again at full scale. They poisoned the Jungle to wound a god, got Plantera, and read a reaction as a vulnerability. Here they took a woman apart hunting for an anchor, and what is in the jars is the cure they are not looking for. They will never find it, because they are measuring the wrong thing.
+
+**She was taken as a vessel, not as leverage.** §XVII lists kidnapping divine vessels among their methods. If they took her to buy him, the Court becomes a villain in a story about bureaucrats. They took her for the work and noticed whose wife she was afterwards, in their own ledger. The letters start after she is already inside.
+
+**The letters are the entire fee.** Each one says she is alive. Each one is true. *The Court has never lied to him.*
+
+And nobody at the door is hateable. §XVII: the periphery hold no doctrine, only a debt — somebody hid their brother once, so they keep a drawer. The man who turns her key has no opinion about gods.
+
+## 8.6 The jars
+
+They are not remains. Under the amnesty (§XIV) nothing ends, so taking a person apart is not killing, it is disassembly, and it does not conclude. She is in them.
+
+The cell is not the sentence. The continuing is — and that is this world's horror specifically, because the exit every prisoner in history has had is the one the Archmage closed.
+
+Deliver it through the Court's own accounts rather than a narrator (§XVII: they keep accounts), in the inscription register — fragments, clinical hand:
+
+> `VII — the eye. Still answers to light.`
+>
+> `XI — opened again. No change.`
+
+The player should work out what *no change* means about a page later.
+
+## 8.7 What "free her" can mean — **OPEN**
+
+His request no longer means what he thinks it means. Three routes, and this has to be decided deliberately rather than discovered late:
+
+1. **Carry the jars out.** She persists, scattered, aware. He gets her back and there is no her to get back.
+2. **A Quietus.** §XVI and §XVII: a Death Dagger is the only object left that can end anything, the Court has wanted one for centuries and never held one, and the first Quietus is what turns them toward the player. Freeing her means killing her, with the one tool they hunt, inside their own house. Cruellest and most structurally loaded — it makes his request and their founding grievance the same act.
+3. **Unlock Shimmer.** §XI: the lock is the Archmage's second crime, and live Shimmer asks *what if you were something else*. She is already something else. The only route where she comes back whole, and it costs the world its disarmament. `PADWorld.ArchmageShimmer` and `/archmageshimmer` already exist.
+
+**Recommendation:** he asks for 1, what is actually available is 2, and the weight of the scene is whether the player tells him.
+
+## 8.8 The restoration collision — **DECIDE EARLY**
+
+§XXXII.3: when Mors remembers, everyone living on the amnesty stops. Restoring death may be what opens her door, and it is not what he asked for.
+
+Same mechanism as the Mechanic's death (§XXI), which is the risk — it would be the second time the book plays that card. Pointed at a man who spent the whole game asking for the opposite, it may earn the repeat. Or it may cheapen hers.
+
+## 8.9 Collisions to respect
+
+- **§XXXI Pugream is the one who wants nothing**, and the Bible says that is his entire function. The sniper must want something small and specific — to not be aimed, to be left alone — never nothing.
+- **§XX the Princess** is Grace's surviving remnant who privately doubts the kingdom was ever blessed. The duchess is the proof that it was, and the proof is what it cost. They pair rather than collide. If it ever reaches her, *A Small Life* gets a shadow across it.
+
+## 8.10 Voice
+
+Cold, plain, declarative. Short. No hedging and no metaphor, which sets him against Mors's lost grammar and against the Pilgrim's warmth.
+
+He never says *wife* with weight on it, and not first. The first mention is a door, a count, a schedule, and the player assembles the rest.
+
+Lines on the table:
+
+> I can reach anything I can see. I have never been inside.
+
+> They send letters. Every one says she is alive. That is all they are buying.
+
+> Ask them how many they are holding. They will give you a number. It is short by one.
+
+> Walk in. I cannot.
+
+## 8.11 Open
+
+- Is **White Death** his name, or what other people call him?
+- Does he ever see the jars himself, or only hear what the player chooses to say?
+- Can the player lie to him about what they found?
+- What exactly does the rifle take, and is it stated or only shown?
+- Does he fire for the player once, ever? If he does, the Court learns of it — the same shape as the first Quietus and the Orb alerting the Sky.
+- Is he a boss in the bar sense at all? He is currently `boss = true` with a head icon and no way to hurt him, which is either a bug or the joke.

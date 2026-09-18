@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PisAndDag.Content.Buffs;
 using ReLogic.Content;
 using ReLogic.Graphics;
 using Terraria;
@@ -40,6 +41,12 @@ namespace PisAndDag.Content.UI
     /// Say(text, followUps) inside a click replaces the answers with the follow-ups;
     /// Say(text) alone ends the branch, leaving only "Leave". Nothing here is sent over
     /// the network: a conversation is one player looking at one thing.
+    ///
+    /// Scene(text, answers) is the same thing with the doors shut: no "Leave", no
+    /// walking off, no inventory, and the player's feet do not work until an answer is
+    /// picked. Use it where the exchange is the content and wandering out halfway
+    /// would leave the world in a half-state. Any Say with no follow-ups lets go
+    /// again, so a locked branch cannot dead-end.
     /// </summary>
     public static class Dialogue
     {
@@ -65,6 +72,22 @@ namespace PisAndDag.Content.UI
 
         private const int FadeTicks = 12;
 
+        // ============================================================
+        // THE CAMERA
+        // ============================================================
+        //
+        // A scene pulls the camera in a little. Deliberately under BossIntro's 1.22:
+        // a boss arriving is an event and this is two people talking, so it should read
+        // as leaning in rather than as a cutscene.
+        //
+        // GameZoomTarget is a SAVED SETTING — Main.SaveSettings writes it to the config
+        // file — so the player's own zoom is taken down before it is touched and put
+        // back afterwards, on unload, and around every save. Same care BossIntro takes,
+        // and for the same reason.
+
+        private const float SceneZoom = 1.12f;
+        private const int ZoomTicks = 24;
+
         /// <summary>Letters per tick, when a speaker does not say. Under one, so a line takes a breath to arrive.</summary>
         public const float DefaultLettersPerTick = 0.8f;
 
@@ -80,7 +103,7 @@ namespace PisAndDag.Content.UI
         private const float BubbleFadeFrom = 0.65f;
 
         /// <summary>Within this a right-click on the figure opens the conversation.</summary>
-        private const float TalkRange = 150f;
+        public const float TalkRange = 150f;
 
         /// <summary>The click target is the whole figure, this much wider than its hitbox.</summary>
         private const int TargetSlack = 12;
@@ -142,6 +165,7 @@ namespace PisAndDag.Content.UI
         {
             registry.Clear();
             Close(silent: true);
+            ReleaseZoom();
             fade = 0f;
             panel = null;
             bubble = null;
@@ -177,7 +201,81 @@ namespace PisAndDag.Content.UI
         private static int hovered = -1;
         private static bool rightWasDown;
 
+        /// <summary>A scene is running: one way through it, and the player stands still.</summary>
+        private static bool locked;
+
+        /// <summary>Answers an opener asked to be shown instead of the registered ones.</summary>
+        private static List<TalkOption> pendingScene;
+
         public static bool Open => npcIndex >= 0;
+
+        /// <summary>Read by DialogueLock, which is what actually holds the player.</summary>
+        public static bool Locked => Open && locked;
+
+        /// <summary>How far the camera has leaned in, 0 to 1.</summary>
+        private static float leanIn;
+        private static bool holdingZoom;
+        private static float savedZoom = 1f;
+
+        internal static bool HoldingZoom => holdingZoom;
+        internal static float SavedZoom => savedZoom;
+
+        /// <summary>Smoothstep, so the camera starts and stops softly.</summary>
+        private static float Ease(float t)
+        {
+            t = MathHelper.Clamp(t, 0f, 1f);
+            return t * t * (3f - 2f * t);
+        }
+
+        /// <summary>
+        /// Leans the camera in for as long as the company lasts and lets it back out
+        /// after. Not taken at all while BossIntro has it: two things fighting over one
+        /// saved setting would put the wrong number back.
+        /// </summary>
+        private static void Camera()
+        {
+            // Stillness, not the conversation.
+            //
+            // The lean-in belongs to standing near one of them, not to having clicked on
+            // one. Hung off the scene it only existed inside the panel, so the player met
+            // the figure, saw nothing, clicked, and the world jumped at them. Hung off the
+            // buff it is already in when they arrive, it stays while they walk around the
+            // figure, and it lets go when they leave — and the same change is what makes
+            // it a warning at all, since Stillness is on whenever the world has stopped
+            // putting things down around the player.
+            //
+            // StillnessPlayer re-applies the buff every tick for as long as a keeper is
+            // within range, so HasBuff is exactly "one of them is standing there". Mors is
+            // the only speaker registered, and he is a keeper, so no conversation loses
+            // its camera by this; a speaker who is not a keeper would, and the answer is
+            // a Stillness.Register call rather than a second trigger here.
+            bool want = Main.LocalPlayer.HasBuff<Stillness>();
+
+            if (want && !holdingZoom && !BossIntro.HoldingZoom)
+            {
+                savedZoom = Main.GameZoomTarget;
+                holdingZoom = true;
+            }
+
+            if (!holdingZoom)
+                return;
+
+            leanIn = MathHelper.Clamp(leanIn + (want ? 1f : -1f) / ZoomTicks, 0f, 1f);
+            Main.GameZoomTarget = MathHelper.Lerp(savedZoom, SceneZoom, Ease(leanIn));
+
+            if (!want && leanIn <= 0f)
+                ReleaseZoom();
+        }
+
+        internal static void ReleaseZoom()
+        {
+            if (!holdingZoom)
+                return;
+
+            Main.GameZoomTarget = savedZoom;
+            holdingZoom = false;
+            leanIn = 0f;
+        }
 
         private static void LoadTextures()
         {
@@ -194,10 +292,23 @@ namespace PisAndDag.Content.UI
             npcIndex = npc.whoAmI;
             npcType = npc.type;
             replaced = null;
+            locked = false;
+            pendingScene = null;
             hovered = -1;
             letters = speaker.LettersPerTick;
 
-            SetLine(speaker.Opener?.Invoke(Main.LocalPlayer, npc) ?? "");
+            // The opener runs before the answers are chosen, so it is the opener's one
+            // chance to say that this line is a scene rather than a greeting.
+            string line = speaker.Opener?.Invoke(Main.LocalPlayer, npc) ?? "";
+
+            if (pendingScene != null)
+            {
+                replaced = pendingScene;
+                pendingScene = null;
+                locked = true;
+            }
+
+            SetLine(line);
 
             // The panel is still fading up; the first words would arrive half-seen and
             // read as a stumble. Let it be there before he speaks.
@@ -206,15 +317,76 @@ namespace PisAndDag.Content.UI
             SoundEngine.PlaySound(SoundID.MenuOpen);
         }
 
-        /// <summary>The speaker says this; these become the only answers, plus Leave.</summary>
+        /// <summary>
+        /// The speaker says this; these become the only answers, plus Leave. With no
+        /// follow-ups the branch is over, and any scene running lets go of the player:
+        /// a dead end with no way out would be a soft-lock, so there is not one.
+        /// </summary>
         public static void Say(string text, params TalkOption[] followUps)
         {
             if (!Open)
                 return;
 
+            if (followUps.Length == 0)
+                locked = false;
+
             replaced = new List<TalkOption>(followUps);
             SetLine(text);
         }
+
+        /// <summary>
+        /// Says this and shuts the doors: these answers and nothing else, no way out of
+        /// the panel, and the player held where they stand until one is picked. At
+        /// least one answer, or there would be no way through.
+        /// </summary>
+        public static void Scene(string text, params TalkOption[] answers)
+        {
+            if (!Open || answers.Length == 0)
+            {
+                Say(text, answers);
+                return;
+            }
+
+            locked = true;
+            replaced = new List<TalkOption>(answers);
+            SetLine(text);
+        }
+
+        /// <summary>
+        /// Called from inside an opener: the line it is about to return is a scene, and
+        /// these are its answers. The registered options do not appear.
+        /// </summary>
+        public static void OpenAsScene(params TalkOption[] answers)
+        {
+            if (answers.Length > 0)
+                pendingScene = new List<TalkOption>(answers);
+        }
+
+        /// <summary>
+        /// Back up to the speaker's own answers, with Leave under them again.
+        ///
+        /// Say with no follow-ups leaves the player holding one button that ends the
+        /// conversation, which makes every question the last question. An answer that
+        /// offers this instead is a branch that returns rather than a branch that stops,
+        /// and the way out is still there — it is just one step further off, under the
+        /// list, where the player chose to go rather than where they were left.
+        ///
+        /// The line stays up. Making him repeat a greeting to hand back a menu would be
+        /// a worse conversation than leaving his last words on the panel. Anything
+        /// already heard comes back grey, because Current rebuilds from the registry and
+        /// the registry remembers.
+        /// </summary>
+        public static void Return()
+        {
+            if (!Open)
+                return;
+
+            replaced = null;
+            locked = false;
+        }
+
+        /// <summary>Lets the player go without ending the conversation.</summary>
+        public static void Unlock() => locked = false;
 
         public static void Close(bool silent = false)
         {
@@ -224,6 +396,8 @@ namespace PisAndDag.Content.UI
             npcIndex = -1;
             npcType = -1;
             replaced = null;
+            pendingScene = null;
+            locked = false;
             offered.Clear();
             hovered = -1;
         }
@@ -266,7 +440,10 @@ namespace PisAndDag.Content.UI
                 }
             }
 
-            offered.Add(Leave);
+            // A scene has no way out but through.
+            if (!locked)
+                offered.Add(Leave);
+
             return offered;
         }
 
@@ -361,7 +538,10 @@ namespace PisAndDag.Content.UI
                     Main.mouseRightRelease = false;
 
                     if (Open && under.whoAmI == npcIndex)
-                        Close();
+                    {
+                        if (!locked)
+                            Close();
+                    }
                     else if (registry.TryGetValue(under.type, out Speaker speaker))
                         Begin(under, speaker);
                 }
@@ -372,14 +552,19 @@ namespace PisAndDag.Content.UI
             {
                 NPC npc = Main.npc[npcIndex];
 
-                if (!npc.active || npc.type != npcType || player.dead || Main.playerInventory
-                    || Vector2.Distance(player.Center, npc.Center) > LeaveRange)
-                {
+                bool gone = !npc.active || npc.type != npcType || player.dead;
+
+                // Walking away and the inventory end an ordinary conversation. They do
+                // not end a scene: the player cannot walk, and the scene is the content.
+                if (!locked)
+                    gone |= Main.playerInventory || Vector2.Distance(player.Center, npc.Center) > LeaveRange;
+
+                if (gone)
                     Close();
-                }
             }
 
             fade = MathHelper.Clamp(fade + (Open ? 1f : -1f) / FadeTicks, 0f, 1f);
+            Camera();
 
             if (fade <= 0f)
             {
@@ -480,6 +665,85 @@ namespace PisAndDag.Content.UI
                 (int)(npc.Bottom.Y - speaker.Above - BubbleAbove + npc.gfxOffY + bob - screenPos.Y));
 
             spriteBatch.Draw(bubble.Value, tail, null, Color.White * alpha, 0f, BubbleTail, 1f, SpriteEffects.None, 0f);
+        }
+    }
+
+    /// <summary>
+    /// Holds the player still for the length of a scene.
+    ///
+    /// The controls are blanked rather than the position frozen, so everything else the
+    /// game does to a standing player still happens: gravity, tiles, damage, the world
+    /// going on around them. The inventory key is blanked with the rest, which is the
+    /// other door out of a conversation, and noItems shuts the held weapon whether or
+    /// not the button got through.
+    /// </summary>
+    /// <summary>
+    /// Keeps the scene's borrowed zoom out of the player's config file, and stops a
+    /// scene's camera surviving a world change. Same shape as BossIntroSystem's guard,
+    /// which is over the same saved setting; two detours on SaveSettings chain, and
+    /// only one of the two is ever holding.
+    /// </summary>
+    public class DialogueCamera : ModSystem
+    {
+        public override void Load()
+        {
+            if (!Main.dedServ)
+                On_Main.SaveSettings += RestoreAroundSave;
+        }
+
+        private static bool RestoreAroundSave(On_Main.orig_SaveSettings orig)
+        {
+            bool holding = Dialogue.HoldingZoom;
+            float borrowed = Main.GameZoomTarget;
+
+            if (holding)
+                Main.GameZoomTarget = Dialogue.SavedZoom;
+
+            bool result = orig();
+
+            if (holding)
+                Main.GameZoomTarget = borrowed;
+
+            return result;
+        }
+
+        public override void OnWorldUnload()
+        {
+            Dialogue.Close(silent: true);
+            Dialogue.ReleaseZoom();
+        }
+
+        public override void PreSaveAndQuit()
+        {
+            Dialogue.Close(silent: true);
+            Dialogue.ReleaseZoom();
+        }
+    }
+
+    public class DialogueLock : ModPlayer
+    {
+        public override void SetControls()
+        {
+            if (Player.whoAmI != Main.myPlayer || !Dialogue.Locked)
+                return;
+
+            Player.controlLeft = false;
+            Player.controlRight = false;
+            Player.controlUp = false;
+            Player.controlDown = false;
+            Player.controlJump = false;
+            Player.controlUseItem = false;
+            Player.controlUseTile = false;
+            Player.controlHook = false;
+            Player.controlMount = false;
+            Player.controlThrow = false;
+            Player.controlInv = false;
+
+            // Vanilla's own "your hands are full" flag, reset every update and set
+            // again here: no swing, no shot, no placing, whatever is in hand.
+            Player.noItems = true;
+
+            Player.velocity.X = 0f;
         }
     }
 }

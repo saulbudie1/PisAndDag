@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<!-- Import tModLoader mod properties -->
 	<Import Project="..\tModLoader.targets" />
@@ -10,7 +10,10 @@
 
 	<!-- References -->
 	<ItemGroup>
-		
+	  <AdditionalFiles Remove="Claude outputs\**" />
+	  <Compile Remove="Claude outputs\**" />
+	  <EmbeddedResource Remove="Claude outputs\**" />
+	  <None Remove="Claude outputs\**" />
 	</ItemGroup>
 
 </Project>

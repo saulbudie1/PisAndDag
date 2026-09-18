@@ -1,10 +1,14 @@
 using Microsoft.Xna.Framework;
 using PisAndDag.Content.Items.Ranged;
 using PisAndDag.Content.Particles;
+using PisAndDag.Content.Projectiles.Ranged;
+using System;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
+using static System.Net.Mime.MediaTypeNames;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PisAndDag.Content.Projectiles
 {
@@ -24,19 +28,31 @@ namespace PisAndDag.Content.Projectiles
     {
         public override bool InstancePerEntity => true;
 
-        // ---- Chlorophyte Rifle ------------------------------------------------------
-        //
-        // Set this and a projectile gains the rifle's on-hit behaviour: a spray of
-        // chlorophyte that purifies whatever ground it drifts across, and a tick on the
-        // player's hit combo.
-        //
-        // The point of putting it here rather than on a custom projectile class is that
-        // the rifle fires VANILLA projectiles — a high-velocity bullet for the ordinary
-        // shot and chlorophyte bullets for the burst. There is no class of ours to hang
-        // behaviour on, so the flag is stamped from the spawn source instead. Both round
-        // types get it, and nothing else in the game firing those projectiles is touched.
+         
+        public bool Chomp;
 
-        /// <summary>Marks a shot as coming from the Chlorophyte Rifle.</summary>
+        /// <summary>How long one bite holds the arrow still. It damages throughout.</summary>
+        public int FreezeTicks ;
+
+        /// <summary>How long after letting go before it may bite again. It damages nothing in here.</summary>
+        public int ChompCool;
+
+        /// <summary>Ticks LEFT of that cooldown. Zero means ready.</summary>
+        private int ChompCoolDown;
+
+
+        private float FreezeTimer;
+
+        private Vector2 storedVelocity;
+
+        /// <summary>
+        /// The heading the arrow had when it bit, held for as long as it is stuck.
+        ///
+        /// A vanilla arrow is aiStyle 1 and repoints its own sprite from velocity every
+        /// tick, and its AI runs before this hook does. On a frozen arrow that velocity is
+        /// the single tick of gravity it just gained, so left alone it stands on its nose.
+        /// </summary>
+        private float storedRotation;
         public bool ChloRifle;
 
         /// <summary>Set once this shot has connected, so a miss can be told from a hit.</summary>
@@ -65,14 +81,73 @@ namespace PisAndDag.Content.Projectiles
         /// source and no flag — but everything the flag drives runs owner-side anyway,
         /// so there is nothing for the other side to miss.
         /// </summary>
+        /// 
+        public override void AI(Projectile projectile)
+        {
+            if (Chomp)
+            {
+
+                if (FreezeTimer > 0f)
+                {
+                    FreezeTimer--;
+                    projectile.velocity = Vector2.Zero;
+
+                    // Stopped, so hold the heading it arrived on rather than the gravity
+                    // vanilla just handed it.
+                    projectile.rotation = storedRotation;
+
+                    // Timer just ran out — pick the flight back up exactly where it left
+                    // off, and only NOW start the cooldown. Starting it on the bite would
+                    // spend the fifteen chewing ticks inside the cooldown, which is the
+                    // one stretch that is supposed to hurt.
+                    if (FreezeTimer <= 0f)
+                    {
+                        projectile.velocity = storedVelocity;
+                        ChompCoolDown = ChompCool;
+                    }
+                }
+                else if (ChompCoolDown > 0)
+                {
+                    ChompCoolDown--;
+                }
+            }
+        }
+         
         public override void OnSpawn(Projectile projectile, IEntitySource source)
         {
             if (source is EntitySource_ItemUse use && use.Item?.ModItem is Chlorophyte_Rifle)
                 ChloRifle = true;
         }
 
+        public override bool? CanHitNPC(Projectile projectile, NPC target)
+        {
+            // Biting is allowed for the whole freeze — that is the chomp. Only the
+            // cooldown that follows it stops damage.
+            //
+            // How MANY times it bites in those fifteen ticks is localNPCHitCooldown's
+            // business, set on the arrow at spawn. At 10 it lands twice per lodge; the
+            // plan's five hits per lodge is FreezeTicks / 5, so 3.
+            if (Chomp && ChompCoolDown > 0)
+                return false;
+
+            return base.CanHitNPC(projectile, target);
+        }
         public override void OnHitNPC(Projectile projectile, NPC target, NPC.HitInfo hit, int damageDone)
         {
+            if (Chomp)
+            {
+                 
+                // Only the bite that BEGINS a lodge starts the hold. The bites that land
+                // during it must not touch FreezeTimer — pushing it back to full on every
+                // hit is what made the arrow lodge forever, and now that it damages while
+                // stuck it would happen on every single chew.
+                if (FreezeTimer <= 0f)
+                {
+                    storedVelocity = projectile.velocity;
+                    storedRotation = projectile.rotation;
+                    FreezeTimer = FreezeTicks;
+                }
+            }
             if (!ChloRifle)
                 return;
 

@@ -27,7 +27,12 @@ namespace PisAndDag
         {
             Content.Structures.GraveyardZone.Deaths = 0;
             MorsPresence.SaidGraveyard = false;
+            MorsPresence.SaidMonument = false;
             MorsPresence.Stage = 0;
+            MorsErrand.Asked = false;
+            MorsErrand.Accepted = false;
+            MorsErrand.Dropped = false;
+            MorsErrand.Returned = false;
             Content.UI.TalkMemory.Heard.Clear();
 
             int type = ModContent.NPCType<MorsIdle>();
@@ -56,7 +61,10 @@ namespace PisAndDag
             }
 
             if (args.Length > 0 && args[0] == "again")
+            {
                 MorsPresence.SaidGraveyard = false;
+                MorsPresence.SaidMonument = false;
+            }
 
             if (args.Length > 0 && args[0] == "1")
             {
@@ -74,10 +82,12 @@ namespace PisAndDag
 
             // For testing the graveyard line: is this the world's graveyard at all, and
             // are you in it?
+            caller.Reply(MorsPresence.State(), Color.Gray);
+
             caller.Reply(
-                "Graveyard: " + (Content.Structures.GraveyardZone.Exists ? "exists" : "none in this world")
-                + ", you are " + (caller.Player.GetModPlayer<Content.Structures.GraveyardPlayer>().Inside ? "inside" : "outside")
-                + ", deaths " + Content.Structures.GraveyardZone.Deaths + ".",
+                "You are " + (caller.Player.GetModPlayer<Content.Structures.GraveyardPlayer>().Inside ? "inside" : "outside")
+                + " the graveyard; pouch " + (MorsErrand.Returned ? "returned" : MorsErrand.Dropped ? "dropped"
+                    : MorsErrand.Accepted ? "accepted" : MorsErrand.Asked ? "declined" : "unasked") + ".",
                 Color.Gray);
         }
     }

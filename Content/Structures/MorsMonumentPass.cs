@@ -155,12 +155,23 @@ namespace PisAndDag.Content.Structures
         /// <summary>The ash body runs to here — a few rows short of the world's edge.</summary>
         private static int BottomFill => Main.maxTilesY - 3;
 
+        /// <summary>
+        /// The column the blade is driven into: under the world spawn, pulled in far
+        /// enough from either edge that the whole hill fits.
+        ///
+        /// Public because the monument has no saved coordinates and things that want to
+        /// find it later (MorsPresence) must arrive at the same number this pass did.
+        /// Main.spawnTileX is the world's spawn, which a bed does not move, so it gives
+        /// the same answer at runtime as it did during generation.
+        /// </summary>
+        public static int CenterX => Math.Clamp(Main.spawnTileX, Radius + DrainMargin + 10,
+            Main.maxTilesX - Radius - DrainMargin - 10);
+
         protected override void ApplyPass(GenerationProgress progress, GameConfiguration configuration)
         {
             progress.Message = "Something is driven into the ash";
 
-            int centerX = Math.Clamp(Main.spawnTileX, Radius + DrainMargin + 10,
-                Main.maxTilesX - Radius - DrainMargin - 10);
+            int centerX = CenterX;
 
             // The tabletop is placed by proportion of the Underworld's depth; the feet
             // then sit Peak below it. Nothing here looks at the terrain, which is the

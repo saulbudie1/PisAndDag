@@ -45,6 +45,24 @@ namespace PisAndDag
         public static bool DownedMegashark;
 
         /// <summary>
+        /// Whether Shimmer does anything.
+        ///
+        /// False — the normal state, and the state every world starts in — means the
+        /// Archmage's second crime is still standing: §XI [LOCKED]. He did not hide the
+        /// substance, he locked what it *does*. So the seams and the pools are all still
+        /// there, they still shine, they can still be waded through and carried in a
+        /// bucket, and nothing that goes into them changes. It is water that glitters.
+        ///
+        /// True means the lock is open and Shimmer asks its question again.
+        ///
+        /// Read the name as the subject rather than the condition: this is the Archmage's
+        /// Shimmer, and the flag says whether it is working. Nothing sets it yet; §XI
+        /// leaves it open whether the lock can be opened at all. Until something does,
+        /// /archmageshimmer is the only way it moves.
+        /// </summary>
+        public static bool ArchmageShimmer;
+
+        /// <summary>
         /// Runs whenever a world is loaded or generated, before LoadWorldData.
         /// Without this the static would leak between worlds inside one session — start a
         /// fresh character and it would still think Legends was on from your last world.
@@ -54,6 +72,7 @@ namespace PisAndDag
             Legends = false;
             FlightAnnounced = false;
             DownedMegashark = false;
+            ArchmageShimmer = false;
         }
 
         /// <summary>
@@ -75,12 +94,16 @@ namespace PisAndDag
 
             if (DownedMegashark)
                 tag["DownedMegashark"] = true;
+
+            if (ArchmageShimmer)
+                tag["ArchmageShimmer"] = true;
         }
 
         public override void LoadWorldData(TagCompound tag)
         {
             Legends = tag.ContainsKey("Legends");
             DownedMegashark = tag.ContainsKey("DownedMegashark");
+            ArchmageShimmer = tag.ContainsKey("ArchmageShimmer");
         }
 
         // Brings joining clients in line with the server. Inert in singleplayer, but it
@@ -89,12 +112,14 @@ namespace PisAndDag
         {
             writer.Write(Legends);
             writer.Write(DownedMegashark);
+            writer.Write(ArchmageShimmer);
         }
 
         public override void NetReceive(BinaryReader reader)
         {
             Legends = reader.ReadBoolean();
             DownedMegashark = reader.ReadBoolean();
+            ArchmageShimmer = reader.ReadBoolean();
         }
     }
 }

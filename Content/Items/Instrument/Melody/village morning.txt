@@ -1,0 +1,25 @@
+bpm=92
+key=G
+major
+swing
+humanize
+mf
+~:.5 D:.5 G:.5 Ah:.5 Bh:1.5 G:.5 |
+Ah:.5 G:.5 E:1.5 D:.5 ~ |
+~:.5 D:.5 E:.5 G:.5 Ah:1.5 Bh:.5 |
+Dh:1.5> Bh:.5 Ah:2 |
+~:.5 Bh:.5 Ah:.5 G:.5 E:1.5 D:.5 |
+E:.5 G:.5 Ah:1.5 G:.5 ~ |
+~:.5 E:.5 G:.5 Ah:.5 Bh:.5 Ah:.5 G:.5 E:.5 |
+D:3! ~ |
+f
+~:.5 Bh:.5 Dh:.5 Eh:.5 Dh:1.5 Bh:.5 |
+Ah:.5 Bh:.5 Ah:1.5 G:.5 ~ |
+~:.5 G:.5 Ah:.5 Bh:.5 C#h:.5 Dh:.5 Eh:.5> Dh:.5 |
+Bh:2 ~:.5 Ah:.5 G:.5 E:.5 |
+mf
+~:.5 D:.5 G:.5 Ah:.5 Bh:1.5 G:.5 |
+Ah:.5 G:.5 E:1.5 D:.5 ~ |
+~:.5 E:.5 G:.5 Ah:.5 Bh:.5 Dh:.5 Bh:.5 Ah:.5 |
+rit
+G:3_ ~

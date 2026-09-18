@@ -14,26 +14,17 @@ namespace PisAndDag.Content.Projectiles.Melee
     /// the air for a quarter second every time it bites before carrying on.
     /// </summary>
     public class BladeOfMorsProj : ModProjectile
-    {
-        /// <summary>
-        /// The sprite is drawn pointing north-east, i.e. already a quarter turn ahead of
-        /// "right". Every rotation has to add that back or the blade flies sideways.
-        /// </summary>
+    { 
         private const float SpriteAngleOffset = MathHelper.PiOver4;
-
-        /// <summary>0.25 seconds of hang time on a hit.</summary>
+         
         private const int FreezeTicks = 15;
-
-        /// <summary>How far behind centre the trail is emitted, in pixels.</summary>
+         
         private const float TailOffset = 18f;
-
-        /// <summary>Matches the aura that drips off the blade while it is held.</summary>
+         
         private static readonly Color BloodColor = new Color(117, 9, 24);
-
-        /// <summary>Ticks left frozen. In ai[0] so it survives a net sync.</summary>
+         
         public ref float FreezeTimer => ref Projectile.ai[0];
-
-        /// <summary>The velocity to resume with, stashed while the blade is stopped.</summary>
+         
         private Vector2 storedVelocity;
 
         public override void SetDefaults()

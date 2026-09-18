@@ -70,20 +70,20 @@ namespace PisAndDag.Content.NPCs.Mors
         private const float WindFull = 0.85f;
 
         /// <summary>The whole cloth's lean downwind in a full gale, about the shoulder line.</summary>
-        private const float LeanMax = MathHelper.Pi / 180f * 23f;
+        private const float LeanMax = MathHelper.Pi / 180f * 8f;
 
         /// <summary>The lean gusts about its mean by this fraction in a gale, so it never sits still.</summary>
         private const float LeanGust = 0.12f;
 
         /// <summary>Ripple at the hem, calm to gale, texture px.</summary>
         private const float RippleStill = 5f;
-        private const float RippleWindy = 9f;
+        private const float RippleWindy = 10f;
 
         /// <summary>Sway at the hem in a full gale.</summary>
         private const float SwayMax = 7f;
 
         /// <summary>Extra lean at the hem, on top of the turn, in a full gale. Small: the margin is 8px.</summary>
-        private const float DragMax = 5f;
+        private const float DragMax = 7f;
 
         /// <summary>Sway rate, radians a second, calm to gale.</summary>
         private const float SwayRateStill = 1.0f;

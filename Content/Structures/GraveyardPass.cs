@@ -425,8 +425,15 @@ namespace PisAndDag.Content.Structures
             Log("pass started");
 
             // Randomly choose which beach gets priority.
+            //
+            // Except in a Grand world, which only has one. The other end has a sliver
+            // of beach left on it for arithmetic's sake and the Kingdom of Grace
+            // standing inland of it, and a fenced graveyard on the capital's own ground
+            // is not a thing this pass is allowed to decide.
             bool leftFirst =
-                WorldGen.genRand.NextBool();
+                ExtraLargeWorld.Active
+                    ? !WorldMirror.Flipped
+                    : WorldGen.genRand.NextBool();
 
             if (TrySide(
                     leftFirst,
@@ -435,8 +442,9 @@ namespace PisAndDag.Content.Structures
                 return;
             }
 
-            // If that beach failed, try the opposite beach.
-            if (TrySide(
+            // If that beach failed, try the opposite beach. There is no opposite beach
+            // in a Grand world, so it goes straight to forcing one on the shore it has.
+            if (!ExtraLargeWorld.Active && TrySide(
                     !leftFirst,
                     progress))
             {

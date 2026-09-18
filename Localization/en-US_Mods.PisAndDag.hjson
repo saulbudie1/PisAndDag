@@ -14,6 +14,11 @@ Items: {
 		Tooltip: ""
 	}
 
+	PouchOfBerries: {
+		DisplayName: Pouch of Berries
+		Tooltip: The berries have not rotted. Nothing here has.
+	}
+
 	GameChangingOrb: {
 		DisplayName: Ominous Orb
 		Tooltip:
@@ -58,6 +63,18 @@ Items: {
 		DisplayName: Trumpet
 		Tooltip: ""
 	}
+
+	GreatbowOfAPilgrim: {
+		DisplayName: She Who Sings
+		Tooltip: Wait 5 seconds to shoot a piercing arrow
+	}
+}
+
+Buffs: {
+	Stillness: {
+		DisplayName: Stillness
+		Description: Nothing will spawn near you in this company
+	}
 }
 
 Tiles: {
@@ -73,6 +90,8 @@ Projectiles: {
 	MegasharkMusket.DisplayName: Megashark Musket
 	SurgeArc.DisplayName: Surge Arc
 	ChlorophyteBullet.DisplayName: Chlorophyte Bullet
+	GreatbowOfAPilgrimHoldout.DisplayName: Greatbow Of A Pilgrim Holdout
+	PilgrimArrow.DisplayName: Pilgrim Arrow
 }
 
 NPCs: {
@@ -87,4 +106,9 @@ Keybinds: {
 	Reload.DisplayName: Reload
 	Lightning.DisplayName: Lightning
 	Wind.DisplayName: Wind
+}
+
+UI: {
+	WorldSizeExtraLarge: Grand
+	WorldDescriptionSizeExtraLarge: 1.5x the size of a large world. (Recommended for Pistol and Dagger)
 }
