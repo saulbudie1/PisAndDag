@@ -61,6 +61,63 @@ namespace PisAndDag.Content.Structures
         /// </summary>
         private const int OrbRing = 105;
 
+        /// <summary>
+        /// The leaves of the Terraspark tree — every accessory the craft needs that the
+        /// player cannot make from another accessory.
+        ///
+        /// Read out of Recipe.SetupRecipes rather than off the top of anyone's head,
+        /// because the chain is longer than it looks and two of these are easy to forget:
+        ///
+        ///     Terraspark  = Frostspark + Lava Waders
+        ///     Frostspark  = Lightning Boots + Ice Skates
+        ///     Lightning   = Spectre Boots + Anklet of the Wind + Aglet
+        ///     Spectre     = Hermes Boots + Rocket Boots
+        ///     Lava Waders = Obsidian Water Walking Boots + Lava Charm + Obsidian Rose
+        ///     Obsidian WW = Water Walking Boots + Obsidian Skull
+        ///
+        /// Nine, not six. The Anklet, the Aglet and the Rose are the ones that get left
+        /// off a list written from memory.
+        /// </summary>
+        private static readonly int[] BootParts =
+        {
+            ItemID.HermesBoots,
+            ItemID.RocketBoots,
+            ItemID.AnkletoftheWind,
+            ItemID.Aglet,
+            ItemID.IceSkates,
+            ItemID.WaterWalkingBoots,
+            ItemID.ObsidianSkull,
+            ItemID.LavaCharm,
+            ItemID.ObsidianRose,
+        };
+
+        /// <summary>
+        /// What else is in them. Nothing here is evil-specific; the evil-specific things
+        /// are picked in Vessel, where it knows which evil it is.
+        /// </summary>
+        private static readonly int[] Miscellany =
+        {
+            ItemID.HealingPotion,
+            ItemID.RecallPotion,
+            ItemID.MiningPotion,
+            ItemID.ShinePotion,
+            ItemID.NightOwlPotion,
+            ItemID.SwiftnessPotion,
+            ItemID.RegenerationPotion,
+            ItemID.SpelunkerPotion,
+            ItemID.Bomb,
+            ItemID.ThrowingKnife,
+            ItemID.Glowstick,
+        };
+
+        /// <summary>
+        /// The boot parts still unclaimed, shuffled once at the top of the ring and dealt
+        /// out without repeats. Twelve chests each rolling their own item out of a pool of
+        /// nine would hand the player three Aglets and no Lava Charm; dealing from one
+        /// shuffled deck means every part that turns up is a part they did not have.
+        /// </summary>
+        private static readonly List<int> unclaimed = new();
+
         /// <summary>Chasms in the thickness. More than vanilla gives a whole biome.</summary>
         private const int ChasmFewest = 6;
         private const int ChasmMost = 10;
@@ -638,10 +695,20 @@ namespace PisAndDag.Content.Structures
         private static void Ring(int cx, int cy, ushort stone)
         {
             int placed = 0;
-            int hearts = 0;
-            int sample = -1;
+            int stocked = 0;
 
             bool ballIsCrimson = Layout.BallIsCrimson;
+
+            // One deck per ring, shuffled here so Vessel only ever has to take the top of
+            // it. Cleared first: a static outlives the world that filled it.
+            unclaimed.Clear();
+            unclaimed.AddRange(BootParts);
+
+            for (int n = unclaimed.Count - 1; n > 0; n--)
+            {
+                int k = WorldGen.genRand.Next(n + 1);
+                (unclaimed[n], unclaimed[k]) = (unclaimed[k], unclaimed[n]);
+            }
 
             for (int i = 0; i < Orbs; i++)
             {
@@ -651,88 +718,147 @@ namespace PisAndDag.Content.Structures
 
                 Knuckle(x, y, stone);
 
-                // Written by hand, not by WorldGen.AddShadowOrb, and WorldGen.crimson is
-                // left alone. Both orbs are the same tile; which one it is lives in
-                // frameX and nowhere else, and WorldGen.CheckOrb never reads
-                // WorldGen.crimson at all. One line of it decides everything:
-                //
-                //     bool heart = frameX >= 36;
-                //
-                // and that one bool picks the loot pool, the smash sound, and the boss
-                // the third break summons (BrainofCthulhu at 36 and up,
-                // EaterofWorldsHead below). So a world holds both kinds happily; the
-                // flag was never the thing to set, which is why setting it read as
-                // inverted twice. The frame is the truth.
-                Orb(x, y - 1, ballIsCrimson);
+                if (Vessel(x, y, ballIsCrimson))
+                    stocked++;
 
                 if (!Allowed(x, y))
                     continue;
 
                 Tile check = Main.tile[x, y];
 
-                if (check.HasTile && check.TileType == TileID.ShadowOrbs)
+                // Read the world back rather than the intention. The version of this
+                // that counted nothing but the tile type printed "12 of 12 Crimson
+                // Hearts, frame 36" over a ring of twelve Shadow Orbs and read as proof
+                // that it worked. A check that cannot fail is not a check.
+                if (check.HasTile && check.TileType == TileID.Containers)
                 {
                     placed++;
-
-                    // Read the frame back out of the world, not off the intention.
-                    //
-                    // This used to count the tile type and nothing else, and the line
-                    // below printed the frame it had MEANT to write. So the log said
-                    // "12 of 12 Crimson Hearts, frame 36" over a ring of twelve Shadow
-                    // Orbs and read as proof that it worked. A check that cannot fail
-                    // is not a check.
-                    if (check.TileFrameX >= 36)
-                        hearts++;
-
-                    if (sample < 0)
-                        sample = check.TileFrameX;
-
                     Vent(x, y);
                 }
             }
 
             GenLog.Log?.Info(
-                $"The Ball: {placed} of {Orbs} set out in the ring, {hearts} of them Crimson Hearts. " +
-                $"Wanted {(ballIsCrimson ? "hearts" : "orbs")}, frame {(ballIsCrimson ? 36 : 0)}; " +
-                $"first one read back at frame {sample}. " +
-                $"World evil {(WorldGen.crimson ? "crimson" : "corruption")}.");
+                $"The Ball: {placed} of {Orbs} chests stood in the ring, {stocked} of them stocked. " +
+                $"{(ballIsCrimson ? "Shadewood, Bloody Spine, Crimson Torches" : "Ebonwood, Worm Food, Corrupt Torches")}; " +
+                $"world evil {(WorldGen.crimson ? "crimson" : "corruption")}.");
         }
 
         /// <summary>
-        /// The two by two at (left, top), framed by hand.
+        /// The chest set into one knuckle of the ring, and what is kept in it.
         ///
-        /// frameX = style * 36 + column * 18 and frameY = row * 18, which is exactly what
-        /// AddShadowOrb writes; the only difference is that the style comes from an
-        /// argument instead of from a global. It has to be laid out this way and no
-        /// other, because CheckOrb walks back to the top left by reading the frame: an
-        /// x of 0 or 36 means "this is the left column", anything else means the left
-        /// column is one further back, and the same for y. Get it wrong and the object
-        /// validates against the wrong four tiles and deletes itself.
+        /// It used to be a Shadow Orb, written by hand so that frameX alone decided
+        /// which of the two it was — 36 and up for a Heart, below for an Orb, which is
+        /// the one line WorldGen.CheckOrb reads and the reason a single world can hold
+        /// both kinds. That worked at the moment it ran and did not survive to the save:
+        /// the world generation preview showed Hearts and the loaded world held Orbs,
+        /// and the frames in the .wld came back 0 across all twelve. Something late puts
+        /// a hand-framed orb back to style zero.
         ///
-        /// Nothing holds it up. CheckOrb only demands solid ground under the Heart
-        /// Crystal, never under these, so an orb hangs wherever it is put.
+        /// So the frame is not written by hand any more. WorldGen.PlaceChest is vanilla's
+        /// own placer, it goes through TileObject.Place, and it frames the object the way
+        /// the game frames every other chest in the world. Nothing here can disagree with
+        /// it, because nothing here does the framing.
+        ///
+        /// The style is read off the item rather than typed in. ContentSamples holds a
+        /// filled-in copy of every item in the game, so the Ebonwood Chest itself says
+        /// which tile it places and in which style, and a magic number that could drift
+        /// against an update never enters this file.
+        ///
+        /// (left, bottom) is the chest's bottom-left tile — PlaceChest looks at
+        /// (x, y + 1) and (x + 1, y + 1) for what holds it up, and Knuckle has already
+        /// laid that ledge. The footprint is the same four tiles the orb used.
         /// </summary>
-        private static void Orb(int left, int top, bool heart)
+        private static bool Vessel(int left, int bottom, bool crimson)
         {
             if (left < 10 || left + 1 > Main.maxTilesX - 10
-                || top < 10 || top + 1 > Main.maxTilesY - 10)
+                || bottom < 10 || bottom + 1 > Main.maxTilesY - 10)
+                return false;
+
+            // The wood of whichever evil this is. Ebonwood is the Corruption's, Shadewood
+            // the Crimson's, and the ring is made of the evil the world is NOT.
+            Item sample = ContentSamples.ItemsByType[crimson ? ItemID.ShadewoodChest : ItemID.EbonwoodChest];
+
+            if (sample.createTile <= 0)
+                return false;
+
+            int index = WorldGen.PlaceChest(left, bottom, (ushort)sample.createTile, false, sample.placeStyle);
+
+            if (index < 0)
+                return false;
+
+            Chest chest = Main.chest[index];
+            int slot = 0;
+
+            // What the ring is for. One summon each, so the twelve are twelve goes at the
+            // boss of a biome the world was never supposed to have, and the player has
+            // them before the biome does.
+            Put(chest, ref slot, crimson ? ItemID.BloodySpine : ItemID.WormFood, 1);
+
+            // The rest of what somebody would have left down here.
+            Put(chest, ref slot, ItemID.Rope, WorldGen.genRand.Next(25, 76));
+            Put(chest, ref slot, crimson ? ItemID.Vertebrae : ItemID.RottenChunk, WorldGen.genRand.Next(3, 10));
+            Put(chest, ref slot, crimson ? ItemID.ViciousPowder : ItemID.VilePowder, WorldGen.genRand.Next(10, 26));
+            Put(chest, ref slot, crimson ? ItemID.CrimtaneOre : ItemID.DemoniteOre, WorldGen.genRand.Next(8, 21));
+            Put(chest, ref slot, ItemID.SilverCoin, WorldGen.genRand.Next(20, 91));
+
+            // Two out of the odds and ends, and never the same thing twice in one chest —
+            // a chest holding two Night Owl Potions reads as a bug rather than as luck.
+            int first = WorldGen.genRand.Next(Miscellany.Length);
+            int second = (first + 1 + WorldGen.genRand.Next(Miscellany.Length - 1)) % Miscellany.Length;
+
+            Put(chest, ref slot, Miscellany[first], WorldGen.genRand.Next(3, 9));
+            Put(chest, ref slot, Miscellany[second], WorldGen.genRand.Next(3, 9));
+
+            // One chest in five is carrying a piece of the boots, off the top of the deck
+            // the ring shuffled. Twelve chests at one in five is between two and three
+            // parts in an average world, so the ring seeds the craft; it does not finish
+            // it. Whatever turns up is a part no other chest in this ring has.
+            if (WorldGen.genRand.NextBool(5) && unclaimed.Count > 0)
+            {
+                Put(chest, ref slot, unclaimed[0], 1);
+                unclaimed.RemoveAt(0);
+            }
+
+            // A torch either side, stood on the ledge Knuckle laid, so the niche is lit
+            // and the chest can be seen from across the chamber. The chest is two wide
+            // from left, so left - 1 and left + 2 are the first columns clear of it.
+            Lamp(left - 1, bottom, crimson);
+            Lamp(left + 2, bottom, crimson);
+
+            return true;
+        }
+
+        /// <summary>
+        /// One torch of whichever evil this is, on the floor beside a chest.
+        ///
+        /// The style comes off the item for the same reason the chest's does: the Corrupt
+        /// Torch itself knows which tile it places and in which style, so no number here
+        /// can fall out of step with an update. PlaceTile does the framing and the anchor
+        /// check, so a spot with nothing to stand on simply does not get a torch.
+        /// </summary>
+        private static void Lamp(int x, int y, bool crimson)
+        {
+            if (!Allowed(x, y))
                 return;
 
-            int style = heart ? 36 : 0;
+            Item sample = ContentSamples.ItemsByType[crimson ? ItemID.CrimsonTorch : ItemID.CorruptTorch];
 
-            for (int dx = 0; dx < 2; dx++)
-            {
-                for (int dy = 0; dy < 2; dy++)
-                {
-                    Tile t = Main.tile[left + dx, top + dy];
+            if (sample.createTile <= 0)
+                return;
 
-                    t.ClearTile();
-                    t.HasTile = true;
-                    t.TileType = TileID.ShadowOrbs;
-                    t.TileFrameX = (short)(style + dx * 18);
-                    t.TileFrameY = (short)(dy * 18);
-                }
-            }
+            WorldGen.PlaceTile(x, y, sample.createTile, true, false, -1, sample.placeStyle);
+        }
+
+        /// <summary>One item into the next free slot, if there is one left.</summary>
+        private static void Put(Chest chest, ref int slot, int type, int stack)
+        {
+            if (slot >= Chest.maxItems)
+                return;
+
+            chest.item[slot] = new Item();
+            chest.item[slot].SetDefaults(type);
+            chest.item[slot].stack = Math.Max(1, stack);
+            slot++;
         }
 
         /// <summary>

@@ -119,13 +119,22 @@ namespace PisAndDag.Content.Particles
         /// </summary>
         private const float ConeDegrees = 40f;
 
-        /// <summary>Chlorophyte's three greens, exactly as specified.</summary>
-        private static readonly Color[] Greens =
+        /// <summary>
+        /// Chlorophyte's three greens, exactly as specified.
+        ///
+        /// Public because the leaves are not the only thing in the mod that is made of
+        /// chlorophyte, and a second green typed out somewhere else is a second green
+        /// that drifts. Anything that wants to match the spill reads it from here.
+        /// </summary>
+        public static readonly Color[] Greens =
         {
             new Color(58, 214, 47),
             new Color(85, 201, 8),
             new Color(67, 224, 75),
         };
+
+        /// <summary>One of the three, rolled. The same roll a leaf makes for itself.</summary>
+        public static Color RandomGreen => Greens[Main.rand.Next(Greens.Length)];
 
         private readonly Color initialColor;
         private readonly float spin;
@@ -154,7 +163,7 @@ namespace PisAndDag.Content.Particles
             Lifetime = lifetime;
             Scale = scale;
 
-            initialColor = Greens[Main.rand.Next(Greens.Length)];
+            initialColor = RandomGreen;
             Color = initialColor;
 
             spin = Main.rand.NextFloat(-0.02f, 0.02f);

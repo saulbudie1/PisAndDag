@@ -27,7 +27,7 @@ namespace PisAndDag.Content.Items.LoreItem
             Item.PAD().LoreText =
                 "Carried for someone who was not going to finish the walk.\r\n" +
                 "The hand that packed it did not come back for it.\r\n" +
-                "The berries are still good.";
+                "Nothing in it rotted. It went to mush regardless.";
         }
     }
 }

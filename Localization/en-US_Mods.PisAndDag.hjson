@@ -16,7 +16,7 @@ Items: {
 
 	PouchOfBerries: {
 		DisplayName: Pouch of Berries
-		Tooltip: The berries have not rotted. Nothing here has.
+		Tooltip: They did not rot. They went soft instead.
 	}
 
 	GameChangingOrb: {
@@ -98,6 +98,9 @@ NPCs: {
 	WhiteDeath.DisplayName: White Death
 	Megashark.DisplayName: Megashark
 	MorsIdle.DisplayName: Mors
+	AbomanationHead.DisplayName: Abomanation
+	AbomanationBody.DisplayName: Abomanation
+	AbomanationTail.DisplayName: Abomanation
 }
 
 BossLog.Megashark.SpawnInfo: Once the three machines have fallen, twenty rounds from a Minishark into the sea. It comes up under you.

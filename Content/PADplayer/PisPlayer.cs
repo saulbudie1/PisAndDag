@@ -50,7 +50,7 @@ namespace PisAndDag.Content.PADplayer
         public const int ChloComboRequired = 5;
 
         /// <summary>How long a streak survives without a hit. Three seconds.</summary>
-        public const int ChloComboDecay = 180;
+        public const int ChloComboDecay = 210;
 
         /// <summary>Damage added per stack, and the number of stacks that count.</summary>
         public const float ChloDamagePerStack = 0.1f;
@@ -71,6 +71,96 @@ namespace PisAndDag.Content.PADplayer
 
             if (ChloCombo >= ChloComboRequired)
                 ChloArmed = true;
+
+            ChloSparks();
+        }
+
+        /// <summary>
+        /// The streak, made visible. One spark off the player per round that lands,
+        /// louder the longer the streak runs.
+        ///
+        /// On the PLAYER, not on the target. The streak is a thing the player is
+        /// carrying — the target is a different enemy every time and often dead a second
+        /// later, so a read-out on the target tells you nothing about where you stand.
+        ///
+        /// Client-side and local only. This is one player's read-out of one player's
+        /// streak; nobody else's screen wants a light show around somebody they are not
+        /// aiming with, and none of it is worth a packet.
+        /// </summary>
+        private void ChloSparks()
+        {
+            if (Main.dedServ || Player.whoAmI != Main.myPlayer)
+                return;
+
+            // 0 on the first hit, 1 on the fifth. Every number below is a lerp on this
+            // one, so moving ChloComboRequired moves the whole ramp with it rather than
+            // leaving a curve that peaks in the wrong place.
+            float charge = ChloComboRequired <= 1
+                ? 1f
+                : MathHelper.Clamp((ChloCombo - 1) / (float)(ChloComboRequired - 1), 0f, 1f);
+
+            // The leaves' own greens, read off ChlorophyteSpill rather than typed again
+            // here. The streak is already told by how many shards there are, how long
+            // they reach and how long they last; letting it move the colour as well
+            // would mean a full streak stops looking like chlorophyte.
+            Color leaf = ChlorophyteSpill.RandomGreen;
+
+            // Measured against the player, because that is what is next to it on screen.
+            // At a full streak the longest ray is two thirds of his height and every
+            // shorter one is rolled under that; at the first hit it is a third of that
+            // again. Nothing here is in sprite units, so the burst cannot quietly grow
+            // if the sprite is ever redrawn.
+            float reach = Player.height * (0.8f + charge * 0.15f);
+
+            SparkShard.Spray(Player.Center, leaf,
+                count: 3 + (int)(charge * 4f),
+                speed: 1.6f + charge * 1.8f,
+                maxLength: reach,
+                lifetime: 14 + (int)(charge * 8f),
+                palette: ChlorophyteSpill.Greens);
+
+            // The bloom is held back for the shot that arms the burst, so the thing the
+            // player is waiting for has a moment of its own instead of being the last
+            // step of a ramp they stopped reading three hits ago. Sized off the player
+            // too: about as wide as he is tall, and no wider.
+            if (ChloCombo == ChloComboRequired)
+                PADParticleHandler.SpawnParticle(new BloomGeneric(
+                    Player.Center, Vector2.Zero, leaf, Player.height / 160f, 22));
+        }
+
+        /// <summary>
+        /// What a lost streak looks like: the chlorophyte the player had been carrying
+        /// falls out of them.
+        ///
+        /// Out of the hitbox rather than off the centre — a handful leaving a body reads
+        /// as dropped, where a fan from one point reads as an explosion, and this is a
+        /// loss rather than an event.
+        ///
+        /// Guarded on there being a streak at all. Every tick the player is not holding
+        /// the rifle runs ChloBreakCombo, so without the guard this would fire forever.
+        /// </summary>
+        private void ChloSpill()
+        {
+            if (Main.dedServ || Player.whoAmI != Main.myPlayer || ChloCombo <= 0)
+                return;
+
+            int leaves = 4 + Math.Min(ChloCombo, ChloMaxStacks) * 2;
+
+            for (int i = 0; i < leaves; i++)
+            {
+                Vector2 from = new Vector2(
+                    Player.position.X + Main.rand.NextFloat(Player.width),
+                    Player.position.Y + Main.rand.NextFloat(Player.height));
+
+                Vector2 drift = new Vector2(
+                    Main.rand.NextFloat(-1.4f, 1.4f),
+                    Main.rand.NextFloat(-1.8f, -0.2f));
+
+                // purifies: false. These came out of the player rather than out of a
+                // round, and dropping a streak should not convert the floor under them.
+                PADParticleHandler.SpawnParticle(new ChlorophyteSpill(
+                    from, drift, Main.rand.Next(45, 80), Main.rand.NextFloat(0.5f, 0.95f), false));
+            }
         }
 
         /// <summary>
@@ -78,8 +168,16 @@ namespace PisAndDag.Content.PADplayer
         /// the fields at four call sites — the reload path being missed is exactly how the
         /// reload sound came to only play on a manual reload.
         /// </summary>
-        public void ChloBreakCombo()
+        /// <param name="spill">
+        /// False when the streak is being SPENT rather than lost. ChloConsumeBurst ends a
+        /// streak too, and that one is a success — dropping leaves on the shot the player
+        /// worked five hits for would read as a punishment for landing it.
+        /// </param>
+        public void ChloBreakCombo(bool spill = true)
         {
+            if (spill)
+                ChloSpill();
+
             ChloCombo = 0;
             ChloComboTimer = 0;
             ChloArmed = false;
@@ -91,7 +189,7 @@ namespace PisAndDag.Content.PADplayer
             if (!ChloArmed)
                 return false;
 
-            ChloBreakCombo();
+            ChloBreakCombo(spill: false);
             return true;
         }
 

@@ -49,11 +49,11 @@ namespace PisAndDag.Content.Items.Ranged
         private const float PrimarySpeedScale = 1.9f;
 
         private const int MagSize = 3;
-        private const int ReloadTicks = 60;
+        private const int ReloadTicks = 90;
 
         public override void SetDefaults()
         {
-            Item.damage = 70;
+            Item.damage = 82;
             Item.DamageType = DamageClass.Ranged;
             Item.width = 30;
             Item.height = 20;

@@ -1089,45 +1089,61 @@ namespace PisAndDag.Content.Structures
         /// </summary>
         private static void Bones(int x, int ridge)
         {
-            // A long bone lying along the ground.
-            if (WorldGen.genRand.NextBool(22))
+            // Surface returns the AIR tile above the ash, not the ash. Every line below
+            // used it as though it were the ground and every bone in the field was
+            // therefore hanging one to two tiles over it. Name the two apart so the
+            // mistake cannot be made twice.
+
+            // A long bone, laid INTO the ground rather than onto it. A bone that has been
+            // here three hundred years is not resting on the field, it is part of it —
+            // the ash has come up around it — so it takes the first layer, or the second
+            // where it has sunk further.
+            if (WorldGen.genRand.NextBool(70))
             {
-                int run = WorldGen.genRand.Next(3, 11);
-                int sunk = WorldGen.genRand.NextBool(3) ? 0 : -1;
+                int run = WorldGen.genRand.Next(3, 9);
+                int depth = WorldGen.genRand.NextBool(2) ? 0 : 1;
 
                 for (int i = 0; i < run; i++)
                 {
                     // Follow the ground rather than bridging over it, so it reads as
                     // lying there rather than propped.
-                    int under = Surface(x + i, ridge);
+                    int air = Surface(x + i, ridge);
 
-                    if (under < 0)
+                    if (air < 0)
                         break;
 
-                    Put(x + i, under + sunk, TileID.BoneBlock);
+                    Put(x + i, air + 1 + depth, TileID.BoneBlock);
                 }
             }
 
-            // Half-buried clumps, wider than they are tall.
-            if (WorldGen.genRand.NextBool(16))
+            // Half-buried clumps, wider than they are tall. First layer, gappy, so the
+            // ash shows through them.
+            if (WorldGen.genRand.NextBool(55))
             {
                 int w = WorldGen.genRand.Next(3, 8);
 
                 for (int i = 0; i < w; i++)
                 {
-                    int under = Surface(x + i, ridge);
+                    int air = Surface(x + i, ridge);
 
-                    if (under < 0)
+                    if (air < 0)
                         continue;
 
                     if (!WorldGen.genRand.NextBool(3))
-                        Put(x + i, under, TileID.BoneBlock);
+                        Put(x + i, air + 1, TileID.BoneBlock);
                 }
             }
 
-            // Ordinary spoil.
-            if (WorldGen.genRand.NextBool(6))
-                WorldGen.PlaceSmallPile(x, ridge - 1, WorldGen.genRand.Next(6), 0, (ushort)TileID.SmallPiles);
+            // Ordinary spoil. This one really does sit on top, and it is the one thing
+            // here that should — but it was reading ridge instead of the ash, so it sat
+            // wherever the ridge was expected to be rather than where it ended up.
+            if (WorldGen.genRand.NextBool(18))
+            {
+                int air = Surface(x, ridge);
+
+                if (air >= 0)
+                    WorldGen.PlaceSmallPile(x, air, WorldGen.genRand.Next(6), 0, (ushort)TileID.SmallPiles);
+            }
         }
 
         /// <summary>The top of the ash in this column, within a few tiles of where it was expected.</summary>
