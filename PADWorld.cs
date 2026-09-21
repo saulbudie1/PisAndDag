@@ -45,6 +45,21 @@ namespace PisAndDag
         public static bool DownedMegashark;
 
         /// <summary>
+        /// Whether the Abomanation has been killed in this world. Same shape as
+        /// DownedMegashark: set by PADNPCs.OnKill on the side that decides kills, saved,
+        /// and sent to joining clients. Boss Checklist reads it (BossChecklistSupport).
+        /// </summary>
+        public static bool DownedAbomanation;
+
+        /// <summary>
+        /// Small animals let go on the Wasted Mile and not seen again. The Abomanation
+        /// comes when this reaches Abomanation.Offerings, and it goes back to zero. World
+        /// state like the downed flags: kept across sessions, sent to joining clients,
+        /// and never per player. Counted on the side that owns NPCs (AbomanationSummon).
+        /// </summary>
+        public static int MileOfferings;
+
+        /// <summary>
         /// Whether Shimmer does anything.
         ///
         /// False — the normal state, and the state every world starts in — means the
@@ -72,6 +87,8 @@ namespace PisAndDag
             Legends = false;
             FlightAnnounced = false;
             DownedMegashark = false;
+            DownedAbomanation = false;
+            MileOfferings = 0;
             ArchmageShimmer = false;
         }
 
@@ -95,6 +112,12 @@ namespace PisAndDag
             if (DownedMegashark)
                 tag["DownedMegashark"] = true;
 
+            if (DownedAbomanation)
+                tag["DownedAbomanation"] = true;
+
+            if (MileOfferings > 0)
+                tag["MileOfferings"] = MileOfferings;
+
             if (ArchmageShimmer)
                 tag["ArchmageShimmer"] = true;
         }
@@ -103,6 +126,8 @@ namespace PisAndDag
         {
             Legends = tag.ContainsKey("Legends");
             DownedMegashark = tag.ContainsKey("DownedMegashark");
+            DownedAbomanation = tag.ContainsKey("DownedAbomanation");
+            MileOfferings = tag.ContainsKey("MileOfferings") ? tag.GetInt("MileOfferings") : 0;
             ArchmageShimmer = tag.ContainsKey("ArchmageShimmer");
         }
 
@@ -112,6 +137,8 @@ namespace PisAndDag
         {
             writer.Write(Legends);
             writer.Write(DownedMegashark);
+            writer.Write(DownedAbomanation);
+            writer.Write(MileOfferings);
             writer.Write(ArchmageShimmer);
         }
 
@@ -119,6 +146,8 @@ namespace PisAndDag
         {
             Legends = reader.ReadBoolean();
             DownedMegashark = reader.ReadBoolean();
+            DownedAbomanation = reader.ReadBoolean();
+            MileOfferings = reader.ReadInt32();
             ArchmageShimmer = reader.ReadBoolean();
         }
     }

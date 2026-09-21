@@ -71,6 +71,14 @@ namespace PisAndDag.Content.NPCs
                     NetMessage.SendData(MessageID.WorldData);
             }
 
+            if (npc.type == ModContent.NPCType<Abomanation_Small.AbomanationHead>() && !PADWorld.DownedAbomanation)
+            {
+                PADWorld.DownedAbomanation = true;
+
+                if (Main.netMode == NetmodeID.Server)
+                    NetMessage.SendData(MessageID.WorldData);
+            }
+
             if (npc.type != NPCID.HallowBoss || PADWorld.FlightAnnounced)
                 return;
 

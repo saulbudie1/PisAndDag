@@ -1,6 +1,7 @@
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PisAndDag.Content.Combat;
 using Terraria;
 using Terraria.GameContent;
 using Terraria.ID;
@@ -9,17 +10,17 @@ using Terraria.ModLoader;
 namespace PisAndDag.Content.NPCs.Abomanation_Small
 {
     /// <summary>
-    /// The end of it. Same following as a body segment, and nothing on it moves.
+    /// The end of it. Same following as a body segment, and bare.
     ///
-    /// Three pairs on top and no legs at all. Every leg on this thing belongs to the body,
-    /// so the seventeen a side that AbomanationArms shares out is the whole count and the
-    /// tail is the part that stopped walking.
+    /// No limbs of any kind, above or below. Every arm on this thing belongs to the body,
+    /// which makes the count AbomanationArms shares out the whole count for a side, and
+    /// makes the tail the part that has nothing left on it.
     ///
-    /// Laid out rather than scattered, unlike the body's. The body is a repeating thing
-    /// and reads better for being slightly wrong segment to segment; the tail is seen once
-    /// and reads better for being deliberate.
+    /// So its whole draw is one sprite. If it ever wants limbs again, AbomanationArms.Bottom
+    /// and AbomanationArms.TopPairs both still take a segment and lay them out; nothing
+    /// calls TopPairs any more.
     /// </summary>
-    public class AbomanationTail : ModNPC
+    public class AbomanationTail : ModNPC, ICCBypassOutline
     {
         public override string Texture => Abomanation.Folder + "Abomanation_Tail";
 
@@ -43,6 +44,15 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             NPC.defense = 9;
 
             NPC.boss = true;
+
+            // A segment is a boss for the map and the bestiary, but it is not a boss
+            // ARRIVING. Without this BossArrivalWait reads the flag, holds the segment
+            // still for the length of the universal arrival, and the head swims off
+            // alone while the body sits where it was laid.
+            NPC.PAD().OwnIntro = true;
+
+            // One star for the whole animal, from the head. See AbomanationChain.Flag.
+            NPC.PAD().CCQuiet = true;
             NPC.knockBackResist = 0f;
             NPC.noGravity = true;
             NPC.noTileCollide = true;
@@ -78,12 +88,47 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             if (!AbomanationChain.Tether(NPC, ModContent.NPCType<AbomanationHead>(), ModContent.NPCType<AbomanationBody>()))
                 return;
 
-            AbomanationChain.Follow(NPC, Main.npc[AbomanationChain.Ahead(NPC)], Abomanation.TailSpacing);
+            NPC leader = Main.npc[AbomanationChain.Ahead(NPC)];
+
+            AbomanationChain.Flag(NPC);
+
+            // The whip: the tail is the end of a chain with momentum while the head
+            // cracks, and it is the end that moves.
+            if (AbomanationChain.Lashing(NPC))
+            {
+                AbomanationChain.Swing(NPC, leader, Abomanation.TailSpacing);
+                return;
+            }
+
+            AbomanationChain.Follow(NPC, leader, Abomanation.TailSpacing);
         }
 
         public override bool CanHitPlayer(Player target, ref int cooldownSlot)
         {
-            return AbomanationChain.Touching(NPC, target, 26f);
+            if (!AbomanationChain.Lashing(NPC))
+                return AbomanationChain.Touching(NPC, target, 26f);
+
+            // Its own cooldown slot, not the general one: the crack lands through the
+            // immunity an earlier brush from the head or the coil left behind. See
+            // AbomanationBody.
+            cooldownSlot = ImmunityCooldownID.DD2OgreKnockback;
+
+            // Swept while it is being thrown: at that speed a point test misses.
+            return AbomanationChain.Sweeping(NPC, target, 26f);
+        }
+
+        /// <summary>The lash hits harder than the body, and harder the nearer the tail: that is what is moving.</summary>
+        public override void ModifyHitPlayer(Player target, ref Player.HurtModifiers modifiers)
+        {
+            if (AbomanationChain.Lashing(NPC))
+                modifiers.SourceDamage *= AbomanationChain.LashDamage(NPC);
+        }
+
+        /// <summary>And it throws you, shield or no shield. See AbomanationChain.Throw.</summary>
+        public override void OnHitPlayer(Player target, Player.HurtInfo hurtInfo)
+        {
+            if (AbomanationChain.Lashing(NPC))
+                AbomanationChain.Throw(NPC, target);
         }
 
         public override void HitEffect(NPC.HitInfo hit)
@@ -94,19 +139,24 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
 
         public override bool PreDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
         {
-            Color colour = NPC.GetAlpha(drawColor);
+            DrawWhole(spriteBatch, screenPos, NPC.GetAlpha(drawColor));
+            return false;
+        }
 
-            // No call to AbomanationArms.Bottom. The tail carries no legs, so there is
-            // nothing to draw under the sprite and the pass starts at the sprite itself.
+        /// <summary>The sprite and nothing else. No arms above it, none under it, so there is no pass before this one and none after it.</summary>
+        public void DrawWhole(SpriteBatch spriteBatch, Vector2 screenPos, Color colour)
+        {
             Texture2D texture = TextureAssets.Npc[Type].Value;
 
             spriteBatch.Draw(texture, NPC.Center - screenPos, null, colour,
                 NPC.rotation, texture.Size() * 0.5f, NPC.scale, SpriteEffects.None, 0f);
+        }
 
-            AbomanationArms.TopPairs(spriteBatch, NPC, screenPos, colour,
-                rows: 3, rowSpan: 18f, inset: 10f);
-
-            return false;
+        /// <summary>One outline round the whole animal, from whichever part is drawn first. See AbomanationChain.Silhouette.</summary>
+        public void DrawCCBypassOutline(SpriteBatch spriteBatch, Vector2 screenPos)
+        {
+            if (AbomanationChain.DrawsFirst(NPC))
+                AbomanationChain.Silhouette(spriteBatch, NPC, screenPos);
         }
     }
 }

@@ -1200,6 +1200,133 @@ namespace PisAndDag.Content.Structures
     }
 
     /// <summary>
+    /// The ground under the Mile, made solid.
+    ///
+    /// The ash pass lays twenty-six tiles and leaves the rest of the world's work under
+    /// it: caves, water, grass, vines, pots, logs, whatever the forest had. All of that is
+    /// gone here. From the top of the ash down two hundred tiles, anything that is not a
+    /// solid block becomes ash. Solid blocks are left as they are, so dirt and stone and
+    /// ore keep their look under the ash; it is the hollows and the growth that go.
+    ///
+    /// Runs just before Final Cleanup, after every pass that carves, floods or plants,
+    /// so nothing gets to put a hole back. The trench lines down to the Undercity are a
+    /// later pass and will have to cut through this; that is the point of them.
+    ///
+    /// The span is read off the ground rather than off the layout: the ash pass wobbles
+    /// its start edge, so a column is in only if there is ash at its surface.
+    /// </summary>
+    public class WastedMileFillPass : GenPass
+    {
+        /// <summary>How far under the surface the fill goes.</summary>
+        public const int Depth = 200;
+
+        /// <summary>How far the ash pass may have moved its start edge.</summary>
+        private const int EdgeWobble = 60;
+
+        public WastedMileFillPass(string name, double weight) : base(name, weight) { }
+
+        protected override void ApplyPass(GenerationProgress progress, GameConfiguration config)
+        {
+            progress.Message = "Packing the ground under the Mile";
+
+            if (!ExtraLargeWorld.Active)
+                return;
+
+            (int left, int right) = WorldMirror.Span(Layout.MileStart - EdgeWobble, Layout.MileEnd + EdgeWobble);
+            int columns = 0, filled = 0;
+
+            for (int x = left; x <= right; x++)
+            {
+                progress.Set((x - left) / (float)Math.Max(1, right - left));
+
+                int top = AshTop(x);
+
+                if (top < 0)
+                    continue;
+
+                columns++;
+
+                for (int y = top; y < top + Depth; y++)
+                {
+                    if (!WorldGen.InWorld(x, y, 10))
+                        break;
+
+                    Tile t = Main.tile[x, y];
+
+                    if (t.HasTile && Main.tileSolid[t.TileType] && !Main.tileSolidTop[t.TileType])
+                        continue;
+
+                    if (t.HasTile)
+                        Unhook(x, y, t);
+
+                    t.HasTile = true;
+                    t.TileType = (ushort)TileID.Ash;
+                    t.Slope = SlopeType.Solid;
+                    t.IsHalfBlock = false;
+                    t.LiquidAmount = 0;
+                    WorldGen.SquareTileFrame(x, y, true);
+                    filled++;
+                }
+            }
+
+            // So the log says whether it happened, rather than the map saying it did not.
+            GenLog.Log?.Info($"Wasted Mile fill: {columns} of {right - left + 1} columns had ash at the surface, {filled} tiles packed.");
+        }
+
+        /// <summary>
+        /// The first ash tile in this column, looked for from the top of the world down
+        /// to a little under the surface line. -1 if there is none, which means the ash
+        /// pass never reached this column.
+        ///
+        /// It used to look only from 120 tiles above the surface line, and on the Grand
+        /// world that was under the ground: the Mile's ridge sits well over 120 tiles
+        /// above Main.worldSurface there, so the scan started below the ash, found dirt,
+        /// and skipped every column. The ash band was laid and nothing under it was
+        /// touched. Scanning from the top costs nothing.
+        /// </summary>
+        private static int AshTop(int x)
+        {
+            int from = 10;
+            int to = Math.Min(Main.maxTilesY - 2, (int)Main.worldSurface + 60);
+
+            for (int y = from; y <= to; y++)
+            {
+                Tile t = Main.tile[x, y];
+
+                if (t.HasTile && t.TileType == TileID.Ash)
+                    return y;
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// A chest is a tile and an entry in Main.chest, and overwriting the tile alone
+        /// leaves the entry pointing at ash. Take the entry out first. Its loot goes with
+        /// it: nothing was ever buried here on purpose.
+        /// </summary>
+        private static void Unhook(int x, int y, Tile t)
+        {
+            int frameWidth = t.TileType switch
+            {
+                TileID.Containers or TileID.Containers2 => 36,
+                TileID.Dressers => 54,
+                _ => 0,
+            };
+
+            if (frameWidth == 0)
+                return;
+
+            int cornerX = x - t.TileFrameX % frameWidth / 18;
+            int cornerY = y - t.TileFrameY % 36 / 18;
+            int id = Chest.FindChest(cornerX, cornerY);
+
+            if (id >= 0)
+                Chest.DestroyChestDirect(cornerX, cornerY, id);
+        }
+    }
+
+    /// <summary>
     /// Two places in this world are supposed to be bare, and neither of them stays bare
     /// on its own: every pass that plants a tree, a herb, a vine or a mushroom runs long
     /// after the ground is made, and none of them ask whether anything was planned here.
@@ -1336,10 +1463,15 @@ namespace PisAndDag.Content.Structures
 
             Insert(tasks, "Micro Biomes", new WastedMilePass("PAD Wasted Mile", 90f));
 
-            // Last of ours, and after every pass that grows something. The plain and the
-            // Cleared Ground are both meant to be bare and neither of them stays bare on
-            // its own.
+            // The two late passes, both just before Final Cleanup. Insert(before) goes in
+            // ahead of Final Cleanup each time, so they run in the order they are added
+            // here: strip the surface, then pack the ground under the Mile.
+
+            // After every pass that grows something. The plain and the Cleared Ground are
+            // both meant to be bare and neither of them stays bare on its own.
             Insert(tasks, "Final Cleanup", new GraceCleanupPass("PAD Grace Cleanup", 40f), before: true);
+
+            Insert(tasks, "Final Cleanup", new WastedMileFillPass("PAD Wasted Mile Fill", 60f), before: true);
         }
 
         /// <summary>Beside the named vanilla pass, or nowhere at all, loudly.</summary>

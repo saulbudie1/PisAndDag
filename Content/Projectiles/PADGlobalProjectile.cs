@@ -1,10 +1,13 @@
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using PisAndDag.Content.Combat;
 using PisAndDag.Content.Items.Ranged;
 using PisAndDag.Content.Particles;
 using PisAndDag.Content.Projectiles.Ranged;
 using System;
 using Terraria;
 using Terraria.DataStructures;
+using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
 using static System.Net.Mime.MediaTypeNames;
@@ -209,6 +212,59 @@ namespace PisAndDag.Content.Projectiles
             // burst. Chlorophyte rounds are neutral: they neither build it nor end it.
             if (projectile.owner == Main.myPlayer && projectile.type == ProjectileID.BulletHighVelocity)
                 Main.player[projectile.owner].PIS().ChloBreakCombo();
+        }
+
+        // ---------------------------------------------------------------- CC bypass --
+        //
+        // See CCBypass, and the same three fields on PADGlobalNPC.
+
+        /// <summary>True on any tick this projectile's hit goes through crowd-control immunity. Cleared before every AI.</summary>
+        public bool CCBypass;
+
+        /// <summary>Set once on a part that should not announce itself when its flag comes on.</summary>
+        public bool CCQuiet;
+
+        private bool wasBypass;
+
+        public override bool PreAI(Projectile projectile)
+        {
+            CCBypass = false;
+            return true;
+        }
+
+        public override void PostAI(Projectile projectile)
+        {
+            if (CCBypass && !wasBypass && !CCQuiet)
+                Combat.CCBypass.Warn(projectile);
+
+            wasBypass = CCBypass;
+        }
+
+        /// <summary>The outline, under the sprite. Runs before the projectile's own PreDraw.</summary>
+        public override bool PreDraw(Projectile projectile, ref Color lightColor)
+        {
+            if (!CCBypass || projectile.alpha >= 255 || projectile.hide)
+                return true;
+
+            if (projectile.ModProjectile is ICCBypassOutline own)
+            {
+                own.DrawCCBypassOutline(Main.spriteBatch, Main.screenPosition);
+                return true;
+            }
+
+            // Vanilla's own placement for a plain projectile: on its centre, one frame
+            // of the sheet, flipped when spriteDirection is -1.
+            Texture2D texture = TextureAssets.Projectile[projectile.type].Value;
+            int frames = Main.projFrames[projectile.type];
+            int frameHeight = texture.Height / frames;
+            Rectangle frame = new Rectangle(0, frameHeight * projectile.frame, texture.Width, frameHeight);
+            Vector2 origin = new Vector2(texture.Width * 0.5f, frameHeight * 0.5f);
+            Vector2 at = projectile.Center - Main.screenPosition + new Vector2(0f, projectile.gfxOffY);
+
+            SpriteEffects flip = projectile.spriteDirection == -1 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
+
+            Combat.CCBypass.Outline(Main.spriteBatch, texture, frame, at, projectile.rotation, origin, projectile.scale, flip);
+            return true;
         }
     }
 }

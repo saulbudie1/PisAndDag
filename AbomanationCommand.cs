@@ -1,16 +1,18 @@
 using Microsoft.Xna.Framework;
 using PisAndDag.Content.NPCs.Abomanation_Small;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace PisAndDag
 {
     /// <summary>
-    /// Test spawner: "/abomanation" puts the worm at the cursor.
+    /// Test spawner: "/abomanation" calls the worm the way the offering does, minus the
+    /// offering. It comes from a long way off, through the ground, with the camera on it;
+    /// the cursor plays no part. See AbomanationHead.Summon.
     ///
-    /// Stands in until there is a summon item, same as /megashark. The head builds its own
-    /// body on its first tick, so one NPC is all this has to place.
+    /// Stands in for testing, same as /megashark.
     /// </summary>
     public class AbomanationCommand : ModCommand
     {
@@ -20,13 +22,11 @@ namespace PisAndDag
 
         public override string Usage => "/abomanation";
 
-        public override string Description => "Summons the Abomanation at the cursor, for testing.";
+        public override string Description => "Calls the Abomanation, for testing.";
 
         public override void Action(CommandCaller caller, string input, string[] args)
         {
-            int type = ModContent.NPCType<AbomanationHead>();
-
-            if (NPC.AnyNPCs(type))
+            if (NPC.AnyNPCs(ModContent.NPCType<AbomanationHead>()))
             {
                 caller.Reply("It is already here.", Color.OrangeRed);
                 return;
@@ -38,12 +38,15 @@ namespace PisAndDag
                 return;
             }
 
-            Vector2 where = Main.MouseWorld;
+            int made = AbomanationHead.Summon(caller.Player, new EntitySource_DebugCommand("abomanation"));
 
-            NPC.NewNPC(new Terraria.DataStructures.EntitySource_DebugCommand("abomanation"),
-                (int)where.X, (int)where.Y, type);
+            if (made < 0)
+            {
+                caller.Reply("No room for it.", Color.OrangeRed);
+                return;
+            }
 
-            caller.Reply("The sand moves.", new Color(190, 40, 40));
+            caller.Reply("The ground moves, a long way off.", new Color(190, 40, 40));
         }
     }
 }

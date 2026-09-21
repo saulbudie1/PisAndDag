@@ -1,6 +1,9 @@
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PisAndDag.Content.Combat;
+using PisAndDag.Content.PADplayer;
+using PisAndDag.Content.UI;
 using ReLogic.Content;
 using Terraria;
 using Terraria.ModLoader;
@@ -17,9 +20,18 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
     /// Read <see cref="Speed"/> as a speed and <see cref="TurnSpeed"/> as a turn rate,
     /// because that is what they are. Desert Scourge's own code calls its acceleration
     /// "speed" and keeps the actual travel cap in a separate local, which is why nothing
-    /// in that file does what its name says. Here Speed is pixels per tick travelled and
-    /// TurnSpeed is pixels per tick the velocity is allowed to swing by, per tick. Raising
-    /// Speed alone makes it faster; raising TurnSpeed alone makes it corner harder.
+    /// in that file does what its name says. Speed is pixels per tick travelled.
+    ///
+    /// NOTE: TurnSpeed CHANGED UNITS. It used to be pixels per tick of velocity change,
+    /// which is an acceleration, and steering by accelerating each axis toward a target
+    /// velocity is exactly what made the worm stop dead and reverse when you got behind
+    /// it: a target pointing the opposite way drives both axes through zero on the same
+    /// tick, so the head halts, every segment piles onto it, and the body turns inside
+    /// out. It is now RADIANS PER TICK, the rate the heading may swing while the speed is
+    /// held, which makes a turn an arc and a reversal a U turn.
+    ///
+    /// The turning circle is Speed / TurnSpeed pixels. A value set in the old unit means
+    /// something entirely different here.
     /// </summary>
     public static class Abomanation
     {
@@ -35,16 +47,54 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         /// </summary>
         public static bool Fly = false;
 
-        /// <summary>How fast it travels, in world pixels per tick. 9 is about 10 tiles a second.</summary>
-        public static float Speed = 9f;
+        /// <summary>
+        /// How fast it travels, in world pixels per tick.
+        ///
+        /// 6.5 is 24 tiles a second. For scale, a player runs 11 and Hermes Boots make 22,
+        /// so it is just faster than a booted player and can be kited but not shaken off,
+        /// which is about right for something met before hardmode.
+        ///
+        /// See the note on <see cref="TurnSpeed"/> before changing it, because the two are
+        /// joined, and the note on <see cref="RushTimeout"/>, because a slower worm takes
+        /// longer to finish an attack and the watchdog has to be let out to match.
+        ///
+        /// It is also faster than the old steering ever managed at the same setting. That
+        /// one bled speed into every turn and spent most of a fight under its own cap; this
+        /// one only ever changes speed along the heading, so it holds this number all the
+        /// time. Same figure, quicker animal.
+        /// </summary>
+        public static float Speed = 6.5f;
 
         /// <summary>
-        /// How hard it corners, in pixels per tick of velocity change per tick. Low turns
-        /// it into a train on rails; high lets it follow you round a corner. Above about
-        /// a third of Speed it stops reading as a worm and starts reading as a homing
-        /// missile.
+        /// How hard it corners, in RADIANS PER TICK of heading. See the note on the class.
+        ///
+        /// The turning circle that falls out of this is Speed / TurnSpeed pixels, so 0.0275
+        /// against a speed of 6.5 gives a radius of about 236, which is fifteen tiles: a U
+        /// turn thirty tiles across, taking just under two seconds. Much higher and it stops
+        /// reading as a worm and starts reading as a homing missile that happens to be long.
+        ///
+        /// SCALE IT WITH Speed. The two make one number between them and dropping Speed on
+        /// its own does the opposite of what it sounds like: a slower worm at the same turn
+        /// rate corners TIGHTER, because it covers less ground while swinging through the
+        /// same angle. Halve Speed alone and the ten tile circle becomes five, which reads
+        /// as more agile, not less. These pairs all hold the same ten tile circle:
+        ///
+        ///     Speed 9    TurnSpeed 0.0382   34 tiles/s
+        ///     Speed 8    TurnSpeed 0.0339   30 tiles/s
+        ///     Speed 7    TurnSpeed 0.0296   26 tiles/s
+        ///     Speed 6.5  TurnSpeed 0.0275   24 tiles/s   <- here
+        ///     Speed 5    TurnSpeed 0.0212   19 tiles/s
+        ///
+        /// To make it lazier as well as slower, go under the paired figure.
         /// </summary>
-        public static float TurnSpeed = 0.08f;
+        public static float TurnSpeed = 0.0275f;
+
+        /// <summary>
+        /// How quickly it gets up to speed, in pixels per tick per tick. Only ever applied
+        /// along the heading, never across it, which is what keeps a turn from costing it
+        /// any speed.
+        /// </summary>
+        public static float SpeedChange = 0.35f;
 
         /// <summary>
         /// How far off the player it aims, in world pixels. At 0 it drives at your exact
@@ -103,14 +153,44 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         /// <summary>Centre to centre, last body segment to tail.</summary>
         public const float TailSpacing = 46f;
 
+        /// <summary>
+        /// How much the chain bends per segment when it is laid out at spawn, in radians.
+        ///
+        /// It starts pointing straight down and turns by this much at every joint, so the
+        /// whole body is an arc of radius BodySpacing / BuriedCurve. At 0.055 that is about
+        /// 760 pixels, which bends the 678 pixel body through roughly fifty degrees: enough
+        /// to read as something lying in the ground rather than a post driven into it, and
+        /// not so much that it coils. Zero drops it straight down. The sign is rolled at
+        /// spawn, so it leans either way.
+        /// </summary>
+        public const float BuriedCurve = 0.055f;
+
         /// <summary>How far below the player it digs before turning around, in world pixels.</summary>
         public const float DiveDepth = 800f;
 
         /// <summary>Ticks of chasing before the rush. Only counts while it is below you or well off to the side.</summary>
         public const int RushGate = 600;
 
-        /// <summary>Ticks an attack is allowed to take before it is abandoned and the chase resumes.</summary>
-        public const int RushTimeout = 3 * 60;
+        /// <summary>
+        /// Ticks an attack is allowed to take before it is abandoned and the chase resumes.
+        ///
+        /// THIS HAS TO GROW WHEN Speed SHRINKS. The dive is a fixed DISTANCE, so a slower
+        /// worm spends longer covering it, and an attack that outlasts this is thrown away
+        /// half finished: the boss turns round mid dive and goes back to chasing, which
+        /// looks like it forgot what it was doing. Longest attack measured over eight
+        /// fights at each setting, with the watchdog switched off:
+        ///
+        ///     Speed 9     dive 165  rush 121  fall  78    needs 240
+        ///     Speed 8     dive 179  rush 123  fall  92    needs 270
+        ///     Speed 7     dive 269  rush 148  fall 105    needs 390
+        ///     Speed 6.5   dive 370  rush 225  fall 129    needs 510   <- here
+        ///     Speed 6     dive 353  rush 176  fall 121    needs 480
+        ///
+        /// It was 180. At Speed 6.5 the dive alone runs to 370, so 180 threw EVERY rush
+        /// away part way down: the boss turned round mid dive and went back to chasing,
+        /// which reads as it forgetting what it was doing. Measured over ten fights.
+        /// </summary>
+        public const int RushTimeout = 510;
 
         /// <summary>
         /// Past this distance it keeps swimming even in open air, so a worm crossing the
@@ -118,18 +198,310 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         /// </summary>
         public const float AirSwimDistance = 1000f;
 
-        /// <summary>
-        /// Inside this, it stops steering and commits to the pass. See AbomanationHead.Steer:
-        /// without it the worm parks inside you and never leaves.
-        /// </summary>
-        public const float CommitDistance = 300f;
+        // ------------------------------------------------------------- the pass by ----
+        //
+        // A worm does not stop on top of you, it goes THROUGH and comes back. Steering at
+        // your centre right up to the moment of contact is what made it sit on your head
+        // like a normal worm; these three make it pick a point on the far side of you and
+        // commit to reaching that instead.
 
         /// <summary>
-        /// What <see cref="TurnSpeed"/> is multiplied by while the velocity is pointing
-        /// away from where it wants to go, which is the one moment a worm needs to turn
-        /// faster than it otherwise does.
+        /// How close it has to get before it stops aiming at you and locks a run past you,
+        /// in world pixels.
         /// </summary>
-        public const float TurnBoost = 3f;
+        public const float PassTrigger = 300f;
+
+        /// <summary>Nearest it will aim past you, in TILES beyond wherever you are.</summary>
+        public const float MinPass = 8f;
+
+        /// <summary>Furthest it will aim past you, in TILES beyond wherever you are.</summary>
+        public const float MaxPass = 20f;
+
+        /// <summary>
+        /// Ticks a locked run is held before it gives up and re-aims. Only a safety net:
+        /// the run normally ends because the point was reached.
+        /// </summary>
+        public const int PassHold = 240;
+
+        /// <summary>
+        /// Gravity on a worm that is out of the ground, in pixels per tick per tick.
+        ///
+        /// This is the ONLY thing done to a worm in the air. Nothing caps how fast it
+        /// falls, nothing bleeds its sideways speed, nothing puts a floor under anything:
+        /// it keeps exactly the velocity it left the ground with and this is added to the
+        /// downward half of it, so the arc is a consequence of how fast and how steeply it
+        /// came out, and a fast shallow exit throws it a long way while a slow steep one
+        /// barely clears the sand.
+        ///
+        /// It used to have a drop cap and a sideways floor and a drag. The drag was the
+        /// mistake: bleeding the sideways speed away meant a steep hop arrived at the top
+        /// of its arc with both halves of the velocity at nothing, the head hung there,
+        /// and everything else was scaffolding to hide it. Measured over six fights,
+        /// taking the drag out drops that to zero on its own, with no floor and no cap:
+        /// 192 arcs, median sideways speed at the top 5.65 px a tick, not one heading
+        /// change above a third of a radian in a tick.
+        ///
+        /// How strong, measured at Speed 6.5 against a moving player, six fights each:
+        ///
+        ///     gravity   air time (median)   top of arc (median)   sideways (median)
+        ///     0.20      0.63 s              4 tiles               11 tiles    <- "buries itself"
+        ///     0.11      1.17 s              7 tiles               19 tiles    (vanilla worms)
+        ///     0.09      1.3 s               8 tiles               22 tiles    <- here
+        ///     0.06      1.47 s              9 tiles               28 tiles
+        ///
+        /// 0.2 was too much: most exits were a short flat hop that was back in the sand
+        /// inside forty ticks, which reads as the worm diving on purpose the moment it
+        /// touches air. This keeps the momentum it left the ground with for a real arc,
+        /// and still comes down.
+        /// </summary>
+        public const float AirGravity = 0.09f;
+
+        // --------------------------------------------------------------- the call ----
+
+        /// <summary>
+        /// Small animals let go on the Wasted Mile before it comes. Ten: the Clothier's
+        /// "nest of ten". Each one is taken; the tenth brings it. PADWorld.MileOfferings
+        /// is the count.
+        /// </summary>
+        public const int Offerings = 10;
+
+        // --------------------------------------------------------------- arrival ----
+        //
+        // It does not appear under you. It is called up a long way off and comes to you
+        // slowly, through the surface, in a wave, with the camera on it the whole way;
+        // when the camera comes home it is close and the fight begins. Nothing in this
+        // block touches the fight. AbomanationHead.Arrive drives it.
+
+        /// <summary>How far from the player it surfaces, in tiles. Off screen at any zoom.</summary>
+        public const int ArriveDistance = 120;
+
+        /// <summary>
+        /// Pixels a tick it travels toward the player while arriving. ArriveDistance less
+        /// ArriveSpeed × ArriveTicks is where it is when the fight starts: 120 tiles less
+        /// 3 × 540 / 16 = 101 tiles leaves it about twenty tiles out, close enough to be
+        /// on you inside two seconds of the camera coming home.
+        /// </summary>
+        public const float ArriveSpeed = 3f;
+
+        /// <summary>Half height of the wave it swims in, in pixels, centred on the ground line: this far out of the ash at a crest, this far under at a trough.</summary>
+        public const float ArriveWave = 64f;
+
+        /// <summary>Ticks per wave.</summary>
+        public const int ArrivePeriod = 150;
+
+        /// <summary>Ticks the camera takes to reach it.</summary>
+        public const int ArrivePanOut = 60;
+
+        /// <summary>Ticks the camera sits on it before the name rises.</summary>
+        public const int ArriveLook = 90;
+
+        /// <summary>Ticks the camera takes to come home at the end.</summary>
+        public const int ArrivePanBack = 60;
+
+        /// <summary>
+        /// The whole arrival: pan out, look, the name's flight (rise, read, fly, settle,
+        /// the same lengths every boss with a line gets), pan back. 540 at the plate's
+        /// current lengths.
+        /// </summary>
+        public static int ArriveTicks => ArrivePanOut + ArriveLook
+            + BossIntro.TitleRise + BossIntro.TitleRead + BossIntro.TitleFly + BossIntro.TitleSettle
+            + ArrivePanBack;
+
+        // -------------------------------------------------------------- the whip ----
+        //
+        // Occasional. It comes for you at its ordinary pace until it is close, then the
+        // head turns in a tight loop and the body follows it round into a coil, and then
+        // the head drives straight out of the coil and the body comes after it with all
+        // the turn still in it: link by link it unwinds, each link swinging faster than
+        // the one before, and the tail leaves the end of the whole animal in one wide arc
+        // at three or four tiles a tick. Then it swings back, less, and lies down.
+        //
+        // NOTHING HERE IS SCRIPTED. The body during the crack is a chain of links with
+        // inertia (AbomanationChain.Swing): each link's angle is a damped spring toward
+        // the link ahead, stiffer toward the tail, with a cap on how fast any link may
+        // turn. Everything the lash does — the coil, the wave, the wide arc, the recoil —
+        // falls out of the head's own two moves and that rule. Change the loop or the
+        // run and the lash changes with them.
+        //
+        // Phases 4 (the run in), 5 (the loop), 6 (the crack). The head drives; the
+        // segments swing.
+        //
+        // Two ways it was done before this, both wrong, recorded so they stay wrong:
+        // a rigid rod turning about a fixed segment (a bar, not a whip), and the same
+        // rod with a scripted wave down it (a wave through a bar). And one way that was
+        // right and unusable: the body as a rope with momentum and a length constraint,
+        // one pass a tick. That gave the true shape — the coil, the arc — and a tail at
+        // 280 pixels a tick whatever the head did, because a chain that cannot stretch
+        // and cannot bend concentrates everything into its tip, which is why real whips
+        // crack. Slowing it down did not slow the tip. The angular chain keeps the shape
+        // and puts a ceiling on the tip.
+
+        /// <summary>One in this many completed rushes is followed by a whip.</summary>
+        public const int WhipChance = 3;
+
+        /// <summary>Least ticks between two whips. Twenty seconds.</summary>
+        public const int WhipGap = 1200;
+
+        /// <summary>Only rolls if the head is within this of the player, in pixels; a whip from across the map is a long run in.</summary>
+        public const float WhipRange = 900f;
+
+        /// <summary>
+        /// How close the head gets before it loops, in TILES. The run in is ordinary
+        /// chasing that gets faster the longer it takes (WhipChaseGain), so the approach
+        /// reads as the fight carrying on rather than a cutscene starting.
+        /// </summary>
+        public const float WhipNear = 5f;
+
+        /// <summary>
+        /// How much faster the run in gets for every tick it lasts, as a fraction of
+        /// Speed. It starts at the ordinary chase and climbs: a player who keeps away
+        /// is run down, not followed. Turn rate climbs with it, so the circle it turns
+        /// in stays the same size.
+        /// </summary>
+        public const float WhipChaseGain = 0.004f;
+
+        /// <summary>Most the run in may reach, as a multiple of Speed. Two: about the rush.</summary>
+        public const float WhipChaseMax = 2f;
+
+        // ---- the loop -----------------------------------------------------------------
+        //
+        // The head goes round once. The body, following as it always does, is drawn into
+        // the circle behind it: the coil. The circle has to be roomy — the body follows
+        // by closing on whatever is ahead of it, which cuts every corner, and a circle
+        // much under a hundred pixels is cut so short the body stays straight and only
+        // the neck kinks. At a hundred the head passes back over its own body and the
+        // coil is a thing you can see.
+
+        /// <summary>Speed round the loop, pixels a tick.</summary>
+        public const float WhipLoopSpeed = 9f;
+
+        /// <summary>Radius of the loop, pixels. See the note above before shrinking it.</summary>
+        public const float WhipLoopRadius = 100f;
+
+        /// <summary>How many times round. One.</summary>
+        public const float WhipLoopTurns = 1f;
+
+        /// <summary>The loop, in ticks: 70 at the numbers above, a second and a bit. The tell.</summary>
+        public static readonly int WhipLoopTicks =
+            (int)Math.Round(WhipLoopTurns * MathHelper.TwoPi * WhipLoopRadius / WhipLoopSpeed);
+
+        // ---- the crack ----------------------------------------------------------------
+
+        /// <summary>Speed of the head's drive out of the coil, pixels a tick, straight along the heading it looped back to.</summary>
+        public const float WhipRunSpeed = 10f;
+
+        /// <summary>
+        /// Ticks the head holds that line. The arc is thrown in the first thirty or so;
+        /// after this the head goes back to chasing while the body finishes settling
+        /// behind it, rather than driving fifty tiles in a straight line for the sake
+        /// of a tail that has already stopped.
+        /// </summary>
+        public const int WhipRunStraight = 50;
+
+        /// <summary>
+        /// How long the body is left to swing before it is handed back to the follow
+        /// chain. Measured: the tail is fast for the first forty six ticks and back to
+        /// trailing the head by ninety three, so this is where the recoil has died.
+        /// </summary>
+        public const int WhipRunTicks = 95;
+
+        /// <summary>The tick the tail is at its fastest, which is when the crack is heard. Measured: 24.</summary>
+        public const int WhipCrackAt = 24;
+
+        // ---- the chain ----------------------------------------------------------------
+        //
+        // Measured, head looping at 9 round 100 and running out at 10, six settings
+        // tried; this one:
+        //
+        //     tail peak   60 px a tick, at tick 24 of the run
+        //     over 25     46 ticks
+        //     reach       the whole body, 42 tiles, straight out from the head at full arc
+        //     settled     93 ticks
+        //
+        // A stiffer tail (0.45 / 0.18) peaks at 67 and takes longer to settle; a softer
+        // one (0.30 / 0.13) peaks at 51. The peak lands where the cap puts it.
+
+        /// <summary>Spring at the first link behind the head: how hard it is pulled toward the head's line, per tick, per radian off it.</summary>
+        public const float WhipSpringHead = 0.05f;
+
+        /// <summary>Spring at the tail. Higher than the head's: that is the taper, and the taper is what makes the tip the fast end.</summary>
+        public const float WhipSpringTail = 0.38f;
+
+        /// <summary>Per-tick retention of each link's turning speed while the arc is being thrown.</summary>
+        public const float WhipDamping = 0.90f;
+
+        /// <summary>What that falls to once the arc has gone, so the recoil is one swing and not a rope in the wind.</summary>
+        public const float WhipSettleDamping = 0.60f;
+
+        /// <summary>Tick of the run the damping starts falling, and how many ticks it takes to get there.</summary>
+        public const int WhipSettleAt = 25;
+        public const int WhipSettleOver = 30;
+
+        /// <summary>Most any link may turn in a tick, radians. This is the ceiling on the tip: at the tail's reach it is about sixty pixels a tick.</summary>
+        public const float WhipMaxTurn = 0.16f;
+
+        /// <summary>Ticks the whole move may take before it is abandoned.</summary>
+        public const int WhipTimeout = 600;
+
+        // ----------------------------------------------------------------- the throw --
+        //
+        // A whip does not push, it carries. Anything the lash catches leaves along the
+        // tip's own line of travel — the tangent, which is the swing — with a share of
+        // straight out from the pivot on top of it, so a hit near the top of the arc
+        // throws you up and away and a hit low throws you along the ground and off it.
+        // It is written onto the player's velocity rather than handed to the knockback
+        // system, so a Cobalt or Ankh Shield changes nothing: it is not knockback, it is
+        // being hit by something moving fast.
+
+        /// <summary>Share of the segment's own speed at the point of contact that the player leaves with.</summary>
+        public const float WhipToss = 0.34f;
+
+        /// <summary>And then this much again. Four: the tail at full swing throws you a screen and a half, and the bounces take it from there.</summary>
+        public const float WhipTossBoost = 4f;
+
+        /// <summary>Slowest a throw can be, in pixels a tick, so a brush from the neck still puts you down.</summary>
+        public const float WhipTossMin = 8f;
+
+        /// <summary>
+        /// Least upward speed a throw carries. Zero: the throw goes exactly where the
+        /// segment was going, into the ground if that is where it was going. Raise it if
+        /// a hit should always take the air.
+        /// </summary>
+        public const float WhipTossLift = 0f;
+
+        /// <summary>Upward speed past which the body tumbles in the air rather than rolls along the ground. See RagdollPlayer.</summary>
+        public const float WhipSpinLift = 8f;
+
+        /// <summary>Ticks on the ground after a whip hit, before you can get up. A second and a half.</summary>
+        public const int WhipLie = 90;
+
+        /// <summary>Contact damage multiplier during the crack at the first segment behind the head. It rises along the body to WhipTailDamage.</summary>
+        public const float WhipDamage = 1.25f;
+
+        /// <summary>Contact damage multiplier at the tail. The tip is what a whip hits with.</summary>
+        public const float WhipTailDamage = 2f;
+
+        // ------------------------------------------------------------ second wind ----
+        //
+        // Two halves to the fight, split on health. The first is everything above: the
+        // chase, the rush now and then, the whip rarely. The second is the same animal
+        // hurt: quicker, aiming at you rather than near you, and whipping as often as it
+        // rushes. It announces the change once, low and slow.
+
+        /// <summary>Health fraction the second half starts at.</summary>
+        public const float RagePoint = 0.4f;
+
+        /// <summary>Speed AND turn rate multiplier in the second half, so the turning circle is unchanged.</summary>
+        public const float RageSpeed = 1.2f;
+
+        /// <summary>Whip roll in the second half: one in this many finished rushes. One is every one.</summary>
+        public const int RageWhipChance = 1;
+
+        /// <summary>Least ticks between whips in the second half.</summary>
+        public const int RageWhipGap = 240;
+
+        /// <summary>The roar at the change: SoundID.Roar this far down in pitch, which also draws it out.</summary>
+        public const float RagePitch = -0.7f;
     }
 
     /// <summary>
@@ -161,6 +533,33 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
 
         /// <summary>Half the span the bottom arms are spread over along a body segment.</summary>
         public const float BottomSpan = 14f;
+
+        // ---------------------------------------------------------------- the mess ----
+        //
+        // Three scatters, all dealt from the head's arm seed, so a leg keeps its own
+        // crookedness for the whole fight and picks a different one next summon.
+        //
+        // Spreading the legs evenly over the span was the right way to stop them landing
+        // on top of each other and the wrong way to make an animal: every socket sat on
+        // the same grid and the eye reads a grid instantly. These put every leg somewhere
+        // slightly wrong instead, which is what stops fifteen segments of the same five
+        // sprites looking stamped.
+
+        /// <summary>How far along the body a leg may sit from where the spacing put it, in pixels.</summary>
+        public const float BottomScatter = 11f;
+
+        /// <summary>How far in or out of the body a leg may be rooted from <see cref="BottomInset"/>, in pixels.</summary>
+        public const float BottomInsetScatter = 5f;
+
+        /// <summary>How far a leg's resting angle may sit from the shared rake, in radians.</summary>
+        public const float BottomAngleScatter = 0.55f;
+
+        /// <summary>
+        /// How far a leg's swing may sit out of step with the wave, in radians. Small on
+        /// purpose: the travelling beat is the thing that reads as walking, and enough of
+        /// this would grind it back into noise.
+        /// </summary>
+        public const float BottomSwingScatter = 0.5f;
 
         /// <summary>Radians the bottom arms are raked back toward the tail at rest.</summary>
         public const float BottomRake = 0.30f;
@@ -202,49 +601,124 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         // on a server, so this is the one place the request can be made without also
         // having to guard for a machine that has no graphics device.
 
-        private static Asset<Texture2D> bottomR, bottomL, top1, top2, top3R, top3L;
+        // The TOP arm tables below are indexed [variant, side], side 0 being the LEFT of
+        // the segment, with an unhanded sprite listed twice so a lookup never has to know
+        // which ones those are. The BOTTOM arms are a flat list; see below.
 
-        // Origins are the attachment nub, read off the sprites pixel by pixel, not the
-        // middle of the canvas. The nub is off-centre on every one of them except
-        // Arm_On_Top_2, so a nominal bottom-centre origin would plant four of the six
-        // arms two or three pixels outside the body.
-        private static readonly Vector2 BottomOriginR = new Vector2(5f, 30f);
-        private static readonly Vector2 BottomOriginL = new Vector2(9f, 30f);
-        private static readonly Vector2 Top1Origin = new Vector2(3f, 24f);
-        private static readonly Vector2 Top2Origin = new Vector2(5f, 24f);
-        private static readonly Vector2 Top3OriginR = new Vector2(5f, 30f);
-        private static readonly Vector2 Top3OriginL = new Vector2(9f, 30f);
-
-        private static Asset<Texture2D> Get(ref Asset<Texture2D> slot, string name)
+        // All six leg sprites, as six separate shapes rather than three handed pairs, and
+        // every one of them available to both sides.
+        //
+        // Treating them as pairs meant a side only ever saw three of the six: half the art
+        // was on the other flank where you could not compare it. The mirrored copies are
+        // not really the same limb seen from the other side anyway, because the arm they
+        // are drawn on is rotated to point outward rather than flipped, so a mirrored
+        // sprite reads as its own shape. Two of them hook the other way, which is the one
+        // that looks like a hand doubling back.
+        private static readonly string[] BottomNames =
         {
+            "Arm_On_Bottom_1",
+            "Arm_On_Bottom_1_L",
+            "Arm_On_Bottom_2",
+            "Arm_On_Bottom_2_L",
+            "Arm_On_Bottom_3",
+            "Arm_On_Bottom_3_L",
+        };
+
+        private static readonly string[,] TopNames =
+        {
+            { "Arm_On_Top_1", "Arm_On_Top_1" },
+            { "Arm_On_Top_2", "Arm_On_Top_2" },
+            { "Arm_On_Top_3_L", "Arm_On_Top_3" },
+        };
+
+        // Origins are the bottom middle of the DRAWN shape, read off each sprite pixel by
+        // pixel, not the middle of the canvas. Four of the ten sit off-centre and three
+        // sit two rows above the bottom of their canvas, so a nominal bottom-centre origin
+        // would plant most of them a few pixels outside the body or hanging off it.
+        //
+        // Nor are the six the same length: the _1 and _2 shapes are 30 tall and the _2
+        // pair is drawn on a canvas more than twice as wide, while _3 runs to 40 and so
+        // reaches noticeably further. That spread is the point of using all six.
+        private static readonly Vector2[] BottomOrigins =
+        {
+            new Vector2(5f, 30f),    // Arm_On_Bottom_1      14x30, nub at x4-5
+            new Vector2(9f, 30f),    // Arm_On_Bottom_1_L    14x30, nub at x8-9
+            new Vector2(15f, 30f),   // Arm_On_Bottom_2      30x30, foot at x10-19
+            new Vector2(15f, 30f),   // Arm_On_Bottom_2_L    30x30, foot at x10-19
+            new Vector2(5f, 40f),    // Arm_On_Bottom_3      14x40, foot at x0-9
+            new Vector2(9f, 40f),    // Arm_On_Bottom_3_L    14x40, foot at x4-13
+        };
+
+        private static readonly Vector2[,] TopOrigins =
+        {
+            { new Vector2(5f, 22f), new Vector2(5f, 22f) },
+            { new Vector2(5f, 22f), new Vector2(5f, 22f) },
+            { new Vector2(7f, 28f), new Vector2(7f, 28f) },
+        };
+
+        /// <summary>How many bottom arm sprites there are to choose between.</summary>
+        public static int BottomVariants => BottomNames.Length;
+
+        /// <summary>How many top arm sprites there are to choose between.</summary>
+        public static int TopVariants => TopNames.GetLength(0);
+
+        private static Asset<Texture2D>[] bottomArt;
+        private static Asset<Texture2D>[,] topArt;
+
+        private static Asset<Texture2D> BottomArt(int which)
+        {
+            bottomArt ??= new Asset<Texture2D>[BottomVariants];
+
+            which = which < 0 ? 0 : which % BottomVariants;
+
             // ImmediateLoad rather than the default async: an arm requested during a draw
             // is wanted by that draw. Asynchronously it is not there for the first frame
             // or two, which is a worm that grows its legs after it arrives.
-            return slot ??= ModContent.Request<Texture2D>(Abomanation.Folder + name, AssetRequestMode.ImmediateLoad);
+            return bottomArt[which] ??= ModContent.Request<Texture2D>(
+                Abomanation.Folder + BottomNames[which], AssetRequestMode.ImmediateLoad);
+        }
+
+        private static Asset<Texture2D> Art(ref Asset<Texture2D>[,] cache, string[,] names, int which, int side)
+        {
+            int variants = names.GetLength(0);
+
+            cache ??= new Asset<Texture2D>[variants, 2];
+
+            which = which < 0 ? 0 : which % variants;
+            side &= 1;
+
+            return cache[which, side] ??= ModContent.Request<Texture2D>(
+                Abomanation.Folder + names[which, side], AssetRequestMode.ImmediateLoad);
         }
 
         /// <summary>
-        /// Pulls all six in at load time, off the draw path entirely. Called from
-        /// AbomanationBody.SetStaticDefaults; Get still works on its own if it is not.
+        /// Pulls every arm sprite in at load time, off the draw path entirely. Called from
+        /// AbomanationBody.SetStaticDefaults; <see cref="Art"/> still works on its own if
+        /// it is not.
         /// </summary>
         public static void Load()
         {
             if (Main.dedServ)
                 return;
 
-            Get(ref bottomR, "Arm_On_Bottom_1");
-            Get(ref bottomL, "Arm_On_Bottom_1_L");
-            Get(ref top1, "Arm_On_Top_1");
-            Get(ref top2, "Arm_On_Top_2");
-            Get(ref top3R, "Arm_On_Top_3");
-            Get(ref top3L, "Arm_On_Top_3_L");
+            for (int which = 0; which < BottomVariants; which++)
+                BottomArt(which);
+
+            for (int side = 0; side < 2; side++)
+            {
+                for (int which = 0; which < TopVariants; which++)
+                    Art(ref topArt, TopNames, which, side);
+            }
         }
 
         /// <summary>Called from AbomanationHead.Unload. Static asset handles outlive a mod reload otherwise.</summary>
         public static void Unload()
         {
-            bottomR = bottomL = top1 = top2 = top3R = top3L = null;
+            bottomArt = null;
+            topArt = null;
             counts = null;
+            firstArm = null;
+            decks = null;
         }
 
         // ------------------------------------------------------------- how many -------
@@ -252,48 +726,78 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         // How the legs are shared out along the body. Built once, read by every segment.
 
         private static int[][] counts;
+        private static int[][] firstArm;
 
-        // Two seeds, so the two sides are not mirror images of each other, and picked
-        // rather than arbitrary: most seeds share seventeen arms out as ones and twos and
-        // never once use the three a segment is allowed. These two each put a three
-        // somewhere and leave three or four segments bare, which is the whole range asked
-        // for actually being used.
         private const int LeftSeed = 2;
         private const int RightSeed = 11;
+
+        /// <summary>
+        /// How far a leg may wander from its even spacing, as a fraction of one spacing.
+        /// 0 is a comb. Above about 1.5 the legs start piling up again, which is the thing
+        /// this is here to stop.
+        /// </summary>
+        private const float SpreadJitter = 1.2f;
+
+        /// <summary>
+        /// How far the right side is shifted along from the left, in spacings. Half a step
+        /// interleaves the two sides so they alternate down the body instead of pairing
+        /// off, which is both what a many legged thing does and what stops the eye finding
+        /// rungs on a ladder.
+        /// </summary>
+        private const float RightOffset = 0.5f;
 
         /// <summary>
         /// Shares <paramref name="total"/> arms out over <paramref name="segments"/>
         /// segments, none of them carrying more than <paramref name="most"/>.
         ///
-        /// Every slot a segment could fill goes into a bag, the bag is shuffled, and the
-        /// first <paramref name="total"/> slots drawn are the arms. Drawing from a fixed
-        /// bag is what makes the count come out exactly right: rolling each segment its
-        /// own number would average what was asked for and land on it almost never, and
-        /// the cap falls out of the bag holding only <paramref name="most"/> slots per
-        /// segment rather than needing a check that could spin.
+        /// Spaced evenly and then jogged, rather than drawn out of a bag. The bag was
+        /// correct and looked wrong: a fair shuffle clumps, which is exactly what makes
+        /// shuffled music sound broken, and over fifteen segments it was handing one
+        /// segment three legs while leaving the two either side of it bare. Measured, the
+        /// bag left six segments empty with a run of two, against three and a run of one
+        /// here, at a third of the variance.
         ///
-        /// The shuffle is the same hash the arms are scattered with, so this is stable
-        /// across frames, across saves and across machines with nothing to sync.
+        /// Each leg starts at its own share of the body and is moved by up to
+        /// <see cref="SpreadJitter"/> of a spacing, so nothing sits on a grid but nothing
+        /// bunches either. The count comes out exact because the loop places one leg per
+        /// turn and only ever chooses WHERE, never whether.
+        ///
+        /// The jog is the same hash everything else here uses, so this is stable across
+        /// frames, across saves and across machines with nothing to sync.
         /// </summary>
-        private static int[] Spread(int segments, int total, int most, int seed)
+        private static int[] Spread(int segments, int total, int most, int seed, float offset)
         {
-            int[] bag = new int[segments * most];
-
-            for (int i = 0; i < bag.Length; i++)
-                bag[i] = i / most;
-
-            for (int i = bag.Length - 1; i > 0; i--)
-            {
-                int j = (int)(Hash(seed, i) % (uint)(i + 1));
-                int swap = bag[i];
-                bag[i] = bag[j];
-                bag[j] = swap;
-            }
-
             int[] made = new int[segments];
 
-            for (int i = 0; i < total && i < bag.Length; i++)
-                made[bag[i]]++;
+            if (segments <= 0 || total <= 0)
+                return made;
+
+            float step = segments / (float)total;
+
+            for (int k = 0; k < total; k++)
+            {
+                float at = (k + 0.5f + offset) * step + (Hash01(seed, k) - 0.5f) * SpreadJitter * step;
+
+                int seg = (int)Math.Floor(at);
+                seg = seg < 0 ? 0 : (seg >= segments ? segments - 1 : seg);
+
+                // Full, so walk outward to the nearest segment with room. It cannot fail to
+                // find one, because there are never more legs than segments times most.
+                if (made[seg] >= most)
+                {
+                    for (int d = 1; d < segments; d++)
+                    {
+                        int low = seg - d;
+                        int high = seg + d;
+
+                        if (low >= 0 && made[low] < most) { seg = low; break; }
+                        if (high < segments && made[high] < most) { seg = high; break; }
+                    }
+                }
+
+                if (made[seg] < most)
+                    made[seg]++;
+            }
 
             return made;
         }
@@ -301,15 +805,141 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         /// <summary>Bottom arms on one side of one body segment. 0 to <see cref="Abomanation.BottomArmsPerSegment"/>.</summary>
         public static int BottomCount(int place, int side)
         {
-            counts ??= new[]
-            {
-                Spread(Abomanation.BodySegments, Abomanation.BottomArmsPerSide, Abomanation.BottomArmsPerSegment, LeftSeed),
-                Spread(Abomanation.BodySegments, Abomanation.BottomArmsPerSide, Abomanation.BottomArmsPerSegment, RightSeed),
-            };
+            Build();
 
             int[] row = counts[side & 1];
 
             return place >= 0 && place < row.Length ? row[place] : 0;
+        }
+
+        /// <summary>
+        /// How many arms this side carries before this segment, so an arm can be numbered
+        /// along the whole flank rather than only within its own segment. That number is
+        /// what indexes the deck below.
+        /// </summary>
+        public static int FirstArm(int place, int side)
+        {
+            Build();
+
+            int[] row = firstArm[side & 1];
+
+            return place >= 0 && place < row.Length ? row[place] : 0;
+        }
+
+        private static void Build()
+        {
+            if (counts != null)
+                return;
+
+            counts = new[]
+            {
+                Spread(Abomanation.BodySegments, Abomanation.BottomArmsPerSide, Abomanation.BottomArmsPerSegment, LeftSeed, 0f),
+                Spread(Abomanation.BodySegments, Abomanation.BottomArmsPerSide, Abomanation.BottomArmsPerSegment, RightSeed, RightOffset),
+            };
+
+            firstArm = new int[2][];
+
+            for (int side = 0; side < 2; side++)
+            {
+                int[] row = counts[side];
+                int[] running = new int[row.Length];
+                int sum = 0;
+
+                for (int i = 0; i < row.Length; i++)
+                {
+                    running[i] = sum;
+                    sum += row[i];
+                }
+
+                firstArm[side] = running;
+            }
+        }
+
+        // ------------------------------------------------------------------ deck ------
+        //
+        // Which sprite each arm along a side wears. Dealt rather than rolled per arm: a
+        // roll per arm would use some sprites four times and miss others entirely, which
+        // is the thing having six of them is meant to avoid.
+        //
+        // Keyed on a seed the head rolls at spawn and syncs, so it is the same on every
+        // machine for the whole fight and different the next time the boss is summoned.
+
+        private static int[][] decks;
+        private static int deckSeed;
+        private static bool deckBuilt;
+
+        /// <summary>
+        /// The run of sprite indices for one side, one entry per arm, in body order.
+        ///
+        /// Every sprite is dealt the same whole number of times first, and the arms left
+        /// over after that go to that many DIFFERENT sprites picked at random, so with
+        /// fourteen arms and six sprites everything is worn twice and two lucky ones are
+        /// worn three times. Then the run is shuffled, so the order down the body is not
+        /// the order of the table.
+        /// </summary>
+        public static int[] Deck(int seed, int side)
+        {
+            if (!deckBuilt || deckSeed != seed || decks == null)
+            {
+                decks = new[] { Deal(seed, 0), Deal(seed, 1) };
+                deckSeed = seed;
+                deckBuilt = true;
+            }
+
+            return decks[side & 1];
+        }
+
+        private static int[] Deal(int seed, int side)
+        {
+            int total = Abomanation.BottomArmsPerSide;
+            int variants = BottomVariants;
+
+            int[] run = new int[total < 0 ? 0 : total];
+
+            if (run.Length == 0 || variants <= 0)
+                return run;
+
+            int each = total / variants;
+            int spare = total - each * variants;
+            int at = 0;
+
+            for (int which = 0; which < variants; which++)
+            {
+                for (int n = 0; n < each; n++)
+                    run[at++] = which;
+            }
+
+            // The spares go to different sprites, never twice to the same one, by shuffling
+            // the list of sprites and taking off the front. Rolling each spare on its own
+            // could hand both to the same sprite and leave the spread more lopsided than
+            // dealing them was meant to make it.
+            if (spare > 0)
+            {
+                int[] lucky = new int[variants];
+
+                for (int i = 0; i < variants; i++)
+                    lucky[i] = i;
+
+                Shuffle(lucky, Hash(seed, 900 + side));
+
+                for (int i = 0; i < spare && i < variants; i++)
+                    run[at++] = lucky[i];
+            }
+
+            Shuffle(run, Hash(seed, 700 + side));
+
+            return run;
+        }
+
+        private static void Shuffle(int[] list, uint salt)
+        {
+            for (int i = list.Length - 1; i > 0; i--)
+            {
+                int j = (int)(Hash((int)salt, i) % (uint)(i + 1));
+                int swap = list[i];
+                list[i] = list[j];
+                list[j] = swap;
+            }
         }
 
         // ----------------------------------------------------------------- noise ------
@@ -372,7 +1002,7 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         /// reaches the swing phase.
         /// </summary>
         public static void Bottom(SpriteBatch spriteBatch, NPC npc, Vector2 screenPos, Color colour,
-            int place, int leftCount, int rightCount, float span, bool swing)
+            int place, int leftCount, int rightCount, float span, bool swing, int armSeed)
         {
             for (int side = 0; side < 2; side++)
             {
@@ -381,17 +1011,35 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
                 if (count <= 0)
                     continue;
 
+                // Where this segment's arms start in the run dealt for this whole side.
+                int[] deck = Deck(armSeed, side);
+                int first = FirstArm(place, side);
+
                 // -1 is the left of the segment, +1 the right. A quarter turn times this
                 // points the arm out that way: rotating "up" by +PiOver2 gives right, by
                 // -PiOver2 gives left.
                 float sign = side == 0 ? -1f : 1f;
-                bool left = side == 0;
 
                 for (int row = 0; row < count; row++)
                 {
+                    // Where this arm sits in the run dealt for this whole side. Everything
+                    // crooked about it is keyed on this, so it is the same arm every frame
+                    // and on every machine, and a different arm the next time it spawns.
+                    int at = first + row;
+                    int which = deck.Length > 0 ? deck[at % deck.Length] : 0;
+                    int salt = 1000 + side * 64 + at;
+
                     float y = count == 1 ? 0f : MathHelper.Lerp(-span, span, row / (float)(count - 1));
 
-                    float angle = sign * (MathHelper.PiOver2 + BottomRake);
+                    // Off the grid, up or down the body.
+                    y += (Hash01(armSeed, salt) - 0.5f) * BottomScatter;
+
+                    // In or out of the flank, so the roots are not all on one line either.
+                    float inset = BottomInset + (Hash01(armSeed, salt + 1) - 0.5f) * BottomInsetScatter;
+
+                    // Its own resting angle, not the shared rake.
+                    float angle = sign * (MathHelper.PiOver2 + BottomRake
+                        + (Hash01(armSeed, salt + 2) - 0.5f) * BottomAngleScatter);
 
                     if (swing)
                     {
@@ -402,16 +1050,17 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
 
                         float phase = Main.GlobalTimeWrappedHourly * SwingSpeed
                             + along * SwingWave
+                            + (Hash01(armSeed, salt + 3) - 0.5f) * BottomSwingScatter
                             + side * MathHelper.Pi;
 
                         angle += sign * (float)Math.Sin(phase) * Swing;
                     }
 
                     One(spriteBatch,
-                        left ? Get(ref bottomL, "Arm_On_Bottom_1_L") : Get(ref bottomR, "Arm_On_Bottom_1"),
-                        left ? BottomOriginL : BottomOriginR,
+                        BottomArt(which),
+                        BottomOrigins[which],
                         npc, screenPos, colour,
-                        new Vector2(sign * BottomInset, y), angle);
+                        new Vector2(sign * inset, y), angle);
                 }
             }
         }
@@ -439,7 +1088,8 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
                 float angle = sign * (MathHelper.PiOver2 + TopRake)
                     + (Hash01(seed, 30 + i) - 0.5f) * TopJitter;
 
-                TopOne(spriteBatch, npc, screenPos, colour, local, angle, sign < 0f, HashInt(seed, 40 + i, 3));
+                TopOne(spriteBatch, npc, screenPos, colour, local, angle,
+                    sign < 0f ? 0 : 1, HashInt(seed, 40 + i, TopVariants));
             }
         }
 
@@ -460,35 +1110,23 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
                     float angle = sign * (MathHelper.PiOver2 + TopRake);
 
                     TopOne(spriteBatch, npc, screenPos, colour,
-                        new Vector2(sign * inset, y), angle, side == 0, row % 3);
+                        new Vector2(sign * inset, y), angle, side, row % TopVariants);
                 }
             }
         }
 
         /// <summary>
-        /// One top arm. <paramref name="which"/> picks between the three sprites; only
-        /// the third is handed, so the other two are drawn as they are on both sides.
+        /// One top arm. <paramref name="which"/> picks the sprite and the tables handle the
+        /// handedness, so nothing here has to know that only the third one is mirrored.
         /// </summary>
         private static void TopOne(SpriteBatch spriteBatch, NPC npc, Vector2 screenPos, Color colour,
-            Vector2 local, float angle, bool left, int which)
+            Vector2 local, float angle, int side, int which)
         {
-            switch (which)
-            {
-                case 0:
-                    One(spriteBatch, Get(ref top1, "Arm_On_Top_1"), Top1Origin, npc, screenPos, colour, local, angle);
-                    break;
+            which = which < 0 ? 0 : which % TopVariants;
+            side &= 1;
 
-                case 1:
-                    One(spriteBatch, Get(ref top2, "Arm_On_Top_2"), Top2Origin, npc, screenPos, colour, local, angle);
-                    break;
-
-                default:
-                    One(spriteBatch,
-                        left ? Get(ref top3L, "Arm_On_Top_3_L") : Get(ref top3R, "Arm_On_Top_3"),
-                        left ? Top3OriginL : Top3OriginR,
-                        npc, screenPos, colour, local, angle);
-                    break;
-            }
+            One(spriteBatch, Art(ref topArt, TopNames, which, side), TopOrigins[which, side],
+                npc, screenPos, colour, local, angle);
         }
     }
 
@@ -514,13 +1152,21 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         public static int Head(NPC npc) => (int)npc.ai[2] - 1;
 
         /// <summary>Writes the links. <paramref name="ahead"/> and <paramref name="head"/> are plain NPC indices.</summary>
-        public static void Link(NPC npc, int ahead, int head, int place)
+        public static void Link(NPC npc, int ahead, int head, int place, bool flipped)
         {
+            // ai[0] used to hold a backward link that nothing read. It now holds whether
+            // this segment's sprite is drawn mirrored, which is a thing that IS read, and
+            // which needs to survive the trip to every client. ai[] rides along with the
+            // NPC sync packet, so putting it here costs nothing and needs no extra state.
+            npc.ai[0] = flipped ? 1f : 0f;
             npc.ai[1] = ahead + 1;
             npc.ai[2] = head + 1;
             npc.ai[3] = place;
             npc.realLife = head;
         }
+
+        /// <summary>Whether this segment draws its sprite mirrored. Rolled once, at spawn.</summary>
+        public static bool Flipped(NPC npc) => npc.ai[0] != 0f;
 
         /// <summary>
         /// Drags the segment up behind its leader and points it that way.
@@ -542,6 +1188,276 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
 
             npc.velocity = Vector2.Zero;
             npc.position += delta * ((distance - spacing) / distance);
+        }
+
+        /// <summary>
+        /// The whip. While the head is cracking, every segment behind the pivot is laid
+        /// on a straight rod out of the pivot at the head's crack angle instead of
+        /// following, so the whole back end moves as one thing and the tip moves fast.
+        /// The rod's step is the ordinary spacing, so when the crack ends and Follow
+        /// takes over again there is nothing for it to correct.
+        /// </summary>
+        /// <summary>How hard this segment hits during the crack: rises from WhipDamage at the neck to WhipTailDamage at the tail.</summary>
+        public static float LashDamage(NPC npc)
+        {
+            float along = (int)npc.ai[3] / (float)Abomanation.BodySegments;
+            return MathHelper.Lerp(Abomanation.WhipDamage, Abomanation.WhipTailDamage, along);
+        }
+
+        /// <summary>The head this segment belongs to, as the boss, or null. Works for the head itself too.</summary>
+        public static AbomanationHead Boss(NPC npc)
+        {
+            if (npc.ModNPC is AbomanationHead self)
+                return self;
+
+            int head = Head(npc);
+
+            return head >= 0 && head < Main.maxNPCs ? Main.npc[head].ModNPC as AbomanationHead : null;
+        }
+
+        /// <summary>Whether any part of this animal is forbidden to touch the player right now: only while it arrives.</summary>
+        public static bool Harmless(NPC npc) => Boss(npc)?.Arriving ?? false;
+
+        /// <summary>Whether this segment is being thrown right now: its head is in the crack.</summary>
+        public static bool Lashing(NPC npc)
+        {
+            AbomanationHead boss = Boss(npc);
+
+            return boss != null && boss.Cracking;
+        }
+
+        /// <summary>
+        /// A segment's tick of the tell: while it lashes, its hit goes through every
+        /// shield, and CCBypass shows that. Quiet, so fifteen segments do not sound
+        /// fifteen notes; the head sounds the one, at the loop.
+        /// </summary>
+        public static void Flag(NPC npc)
+        {
+            if (Lashing(npc))
+                npc.PAD().CCBypass = true;
+        }
+
+        /// <summary>A body segment or the tail: the parts that wear the outline.</summary>
+        private static bool Part(NPC npc) => npc.ModNPC is AbomanationBody || npc.ModNPC is AbomanationTail;
+
+        /// <summary>
+        /// Vanilla's own cull: an NPC more than 800 pixels off screen is not drawn at
+        /// all, so its PreDraw never runs. Mirrors Main.DrawNPCs exactly.
+        /// </summary>
+        private static bool Drawn(NPC npc)
+        {
+            Rectangle view = new Rectangle((int)Main.screenPosition.X - 800, (int)Main.screenPosition.Y - 800,
+                Main.screenWidth + 1600, Main.screenHeight + 1600);
+
+            return view.Intersects(new Rectangle((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height));
+        }
+
+        /// <summary>
+        /// Whether this part is the one the draw loop reaches first this frame, among
+        /// the animal's parts that will be drawn at all. Vanilla draws NPCs from slot
+        /// 199 downward, so it is the highest slot that is on screen. The whole outline
+        /// is drawn from that part, before any part's sprite, which is what makes it one
+        /// outline round the animal rather than a ring round each piece.
+        /// </summary>
+        public static bool DrawsFirst(NPC npc)
+        {
+            int head = Head(npc);
+
+            for (int i = Main.maxNPCs - 1; i > npc.whoAmI; i--)
+            {
+                NPC other = Main.npc[i];
+
+                if (other.active && !other.hide && Part(other) && Head(other) == head && Drawn(other))
+                    return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// The outline of the whole animal in one pass: every part, legs, flesh and
+        /// growths, in the warning colour with no alpha, eight times round a ring of
+        /// OutlineReach pixels. Every sprite of every part is drawn over it afterwards
+        /// by the ordinary draw, so only what sticks out past the union of them shows:
+        /// one continuous edge round the body, the arms and the tail, and nothing
+        /// between the segments.
+        /// </summary>
+        public static void Silhouette(SpriteBatch spriteBatch, NPC npc, Vector2 screenPos)
+        {
+            int head = Head(npc);
+
+            Color glow = CCBypass.Warning * CCBypass.OutlineGlow;
+            glow.A = 0;
+
+            for (int i = 0; i < 8; i++)
+            {
+                Vector2 offset = (MathHelper.TwoPi * i / 8f).ToRotationVector2() * CCBypass.OutlineReach;
+
+                // Moving the screen the other way moves every part by the offset.
+                Vector2 shifted = screenPos - offset;
+
+                for (int j = 0; j < Main.maxNPCs; j++)
+                {
+                    NPC other = Main.npc[j];
+
+                    if (!other.active || other.alpha > 0 || !Part(other) || Head(other) != head)
+                        continue;
+
+                    if (other.ModNPC is AbomanationBody body)
+                        body.DrawWhole(spriteBatch, shifted, glow);
+                    else if (other.ModNPC is AbomanationTail tail)
+                        tail.DrawWhole(spriteBatch, shifted, glow);
+                }
+            }
+        }
+
+        // localAI is per NPC, unsynced, and free: the three slots the swing keeps.
+        private const int LashAngle = 0;
+        private const int LashSpin = 1;
+        private const int LashSerial = 2;
+
+        /// <summary>
+        /// One link of the whip, for one tick. Replaces Follow while the head cracks.
+        ///
+        /// The link is the line from the segment ahead to this one, and what is kept is
+        /// its ANGLE and how fast that angle is turning. Each tick the angle is pulled
+        /// toward the link ahead's angle — a spring, stiffer the further down the body —
+        /// the turning speed is damped, capped, and applied, and the segment is put at
+        /// the end of the link. The length never changes, so the body cannot stretch,
+        /// and the segment ahead has already moved this tick, so the pass runs down the
+        /// chain in one go, head to tail, the way the engine already orders it.
+        ///
+        /// That is the whole whip. The head loops, the angles wind up round the coil;
+        /// the head runs, the first link straightens, then the next, each faster than the
+        /// last because each is stiffer, and the tail comes off the end of it in one arc.
+        /// Nothing tells the tail where to go.
+        ///
+        /// Written to velocity, not position: the engine moves the segment, so
+        /// oldPosition is the true last position and the swept hit test below is honest.
+        ///
+        /// The first tick of a crack reads the angle off where the body actually is, so
+        /// the swing starts from the coil the loop made and nothing jumps.
+        /// </summary>
+        public static void Swing(NPC npc, NPC leader, float spacing)
+        {
+            AbomanationHead boss = Boss(npc);
+
+            if (boss is null)
+                return;
+
+            int place = (int)npc.ai[3];
+
+            // The angle of the link ahead: the head's own line for the first segment,
+            // otherwise whatever the segment ahead just settled on.
+            float ahead = place == 0
+                ? boss.RunHeading + MathHelper.Pi
+                : leader.localAI[LashAngle];
+
+            if ((int)npc.localAI[LashSerial] != boss.WhipSerial)
+            {
+                npc.localAI[LashAngle] = (npc.Center - leader.Center).ToRotation();
+                npc.localAI[LashSpin] = 0f;
+                npc.localAI[LashSerial] = boss.WhipSerial;
+            }
+
+            float angle = npc.localAI[LashAngle];
+            float spin = npc.localAI[LashSpin];
+
+            float spring = MathHelper.Lerp(Abomanation.WhipSpringHead, Abomanation.WhipSpringTail,
+                place / (float)Abomanation.BodySegments);
+
+            spin += spring * MathHelper.WrapAngle(ahead - angle);
+            spin *= boss.LashDamping;
+            spin = MathHelper.Clamp(spin, -Abomanation.WhipMaxTurn, Abomanation.WhipMaxTurn);
+            angle += spin;
+
+            npc.localAI[LashAngle] = angle;
+            npc.localAI[LashSpin] = spin;
+
+            Vector2 at = leader.Center + angle.ToRotationVector2() * spacing;
+
+            npc.velocity = at - npc.Center;
+
+            // Pointing at the one ahead of it, as always.
+            npc.rotation = angle + MathHelper.Pi + MathHelper.PiOver2;
+        }
+
+        /// <summary>
+        /// Contact for a segment mid-crack.
+        ///
+        /// A point test is no good here. The tail crosses sixty pixels in a tick at the
+        /// top of the arc and the player is twenty wide, so a still player would be
+        /// missed about half the time — the lash would pass through them between two
+        /// frames. This tests the LINE the segment travelled along this tick instead, as
+        /// a thick line against the player's box, so the whole swept path counts and
+        /// nothing tunnels.
+        /// </summary>
+        public static bool Sweeping(NPC npc, Player target, float radius)
+        {
+            if (npc.alpha > 0 || Harmless(npc))
+                return false;
+
+            float where = 0f;
+            Vector2 was = npc.oldPosition + npc.Size * 0.5f;
+
+            return Collision.CheckAABBvLineCollision(
+                target.position, target.Size, was, npc.Center, radius * 2f * npc.scale, ref where);
+        }
+
+        /// <summary>
+        /// What being hit by the lash does.
+        ///
+        /// Not knockback. Knockback is a push with a direction and a number, and every
+        /// shield in the game turns it off; this is the end of something heavy moving
+        /// at speed, and what it does to you is written straight onto your velocity. A
+        /// Cobalt or Ankh Shield makes no difference, which is the point.
+        ///
+        /// The direction is the unit tangent of the segment's own path this tick, and
+        /// the speed is its real speed along it times WhipToss times WhipTossBoost, so
+        /// the tail at full swing throws you most of a screen and the neck barely moves
+        /// you. No cap on top: full strength is full strength.
+        ///
+        /// What happens to the body after that — the tumble, the landing, the time on
+        /// the ground — is RagdollPlayer's, and it is handed the velocity, the style and
+        /// how long you stay down.
+        /// </summary>
+        public static void Throw(NPC npc, Player target)
+        {
+            // Player velocity belongs to the client that owns the player. On a server
+            // this would be overwritten by the owner's next update and read as a stutter.
+            if (target.whoAmI != Main.myPlayer)
+                return;
+
+            AbomanationHead boss = Boss(npc);
+
+            if (boss is null || !boss.Cracking)
+                return;
+
+            Vector2 motion = npc.Center - (npc.oldPosition + npc.Size * 0.5f);
+            float speed = motion.Length();
+
+            if (speed < 0.5f)
+                return;
+
+            // The unit tangent of the segment's path, times how fast it was going along
+            // it, times the intensity. Nothing else: the direction IS the swing.
+            Vector2 tangent = motion / speed;
+
+            Vector2 throwVelocity = tangent
+                * Math.Max(speed * Abomanation.WhipToss * Abomanation.WhipTossBoost, Abomanation.WhipTossMin);
+
+            // Only a floor on the lift when one is asked for. At zero this must not
+            // touch the throw, or a downward tangent loses its downward half and the
+            // player is shoved along the ground instead of into it.
+            if (Abomanation.WhipTossLift > 0f && throwVelocity.Y > -Abomanation.WhipTossLift)
+                throwVelocity.Y = -Abomanation.WhipTossLift;
+
+            // A high throw tumbles; a low one, from the near end of the arc, rolls.
+            RagdollStyle style = throwVelocity.Y < -Abomanation.WhipSpinLift
+                ? RagdollStyle.Spin
+                : RagdollStyle.Roll;
+
+            target.GetModPlayer<RagdollPlayer>().Throw(throwVelocity, style, Abomanation.WhipLie);
         }
 
         /// <summary>
@@ -610,6 +1526,11 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         public static bool Touching(NPC npc, Player target, float radius)
         {
             if (npc.alpha > 0)
+                return false;
+
+            // The arrival touches nothing. Not dontTakeDamage: the whip is untouchable
+            // too, and the whip is supposed to hurt.
+            if (Harmless(npc))
                 return false;
 
             Rectangle box = target.Hitbox;

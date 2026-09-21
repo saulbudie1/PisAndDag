@@ -18,6 +18,7 @@ namespace PisAndDag
                 return;
 
             LoadLegendsFilter();
+            LoadWastedMileFilter();
             LoadMorsCloak();
         }
 
@@ -51,6 +52,33 @@ namespace PisAndDag
 
             // Only now is it safe for the driver system to touch Filters.Scene.
             LegendsScreenSystem.Registered = true;
+        }
+
+        /// <summary>
+        /// The grade over the Wasted Mile. The biome switches it on and off through
+        /// Player.ManageSpecialBiomeVisuals, which needs the key to exist in
+        /// Filters.Scene first; WastedMileBiome.FilterReady is what tells it that it does.
+        /// </summary>
+        private void LoadWastedMileFilter()
+        {
+            if (!RequestAssetIfExists("Effects/WastedMile", out Asset<Effect> mile))
+            {
+                Logger.Warn(
+                    "Wasted Mile screen filter disabled: Effects/WastedMile.xnb is missing. " +
+                    "Compile Effects/WastedMile.fx with fxcompiler or EasyXnb and place " +
+                    "the .xnb beside it.");
+                return;
+            }
+
+            // "MilePass" must match the pass name in the .fx technique block. Intensity
+            // is the overall strength; the fade in and out is the filter's own opacity.
+            Filters.Scene[Content.Biomes.WastedMileBiome.FilterKey] = new Filter(
+                new ScreenShaderData(mile, "MilePass").UseIntensity(0.85f),
+                EffectPriority.High);
+
+            Filters.Scene[Content.Biomes.WastedMileBiome.FilterKey].Load();
+
+            Content.Biomes.WastedMileBiome.FilterReady = true;
         }
 
         /// <summary>

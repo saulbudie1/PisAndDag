@@ -1578,6 +1578,97 @@ subjects by number, one number struck through and rewritten under itself over an
 the same careful hand. The player has already seen that shape in a churchyard and felt
 sorry about it. Here it means the opposite thing and they are left to work that out.
 
+#### The Abomanation
+
+**[PROPOSAL]**
+
+![The Abomanation](Content/NPCs/Abomanation_Small/Abomanation_BossChecklist.png)
+
+One subject of the programme is still where they left it.
+
+It is at the mouth of the Mile, where the siege trenches met the ground under the
+kingdom, and it was not put there as a weapon. It was put there because the programme
+ended and it had not. A subject who cannot die is a subject with no disposal problem
+until the day the people keeping the notes walk away, and then it is somebody else's.
+
+What it is now: a worm the length of a street, with hands. The hands are the part that
+was people. Nothing about it is explained anywhere in the world, and nothing should be;
+the tally-plate above says the number, and the animal says what the number looks like.
+
+**How it is called.** It eats small things. Bunnies, squirrels, the red ones. Let one go
+on the Mile and it is gone before it lands, and nothing else happens. Let ten go and it
+comes. The count is the world's, not the player's: two people can feed it between them,
+and a world remembers how far along it is. Ten is the Clothier's number and the game's
+(Abomanation.Offerings); the Bible does not say why ten, and should not.
+
+**Who says so.** The Clothier, one line in three, until it is dead. He knows where it
+is, what to bring and how many, and will not say what answers or how he knows. He has
+not been. He says so twice, which is once too many. The animals carry one line under
+their tooltip, *these may satiate one and many*, which reads as a joke about pets until
+the Mile.
+
+**What it is not.** Not a guardian, not a scare tactic, not a message to the kingdom.
+Nobody aimed it. It is what was left when the work stopped, in the place the work
+stopped, and it is hungry because that is what it was made to be.
+
+**How it looks.** [LOCKED — the read. The sprites exist.]
+
+Raw. There is no skin on it anywhere; the whole length is the red of meat with the
+outside taken off, wet, and the darker red of the same meat where it has been folded
+over on itself. Fifteen segments behind a head, a tail, and the hands.
+
+The head is the worst of it and it is not a face. It splits down the middle, top to
+bottom, and the split is lined with bone: pale, broken, tooth-shaped things that are
+not teeth, in two ragged rows, so that when it comes up out of the ground what the
+player sees first is a mouth that opens the wrong way. There are no eyes. It does not
+need them for what it does.
+
+The hands are along the body, and there are more of them than there should be. Small
+red arms, none of them the same length, growing out of the flesh at no particular
+interval and no particular angle, some underneath it carrying it like legs and some on
+top of it doing nothing, opening and closing. They are what was people. The sprites
+mirror by segment so that no two arms on the animal are in the same place twice, and
+the player should not be able to count them.
+
+Along the back, and along the split of the head, the same pale bone comes through the
+meat in small pieces, the way a thing that has been rebuilt too many times will show
+the earlier builds at the joins. Nothing on it is designed. Nothing on it is armour.
+
+It has no colour identity but the one colour. In the Mile, where everything is ash and
+cold grey, it is the only red thing.
+
+**How it fights.** A worm, first, and a slow one. It comes up under the player, dives,
+circles for another pass, and rushes, and when it rushes it does not care where the
+ground is: it carries its speed out of the trench into the air, hangs there, and comes
+down. It is not a strong animal. It is a heavy one, and it does not stop.
+
+Then, now and then, it does the other thing. It runs the player down, stops just short,
+and turns once on the spot in a tight loop, so the whole length of it coils up behind
+the head. Half a second of coil, and a sound the Mile has not made before, and a yellow
+star over the head. Then it drives straight out of the coil and the body comes after it
+with all the turn still in it, link by link, the way a rope does when the hand at the
+end of it snaps, and the tail leaves the end of the animal in one wide arc across the
+width of the trench with a crack. It is a whip, and the hands are the part of it that
+was people, and it is using them to hit you.
+
+What the tail hits does not get knocked back. It is thrown, along the line the tail was
+moving, at the speed the tail was moving, and no shield in the world turns that off. The
+player goes end over end, comes off the wall, comes off the ground, comes off it again
+with less each time, and lies where they stop for a moment before they can get up. The
+book's rule for that is above the fight, not inside it: anything that goes through
+immunity wears one yellow, and this is the first thing in the world to wear it.
+
+When it has taken more than half of what it can take it stops being slow. It roars,
+once, low and long, and after that the rush is faster and the whip is not occasional
+any more.
+
+**What it drops** falls where the nearest piece of it was, not where the head was,
+because the head is usually under the ground when it dies.
+
+**[OPEN]** Whether the hands remember anything. The whip suggests they do not.
+
+---
+
 #### Why the Tinkerer Left
 
 **[LOCKED]**

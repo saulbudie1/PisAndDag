@@ -1,4 +1,8 @@
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using PisAndDag.Content.Combat;
 using Terraria;
+using Terraria.GameContent;
 using Terraria.ModLoader;
 
 namespace PisAndDag.Content.NPCs
@@ -46,5 +50,69 @@ namespace PisAndDag.Content.NPCs
         /// wants the name and title to land on the bar the same way.
         /// </summary>
         public bool OwnIntro;
+
+        // ---------------------------------------------------------------- CC bypass --
+        //
+        // See CCBypass. The flag is the state; the rest is the tell.
+
+        /// <summary>
+        /// True on any tick this NPC's hit goes through crowd-control immunity. Cleared
+        /// before every AI, so the owner sets it each tick it applies and never clears
+        /// it. Drives the outline, and on the tick it comes on, the star and the note.
+        /// </summary>
+        public bool CCBypass;
+
+        /// <summary>
+        /// Set once, in SetDefaults, on a part that should not announce itself when its
+        /// flag comes on: the fifteen segments of a worm want one star, not fifteen. The
+        /// outline is unaffected. The whole calls CCBypass.Warn from the part that should.
+        /// </summary>
+        public bool CCQuiet;
+
+        private bool wasBypass;
+
+        public override bool PreAI(NPC npc)
+        {
+            CCBypass = false;
+            return true;
+        }
+
+        public override void PostAI(NPC npc)
+        {
+            // The tick it comes on.
+            if (CCBypass && !wasBypass && !CCQuiet)
+                Combat.CCBypass.Warn(npc);
+
+            wasBypass = CCBypass;
+        }
+
+        /// <summary>The outline, under the sprite. Runs before the NPC's own PreDraw.</summary>
+        public override bool PreDraw(NPC npc, SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
+        {
+            if (!CCBypass || npc.alpha >= 255)
+                return true;
+
+            if (npc.ModNPC is ICCBypassOutline own)
+            {
+                own.DrawCCBypassOutline(spriteBatch, screenPos);
+                return true;
+            }
+
+            // Vanilla's own placement for a plain NPC: centred sideways, sat on the
+            // bottom of the hitbox plus four, one frame of the sheet, flipped with
+            // spriteDirection.
+            Texture2D texture = TextureAssets.Npc[npc.type].Value;
+            Rectangle frame = npc.frame;
+            Vector2 origin = new Vector2(frame.Width * 0.5f, frame.Height * 0.5f);
+
+            Vector2 at = new Vector2(
+                npc.Center.X - screenPos.X,
+                npc.position.Y - screenPos.Y + npc.height + 4f - frame.Height * npc.scale * 0.5f + npc.gfxOffY);
+
+            SpriteEffects flip = npc.spriteDirection == 1 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
+
+            Combat.CCBypass.Outline(spriteBatch, texture, frame, at, npc.rotation, origin, npc.scale, flip);
+            return true;
+        }
     }
 }

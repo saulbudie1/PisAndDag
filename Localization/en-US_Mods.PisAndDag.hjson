@@ -103,7 +103,22 @@ NPCs: {
 	AbomanationTail.DisplayName: Abomanation
 }
 
-BossLog.Megashark.SpawnInfo: Once the three machines have fallen, twenty rounds from a Minishark into the sea. It comes up under you.
+Biomes: {
+	WastedMileBiome: {
+		DisplayName: The Wasted Mile
+		TownNPCDialogueName: the Wasted Mile Biome
+	}
+}
+
+BossLog: {
+	Megashark.SpawnInfo: Once the three machines have fallen, twenty rounds from a Minishark into the sea. It comes up under you.
+	Abomanation.SpawnInfo: Let small things go on the Wasted Mile. Bunnies, squirrels, red squirrels. None of them get away, and the tenth brings it.
+}
+
+Hints: {
+	ClothierMile: Across the land, on the side that does not face the sea, there is a mile where nothing calls. I would not let a bunny go there. One goes quiet. Ten go quiet. Then something answers. Hee hee. Not that I have been, you understand.
+	Offering: These may satiate one and many.
+}
 
 Keybinds: {
 	Reload.DisplayName: Reload

@@ -1,6 +1,7 @@
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PisAndDag.Content.Combat;
 using ReLogic.Content;
 using Terraria;
 using Terraria.ID;
@@ -19,7 +20,7 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
     /// segment's place in the chain, so the five cycle in order down the body and the
     /// order is a property of the chain rather than of the spawn loop.
     /// </summary>
-    public class AbomanationBody : ModNPC
+    public class AbomanationBody : ModNPC, ICCBypassOutline
     {
         public override string Texture => Abomanation.Folder + "Abomanation_Body_1";
 
@@ -62,6 +63,15 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             NPC.defense = 7;
 
             NPC.boss = true;
+
+            // A segment is a boss for the map and the bestiary, but it is not a boss
+            // ARRIVING. Without this BossArrivalWait reads the flag, holds the segment
+            // still for the length of the universal arrival, and the head swims off
+            // alone while the body sits where it was laid.
+            NPC.PAD().OwnIntro = true;
+
+            // One star for the whole animal, from the head. See AbomanationChain.Flag.
+            NPC.PAD().CCQuiet = true;
             NPC.knockBackResist = 0f;
             NPC.noGravity = true;
             NPC.noTileCollide = true;
@@ -102,16 +112,50 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
 
             NPC leader = Main.npc[AbomanationChain.Ahead(NPC)];
 
+            AbomanationChain.Flag(NPC);
+
             float spacing = leader.type == ModContent.NPCType<AbomanationHead>()
                 ? Abomanation.HeadSpacing
                 : Abomanation.BodySpacing;
+
+            // The whip: while the head cracks, the body is a chain with momentum and
+            // swings after it rather than following.
+            if (AbomanationChain.Lashing(NPC))
+            {
+                AbomanationChain.Swing(NPC, leader, spacing);
+                return;
+            }
 
             AbomanationChain.Follow(NPC, leader, spacing);
         }
 
         public override bool CanHitPlayer(Player target, ref int cooldownSlot)
         {
-            return AbomanationChain.Touching(NPC, target, 26f);
+            if (!AbomanationChain.Lashing(NPC))
+                return AbomanationChain.Touching(NPC, target, 26f);
+
+            // Its own cooldown slot rather than the general one, so the lash lands
+            // through the immunity a hit from the head or the coil left a moment ago.
+            // The general immunity was hiding the throw entirely on anyone the head had
+            // just brushed: the crack came inside their forty ticks and nothing landed.
+            cooldownSlot = ImmunityCooldownID.DD2OgreKnockback;
+
+            // Swept while it is being thrown: at that speed a point test misses.
+            return AbomanationChain.Sweeping(NPC, target, 26f);
+        }
+
+        /// <summary>The lash hits harder than the body, and harder the nearer the tail: that is what is moving.</summary>
+        public override void ModifyHitPlayer(Player target, ref Player.HurtModifiers modifiers)
+        {
+            if (AbomanationChain.Lashing(NPC))
+                modifiers.SourceDamage *= AbomanationChain.LashDamage(NPC);
+        }
+
+        /// <summary>And it throws you, shield or no shield. See AbomanationChain.Throw.</summary>
+        public override void OnHitPlayer(Player target, Player.HurtInfo hurtInfo)
+        {
+            if (AbomanationChain.Lashing(NPC))
+                AbomanationChain.Throw(NPC, target);
         }
 
         public override void HitEffect(NPC.HitInfo hit)
@@ -122,6 +166,27 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
 
         /// <summary>This segment's place in the chain. 0 is the one behind the head.</summary>
         private int Place => (int)NPC.ai[3];
+
+        /// <summary>
+        /// The head's arm seed, which every segment deals its sprites from.
+        ///
+        /// Read off the head rather than kept here, because it has to be the same number
+        /// for the whole animal and the head is the one part guaranteed to exist while any
+        /// of the rest does. Zero if the head has gone, which only matters for the frame
+        /// or two before Tether takes this segment off the board.
+        /// </summary>
+        private int ArmSeed
+        {
+            get
+            {
+                int head = AbomanationChain.Head(NPC);
+
+                if (head < 0 || head >= Main.maxNPCs)
+                    return 0;
+
+                return Main.npc[head].ModNPC is AbomanationHead boss ? boss.ArmSeed : 0;
+            }
+        }
 
         private static Texture2D Sprite(int place)
         {
@@ -148,22 +213,53 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         /// </summary>
         public override bool PreDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
         {
-            Color colour = NPC.GetAlpha(drawColor);
+            DrawWhole(spriteBatch, screenPos, NPC.GetAlpha(drawColor));
+            return false;
+        }
+
+        /// <summary>
+        /// The segment, complete, in one colour at one screen position. The ordinary
+        /// draw and the outline both come through here, so the outline is of exactly
+        /// what is drawn.
+        /// </summary>
+        public void DrawWhole(SpriteBatch spriteBatch, Vector2 screenPos, Color colour)
+        {
             int place = Place;
+
+            Texture2D texture = Sprite(place);
+
+            SpriteEffects flip = AbomanationChain.Flipped(NPC)
+                ? SpriteEffects.FlipHorizontally
+                : SpriteEffects.None;
 
             AbomanationArms.Bottom(spriteBatch, NPC, screenPos, colour, place,
                 leftCount: AbomanationArms.BottomCount(place, 0),
                 rightCount: AbomanationArms.BottomCount(place, 1),
-                span: AbomanationArms.BottomSpan, swing: true);
+                span: AbomanationArms.BottomSpan, swing: true, armSeed: ArmSeed);
 
-            Texture2D texture = Sprite(place);
-
+            // Mirrored or not, rolled once at spawn and carried in ai[0] so it survives to
+            // every client and holds for the whole fight. Five sprites over fifteen
+            // segments means each one is seen three times; mirroring half of them on a
+            // coin means the repeat is much harder to catch, and it costs nothing because
+            // the flesh reads the same either way round.
+            //
+            // The arms are drawn outside this call and are NOT mirrored with it. They have
+            // their own handedness and a left arm has to stay a left arm.
             spriteBatch.Draw(texture, NPC.Center - screenPos, null, colour,
-                NPC.rotation, texture.Size() * 0.5f, NPC.scale, SpriteEffects.None, 0f);
+                NPC.rotation, texture.Size() * 0.5f, NPC.scale, flip, 0f);
 
             AbomanationArms.TopScattered(spriteBatch, NPC, screenPos, colour, seed: place);
+        }
 
-            return false;
+        /// <summary>
+        /// The tell is one outline round the whole animal, not a ring round this piece:
+        /// the first part the draw loop reaches draws it for all of them, under
+        /// everything. See AbomanationChain.Silhouette.
+        /// </summary>
+        public void DrawCCBypassOutline(SpriteBatch spriteBatch, Vector2 screenPos)
+        {
+            if (AbomanationChain.DrawsFirst(NPC))
+                AbomanationChain.Silhouette(spriteBatch, NPC, screenPos);
         }
     }
 }
