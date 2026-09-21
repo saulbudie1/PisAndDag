@@ -1578,6 +1578,8 @@ subjects by number, one number struck through and rewritten under itself over an
 the same careful hand. The player has already seen that shape in a churchyard and felt
 sorry about it. Here it means the opposite thing and they are left to work that out.
 
+A second hand appears in the margins of the record, and it is not recording results.
+
 #### The Abomanation
 
 **[PROPOSAL]**
@@ -1664,6 +1666,23 @@ any more.
 
 **What it drops** falls where the nearest piece of it was, not where the head was,
 because the head is usually under the ground when it dies.
+
+**The two of them.** There are two, and the one on the Mile is the small one.
+
+What went into the small one was whoever was nearest the facility and least likely to be
+asked after. Farmers, villagers, the ones with no horse and nobody to send word for them.
+It is a street long. It was left where it was because the programme ended and it had not.
+
+The other one was not left behind, because the work on it was still going. What went into
+that one did not come from the villages: knights taken off the road, men with reputations,
+foot soldiers off both sides of the siege line, and, towards the end, goblins. By then the
+programme had stopped choosing.
+
+**[LOCKED — progression]** The small one belongs to the Wasted Mile and can be called as
+soon as the player finds it. The other does not come up until the Moon Lord is dead, and
+nothing before that is a reason for it to.
+
+**[OPEN]** Whether the second one was finished, or only got further.
 
 **[OPEN]** Whether the hands remember anything. The whip suggests they do not.
 

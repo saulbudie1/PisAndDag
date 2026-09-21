@@ -178,7 +178,7 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             // The bar and the name. OwnIntro: the arrival is its own (Arrive), so the
             // universal pan and hold stay out, and the name's flight is fired from there.
             NPC.PAD().BossName = "Abomanation";
-            NPC.PAD().BossTitle = "It came up under the dunes.";
+            NPC.PAD().BossTitle = "The starved hundred who merged into one.";
             NPC.PAD().OwnIntro = true;
         }
 
