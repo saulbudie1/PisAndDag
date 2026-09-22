@@ -92,9 +92,20 @@ Items: {
 		DisplayName: Court of Hands
 		Tooltip:
 			'''
-			Calls hands up out of the ground under the cursor, three at a time, for five seconds
+			Calls hands up out of the ground under the cursor, three at a time, for 5 seconds
 			Click elsewhere to move them. Hold 2 seconds and they follow the cursor, at 14 mana a second
-			'None of them let go.'
+			'Can I get a show of hands?'
+			'''
+	}
+
+	EverHunger: {
+		DisplayName: Everhunger
+		Tooltip:
+			'''
+			Lets a mouth out of your chest that runs level, toward the cursor's side
+			Comes back for the first thing it bites, dies after 5 bites
+			Anything else in its way takes two thirds the damage
+			'It is never full. It only runs out.'
 			'''
 	}
 }
@@ -125,6 +136,7 @@ Projectiles: {
 	MeagreFlameBall.DisplayName: Meagre Flame
 	CourtOfHandsRite.DisplayName: Court of Hands
 	CourtHand.DisplayName: Court of Hands
+	EverHungerHead.DisplayName: Everhunger
 }
 
 NPCs: {
