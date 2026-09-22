@@ -3,13 +3,14 @@
 > **Purpose:** everything a fresh chat needs to continue this work without re-deriving it.
 > **Read the "Verified vs Unverified" section before trusting any API name in here.**
 >
-> **Sections 0–10 are session 1. Section 11 is session 2.** Where the two disagree, session
-> 2 wins and the session 1 text is marked **CORRECTED IN SESSION 2** in place — nothing has
-> been deleted, so the reasoning behind a superseded decision is still readable.
+> Nothing is ever deleted here — superseded text is marked in place, so the reasoning
+> behind an abandoned decision stays readable.
 >
-> **Start here:** §11.11 is the live TODO. §11.9 has the API facts verified so far, and two
-> version traps (`WorldGen.Convert`'s fake radius, `BiomeConversionID` not existing in
-> 1.4.4) that will cost a debugging session each if they are hit blind.
+> **Start here:** **§12.9 — build a local compiler before writing any code.** Then §12.12
+> (the live TODO), §12.10 and §11.9 (verified API facts), and the version traps in §11.9
+> (`WorldGen.Convert`'s fake radius, `BiomeConversionID` not existing in 1.4.4).
+>
+> **Sessions: 0–10 = session 1, §11 = session 2, §12 = session 3.** Later wins.
 
 ---
 
@@ -992,3 +993,435 @@ across both, so write the literal `0` for Purity. `WorldGen.Convert` also gained
    collision check in `Update` would stop it at the surface if that reads better.
 
 **Still open from session 1:** items 3, 4, 4b, 5, 6, 8, 9, 10 in §9.
+
+---
+
+# SESSION 3
+
+> Covers the Wasted Mile biome, the Abomanation boss, the player ragdoll, the mod-wide
+> CC-bypass tell, and — most usefully for whoever reads this next — **a working local
+> compiler**, §12.9. Read that section before writing a line of code.
+>
+> Where session 3 disagrees with 1 or 2, session 3 wins.
+>
+> **Start here:** §12.9 (compile before shipping), §12.10 (verified API facts, including
+> three that cost a session each), §12.12 (live TODO).
+
+---
+
+## 12.1 The Wasted Mile — biome, shader, worldgen
+
+A surface region on the side of the world away from the ocean, inside `Layout.Mile`. Ash,
+trenches, cold grey, nothing alive.
+
+| File | What it does |
+|---|---|
+| `Content/Biomes/WastedMileBiome.cs` | `ModBiome`. `Covers(tileX, tileY)` is the public test: inside `Layout.Mile` **and** `tileY <= Main.worldSurface`. `Priority => BiomeHigh`, `Music => 0` (silence), `SpecialVisuals` drives the filter. |
+| `Content/Biomes/WastedMileSurfaceBackground.cs` | `ModSurfaceBackgroundStyle`. Far/middle/close from `Content/Biomes/Backgrounds/WastedMile{Far,Middle,Close}.png` (1024×500 / 500 / 400). `CloseLift = 90f`, applied as `b -= CloseLift`. |
+| `Content/Biomes/WastedMileCritters.cs` | `EditSpawnPool` strips every critter when `WastedMileBiome.Covers(SpawnTileX, SpawnTileY)`. Nothing small spawns on the Mile. |
+| `Effects/WastedMile.fx` | Cold grade: Drain 0.70, Shadow/Light, Grade 0.5, Flatten 0.88, Ceiling 0.92, Vignette 0.6. Pass `MilePass`. **No grain** — see below. Needs EasyXnb compilation. |
+| `PisAndDag.cs` → `LoadWastedMileFilter()` | Registers `"PisAndDag:WastedMile"`, `UseIntensity(0.85f)`. |
+
+**Two visual bugs worth remembering.** The "rectangle" in the far background was a haze
+gradient band baked into the PNG, not a rendering fault. The "static TV overlay" was a
+grain term in the shader. Both removed. The brief was *eerie, cold, lonely* — not noisy.
+
+**`WastedMileFillPass`** in `Content/Structures/PADWorldLayout.cs`: after every carve and
+plant pass, before "Final Cleanup". Fills every non-solid tile (pots, vines, chests, water,
+air) from the ash surface down to `Depth = 200`, `EdgeWobble = 60`. Chests are unhooked via
+`Chest.FindChest` / `DestroyChestDirect` before their tiles go.
+
+> **`AshTop` must scan from `y = 10`, not from near `Main.worldSurface`.** On a Grand world
+> the Mile's ridge sits more than 120 tiles above `worldSurface`, so a scan window starting
+> at the surface finds no ash and the pass silently skips every column. It logs
+> `Wasted Mile fill: {columns} of … columns had ash at the surface, {filled} tiles packed` —
+> if columns is 0, this is why.
+
+---
+
+## 12.2 The Abomanation — files and shape
+
+A fifteen-segment worm boss. Summoned on the Mile by releasing critters, not by an item.
+
+| File | Contents |
+|---|---|
+| `Content/NPCs/Abomanation_Small/Abomanation.cs` | Constants, `AbomanationArms` (arm sprite placement), `AbomanationChain` (linking, following, the whip swing, contact, the throw). 70 KB — the biggest file in the mod. |
+| `AbomanationHead.cs` | The AI. Phases, arrival, the whip, second wind, `PreKill` loot relocation. 52 KB. |
+| `AbomanationBody.cs` | One class for all five body sprites; the sprite is picked from `ai[3]` at draw time, so five textures cost one NPC type. |
+| `AbomanationTail.cs` | The tail. |
+| `AbomanationSummon.cs` | The critter-release counter. |
+| `AbomanationHints.cs` | Clothier dialogue + the critter tooltip. |
+| `AbomanationCommand.cs` | `/abomanation` debug spawn. |
+| `BossLogSupport.cs` (mod root) | Boss Checklist entry with a custom portrait. |
+
+**Chain links live in `ai[]`, not in fields**, because `ai[]` rides the NPC sync packet:
+`ai[0]` = sprite mirrored, `ai[1]` = index ahead + 1, `ai[2]` = head index + 1, `ai[3]` =
+place in chain. `localAI[0..2]` hold the whip's per-link angle, spin and serial — local
+only, never synced, which is fine because the swing is deterministic from synced state.
+
+**Phases** (`phase` field, synced): −1 arrive, 0 chase, 1 dive, 2 rush, 3 fall, 4 whip
+run-in, 5 loop, 6 crack.
+
+**Second wind** at `RagePoint = 0.4` of max life: speed ×1.2, whip every rush with a 4 s gap
+instead of 1-in-3 with a 20 s gap, one low roar.
+
+**Segments carry `NPC.PAD().OwnIntro = true`.** Without it `BossArrivalWait` holds every
+boss-flagged segment still for the universal arrival and the head swims off alone, leaving
+a headless body on the ground. This cost a debugging session.
+
+**Loot drops at the nearest surviving segment**, not at the head, because the head is
+usually underground when it dies (`PreKill` moves `NPC.position`).
+
+---
+
+## 12.3 The whip — the one move worth reading about
+
+> The head runs the player down, stops short, turns once in a tight loop so the body coils
+> behind it, then drives straight out of the coil. The body follows with the turn still in
+> it and the tail leaves the animal in one wide arc.
+
+**Nothing in it is scripted.** During the crack each link is a damped spring in *angle*
+toward the link ahead (`AbomanationChain.Swing`): stiffer toward the tail, turn rate capped.
+The coil, the wave down the body, the arc and the recoil all fall out of the head's two
+moves plus that one rule.
+
+Measured in `/home/claude/work/whip/pend2.py` (rebuild it if needed; it is fifty lines):
+
+| | |
+|---|---|
+| loop | 70 ticks |
+| tail peak | **60 px/t** at tick 24 of the run — where `Item153` plays |
+| tail over 25 px/t | 46 ticks |
+| reach | the whole body, 42 tiles, straight out at full arc |
+| settled | 93 ticks; the head resumes chasing at 50 while the body finishes |
+
+Key constants: `WhipLoopSpeed 9`, `WhipLoopRadius 100`, `WhipRunSpeed 10`,
+`WhipSpringHead 0.05` → `WhipSpringTail 0.38`, `WhipDamping 0.90` falling to `0.60` from
+tick 25, `WhipMaxTurn 0.16` rad/t.
+
+**The loop radius is deliberately roomy.** A tight loop leaves the body straight with a kink
+at the neck instead of a coil you can see, because the follow chain cuts corners.
+
+**Three failed designs, recorded so nobody rebuilds them:** a rigid rod about a fixed
+segment (reads as a bar); the same rod with a scripted wave (a wave through a bar); and a
+Verlet rope with a length constraint — the right *shape*, and a tail at **280 px/t**
+whatever the head did, because an inextensible chain puts everything into its tip. Slowing
+the head did not slow the tip. The angular chain keeps the shape and caps the tip.
+
+**Aiming is which way the loop turns.** The tail comes off the coil on the side the loop did
+*not* turn toward. Player left of its line → it circles right → the lash takes the left.
+Dead ahead (within 24 px of the line) it circles so the lash comes over the top rather than
+under the ground.
+
+**Hits are swept**, not point tests: `Collision.CheckAABBvLineCollision` along the line the
+segment moved this tick, 52 px wide. At 60 px/t a point test misses a standing player about
+half the time. Damage ×1.25 at the neck rising to ×2 at the tail.
+
+---
+
+## 12.4 The throw, and `RagdollPlayer`
+
+`Content/PADplayer/RagdollPlayer.cs`. A lash hit writes straight onto `Player.velocity`, so
+Cobalt and Ankh Shield do nothing — it is not knockback, it is being hit by something heavy
+moving fast.
+
+Direction is the **unit tangent of the segment's own path this tick**, magnitude its speed
+along that path × `WhipToss 0.34` × `WhipTossBoost 4`, floor 8 px/t, no ceiling, no lift.
+
+Then the body tumbles: no control, no items, wings and boots inert. Spin if thrown upward
+past 8 px/t, roll otherwise. Bounces: floor 0.45, ceiling 0.45, wall 0.5, sideways ×0.75 per
+floor bounce, re-spun from the new arc. Under `RestSpeed 2.5` it lands and lies 90 ticks,
+then a smoothstep stand-up.
+
+**Three bugs, all non-obvious, all fixed — do not reintroduce them:**
+
+1. **The throw must be applied in `ModPlayer.PostHurt`.** Vanilla `Player.Hurt` writes its
+   own knockback onto velocity at IL `0x05c2`, *after* `OnHitPlayer` and *before* `PostHurt`
+   at `0x096c`. A throw written in `OnHitPlayer` is silently replaced by a three-pixel shove.
+   The hit stores a pending throw; `PostHurt` (and `PostUpdate`, for throws outside a hurt)
+   applies it.
+2. **The lash needs its own immunity slot.** A brush from the head or the coil leaves 40
+   ticks of general immunity, and the crack lands inside that window — so
+   `Update_NPCCollision` skipped the hit before any hook ran, and the player never flew.
+   `CanHitPlayer` sets `cooldownSlot = ImmunityCooldownID.DD2OgreKnockback` while lashing.
+   *This looked exactly like "wings and rocket boots are immune to the ragdoll". It was not
+   flight. It was i-frames.*
+3. **Contact is read as speed lost, not speed at zero.** Above 16 px/t `Player.DryCollision`
+   moves the body in 16 px steps and returns the sum of the steps it completed, so a body
+   that met the floor on step three of five still comes out with two steps of fall on it. A
+   `velocity.Y == 0` test never sees it. Compare `before` (captured in `PreUpdateMovement`)
+   against the post-move velocity with a 0.05 slack.
+
+Also: `WhipTossLift` is 0, and the floor clamp must be skipped when it is 0 — `Y > -0 →
+Y = 0` was zeroing every downward throw. And vanilla clamps falling to `maxFallSpeed` every
+tick, which turned a downward throw into a drift; `PostUpdateRunSpeeds` raises it while
+airborne.
+
+---
+
+## 12.5 `CCBypass` — the mod-wide tell for CC-immune attacks
+
+`Content/Combat/CCBypass.cs`. **A rule, not a feature:** anything in the mod whose hit goes
+through crowd-control immunity announces itself, always the same way, so the player learns
+one signal.
+
+- **The colour** is `CCBypass.Warning` = `(255, 222, 66)`. Nothing else in the mod is that
+  yellow.
+- **The flag.** An NPC or projectile sets `PAD().CCBypass = true` every tick it is in the
+  state. The globals clear it before each AI, so the owner never clears it.
+- **The outline.** Eight copies of the entity's own sprite in the warning colour with
+  `A = 0`, 3 px out in a ring, drawn *before* the sprite so only the ring shows. Same method
+  as the Greatbow's charge glow. Handled automatically by `PADGlobalNPC.PreDraw` /
+  `PADGlobalProjectile.PreDraw`.
+- **`ICCBypassOutline`** for an entity that draws something other than its registered
+  texture — the body segments implement it because five sprites share one NPC type.
+- **The star and the note.** On the tick the flag comes on, unless `PAD().CCQuiet` is set.
+  `CCBypassStar` is a `PADParticle`: a soft white-on-transparent four-point star
+  (`Content/Combat/CCBypassStar.png`, 34 px, premultiplied, Calamity `Sparkle2` style),
+  drawn additively in the yellow at scale 0.85, riding the entity's centre, blinking 3 ticks
+  on / 3 off for 30 ticks. `Content/Sounds/CCBypassWarn.ogg` plays once, one instance.
+- **`CCQuiet`** is for parts of a many-part thing. The fifteen segments are quiet; the head
+  calls `CCBypass.Warn(NPC)` once, as it stops to loop — half a second of coil before
+  anything can throw.
+
+**The outline is one silhouette round the whole animal, not a ring per segment.** Vanilla
+draws NPCs from slot 199 downward, so `AbomanationChain.DrawsFirst` finds the highest slot
+that is on screen (mirroring vanilla's 800 px cull) and that part draws
+`AbomanationChain.Silhouette` for every part, before any sprite. Body and tail both draw
+through one `DrawWhole(spriteBatch, screenPos, colour)` so the outline traces exactly what
+is drawn, arms included.
+
+**New attacks that ignore knockback, shields or i-frames set the flag or they do not ship.**
+
+---
+
+## 12.6 Summon, hints, boss checklist
+
+**Summoning.** Release a bunny, squirrel or red squirrel on the Mile. It is taken; the tenth
+brings the boss. The count is `PADWorld.MileOfferings` — **world-saved, not per-player**, so
+two players can feed it between them.
+
+> A released critter carries **`EntitySource_Parent`** (via `NPC.ReleaseNPC` →
+> `GetSource_ReleaseEntity`), with `Entity` = the player. It is *not* `EntitySource_ItemUse`.
+> Testing for `ItemUse` first is why nothing was consumed; then testing for both gives
+> CS8510, because `EntitySource_ItemUse : EntitySource_Parent`. One `is EntitySource_Parent`
+> test is correct and sufficient.
+
+**Clothier hint**, 1-in-3 of his lines until `DownedAbomanation`, key
+`Mods.PisAndDag.Hints.ClothierMile`. Elden Ring Patches tone. Critter tooltip
+`Hints.Offering`: *these may satiate one and many*.
+
+**Boss Checklist portrait.** `customPortrait` is an `Action<SpriteBatch, Rectangle, Color>`.
+The portrait was built by collapsing the doubled sprites 2×2 back to native, arranging the
+chain on a 303° ellipse, then exporting at 2× nearest: 334×370, premultiplied. Head grid
+offset is `x = 1` — without it the head sits visibly off the coil.
+
+---
+
+## 12.7 Textures — the rule that keeps biting
+
+> **tModLoader never premultiplies.** `ImageIO.ToRaw` and `RawImgReader.FromStream` copy
+> RGBA straight through, and the game blends premultiplied. Every PNG the mod ships must be
+> premultiplied by hand, or it renders as white blobs wherever alpha is partial.
+
+Related: PIL's `ImageDraw.ellipse` **overwrites** alpha rather than accumulating it, so
+overlapping soft blobs come out flat. Accumulate alpha in numpy, then premultiply, then
+write.
+
+---
+
+## 12.8 Lore written this session
+
+`Terraria_Mod_Lore_Bible_ver_1.1.md` §XXI:
+
+- **The Abomanation** — a subject of the Artificers' programme, left where the programme
+  ended. Boss checklist image embedded (relative path, so it only resolves for someone who
+  has the mod folder).
+- **How it looks** and **How it fights** — [LOCKED] read of the sprite and the fight.
+- **The second hand** — *"A second hand appears in the margins of the record, and it is not
+  recording results."* One line. Personal cruelty running alongside the clinical register,
+  nothing named.
+- **The two of them** — the small one from the villages (farmers, the ones nobody would ask
+  after); the other from knights, men with reputations, soldiers off both siege lines, and
+  goblins at the end. **[LOCKED]** the second is post-Moon Lord.
+
+`PAD_NPC_Plan.md` §2.6 (the whip, measured) and §2.7 (the CC-bypass rule).
+
+**Voice reminders:** no em dashes in in-game text. The `pad-lore-voice` skill holds the
+rules; §XXVII is the method — nothing about the Abomanation is explained anywhere in the
+world, and nothing should be. Watch for the LLM tic of *"statement, then flat negation"*
+(*The programme ended. It did not.*); the user will catch it and it reads as AI.
+
+---
+
+## 12.9 **A local compiler — set this up first, every session**
+
+Two compile errors reached the user before this was built. It takes about five calls and it
+ends the problem.
+
+```bash
+# 1. The SDK. dot.net and NuGet are blocked by the egress proxy; Ubuntu's apt is not.
+apt-get update -qq && apt-get install -y --no-install-recommends dotnet-sdk-8.0
+
+# 2. Stage the reference assemblies from the user's Steam install (connected folder):
+#    Libraries/FNA/1.0.0/FNA.dll
+#    Libraries/ReLogic/1.0.0/ReLogic.dll
+#    Libraries/TerrariaHooks/0.0.0.0/TerrariaHooks.dll
+#    Libraries/monomod.utils/25.0.10/lib/net8.0/MonoMod.Utils.dll
+#    Libraries/mono.cecil/0.11.6/lib/netstandard2.0/Mono.Cecil.dll
+#    Libraries/log4net/2.0.8.0/log4net.dll
+#    Libraries/newtonsoft.json/13.0.3/lib/net6.0/Newtonsoft.Json.dll
+#    Libraries/microsoft.codeanalysis.common/4.12.0/lib/net8.0/Microsoft.CodeAnalysis.dll
+#    plus tModLoader.dll from the install root
+
+# 3. Stage all ~118 .cs files from the mod (50 per call), overlay your edits, then:
+CSC=$(ls /usr/lib/dotnet/sdk/*/Roslyn/bincore/csc.dll)
+REFDIR=$(ls -d /usr/lib/dotnet/packs/Microsoft.NETCore.App.Ref/*/ref/net8.0 | head -1)
+# -r: every dll in $REFDIR plus the eight above
+dotnet $CSC -nologo -langversion:latest -t:library -nostdlib+ -noconfig -unsafe+ \
+  -out:PisAndDag.dll $REFS @srcs.txt
+```
+
+`dotnet build` does **not** work — NuGet restore is blocked by the proxy. Call `csc.dll`
+directly; it needs no restore.
+
+**Clean baseline is 0 errors, 14 warnings** (unused fields, obsolete vanilla calls, one
+unreachable line — all pre-existing). Anything above that is yours.
+
+**The uploads copy of the mod goes stale.** Files staged earlier in a session will be older
+than the device. If the build reports errors in files you never touched (`PADWorld` missing
+`MileOfferings`, `PADKeybinds` missing `Wind`, `MorsPresence` missing `State`), the staged
+copy is old — re-stage those files, do not "fix" them.
+
+**A parse-only check**, when a full build is overkill: same `csc` call with no references,
+then grep for `error CS1[0-9]{3}`. Binding errors flood, syntax errors surface. Verified to
+catch an injected stray brace as CS1022.
+
+---
+
+## 12.10 Verified this session (tML 1.4.4, checked against the DLL or the decompile)
+
+**Draw order and culling**
+- `Main.DrawNPCs` iterates **slot 199 → 0**. `NPCLoader.PreDraw` returning false skips the
+  sprite but `PostDraw` still runs.
+- Vanilla culls an NPC more than **800 px** outside the screen rect; its `PreDraw` never runs.
+- `Main.DrawProj_Inner_DoDrawProj` calls `ProjectileLoader.PreDraw` then `PostDraw`; same
+  shape.
+- Plain NPC draw position: centred on X, sat on `position.Y + height + 4 − frameHeight/2`,
+  flipped when `spriteDirection == 1`.
+
+**Hit path**
+- `Update_NPCCollision` → `CombinedHooks.CanNPCHitPlayer` → immunity check (`player.immune`,
+  or `hurtCooldowns[slot]` when the slot is ≥ 0) → `Player.Hurt` → `NPCLoader.OnHitPlayer`.
+  The immunity check happens **before** any mod hook, so an immune player never reaches
+  `OnHitPlayer` at all.
+- `ImmunityCooldownID` members are exactly: `General`, `TileContactDamage`, `Bosses`,
+  `DD2OgreKnockback`, `WrongBugNet`, `Lava`.
+- `Player.Hurt` sets `immuneTime` 20/40 (80 with `longInvince`) for slot −1, or writes
+  `hurtCooldowns[slot]`.
+
+**Movement**
+- `Player.Update` order: `SetControls` → … → `Update_NPCCollision` → `PostUpdateRunSpeeds`
+  → `HorizontalMovement` → `JumpMovement` → wings → `PreUpdateMovement` → `DryCollision` →
+  `PostUpdate`.
+- `DryCollision` splits motion into 16 px steps when `velocity.Length() > 16` and returns
+  the accumulated result. See §12.4 bug 3.
+- `maxFallSpeed` is re-clamped every tick in several places.
+
+**Video** (asked about cutscenes)
+- FNA ships `Microsoft.Xna.Framework.Media.VideoPlayer` — fully public: ctor, `Play(Video)`,
+  `Stop`, `Pause`, `Resume`, `GetTexture()`, `IsLooped`, `Volume`, `PlayPosition`, `State`.
+- `Video`'s constructors are `internal`, **but `Video.FromUriEXT(Uri, GraphicsDevice)` is
+  public and static** — that is the way in, no content pipeline.
+- Backend is `Theorafile`, so the format is Ogg Theora:
+  `ffmpeg -i in.mp4 -c:v libtheora -q:v 7 -c:a libvorbis out.ogv`.
+- Catch: `FromUriEXT` needs a file on disk, and mod assets live inside the `.tmod` —
+  `Mod.GetFileBytes` to a temp path first. `GetTexture()` must be called on the main thread.
+
+**Other**
+- `ModBiome`: `Music => 0` is silence, not "no override". Filter opacity fades over ~1 s;
+  `ScreenShaderData.UseIntensity`, `uOpacity` is the fade.
+- `BackgroundTextureLoader.GetBackgroundSlot(Mod, path)` — any path containing
+  `"Backgrounds/"` autoloads. Far and middle draw at 2× from the same top; close's `ref b`
+  is a flat Y offset.
+- `NPC.oldPosition` is the pre-move position for that tick (the engine does
+  `oldPosition = position; position += velocity`), which is what makes swept tests exact.
+- Boss Checklist `customPortrait` is `Action<SpriteBatch, Rectangle, Color>`.
+
+---
+
+## 12.11 Errors hit this session and their fixes
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Body missing at boss arrival | `BossArrivalWait` held boss-flagged segments | `NPC.PAD().OwnIntro = true` on body and tail |
+| Critters not consumed | Source is `EntitySource_Parent`, not `ItemUse` | One `is EntitySource_Parent` test (§12.6) |
+| CS0101 duplicate types | User saved chat attachments into the folder as `-1.cs` | Real files updated; `-1.cs` stubbed to a one-line comment. **The user must not save attachments — files are already written by `device_commit_files`.** |
+| CS1519 invalid token `}` | A stray brace left by deleting a method with text surgery | Removed; and §12.9 exists now so this cannot ship again |
+| Whip felt like a bar / exploded | See §12.3 | Angular spring chain |
+| Ragdoll never fired | Three separate causes | See §12.4 |
+| Fill pass skipped every column | `AshTop` scan window started below the ash | Scan from `y = 10`; log added |
+| White blobs instead of soft smoke | Straight alpha in a premultiplied renderer | §12.7 |
+| Outline read as rings per segment | Each segment drew its glow before its own sprite | One silhouette from the first-drawn part (§12.5) |
+
+---
+
+## 12.12 Open TODO after session 3
+
+**Needs the user's hands (no delete tool in that session):**
+
+1. Delete `Content/NPCs/Abomanation_Small/Abomanation-1.cs`, `AbomanationBody-1.cs`,
+   `AbomanationHead-1.cs`, `AbomanationTail-1.cs`. All four are 81-byte comment stubs.
+2. Delete `Content/Sounds/AbomanationWarn.ogg` — superseded by `CCBypassWarn.ogg`, same
+   audio, and nothing references the old name.
+3. Still outstanding from session 2: `ChlorophyteBullet.cs` + `.png`.
+
+**Decisions parked:**
+
+4. `BossTitle` on `AbomanationHead` is currently *"The starved hundred who merged into one."*
+   Discussed alternatives: drop the second clause (the player is looking at the merge), or
+   switch to the victim-class axis — **"Farmers, mostly."** for the juvenile and
+   **"They ran out of farmers."** for the post-Moon Lord one, where the second rewrites the
+   first on sight. User's call.
+5. The planted spray move, `PAD_NPC_Plan.md` §2.4 — designed, **explicitly not to be
+   implemented until the user says so**.
+
+**Built but not yet play-tested:** the whole-animal silhouette, the soft star, the bounce
+physics at `WhipTossBoost 4`.
+
+**Designed since, in the plans rather than here:**
+
+- `PAD_Item_Plan.md` **§4 — the magic memory system.** Memorised spells and incantations,
+  one pool of ten, cast through a staff or a seal held in hand, cycled with two keybinds
+  that skip what the held catalyst cannot cast. **Nothing of it exists**: no magic item, no
+  summon item, no catalyst, no save data. Multi-session build, and §4.6 is the order.
+- `PAD_NPC_Plan.md` **§2.8 — the Abomanation's drops.** A material plus recipes rather than
+  a random weapon pick. Gaping Jaw, the whip, a hand minion, a bow of teeth, the lore
+  number. The two incantations are held back until the memory system exists.
+- `Terraria_Mod_Lore_Bible_ver_1.1.md` **§XXIV — where magic comes from.** [LOCKED] Not
+  primordial, not divine: drawn out of the land and the Shimmer beneath it. **The elements
+  are places**, which is why the element list looks unrelated — it was surveyed, not
+  designed. Read this before writing any spell, element or catalyst.
+
+**Next thing discussed:** a cutscene system — **not** video. Frame sequences drawn as a
+shadow-puppet play: flat silhouettes, two or three poses each, a keyframe table of
+`{tick, who, where, pose}`, played over the black screen `LegendsScreenSystem` already
+fades. The conceit is that a play is *somebody's version*, so it can be wrong, which gives
+the Bible the contradictory accounts it asks for — a player who watches a tidy puppet of
+the Abomanation and later meets the real one notices the difference and is never told.
+Start with one scene and three figures.
+
+---
+
+## 12.13 Process notes
+
+- **Compile before delivering. Always.** §12.9. Two errors reached the user in one session
+  because "it looks right" is not a check.
+- **Re-stage before every edit**, and `cmp` the staged copy against what was last delivered.
+  The user edits between turns; two of this session's edits were the user's own.
+- **Measure motion in Python before shipping it.** Every whip design was decided by a
+  fifty-line simulation, including the one that proved the rope unfixable.
+- **Read the IL when behaviour contradicts the API.** All three ragdoll bugs were invisible
+  in the signatures and obvious in `Player.Hurt` and `Player.DryCollision`.
+- **When the user says a feature "does not work", check the layer below the obvious one.**
+  "Wings are immune to the ragdoll" was immunity frames. Nothing to do with wings.

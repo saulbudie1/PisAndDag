@@ -14,8 +14,9 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
     ///
     /// Bunnies, squirrels, red squirrels, released from the hand, on the ground the
     /// siege was fought from. Nothing is crafted, nothing is thrown, nothing explodes.
-    /// Each one is taken the moment it touches the ground; the tenth
-    /// (<see cref="Abomanation.Offerings"/>) brings it. The count is world state
+    /// Each one is counted the moment it touches the ground, and left there; the tenth
+    /// (<see cref="Abomanation.Offerings"/>) brings it, and it eats them before it
+    /// looks at anyone (AbomanationHead.Hunt). The count is world state
     /// (PADWorld.MileOfferings), so it survives leaving and coming back, and it is
     /// shared, so two players can feed it between them.
     ///
@@ -77,9 +78,7 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             if (NPC.AnyNPCs(ModContent.NPCType<AbomanationHead>()))
                 return;
 
-            // The critter never lands.
-            npc.active = false;
-
+            // The critter stays. It is what it will come for first.
             if (Main.netMode == NetmodeID.MultiplayerClient)
                 return;
 
@@ -116,7 +115,7 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         }
 
         /// <summary>
-        /// What one taken animal looks like: the sand going down where it stood. Enough
+        /// What one counted animal looks like: the sand going down where it stood. Enough
         /// that a player who let a bunny go on the wrong ground can tell the difference.
         /// </summary>
         private static void Taken(Vector2 where)

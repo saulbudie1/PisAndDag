@@ -48,6 +48,13 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             sprites = null;
         }
 
+        /// <summary>Legends hits harder. After vanilla's scaling, so it is on top of it.</summary>
+        public override void ApplyDifficultyAndPlayerScaling(int numPlayers, float balance, float bossAdjustment)
+        {
+            if (PADWorld.Legends)
+                NPC.damage = (int)(NPC.damage * Abomanation.LegendsDamage);
+        }
+
         public override void SetDefaults()
         {
             NPC.width = 48;
@@ -114,6 +121,28 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
 
             AbomanationChain.Flag(NPC);
 
+            // The end. The body follows the head while it stops; from the rise on the
+            // head places every part itself, along its own path and then on the loop.
+            // See AbomanationHead.Die.
+            if (AbomanationChain.Dying(NPC))
+            {
+                NPC.life = 1;
+
+                AbomanationHead boss = AbomanationChain.Boss(NPC);
+
+                if (boss != null && boss.BodyPlaced)
+                {
+                    boss.Place(NPC);
+                    return;
+                }
+
+                if (boss == null || !boss.BodyFollows)
+                {
+                    NPC.velocity = Vector2.Zero;
+                    return;
+                }
+            }
+
             float spacing = leader.type == ModContent.NPCType<AbomanationHead>()
                 ? Abomanation.HeadSpacing
                 : Abomanation.BodySpacing;
@@ -156,6 +185,22 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         {
             if (AbomanationChain.Lashing(NPC))
                 AbomanationChain.Throw(NPC, target);
+        }
+
+        /// <summary>
+        /// A blade in the meat. The generic dust in HitEffect stays: it runs on every
+        /// client because HitEffect is synced, where this runs only where the hit was
+        /// worked out. So everyone sees red, and whoever swung sees the slash.
+        /// </summary>
+        public override void OnHitByItem(Player player, Item item, NPC.HitInfo hit, int damageDone)
+        {
+            AbomanationChain.Slashed(NPC, player, item, hit);
+        }
+
+        /// <summary>A shot through it. See AbomanationChain.Pierced.</summary>
+        public override void OnHitByProjectile(Projectile projectile, NPC.HitInfo hit, int damageDone)
+        {
+            AbomanationChain.Pierced(NPC, projectile, hit);
         }
 
         public override void HitEffect(NPC.HitInfo hit)

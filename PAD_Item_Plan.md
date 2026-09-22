@@ -247,6 +247,120 @@ The bow is a weapon, not a lore item, but it carries lore text. All proposals.
 
 ---
 
+# 4 · Magic — the memory system
+
+**[PLANNED, NOT BUILT. Nothing of this exists: the mod has no magic item, no summon item,
+no catalyst, no keybind for it and no save data. This is a multi-session build and it
+should not be attached to a boss's drop table.]**
+
+Lore for all of it is §XXIV of the Bible, *Where magic comes from* — drawn out of the
+land, not given by gods.
+
+## 4.1 The shape
+
+Spells and incantations are **not held items**. They are memorised, and cast through a
+catalyst held in the hand.
+
+| | |
+|---|---|
+| **Memory** | one shared pool. Starts at 2, raised by a consumable, hard cap **10**. |
+| **What fills it** | spells AND incantations, from the same pool. |
+| **Catalysts** | a **staff** casts spells. A **seal** casts incantations. |
+| **Casting** | left click, with the catalyst in hand. |
+| **Selecting** | two keybinds, up and down. |
+
+**Cycling skips what the held catalyst cannot cast.** Holding a staff, up and down move
+between the memorised *spells* only; the incantations stay memorised and keep their slots
+but are not in this cycle. This is the whole reason there is no "selected an incantation
+while holding a staff" case — it cannot arise, and a cast that does nothing is the worst
+feedback a fight can give. The selection is remembered **per catalyst**, so staff → seal →
+staff returns to the spell that was up.
+
+**The selection UI only appears while a catalyst is held.** A full memory screen lives at
+the table below.
+
+## 4.2 Why one pool, and why it must cost something to change
+
+One pool is what makes a build. Two pools of ten would mean everyone fills both and
+nothing is chosen; one pool of ten means six spells and four incantations is a decision,
+and ten incantations is a different character.
+
+**Memorising happens at a placed tile, not anywhere.** If the loadout can be rearranged
+mid-cave for whatever is in the room, the cap constrains nothing and the system is an
+inventory with extra steps. The friction is the design.
+
+**Ten slots wants twenty to thirty castables** before the cap bites. Below about twice the
+cap, everyone memorises nearly everything and the choice is decoration. Content
+commitment, noted here so it is a decision rather than a surprise.
+
+## 4.3 Spell or incantation
+
+Same source — there is no divine half, see §XXIV — so the split is **how it is drawn**,
+not where from.
+
+- A **staff** is an instrument. The Arcanum's engineering: focused, projected, a thing
+  that leaves the caster and travels.
+- A **seal** asks the ground directly. Slower, wider, comes out of the world rather than
+  out of the hand. Terrain, zones, growths.
+
+Both drink the same gas.
+
+## 4.4 Cost
+
+Everything costs mana. Some cost something else on top, and **life is the mod's existing
+vocabulary for that** — the Handswitch already trades lifeforce for powerful shots.
+
+**On vanilla mana.** The wish to make regeneration less generous is fair, but a global
+change rewrites every vanilla magic weapon for anyone with this mod installed, and someone
+playing Demon Scythe in a PAD world did not ask for that. Mana Sickness already exists as
+the anti-spam lever, and Calamity notably does not touch regen either — it adds expensive
+weapons and its own resources instead.
+
+Preferred order:
+
+1. Make PAD's own casts expensive. A forty-mana spell self-limits and touches nothing.
+2. Secondary costs, as above.
+3. If the global change is still wanted, it is **a config toggle, default off** — a
+   difficulty option rather than an imposition.
+
+## 4.5 Type and element
+
+Two labels on every magic weapon, spell and incantation, in the tooltip.
+
+- **Type** is what it does: explosion, heal, pierce, and so on.
+- **Element** is where it was drawn from: blood, frost, flame, wind, lightning,
+  chlorophyte, decay, hallow, and whatever else the world has enough of.
+
+They are **labels, not a grid**. Nothing requires every type-element pair to exist.
+
+**Elements are regions**, because the power comes out of the land (§XXIV). The list looks
+unrelated because biomes are unrelated, and that is correct rather than a problem. Draw
+elements from what the mod has actually built — blood from the Abomanation, chlorophyte
+from the rifle and `ChlorophyteSpill`, lightning from `Lightning` and Rage of a Thunder —
+so the taxonomy reads as this world's physics instead of a genre checklist.
+
+**Ship it as tooltip text first.** As labels it costs nothing and teaches a vocabulary.
+The moment it is mechanical — resistances, weaknesses — every enemy in vanilla needs
+resistance data, which is an enormous table and a permanent maintenance burden. Design the
+labels so they *can* become mechanical later; that addition is additive, and the reverse
+is a rewrite.
+
+**[OPEN]** Whether an element cast on the ground it came from behaves differently, and
+whether an element can only be learned in its own biome.
+
+## 4.6 What has to be built, in order
+
+1. `ModPlayer` memory: the list, the cap, save, load, and sync.
+2. The two catalyst base classes, staff and seal.
+3. The two keybinds and the per-catalyst remembered selection.
+4. The cycle HUD, shown only while a catalyst is held. `MagazineHUD` is the nearest
+   existing shape to copy.
+5. The memory tile and its full UI.
+6. The memory consumable, capped at 10.
+7. Then, and only then, spells.
+
+---
+
 # Conventions
 
 - A texture sits beside its `.cs`, named identically; the path derives from the

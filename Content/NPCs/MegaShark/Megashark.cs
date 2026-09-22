@@ -796,6 +796,7 @@ namespace PisAndDag.Content.NPCs.MegaShark
                 NPC.dontTakeDamage = true;
                 NPC.damage = 0;
 
+                Content.Combat.Cinematic.Frame();
                 DoDeath(player);
 
                 Timer++;

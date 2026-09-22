@@ -17,10 +17,10 @@ namespace PisAndDag.Content.NPCs
     {
         public override void PostSetupContent()
         {
-            // The Legends King runs a rite — heralds gather, the camera commits, he
-            // swells up out of a seed. Outside Legends he is vanilla's King Slime and
-            // gets the universal arrival like anything else.
-            BossPlate.HasOwnIntro(NPCID.KingSlime, _ => PADWorld.Legends);
+            // The King runs a rite in every world: heralds gather, the camera commits,
+            // they melt into him. Left to run as well, the universal arrival panned the
+            // camera home in the middle of it.
+            BossPlate.HasOwnIntro(NPCID.KingSlime);
         }
     }
 }

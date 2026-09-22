@@ -68,6 +68,35 @@ Items: {
 		DisplayName: She Who Sings
 		Tooltip: Wait 5 seconds to shoot a piercing arrow
 	}
+
+	MeagreFlame: {
+		DisplayName: Meagre Flame
+		Tooltip:
+			'''
+			Throws a ball of fire that bursts on what it meets
+			Hold 3 seconds to gather it: twice the size, three times the damage, 40 mana
+			'Enough to set a thing alight. Not much more.'
+			'''
+	}
+
+	SealOfAClothier: {
+		DisplayName: Clothier's Chatelaine
+		Tooltip:
+			'''
+			[c/9e6fab:A Seal]
+			Casts the incantation that is up
+			'''
+	}
+
+	CourtOfHands: {
+		DisplayName: Court of Hands
+		Tooltip:
+			'''
+			Calls hands up out of the ground under the cursor, three at a time, for five seconds
+			Click elsewhere to move them. Hold 2 seconds and they follow the cursor, at 14 mana a second
+			'None of them let go.'
+			'''
+	}
 }
 
 Buffs: {
@@ -92,15 +121,19 @@ Projectiles: {
 	ChlorophyteBullet.DisplayName: Chlorophyte Bullet
 	GreatbowOfAPilgrimHoldout.DisplayName: Greatbow Of A Pilgrim Holdout
 	PilgrimArrow.DisplayName: Pilgrim Arrow
+	MeagreFlameHold.DisplayName: Meagre Flame
+	MeagreFlameBall.DisplayName: Meagre Flame
+	CourtOfHandsRite.DisplayName: Court of Hands
+	CourtHand.DisplayName: Court of Hands
 }
 
 NPCs: {
 	WhiteDeath.DisplayName: White Death
 	Megashark.DisplayName: Megashark
 	MorsIdle.DisplayName: Mors
-	AbomanationHead.DisplayName: Abomanation
-	AbomanationBody.DisplayName: Abomanation
-	AbomanationTail.DisplayName: Abomanation
+	AbomanationHead.DisplayName: Amalgaermis
+	AbomanationBody.DisplayName: Amalgaermis
+	AbomanationTail.DisplayName: Amalgaermis
 }
 
 Biomes: {
@@ -124,6 +157,32 @@ Keybinds: {
 	Reload.DisplayName: Reload
 	Lightning.DisplayName: Lightning
 	Wind.DisplayName: Wind
+	SpellUp.DisplayName: Next Spell or Incantation
+	SpellDown.DisplayName: Previous Spell or Incantation
+}
+
+Magic: {
+	Spell: Spell
+	Incantation: Incantation
+	CastsSpell: Casts spells
+	CastsIncantation: Casts incantations
+	Damage: "{0} damage"
+	Mana: Uses {0} mana
+	Type: Type: {0}
+	Element: Element: {0}
+	Arsenal: Magic Arsenal
+	OpenArsenal: Open Magic Arsenal
+	Count: "{0} of {1} held"
+	InArsenal: In the Magic Arsenal
+	PlaceInArsenal: Goes in the Magic Arsenal, near a house someone lives in
+	NoHouse: Only near a house someone lives in.
+	NoHouseShort: Only near a lived-in house
+	NotACast: Only a spell or an incantation goes there.
+	AlreadyHeld: It is already in there.
+	Locked: Locked
+	NothingIn: Nothing in the arsenal
+	Up: Up: {0}
+	NothingMemorised: Nothing in the arsenal
 }
 
 UI: {

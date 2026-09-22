@@ -166,6 +166,10 @@ namespace PisAndDag.Content.UI
                     Open = !Open;
                     scroll = 0;
                     SoundEngine.PlaySound(SoundID.MenuTick);
+
+                    // Same corner as the Magic Arsenal; only one of the two is open.
+                    if (Open)
+                        MagicArsenalUI.Open = false;
                 }
             }
 

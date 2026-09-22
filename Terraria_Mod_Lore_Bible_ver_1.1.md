@@ -1842,6 +1842,39 @@ Their ruins can reveal their civilization through:
 
 ## §XXIV. The Arcanum
 
+### Where magic comes from
+
+**[LOCKED — the cosmology. Everything about casting rests on this.]**
+
+Magic is **not** primordial and it is **not** divine. No god hands it out and nothing was
+born holding it. It is a power *gifted*, and what gifts it is the land: a collaborative
+essence of mystique lying over the whole world, and the primordial Shimmer gas beneath it
+(§XVI). A caster does not create anything. A caster draws.
+
+Three things follow, and they are the rules everything else obeys.
+
+**The elements are places.** Because the power is drawn out of the land, what comes out is
+whatever that ground is made of. Frost from the snow. Blood from the Crimson, and from the
+Mile. Decay from the Corruption, perfection from the Hallow. Chlorophyte from the jungle.
+Wind off the open surface. That is why the list of elements looks like it was written by
+people who never compared notes: it was not designed, it was *surveyed*. Anything the
+world has enough of is an element, and nothing outside the world is.
+
+**It can be taken from anyone, and it belongs to no one.** There is no chosen caster and
+no priesthood, because the thing being drawn from is underfoot everywhere. The Arcanum's
+standing does not come from access. It comes from method.
+
+**The Arcanum is a research institution, not a church.** It studies the drawing. Its
+instruments, its staffs and its written incantations are engineering applied to a natural
+resource, which is exactly the relationship the Artificers have to metal (§XXI) and the
+Gemmasons to stone (§XXIII). The book's three traditions are three ways of being good at
+taking something out of the ground.
+
+**[OPEN]** Whether the essence is finite, and whether nine hundred years of drawing on it
+has thinned it anywhere. Nobody in the world would have the records to know.
+
+---
+
 A major magical institution exists: **The Arcanum**.
 
 It should feel more like an ancient magical research civilization or Raya Lucaria than a generic school.

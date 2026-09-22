@@ -50,8 +50,8 @@ namespace PisAndDag
                 });
 
             // Met before hardmode, on the Wasted Mile, after Skeletron and before the Wall.
-            // No collectibles yet and no summon item at all: it is called by letting a
-            // rodent go on that ground, which the spawn line says and AbomanationSummon does.
+            // No collectibles yet. The "spawn items" are the animals it is called with:
+            // let go on that ground, which the spawn line says and AbomanationSummon does.
             log.Call(
                 "LogBoss",
                 Mod,
@@ -62,6 +62,7 @@ namespace PisAndDag
                 new Dictionary<string, object>
                 {
                     ["spawnInfo"] = Language.GetOrRegister("Mods.PisAndDag.BossLog.Abomanation.SpawnInfo"),
+                    ["spawnItems"] = new List<int>(AbomanationSummon.Offerings),
                     ["customPortrait"] = (Action<SpriteBatch, Rectangle, Color>)DrawAbomanation,
                 });
         }

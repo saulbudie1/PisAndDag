@@ -3,9 +3,12 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PisAndDag.Content.Combat;
 using PisAndDag.Content.PADplayer;
+using PisAndDag.Content.Particles;
 using PisAndDag.Content.UI;
 using ReLogic.Content;
 using Terraria;
+using Terraria.Graphics.CameraModifiers;
+using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace PisAndDag.Content.NPCs.Abomanation_Small
@@ -352,6 +355,15 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         /// </summary>
         public const float WhipNear = 5f;
 
+        /// <summary>Ticks of run in before it loops from wherever it is, or gives up. Stops the endless circling.</summary>
+        public const int WhipRunIn = 150;
+
+        /// <summary>Held in the coil after the loop, before the crack. A second, so it can be dodged.</summary>
+        public const int WhipHold = 60;
+
+        /// <summary>How fast it creeps round the coil while holding, as a fraction of the loop speed.</summary>
+        public const float WhipHoldPace = 0.3f;
+
         /// <summary>
         /// How much faster the run in gets for every tick it lasts, as a fraction of
         /// Speed. It starts at the ordinary chase and climbs: a player who keeps away
@@ -475,6 +487,203 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         /// <summary>Ticks on the ground after a whip hit, before you can get up. A second and a half.</summary>
         public const int WhipLie = 90;
 
+        // -------------------------------------------------------------------- blood --
+        //
+        // There is no skin on this animal anywhere, so everything that lands on it lands
+        // in meat. What comes off depends on what went in: a blade throws a sheet of it
+        // off the edge, along the line of the cut and away from the arm that swung; a
+        // shot pushes a narrow streak out the way it was travelling and spills the rest
+        // around the hole. Both are BloodDroplet, which already falls, stretches with
+        // speed and reads the local light.
+
+        /// <summary>The colour of it. The same red the hit dust uses.</summary>
+        public static readonly Color Blood = new Color(150, 8, 12);
+
+        /// <summary>Damage that counts as a full-strength hit. Under it the spray scales down, over it up, within the clamp below.</summary>
+        public const float BloodReference = 120f;
+
+        /// <summary>Floor and ceiling on that scaling, so a pinprick still shows and a nuke does not fill the screen.</summary>
+        public const float BloodLeast = 0.4f;
+        public const float BloodMost = 2f;
+
+        // ---- a blade ----
+
+        /// <summary>Droplets thrown off the edge at full strength.</summary>
+        public const int SlashDroplets = 14;
+
+        /// <summary>How far along the blade the spray is spread, in pixels, for a blade of SlashReach. The length of the cut.</summary>
+        public const float SlashSpan = 46f;
+
+        /// <summary>Sprite length of an ordinary sword. Longer blades cut wider, shorter ones narrower, within the clamp below.</summary>
+        public const float SlashReach = 40f;
+        public const float SlashShortest = 0.6f;
+        public const float SlashLongest = 1.8f;
+
+        /// <summary>How fast it leaves the edge, in pixels a tick, before scaling.</summary>
+        public const float SlashSpeed = 7.5f;
+
+        /// <summary>Half-angle of the fan off the edge, in radians. Narrow: a sheet, not a cloud.</summary>
+        public const float SlashFan = 0.38f;
+
+        /// <summary>Droplets that run along the cut itself rather than off it, at a fraction of the speed.</summary>
+        public const int SlashTrail = 4;
+
+        // ---- a shot ----
+
+        /// <summary>Droplets in the streak out the far side at full strength.</summary>
+        public const int PierceDroplets = 10;
+
+        /// <summary>How fast the streak leaves, before scaling. Faster than a slash: it is being pushed, not flung.</summary>
+        public const float PierceSpeed = 9f;
+
+        /// <summary>Share of the projectile's own speed added to that. A slug throws further than an arrow.</summary>
+        public const float PierceCarry = 0.22f;
+
+        /// <summary>Half-angle of the streak, in radians. Tight.</summary>
+        public const float PierceCone = 0.16f;
+
+        /// <summary>The rest of it, coming out around the hole rather than through it.</summary>
+        public const int SpillDroplets = 8;
+
+        /// <summary>How fast the spill leaves, before scaling.</summary>
+        public const float SpillSpeed = 3.4f;
+
+        /// <summary>Half-angle of the spill, in radians. Wide.</summary>
+        public const float SpillCone = 0.95f;
+
+        /// <summary>How far to either side of the entry the spill starts, in pixels.</summary>
+        public const float SpillOffset = 9f;
+
+        /// <summary>Droplets that come back out the way the shot went in.</summary>
+        public const int BackSpatter = 3;
+
+        /// <summary>How fast those leave, before scaling. Barely.</summary>
+        public const float BackSpatterSpeed = 2.2f;
+
+        // -------------------------------------------------------------- second wind --
+
+        /// <summary>The shake with the roar. Strength in pixels, cycles a second, ticks, and how far away it is still felt.</summary>
+        public const float RageShake = 24f;
+        public const float RageShakeRate = 5f;
+        public const int RageShakeTicks = 45;
+        public const float RageShakeReach = 2400f;
+
+        // ---------------------------------------------------------------- the end ---
+        //
+        // It does not die when its life runs out. It stops, the camera goes to it, and
+        // it rises: straight up, out of whatever it is in, into open air, and there it
+        // climbs once round a loop the size of itself until its own tail is in its
+        // mouth. Then it eats: a piece sits in its mouth a while, it bites, the piece
+        // bursts, and it steps forward one link to the next, the body closing up behind
+        // it and the loop drawing in by the link that is gone, quicker and quicker,
+        // winding in on itself, until the last piece is its own neck and the head is all
+        // there is. Then the head goes. The player watches. Nothing about this is a
+        // fight.
+        //
+        // The body never follows the head through any of this. From the rise on, every
+        // part is placed by the head: along the head's own path while it rises and
+        // loops, so the body threads exactly where the head went and no link cuts a
+        // corner; and on the loop once it is closed, this far behind the head round a
+        // circle sized to what is left. So there is never a gap anywhere: the body is
+        // always at the head's neck, and the last piece is always at its mouth.
+
+        /// <summary>Ticks the head takes to come to a stop while the camera arrives. A second and a half; matches Cinematic.Pan.</summary>
+        public const int DieStop = 90;
+
+        /// <summary>The rise. It turns to face straight up at this rate, in radians a tick, and climbs at this speed until it is at the loop's height.</summary>
+        public const float DieRiseSpeed = 11f;
+        public const float DieRiseTurn = 0.1f;
+
+        /// <summary>
+        /// Room the loop needs. It rises until it finds open air at least DieRoom tiles
+        /// tall above it (the surface, nearly always; a cave that tall will do), and the
+        /// loop sits in that air with this much clearance, in pixels, over the floor and
+        /// under the roof. Already in air that tall, at any height, and it loops where it is.
+        /// </summary>
+        public const float DieClearance = 28f;
+        public const int DieRoom = (int)((DieLoopRadius * 2f + DieClearance * 2f) / 16f) + 1;
+
+        /// <summary>The animal's length along the chain, head centre to tail centre.</summary>
+        public const float ChainLength = HeadSpacing + BodySpacing * (BodySegments - 1) + TailSpacing;
+
+        /// <summary>
+        /// The mouth: how far ahead of the head's centre the piece being eaten sits. The
+        /// same as the neck sits behind it, so the loop is the body plus one link and
+        /// the tail meets the head exactly as the neck does.
+        /// </summary>
+        public const float DieMouth = HeadSpacing;
+
+        /// <summary>The loop with the whole animal on it: its circumference and its radius. It shrinks a link a bite from here.</summary>
+        public const float DieLoop = ChainLength + DieMouth;
+        public const float DieLoopRadius = DieLoop / MathHelper.TwoPi;
+
+        /// <summary>The lap round the loop: speed along it in pixels a tick, and over how many pixels at the end it slows, to this fraction, onto its tail.</summary>
+        public const float DieLapSpeed = 9f;
+        public const float DieLapEase = 140f;
+        public const float DieLapCrawl = 0.35f;
+
+        /// <summary>Which side the loop goes on: the side with fewer solid tiles in its way; a tie goes toward the player. Sampled every this many tiles.</summary>
+        public const int DieSideStep = 2;
+
+        /// <summary>The bite: over the last ticks of a hold the head lunges this far, in pixels, into the piece in its mouth, and nods this much, in radians.</summary>
+        public const int DieBiteTicks = 8;
+        public const float DieLunge = 10f;
+        public const float DieBiteNod = 0.16f;
+
+        /// <summary>
+        /// Ticks each piece takes, whole: the first entries in order, then the last value
+        /// for every one after. The mouth runs through its four frames in four equal
+        /// quarters of it: neutral, opening, wide, and shut, which is the chomp. The
+        /// piece bursts as the mouth shuts, and the head steps forward to the next one
+        /// with it shut, over that last quarter. Two seconds for the first, down to a
+        /// third of a second.
+        /// </summary>
+        public static readonly int[] DiePiece = { 120, 68, 40, 24, 20 };
+
+        /// <summary>The head's sheet: four frames down. Neutral, mouth a little open, wide, shut.</summary>
+        public const int HeadFrames = 4;
+        public const int MouthNeutral = 0, MouthOpen = 1, MouthWide = 2, MouthShut = 3;
+
+        /// <summary>Nearer than this to the player, or to an animal it is after, and the mouth opens a little.</summary>
+        public const float MouthNear = 90f;
+
+        /// <summary>Ticks the mouth stays shut after a bite lands.</summary>
+        public const int ChompTicks = 20;
+
+        /// <summary>Blood from the mouth while it eats: one drop every this many ticks.</summary>
+        public const int DieDripEvery = 4;
+
+        /// <summary>A beat, with nothing left but the head, before the head goes.</summary>
+        public const int DieLast = 24;
+
+        /// <summary>How much of the way the camera moves toward what it should be looking at each tick. It follows the head up and then settles on the loop, and stays there while the head goes round it.</summary>
+        public const float DieLook = 0.07f;
+
+        /// <summary>Droplets when a segment goes, and when the head goes.</summary>
+        public const int DieBurst = 220;
+        public const int DieBurstHead = 300;
+
+        /// <summary>Slowest and fastest a burst droplet leaves, in pixels a tick.</summary>
+        public const float DieBurstLeast = 2.5f;
+        public const float DieBurstMost = 13f;
+
+        /// <summary>Each piece goes with a death cry, this much pitch either side of true so no two are the same.</summary>
+        public const float DieRoarVary = 0.25f;
+
+        /// <summary>The head goes with the roar, dropped this far and this loud, and a shake: strength in pixels, cycles a second, ticks, and how far away it is still felt.</summary>
+        public const float DieRoarPitch = -0.8f;
+        public const float DieRoarVolume = 1.6f;
+        public const float DieRoarShake = 40f;
+        public const float DieRoarShakeRate = 4f;
+        public const int DieRoarShakeTicks = 70;
+        public const float DieRoarShakeReach = 3000f;
+
+        /// <summary>The shake as each segment goes, and as the head goes.</summary>
+        public const float DieShake = 7f;
+        public const float DieShakeHead = 18f;
+        public const int DieShakeTicks = 12;
+        public const int DieShakeHeadTicks = 36;
+
         /// <summary>Contact damage multiplier during the crack at the first segment behind the head. It rises along the body to WhipTailDamage.</summary>
         public const float WhipDamage = 1.25f;
 
@@ -488,20 +697,63 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         // hurt: quicker, aiming at you rather than near you, and whipping as often as it
         // rushes. It announces the change once, low and slow.
 
+        /// <summary>Further than this from the player, in pixels, and it dives and is gone.</summary>
+        public const float LeaveRange = 1000*16f+500f;
+
+        /// <summary>A rush that lands feeds it: this fraction of its full life back, per strike. In the second half it cannot climb back out of it: capped at RagePoint.</summary>
+        public const float RushFeed = 1f / 30f;
+
+        /// <summary>How far it will go for a bunny, in pixels, and how often it looks, in ticks.</summary>
+        public const float PreyRange = 3200f;
+        public const int PreyLook = 15;
+
+        /// <summary>Legends: more of it to get through, and it hits harder. On top of the mode's numbers.</summary>
+        public const float LegendsLife = 1.25f;
+        public const float LegendsDamage = 1.3f;
+
         /// <summary>Health fraction the second half starts at.</summary>
         public const float RagePoint = 0.4f;
 
         /// <summary>Speed AND turn rate multiplier in the second half, so the turning circle is unchanged.</summary>
         public const float RageSpeed = 1.2f;
 
-        /// <summary>Whip roll in the second half: one in this many finished rushes. One is every one.</summary>
-        public const int RageWhipChance = 1;
+        /// <summary>Second half: a whip after every this many finished rushes. Counted, not rolled.</summary>
+        public const int RageWhipEvery = 2;
 
         /// <summary>Least ticks between whips in the second half.</summary>
         public const int RageWhipGap = 240;
 
         /// <summary>The roar at the change: SoundID.Roar this far down in pitch, which also draws it out.</summary>
         public const float RagePitch = -0.7f;
+
+        // ------------------------------------------------------------------ legends --
+        //
+        // Legends: the same fight, meaner. It is quicker; a rush goes for where you
+        // WERE a third of a second ago, so it lands on anyone who does not keep moving;
+        // it whips more often in the first half; and in the second half every rush is
+        // followed by a whip, and a whip by a check: if you have got far away, it comes
+        // for you at once, faster than it has all fight.
+
+        /// <summary>Speed multiplier, chase and rush, on top of everything else.</summary>
+        public const float LegendsSpeed = 1.12f;
+
+        /// <summary>A rush aims at where the player was this many ticks ago.</summary>
+        public const int LegendsRushLag = 20;
+
+        /// <summary>First half: ticks between whips, rolled fresh after each. Fourteen to seventeen seconds, and no coin: when it is time and you are in range, it whips.</summary>
+        public const int LegendsWhipGapLeast = 840;
+        public const int LegendsWhipGapMost = 1020;
+
+        /// <summary>Second half: after every rush, this long, rolled, and then the whip. Four to six seconds.</summary>
+        public const int LegendsRageWhipWaitLeast = 240;
+        public const int LegendsRageWhipWaitMost = 360;
+
+        /// <summary>Second half: this long after the whip it checks where you are, and if you are further than this it rushes at once.</summary>
+        public const int LegendsAfterWhip = 60;
+        public const float LegendsFarRush = 160f * 16f;
+
+        /// <summary>That rush, and its dive, are this much faster again.</summary>
+        public const float LegendsFarRushBoost = 1.5f;
     }
 
     /// <summary>
@@ -1215,8 +1467,106 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             return head >= 0 && head < Main.maxNPCs ? Main.npc[head].ModNPC as AbomanationHead : null;
         }
 
-        /// <summary>Whether any part of this animal is forbidden to touch the player right now: only while it arrives.</summary>
-        public static bool Harmless(NPC npc) => Boss(npc)?.Arriving ?? false;
+        /// <summary>Whether any part of this animal is forbidden to touch the player right now: while it arrives, and while it dies.</summary>
+        public static bool Harmless(NPC npc)
+        {
+            AbomanationHead boss = Boss(npc);
+
+            return boss != null && (boss.Arriving || boss.Dying);
+        }
+
+        /// <summary>Whether this animal is eating itself.</summary>
+        public static bool Dying(NPC npc) => Boss(npc)?.Dying ?? false;
+
+        /// <summary>How far along the chain, from the head's centre, this part's centre sits.</summary>
+        public static float Along(int place)
+        {
+            return place >= Abomanation.BodySegments
+                ? Abomanation.ChainLength
+                : Abomanation.HeadSpacing + Abomanation.BodySpacing * place;
+        }
+
+        /// <summary>How far along the chain the part before this one sits: the head's centre, for the neck.</summary>
+        public static float AlongBefore(int place) => place <= 0 ? 0f : Along(place - 1);
+
+        /// <summary>The part at this place in this head's chain, or null if it has gone.</summary>
+        public static NPC PartAt(int head, int place)
+        {
+            for (int i = 0; i < Main.maxNPCs; i++)
+            {
+                NPC other = Main.npc[i];
+
+                if (!other.active || Head(other) != head || (int)other.ai[3] != place)
+                    continue;
+
+                if (other.ModNPC is AbomanationBody || other.ModNPC is AbomanationTail)
+                    return other;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// The next part to go: the one furthest from the head that is still there.
+        /// Eating runs tail first, so this is always the highest place left, and every
+        /// client works it out the same way from the same synced state.
+        /// </summary>
+        public static NPC NextToGo(int head)
+        {
+            NPC best = null;
+            int bestPlace = -1;
+
+            for (int i = 0; i < Main.maxNPCs; i++)
+            {
+                NPC other = Main.npc[i];
+
+                if (!other.active || Head(other) != head)
+                    continue;
+
+                if (!(other.ModNPC is AbomanationBody) && !(other.ModNPC is AbomanationTail))
+                    continue;
+
+                int place = (int)other.ai[3];
+
+                if (place > bestPlace)
+                {
+                    bestPlace = place;
+                    best = other;
+                }
+            }
+
+            return best;
+        }
+
+        /// <summary>
+        /// A part comes apart. Blood in every direction, fast and slow together so it
+        /// reads as a burst and not a ring, the vanilla dust on top for the clients that
+        /// do not run particles, and a shake sized to the piece.
+        /// </summary>
+        public static void Burst(NPC npc, int droplets, float shake, int shakeTicks)
+        {
+            if (Main.dedServ)
+                return;
+
+            for (int i = 0; i < droplets; i++)
+            {
+                Vector2 way = Main.rand.NextFloat(MathHelper.TwoPi).ToRotationVector2();
+                float speed = Main.rand.NextFloat(Abomanation.DieBurstLeast, Abomanation.DieBurstMost);
+
+                PADParticleHandler.SpawnParticle(new BloodDroplet(
+                    npc.Center + way * Main.rand.NextFloat(npc.width * 0.4f),
+                    way * speed,
+                    Main.rand.Next(34, 66),
+                    Main.rand.NextFloat(0.7f, 1.45f),
+                    Abomanation.Blood));
+            }
+
+            for (int i = 0; i < droplets / 3; i++)
+                Dust.NewDust(npc.position, npc.width, npc.height, DustID.Blood, 0f, 0f, 0, default, 1.4f);
+
+            Main.instance.CameraModifiers.Add(new PunchCameraModifier(npc.Center,
+                Main.rand.NextFloat(MathHelper.TwoPi).ToRotationVector2(), shake, 8f, shakeTicks, 1600f, "Abomanation"));
+        }
 
         /// <summary>Whether this segment is being thrown right now: its head is in the crack.</summary>
         public static bool Lashing(NPC npc)
@@ -1235,6 +1585,150 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         {
             if (Lashing(npc))
                 npc.PAD().CCBypass = true;
+        }
+
+        // ------------------------------------------------------------------ blood --
+
+        /// <summary>
+        /// How hard this hit was, as a multiple of an ordinary one. Everything the blood
+        /// does is scaled by this, so the same code covers a copper shortsword and a
+        /// post-Moon-Lord shot without either looking wrong.
+        /// </summary>
+        private static float Force(NPC.HitInfo hit)
+        {
+            return MathHelper.Clamp(hit.Damage / Abomanation.BloodReference,
+                Abomanation.BloodLeast, Abomanation.BloodMost);
+        }
+
+        /// <summary>
+        /// Where the hit landed, as near as can be worked out: the point on this
+        /// segment's box closest to whatever hit it. Spawning at the centre instead puts
+        /// the spray inside the animal, where half of it is never seen.
+        /// </summary>
+        private static Vector2 Contact(NPC npc, Vector2 from)
+        {
+            return Vector2.Clamp(from, npc.position, npc.position + npc.Size);
+        }
+
+        private static void Drop(Vector2 at, Vector2 velocity, float scale)
+        {
+            PADParticleHandler.SpawnParticle(new BloodDroplet(
+                at, velocity, Main.rand.Next(26, 48), scale, Abomanation.Blood));
+        }
+
+        /// <summary>
+        /// A blade landed. True melee only: OnHitByItem fires for the swung item itself,
+        /// never for anything it threw, so there is nothing else to test for.
+        ///
+        /// The blade lies along the player's item rotation. What comes off it does not
+        /// go along that line, it goes ACROSS it, off the edge, on the side away from the
+        /// arm holding it, in a narrow fan spread along the length of the cut. That is
+        /// what makes it read as a slash rather than a puff: the droplets start in a line
+        /// and leave together.
+        /// </summary>
+        public static void Slashed(NPC npc, Player player, Item item, NPC.HitInfo hit)
+        {
+            if (Main.dedServ)
+                return;
+
+            float force = Force(hit);
+            Vector2 at = Contact(npc, player.Center);
+
+            // A shortsword does not open the same wound a greatsword does. The sprite's
+            // long side is the blade.
+            float span = Abomanation.SlashSpan * MathHelper.Clamp(
+                Math.Max(item.width, item.height) / Abomanation.SlashReach,
+                Abomanation.SlashShortest, Abomanation.SlashLongest);
+
+            // Along the blade, and across it.
+            Vector2 cut = player.itemRotation.ToRotationVector2();
+            Vector2 fling = new Vector2(-cut.Y, cut.X);
+
+            // The edge throws outward, away from the one swinging. Which of the two
+            // perpendiculars that is depends on the swing, so it is decided by where the
+            // animal is rather than by guessing at the animation.
+            if (Vector2.Dot(fling, npc.Center - player.Center) < 0f)
+                fling = -fling;
+
+            int count = (int)(Abomanation.SlashDroplets * force);
+
+            for (int i = 0; i < count; i++)
+            {
+                // Spread along the cut, thickest in the middle of it.
+                float along = (Main.rand.NextFloat() + Main.rand.NextFloat() - 1f) * span * 0.5f;
+
+                float angle = Main.rand.NextFloat(-Abomanation.SlashFan, Abomanation.SlashFan);
+                float speed = Abomanation.SlashSpeed * force * Main.rand.NextFloat(0.6f, 1.25f);
+
+                Drop(at + cut * along,
+                     fling.RotatedBy(angle) * speed,
+                     Main.rand.NextFloat(0.55f, 1f));
+            }
+
+            // A few that run along the cut instead of off it, slower, so the line of the
+            // wound is still readable after the sheet has gone.
+            for (int i = 0; i < Abomanation.SlashTrail; i++)
+            {
+                float side = Main.rand.NextBool() ? 1f : -1f;
+
+                Drop(at + cut * Main.rand.NextFloat(-span * 0.5f, span * 0.5f),
+                     cut * side * Abomanation.SlashSpeed * 0.35f * force + fling * Main.rand.NextFloat(0.5f, 1.5f),
+                     Main.rand.NextFloat(0.4f, 0.7f));
+            }
+        }
+
+        /// <summary>
+        /// Something was shot into it. The streak goes the way the projectile was going,
+        /// times how hard it hit and a share of how fast it was travelling. Around that,
+        /// the spill: slower, much wider, started a little to either side of the hole
+        /// rather than in it, which is what stops the whole thing reading as one jet. A
+        /// little comes back out the way the shot went in.
+        /// </summary>
+        public static void Pierced(NPC npc, Projectile projectile, NPC.HitInfo hit)
+        {
+            if (Main.dedServ)
+                return;
+
+            float force = Force(hit);
+
+            Vector2 way = projectile.velocity.SafeNormalize(Vector2.UnitX);
+            float carried = projectile.velocity.Length() * Abomanation.PierceCarry;
+
+            // The hole is where the projectile is, pulled onto the segment it hit.
+            Vector2 at = Contact(npc, projectile.Center);
+            Vector2 across = new Vector2(-way.Y, way.X);
+
+            int count = (int)(Abomanation.PierceDroplets * force);
+
+            for (int i = 0; i < count; i++)
+            {
+                float angle = Main.rand.NextFloat(-Abomanation.PierceCone, Abomanation.PierceCone);
+                float speed = (Abomanation.PierceSpeed + carried) * force * Main.rand.NextFloat(0.7f, 1.3f);
+
+                Drop(at, way.RotatedBy(angle) * speed, Main.rand.NextFloat(0.5f, 0.95f));
+            }
+
+            int spill = (int)(Abomanation.SpillDroplets * force);
+
+            for (int i = 0; i < spill; i++)
+            {
+                float side = Main.rand.NextFloat(-1f, 1f);
+
+                float angle = Main.rand.NextFloat(-Abomanation.SpillCone, Abomanation.SpillCone);
+                float speed = Abomanation.SpillSpeed * force * Main.rand.NextFloat(0.5f, 1.4f);
+
+                Drop(at + across * side * Abomanation.SpillOffset,
+                     way.RotatedBy(angle) * speed,
+                     Main.rand.NextFloat(0.4f, 0.8f));
+            }
+
+            for (int i = 0; i < Abomanation.BackSpatter; i++)
+            {
+                float angle = Main.rand.NextFloat(-Abomanation.SpillCone, Abomanation.SpillCone);
+                float speed = Abomanation.BackSpatterSpeed * force * Main.rand.NextFloat(0.5f, 1.2f);
+
+                Drop(at, (-way).RotatedBy(angle) * speed, Main.rand.NextFloat(0.35f, 0.6f));
+            }
         }
 
         /// <summary>A body segment or the tail: the parts that wear the outline.</summary>
@@ -1482,7 +1976,16 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             if (!gone)
             {
                 NPC check = Main.npc[ahead];
-                gone = !check.active || check.life <= 0 || (check.type != headType && check.type != bodyType);
+
+                // A leader at no life is a dead leader, except during the end, when the
+                // whole animal is held at one and a part can be a tick behind: vanilla
+                // writes the head's life onto whichever segment took the killing blow
+                // BEFORE the head's CheckDead pins it back to one, so that segment sits
+                // at zero or below until the sweep in CheckDead reaches it. Reading that
+                // as death here took the entire body off the board on the first frame.
+                bool dead = check.life <= 0 && !Dying(npc);
+
+                gone = !check.active || dead || (check.type != headType && check.type != bodyType);
             }
 
             if (gone)

@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PisAndDag.Content.PADplayer;
 using PisAndDag.Content.Particles;
+using ReLogic.Content;
 using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
@@ -128,17 +129,18 @@ namespace PisAndDag.Content.NPCs.Legends
         /// </summary>
         public override bool PreAI(NPC npc)
         {
-            if (!PADWorld.Legends)
-                return true;
-
-            if (baseDamage < 0)
-                baseDamage = npc.damage;
-
+            // Heralds are the King's arrival, and the arrival is not a Legends thing.
             if (Herald)
             {
                 HeraldHop(npc);
                 return false;
             }
+
+            if (!PADWorld.Legends)
+                return true;
+
+            if (baseDamage < 0)
+                baseDamage = npc.damage;
 
             // Zeroing the damage is what takes a passive slime off the town NPCs' target
             // list as well: they pick from things that can actually hurt somebody, so a
@@ -150,6 +152,9 @@ namespace PisAndDag.Content.NPCs.Legends
 
         public override bool CanHitPlayer(NPC npc, Player target, ref int cooldownSlot)
         {
+            if (Herald)
+                return false;
+
             return !PADWorld.Legends || Roused(npc);
         }
 
@@ -228,7 +233,10 @@ namespace PisAndDag.Content.NPCs.Legends
     }
 
     /// <summary>
-    /// The King Slime, in Legends.
+    /// The King Slime. The arrival (the rite: heralds, altar, the mass he comes out
+    /// of) and the death are his in every world; the rest here is Legends only: the
+    /// bigger body, the bigger numbers, the rebuilt fight with the slam and the grab.
+    /// Outside Legends the rite hands him to vanilla's own AI when it is done.
     ///
     /// This is vanilla's own AI_015 rebuilt rather than replaced with something new: the
     /// same countdown, the same four-jump cycle ending in a long one, the same teleport
@@ -411,7 +419,7 @@ namespace PisAndDag.Content.NPCs.Legends
 
         // ---- ritual ---------------------------------------------------------
 
-        private enum Rite { None, Gather, Approach, Rise, Hold, Withdraw, Done }
+        private enum Rite { None, Gather, Approach, Melt, Rise, Hold, Withdraw, Done }
 
         private Rite rite;
         private int riteTimer;
@@ -430,6 +438,27 @@ namespace PisAndDag.Content.NPCs.Legends
 
         private const int RitePan = 90;
         private const int RiteRise = 60;
+
+        /// <summary>
+        /// The heralds becoming him. Each one turns into a blob and slides in; the far
+        /// ones leave first so they all land across the same stretch. Once the last is
+        /// in, a beat with him whole, then he comes out of it. The cap is for a world
+        /// where something went wrong with the blobs; it should never be the exit.
+        /// </summary>
+        private const int MeltSpread = 25;
+        private const int MeltTravelLeast = 40;
+        private const int MeltTravelMost = 65;
+        private const int MeltHold = 20;
+        private const int MeltCap = 300;
+
+        /// <summary>The blobs and the dome, while there are any. Client only.</summary>
+        private SlimeMass mass;
+
+        /// <summary>Ticks since the mass was whole.</summary>
+        private int meltWhole;
+
+        /// <summary>The size he fights at: Legends' bigger body, or the 1.25 vanilla gives him at full health.</summary>
+        private static float TargetScale => PADWorld.Legends ? 1.25f * SizeForMode() : 1.25f;
 
         /// <summary>
         /// Held on him, fully formed, while his plate runs. The name is started by hand
@@ -461,7 +490,7 @@ namespace PisAndDag.Content.NPCs.Legends
         private const float AltarNear = 500f;
         private const float AltarFar = 900f;
 
-        private const float HeraldSpawnNear = 1300f;
+        private const float HeraldSpawnNear = 1050f;
         private const float HeraldSpawnStep = 130f;
 
         /// <summary>How far either side of the altar the crowd is allowed to gather.</summary>
@@ -469,7 +498,7 @@ namespace PisAndDag.Content.NPCs.Legends
 
         private bool InRite => rite != Rite.None && rite != Rite.Done;
 
-        private bool Hidden => rite == Rite.Gather || rite == Rite.Approach;
+        private bool Hidden => rite == Rite.Gather || rite == Rite.Approach || rite == Rite.Melt;
 
         // ---- death ----------------------------------------------------------
         //
@@ -541,7 +570,7 @@ namespace PisAndDag.Content.NPCs.Legends
         {
             // Server-authoritative: it picks the altar and calls up the heralds, and the
             // clients are told where everything ended up by the usual NPC sync.
-            if (!PADWorld.Legends || Main.netMode == NetmodeID.MultiplayerClient)
+            if (Main.netMode == NetmodeID.MultiplayerClient)
                 return;
 
             npc.TargetClosest(false);
@@ -555,6 +584,7 @@ namespace PisAndDag.Content.NPCs.Legends
 
             rite = Rite.Gather;
             riteTimer = 0;
+            meltWhole = 0;
 
             Resize(npc, SeedScale);
             Anchor(npc);
@@ -663,15 +693,15 @@ namespace PisAndDag.Content.NPCs.Legends
 
         public override bool PreAI(NPC npc)
         {
-            if (!PADWorld.Legends)
-                return true;
-
+            // Captured before the rite zeroes it, in every world: vanilla's AI does not
+            // put the damage back, so the rite has to.
             if (baseDamage < 0)
                 baseDamage = npc.damage;
 
             // The death owns the boss outright, ahead of the ritual and the fight both.
             if (dying)
             {
+                Content.Combat.Cinematic.Frame();
                 RunDeath(npc);
                 return false;
             }
@@ -681,6 +711,10 @@ namespace PisAndDag.Content.NPCs.Legends
                 RunRite(npc);
                 return false;
             }
+
+            // Outside Legends the arrival was the whole of it: vanilla fights from here.
+            if (!PADWorld.Legends)
+                return true;
 
             KingAI(npc);
             return false;
@@ -1510,13 +1544,46 @@ namespace PisAndDag.Content.NPCs.Legends
 
                     if (riteTimer >= RitePan)
                     {
-                        Burst();
+                        Melt();
 
-                        // The plate, now. The camera is on the altar and the heralds have
-                        // just gone; the name rises under the seed as he swells out of it.
+                        rite = Rite.Melt;
+                        riteTimer = 0;
+                    }
+
+                    break;
+
+                case Rite.Melt:
+                    Look(altar, 1f);
+
+                    if (mass != null)
+                    {
+                        mass.Update();
+
+                        if (mass.Complete)
+                            meltWhole++;
+                    }
+
+                    // A server has no blobs to wait on and takes the long way round.
+                    bool whole = mass == null ? riteTimer >= MeltCap - MeltHold : meltWhole >= MeltHold;
+
+                    if (whole || riteTimer >= MeltCap)
+                    {
+                        // The plate, now. The camera is on the altar and the mass is
+                        // whole; the name rises under the seed as he swells out of it.
                         // Left to BossPlate's own trigger it would wait for him to be
                         // centred, and a grown King's centre is not the altar.
                         Content.UI.BossIntro.PlayNameOnly(npc.whoAmI, RiteProfile);
+
+                        if (!Main.dedServ)
+                        {
+                            SoundEngine.PlaySound(SoundID.NPCDeath1 with { Pitch = -0.6f, Volume = 0.9f }, altar);
+                            Main.LocalPlayer.PIS().BumpScreenShake(9f, 26);
+                        }
+
+                        // He is his full size from the first frame he is seen; the mass
+                        // was already that size, and it is the skin over him that goes.
+                        Resize(npc, TargetScale);
+                        Anchor(npc);
 
                         rite = Rite.Rise;
                         riteTimer = 0;
@@ -1526,14 +1593,26 @@ namespace PisAndDag.Content.NPCs.Legends
 
                 case Rite.Rise:
                     Look(altar, 1f);
-
-                    Resize(npc, MathHelper.Lerp(SeedScale, 1.25f * SizeForMode(),
-                        Ease(riteTimer / (float)RiteRise)));
-
                     Anchor(npc);
+
+                    // The skin lets go: thins, loosens a little, and is gone, and he is
+                    // what was under it.
+                    if (mass != null)
+                    {
+                        float gone = Ease(riteTimer / (float)RiteRise);
+                        mass.Update();
+                        mass.Alpha = 1f - gone;
+                        mass.Spread = 1f + 0.08f * gone;
+
+                        if (!Main.dedServ && riteTimer % 3 == 0)
+                            SlimeDust(npc.position, npc.width, npc.height, 2, default);
+                    }
 
                     if (riteTimer >= RiteRise)
                     {
+                        mass?.Dispose();
+                        mass = null;
+
                         rite = Rite.Hold;
                         riteTimer = 0;
                     }
@@ -1563,6 +1642,7 @@ namespace PisAndDag.Content.NPCs.Legends
                         npc.noTileCollide = false;
                         npc.noGravity = false;
                         npc.hide = false;
+                        npc.damage = baseDamage;
 
                         // Handed to the jump cycle mid-wind-up, so the fight opens with a
                         // beat of squash rather than with an instant jump.
@@ -1587,9 +1667,6 @@ namespace PisAndDag.Content.NPCs.Legends
         /// </summary>
         public override bool PreDraw(NPC npc, SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
         {
-            if (!PADWorld.Legends)
-                return true;
-
             if (Hidden)
                 return false;
 
@@ -1643,7 +1720,7 @@ namespace PisAndDag.Content.NPCs.Legends
         /// </summary>
         public override bool CheckDead(NPC npc)
         {
-            if (!PADWorld.Legends || dying)
+            if (dying)
                 return true;
 
             dying = true;
@@ -1883,9 +1960,23 @@ namespace PisAndDag.Content.NPCs.Legends
             return here >= HeraldsNeeded;
         }
 
-        /// <summary>Every herald bursts at once and the King is what is left.</summary>
-        private static void Burst()
+        /// <summary>
+        /// Every herald becomes a blob and sets off for the altar. The slime NPCs go;
+        /// what slides in is the mass's own blobs, one per herald and the same size,
+        /// scaled together so that all of them add up to exactly one King. The far
+        /// ones leave first, so they all arrive across the same stretch.
+        /// </summary>
+        private void Melt()
         {
+            if (!Main.dedServ)
+            {
+                NPC sample = ContentSamples.NpcsByNetId[NPCID.KingSlime];
+                float scale = TargetScale;
+
+                mass?.Dispose();
+                mass = new SlimeMass(altar, sample.width * scale, sample.height * scale, HeraldSpread);
+            }
+
             for (int i = 0; i < Main.maxNPCs; i++)
             {
                 NPC slime = Main.npc[i];
@@ -1893,18 +1984,34 @@ namespace PisAndDag.Content.NPCs.Legends
                 if (!slime.active || !slime.TryGetGlobalNPC(out LegendsSlime legends) || !legends.Herald)
                     continue;
 
-                if (!Main.dedServ)
-                    SlimeDust(slime.position, slime.width, slime.height, 24, default);
+                if (mass != null)
+                {
+                    float radius = slime.width * 0.42f;
+                    float away = Math.Abs(slime.Center.X - altar.X);
+                    int delay = (int)MathHelper.Clamp(MeltSpread * (1f - away / HeraldSpread), 0f, MeltSpread) + Main.rand.Next(0, 12);
+                    int travel = Main.rand.Next(MeltTravelLeast, MeltTravelMost);
+
+                    mass.AddBlob(slime.Bottom, radius, delay, travel);
+
+                    // A little wet dust where the slime stops being a slime.
+                    SlimeDust(slime.position, slime.width, slime.height, 5, default);
+                }
 
                 slime.active = false;
                 slime.netUpdate = true;
             }
 
-            if (Main.dedServ)
-                return;
+            mass?.Normalise();
 
-            SoundEngine.PlaySound(SoundID.NPCDeath1 with { Pitch = -0.5f, Volume = 0.9f });
-            Main.LocalPlayer.PIS().BumpScreenShake(9f, 26);
+            if (!Main.dedServ)
+                SoundEngine.PlaySound(SoundID.NPCHit1 with { Pitch = -0.4f, Volume = 0.7f }, altar);
+        }
+
+        /// <summary>The mass on the altar, while there is one. Drawn after the King, so in Rise it is the skin he comes out of.</summary>
+        public override void PostDraw(NPC npc, SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
+        {
+            if (rite == Rite.Melt || rite == Rite.Rise)
+                mass?.Draw(spriteBatch, screenPos);
         }
 
         /// <summary>
@@ -1933,11 +2040,11 @@ namespace PisAndDag.Content.NPCs.Legends
 
         public override bool CanHitPlayer(NPC npc, Player target, ref int cooldownSlot)
         {
-            if (!PADWorld.Legends)
-                return true;
-
             if (InRite)
                 return false;
+
+            if (!PADWorld.Legends)
+                return true;
 
             // Already being drained. Contact damage on top of the grab would be charging
             // twice for the same hit.
@@ -2079,11 +2186,51 @@ namespace PisAndDag.Content.NPCs.Legends
 
             drain = 0;
 
-            Player.Hurt(PlayerDeathReason.ByNPC(HeldBy), DrainPerSecond, 0);
+            // The local player's own hit, the way vanilla deals contact damage; Hurt
+            // tells the others. Through armour entirely: this is not a blow to be
+            // shrugged off with defence, and at twenty a second a suit of anything
+            // turned it into one point, which read as nothing happening at all.
+            if (Player.whoAmI == Main.myPlayer)
+                Player.Hurt(PlayerDeathReason.ByNPC(HeldBy), DrainPerSecond, 0, dodgeable: false, scalingArmorPenetration: 1f);
 
             // Stolen, not merely spent.
             king.life = Math.Min(king.lifeMax, king.life + DrainPerSecond);
             king.HealEffect(DrainPerSecond);
+        }
+    }
+
+    /// <summary>
+    /// The King drawn over whoever he is holding.
+    ///
+    /// Players draw after NPCs, so a held player stood on top of him, which is the
+    /// opposite of being inside him. Vanilla's ninja reads as inside because the body
+    /// is drawn over the ninja, translucent. This is the same trick for the player: a
+    /// player layer past all the others that draws the King's current frame, in his own
+    /// tint and alpha, on top of the player. The body is not drawn twice at full
+    /// strength; only what lies over the player's sprite is covered, and it is his own
+    /// translucency that lets the player show through.
+    /// </summary>
+    public class SlimeGrabOverlay : PlayerDrawLayer
+    {
+        public override Position GetDefaultPosition() => new AfterParent(PlayerDrawLayers.BeetleBuff);
+
+        public override bool GetDefaultVisibility(PlayerDrawSet drawInfo) =>
+            drawInfo.drawPlayer.GetModPlayer<SlimeGrabPlayer>().Held;
+
+        protected override void Draw(ref PlayerDrawSet drawInfo)
+        {
+            SlimeGrabPlayer grab = drawInfo.drawPlayer.GetModPlayer<SlimeGrabPlayer>();
+            NPC king = Main.npc[grab.HeldBy];
+
+            Texture2D texture = TextureAssets.Npc[NPCID.KingSlime].Value;
+            Color light = Lighting.GetColor(king.Center.ToTileCoordinates());
+            Color tint = king.GetAlpha(king.GetNPCColorTintedByBuffs(light));
+
+            Vector2 at = king.Center - Main.screenPosition;
+            Vector2 origin = king.frame.Size() * 0.5f;
+            SpriteEffects flip = king.spriteDirection == 1 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
+
+            drawInfo.DrawDataCache.Add(new DrawData(texture, at, king.frame, tint, king.rotation, origin, king.scale, flip, 0));
         }
     }
 }

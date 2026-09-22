@@ -1472,6 +1472,9 @@ namespace PisAndDag.Content.Structures
             Insert(tasks, "Final Cleanup", new GraceCleanupPass("PAD Grace Cleanup", 40f), before: true);
 
             Insert(tasks, "Final Cleanup", new WastedMileFillPass("PAD Wasted Mile Fill", 60f), before: true);
+
+            // Last, once the ground in front of the Mile is what it will be.
+            Insert(tasks, "Final Cleanup", new MileSignsPass("PAD Mile Signs", 5f), before: true);
         }
 
         /// <summary>Beside the named vanilla pass, or nowhere at all, loudly.</summary>

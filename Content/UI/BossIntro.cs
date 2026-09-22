@@ -320,6 +320,9 @@ namespace PisAndDag.Content.UI
 
             frame++;
 
+            // Every arrival is a shot, universal or the boss's own: the screen narrows for it.
+            Combat.Cinematic.Frame();
+
             BossIntroProfile p = profile;
 
             // The landing is the one event with a sound attached, in either mode.

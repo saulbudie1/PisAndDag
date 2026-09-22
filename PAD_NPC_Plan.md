@@ -286,6 +286,67 @@ same way, so the player learns one signal (`Content/Combat/CCBypass.cs`):
 - **Nothing bypasses quietly.** A new attack that ignores knockback resistance, shields,
   or immunity frames sets the flag or it does not ship.
 
+## 2.8 Drops — **DESIGNED, NOT BUILT**
+
+Everything comes off the animal: a mouth, a hand, a tooth. Nothing here is a generic
+slot-filler, and nothing should be.
+
+**Shape.** Megashark's precedent is one drop, table wiped (`ModifyNPCLoot`). This boss is
+bigger than that, so the decision is explicit: a **material plus recipes**, not a random
+pick from a weapon pool. No RNG, every build served, and the player makes tools out of
+what was people, at a workbench, with quantities. That reading is the point and nobody
+says it out loud (§XXVII).
+
+### Ready to build
+
+| Class | Item | Notes |
+|---|---|---|
+| Melee | **Gaping Jaw** | Left click bites. Captures an NPC under a threshold, which goes **non-lethal** and is dragged; after a hold it is crushed. Second attack is a fast short-range bite, ~30. |
+| Summon | **Joint Arms of the Defiled** | A whip. Carries the blood spill (`AbomanationChain.Slashed`). |
+| Summon | **a hand minion** | **[GAP]** A whip is a tag weapon, not a class. A severed hand that crawls or hauls itself along and grabs things. Without this, summoners get half a reward. |
+| Ranged | **a bow of teeth** | With teeth-tipped arrows as its ammo. |
+| Lore | **the number** | First kill only. The tally-plate says the number and the animal shows what it looks like (§XXI); this is where the player is given it. Uses the existing `LoreLock` system. |
+| | Trophy, mask | A hand nailed to a board; the split head. |
+
+### Tuning notes, so they are not rediscovered
+
+- **Gaping Jaw.** A five-second hold is 300 ticks of one enemy not dying, which is dire
+  DPS unless the crush pays: scale crush damage off the victim's **max HP** and splash it,
+  so walking something fat into a crowd is a decision. A flat 300 HP threshold captures
+  essentially everything pre-Wall and expires in hardmode — a **fraction of max HP** keeps
+  working. Write the release rules early: weapon swap, death, distance, despawn.
+- **The whip.** Vanilla whips run knockback **0 to 1 on purpose** — shoving the target away
+  from your minions is a straight DPS loss. Durendal is 0, Snapthorn is 1. High knockback
+  fights the class. Either drop it and lean on the tag bonus, or keep it and accept this is
+  a *space-control* whip with a weak tag. 35 damage is also high for pre-Wall; Firecracker
+  is 40 and that is post-mech. **22 to 26** with a strong tag.
+- **The arrows.** There is essentially **no lifesteal pre-hardmode in vanilla**, and that is
+  deliberate; 1 to 3 HP an arrow with a fast bow out-heals the tier. Gate it: on crit only,
+  or an internal cooldown, or only below half health. And ammo is a poor trophy — the drop
+  should be the **bow**, with the arrows as its infinite ammo.
+
+### Held back
+
+- **Everhunger** (a long biting mouth along the aim line) and **Court of Hands** (arms out
+  of the ground, slow and damage over time) are **incantations**, and the memory system
+  they need does not exist. See `PAD_Item_Plan.md` §4. They should not ship attached to
+  this boss; the first seal deserves its own introduction rather than arriving as loot.
+  When they do land: both are ground or horizontal, so **the mage kit would have no answer
+  to anything above the player** — one of the two has to go up.
+- **Bewitching table is the summoner station** (+1 minion). Not a mage recipe station.
+
+### Open
+
+- **[GAP] Nothing does the throw.** The most distinctive thing in the fight is the hit no
+  shield stops, and `CCBypass` and `RagdollPlayer` are already built. A player weapon that
+  ragdolls *enemies* along the swing arc, wearing the same yellow, would be the strongest
+  echo of the boss available and most of the machinery exists.
+- **Naming.** *Court of Hands* and *Everhunger* are good. **"Defiled" and "the Wronged"
+  both tell the player these were victims**, and §XXVII says nothing about this animal is
+  explained anywhere in the world — drop names are where a player looks closest.
+- The post-Moon Lord one gets the arsenal. This one gets what a street-length animal can
+  spare, and should drop **less**.
+
 ---
 
 # 2.5 · Boss Checklist
