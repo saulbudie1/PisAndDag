@@ -104,8 +104,8 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         /// <summary>Legends: this dive and rush are the fast one, after a whip found you far off. Synced.</summary>
         private bool farRush;
 
-        /// <summary>Legends: where the player has been, the last LegendsRushLag ticks, so a rush can aim at where they were. Local.</summary>
-        private readonly Vector2[] trace = new Vector2[Abomanation.LegendsRushLag + 1];
+        /// <summary>Where the player has been, the last RushLag ticks, so a rush can aim at where they were. Local.</summary>
+        private readonly Vector2[] trace = new Vector2[Abomanation.RushLag + 1];
         private int traceAt;
         private bool traced;
 
@@ -954,7 +954,7 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             trace[traceAt] = player.Center;
         }
 
-        /// <summary>Where the player was LegendsRushLag ticks ago. Where a Legends rush goes.</summary>
+        /// <summary>Where the player was RushLag ticks ago. Where a rush goes.</summary>
         private Vector2 Lagged => trace[(traceAt + 1) % trace.Length];
 
         // ---------------------------------------------------------------- arrival ----
@@ -1175,9 +1175,9 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
                     return new Vector2(player.Center.X, DiveTarget(player));
 
                 case 2:
-                    // Legends: where you were, not where you are. Stand still and it
-                    // is the same thing.
-                    return new Vector2(PADWorld.Legends ? Lagged.X : player.Center.X, rushTop);
+                    // Where you were a third of a second ago, not where you are. Stand
+                    // still and it is the same thing.
+                    return new Vector2(Lagged.X, rushTop);
 
                 case 3:
                     // Unsteered anyway; this only keeps the rotation pointing the way it

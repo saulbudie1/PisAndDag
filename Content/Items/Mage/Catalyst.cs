@@ -100,7 +100,7 @@ namespace PisAndDag.Content.Items.Mage
                 ? Language.GetTextValue("Mods.PisAndDag.Magic.NothingMemorised")
                 : Language.GetTextValue("Mods.PisAndDag.Magic.Up", cast.DisplayName.Value);
 
-            tooltips.Add(new TooltipLine(Mod, "PADUp", up) { OverrideColor = new Color(160, 160, 160) });
+            tooltips.Add(new TooltipLine(Mod, "PADUp", up));
         }
 
         /// <summary>

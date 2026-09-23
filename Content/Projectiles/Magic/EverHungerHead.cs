@@ -83,6 +83,9 @@ namespace PisAndDag.Content.Projectiles.Magic
         /// <summary>Damage to anything that is not its target.</summary>
         public const float PassingDamage = 2f / 3f;
 
+        /// <summary>The last bite on its target, the one that spends it, is this much.</summary>
+        public const float LastBiteDamage = 2f;
+
         /// <summary>The sprite is 68 by 80; it is drawn at this, and the hitbox is this square, before shrinking.</summary>
         private const float DrawScale = 0.62f;
         private const int HitSize = 34;
@@ -429,8 +432,13 @@ namespace PisAndDag.Content.Projectiles.Magic
 
         public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
         {
-            if (Locked && target.whoAmI != Target)
+            if (!Locked)
+                return;
+
+            if (target.whoAmI != Target)
                 modifiers.SourceDamage *= PassingDamage;
+            else if (Bites == MaxBites - 1)
+                modifiers.SourceDamage *= LastBiteDamage;
         }
 
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)

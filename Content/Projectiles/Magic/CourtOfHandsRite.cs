@@ -174,7 +174,10 @@ namespace PisAndDag.Content.Projectiles.Magic
         /// <summary>Owner only: the hold, the leash, the drain, and the player's arm.</summary>
         private void Drive(Player player)
         {
-            bool holding = player.channel && player.HeldItem?.ModItem is Catalyst;
+            // Only while THIS incantation is the one up on the seal in the hand. Swap
+            // to another and the court is on its own: no hold, no leash, no moving it.
+            bool armed = player.HeldItem?.ModItem is Catalyst seal && seal.Selected(player) is Items.Mage.Incantation.CourtOfHands;
+            bool holding = armed && player.channel;
 
             if (holding)
             {
@@ -203,16 +206,14 @@ namespace PisAndDag.Content.Projectiles.Magic
 
             // A fresh click anywhere while it stands moves it there, leash or no leash,
             // for the cast's own mana again, and its five seconds start over.
-            bool clicking = player.controlUseItem && !player.mouseInterface;
+            bool clicking = armed && player.controlUseItem && !player.mouseInterface;
 
             if (clicking && !wasClicking && FindGround(Main.MouseWorld, out Vector2 clicked))
             {
                 // The item overload works the cost out itself, reductions and all.
                 // The int one multiplies by the reduction AGAIN, so it was paying less
                 // than the seal does.
-                Item held = player.HeldItem;
-
-                if (held?.ModItem is not Catalyst || player.CheckMana(held, -1, true, false))
+                if (player.CheckMana(player.HeldItem, -1, true, false))
                 {
                     target = clicked;
                     Projectile.timeLeft = Duration;

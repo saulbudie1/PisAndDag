@@ -29,7 +29,7 @@ namespace PisAndDag.Content.Projectiles.Mage
         public override string Texture => "PisAndDag/Content/Particles/BloomGeneric";
 
         /// <summary>Seven seconds.</summary>
-        public const int ChargeTicks = 3*60;
+        public const int ChargeTicks = 2*60;
 
         /// <summary>Total mana of the charged throw. The cast's Mana is already paid; the rest is taken on release.</summary>
         public const int ChargedMana = 40;

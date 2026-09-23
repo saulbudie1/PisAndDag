@@ -1,13 +1,16 @@
 using System;
+using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.ModLoader;
 
 namespace PisAndDag.Content.PADplayer
 {
     /// <summary>
-    /// Mana does not come back on its own. Vanilla's regen, which refills the bar for
-    /// standing still, is switched off entirely; what comes back is what accessories
-    /// give, a few points a second, the way life regen is a thing you wear.
+    /// Mana does not come back on its own. Vanilla's regen is switched off entirely;
+    /// what comes back is what accessories give, a few points a second, the way life
+    /// regen is a thing you wear, and a slow trickle for standing still: nothing for
+    /// the first <see cref="StillTicks"/>, then <see cref="StillRegen"/> a second, gone
+    /// the moment you move.
     ///
     /// Vanilla's regen is a counter fed by <c>manaRegen</c> a tick that pays a point
     /// every 120. It is killed by pushing <c>manaRegenBonus</c> far below zero just
@@ -37,11 +40,16 @@ namespace PisAndDag.Content.PADplayer
         /// <summary>Ticks after a cast before the regen is back at its full rate. Three seconds.</summary>
         public const int RampTicks = 180;
 
+        /// <summary>Stood still this long, in ticks, and it starts to come back at this much a second.</summary>
+        public const int StillTicks = 120;
+        public const float StillRegen = 15f;
+
         private const int Bury = 100000;
 
         private float due;
         private int sinceSpend = RampTicks;
         private int lastMana = -1;
+        private int still;
 
         /// <summary>For an accessory: this much more mana a second while it is worn.</summary>
         public static void Add(Player player, float perSecond) =>
@@ -60,6 +68,17 @@ namespace PisAndDag.Content.PADplayer
                 RegenPerSecond += Player.manaRegenBonus * VanillaBonusRate;
 
             Player.manaRegenBonus -= Bury;
+
+            // Standing still: not moving, and not asking to. On a mount, or hanging on
+            // a hook, or in water, you are not standing.
+            bool standing = Player.velocity == Vector2.Zero
+                && !Player.controlLeft && !Player.controlRight && !Player.controlJump
+                && !Player.mount.Active && Player.grappling[0] < 0 && !Player.wet;
+
+            still = standing ? still + 1 : 0;
+
+            if (still >= StillTicks)
+                RegenPerSecond += StillRegen;
         }
 
         public override void PreUpdateMovement()

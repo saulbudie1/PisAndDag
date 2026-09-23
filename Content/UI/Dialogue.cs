@@ -85,7 +85,7 @@ namespace PisAndDag.Content.UI
         // back afterwards, on unload, and around every save. Same care BossIntro takes,
         // and for the same reason.
 
-        private const float SceneZoom = 1.12f;
+        internal const float SceneZoom = 1.12f;
         private const int ZoomTicks = 24;
 
         /// <summary>Letters per tick, when a speaker does not say. Under one, so a line takes a breath to arrive.</summary>
@@ -251,7 +251,7 @@ namespace PisAndDag.Content.UI
             // a Stillness.Register call rather than a second trigger here.
             bool want = Main.LocalPlayer.HasBuff<Stillness>();
 
-            if (want && !holdingZoom && !BossIntro.HoldingZoom)
+            if (want && !holdingZoom && !BossIntro.HoldingZoom && !NPCs.Pugream.EyeFinaleView.HoldingZoom)
             {
                 savedZoom = Main.GameZoomTarget;
                 holdingZoom = true;

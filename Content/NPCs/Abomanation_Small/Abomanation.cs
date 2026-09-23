@@ -700,6 +700,9 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         /// <summary>Further than this from the player, in pixels, and it dives and is gone.</summary>
         public const float LeaveRange = 1000*16f+500f;
 
+        /// <summary>A rush aims at where the player was this many ticks ago, in every mode and both halves. Stand still and it is the same thing.</summary>
+        public const int RushLag = 20;
+
         /// <summary>A rush that lands feeds it: this fraction of its full life back, per strike. In the second half it cannot climb back out of it: capped at RagePoint.</summary>
         public const float RushFeed = 1f / 30f;
 
@@ -728,17 +731,13 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
 
         // ------------------------------------------------------------------ legends --
         //
-        // Legends: the same fight, meaner. It is quicker; a rush goes for where you
-        // WERE a third of a second ago, so it lands on anyone who does not keep moving;
-        // it whips more often in the first half; and in the second half every rush is
+        // Legends: the same fight, meaner. It is quicker; it whips more often in the
+        // first half; and in the second half every rush is
         // followed by a whip, and a whip by a check: if you have got far away, it comes
         // for you at once, faster than it has all fight.
 
         /// <summary>Speed multiplier, chase and rush, on top of everything else.</summary>
         public const float LegendsSpeed = 1.12f;
-
-        /// <summary>A rush aims at where the player was this many ticks ago.</summary>
-        public const int LegendsRushLag = 20;
 
         /// <summary>First half: ticks between whips, rolled fresh after each. Fourteen to seventeen seconds, and no coin: when it is time and you are in range, it whips.</summary>
         public const int LegendsWhipGapLeast = 840;

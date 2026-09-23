@@ -1586,6 +1586,11 @@ A second hand appears in the margins of the record, and it is not recording resu
 
 ![The Abomanation](Content/NPCs/Abomanation_Small/Abomanation_BossChecklist.png)
 
+**Its name.** [LOCKED — built] On the bar and in the arrival it is **Amalgaermis**, and
+under the name, *the starved hundred who merged into one*. "The Abomanation" stays as the
+book's word and the code's. The player only ever sees the other one. The title gives a
+number and a condition and nothing else: not whose hundred, not who starved them.
+
 One subject of the programme is still where they left it.
 
 It is at the mouth of the Mile, where the siege trenches met the ground under the
@@ -1624,6 +1629,14 @@ bottom, and the split is lined with bone: pale, broken, tooth-shaped things that
 not teeth, in two ragged rows, so that when it comes up out of the ground what the
 player sees first is a mouth that opens the wrong way. There are no eyes. It does not
 need them for what it does.
+
+The mouth moves, and it has four ways to be. [LOCKED — the sprites exist.] Closed along
+the split, the rows of bone just showing, while it travels. Parted, the bone pulled a
+little apart, when something it wants is within reach of it: the player, or an animal on
+the Mile. Wide, both halves of the head folded back to the sides and the whole inside of
+it showing, when it rushes up out of the ground. And shut hard, the split pressed into a
+seam, for a moment after it has bitten something. The player learns to read the head
+before they learn anything else about it.
 
 The hands are along the body, and there are more of them than there should be. Small
 red arms, none of them the same length, growing out of the flesh at no particular
@@ -1664,8 +1677,69 @@ When it has taken more than half of what it can take it stops being slow. It roa
 once, low and long, and after that the rush is faster and the whip is not occasional
 any more.
 
+[LOCKED — built] The rest of how it behaves, as it now stands:
+
+- **It eats first.** Any bunny or squirrel within two hundred paces is looked at before
+  the player is, and gone after in a straight line, up onto platforms, through whatever is in the way,
+  until there are none. The animals the player let go to call it are the first thing it
+  does. The player is what is left.
+- **The rush goes where the player was.** It comes up under the spot the player stood on
+  a third of a second before. Standing still is the same as being aimed at. Moving is
+  the only answer, and the animal does not say so.
+- **A rush that lands feeds it.** Every time the head connects on the way up, it gets a
+  thirtieth of itself back. After the roar it cannot feed its way back over the line the
+  roar was at. The fight is therefore not a count of hits, and a player who stands in
+  front of it keeps it alive.
+- **The coil is held.** Before the whip lets go it holds the coil a full second, crawling
+  round it at a third of its pace. That second is the whole of the warning, and it is
+  enough.
+- **It will not follow far.** A player who gets far enough away is not worth the animal's
+  time. It turns down into the ground and is gone.
+
+**[LOCKED — built] Legends.** More of it, and it hits harder. It is a little over a tenth
+quicker. In the first half it whips every fourteen to seventeen seconds, without the coin.
+In the second half every rush is followed by a whip four to six seconds later, and a
+second after every whip it looks for the player. If they have got far off, it comes up
+under where they were at once, half as fast again as anything else it does.
+
 **What it drops** falls where the nearest piece of it was, not where the head was,
 because the head is usually under the ground when it dies.
+
+**How it dies.** [LOCKED — built] Its life running out does not end it. It stops. The
+camera goes to it and the player is held where they stand. It comes up out of the ground,
+straight up into open air, and turns once in a loop the length of itself until its own
+tail is in front of its mouth. Then it eats itself.
+
+Each piece is the same four movements of the mouth: closed, parted, wide, and shut. On
+the shut the piece in its jaws comes apart, and the head moves up one link to the next
+and the ring draws in behind it by the link that is gone. The first piece takes two
+seconds. The last ones take a third of one. There is no gap anywhere in the ring while
+it does this; the body stays at the neck and the tail stays at the mouth until there is
+no tail. The last piece is the neck. Then the head, alone, a beat, and a roar lower than
+the one at the halfway mark, and the ground shakes with it, and the head bursts.
+
+**[PROPOSAL — the reading.]** Nothing the player did finished it. It was ending, and the
+player was the one standing there. Read against §VII: Death cannot finish these, and this one
+found the only thing left that could.
+
+**[OPEN]** Whether it ends, or only stops. The Bible does not say, and the fight should
+not either.
+
+**The signs.** [LOCKED — built] On the cleared ground before the Mile, in any world large
+enough to have one, four signs stand along the way in, five to seventeen paces apart.
+From the far one to the near one:
+
+1. *Proceed at your own risk*
+2. *-It- they is hungry*. The first word is struck through with dashes, and "they" is
+   written after it in red.
+3. *DO NOT ENTER!*
+4. *god bless their poor soul*
+
+**[PROPOSAL — the reading.]** Nobody in the world owns up to them. The second is the one
+that matters: somebody who
+knew called it *it*, and then corrected themselves.
+
+**[OPEN]** Who put them up. The Clothier has never been, by his own account.
 
 **The two of them.** There are two, and the one on the Mile is the small one.
 
@@ -1685,6 +1759,72 @@ nothing before that is a reason for it to.
 **[OPEN]** Whether the second one was finished, or only got further.
 
 **[OPEN]** Whether the hands remember anything. The whip suggests they do not.
+
+#### What It Leaves
+
+Blood is drawn from the Crimson, and from the Mile (§XXIV). Two incantations belong to
+Amalgaermis, and both come to the player once it is dead. Both are Blood. Both are cast
+from a seal. Neither is explained.
+
+**[PROPOSAL — how they are got.]** They unlock on the kill. Not built yet: the boss has
+no loot table, and at present nothing in the world hands either of them out. Whatever the
+mechanism turns out to be, neither should be reachable before Amalgaermis is dead.
+
+**The seal that casts them.** [LOCKED — built] *Clothier's Chatelaine.* A small clasp of
+dark iron, near black with a violet cast, hung with a loop of the same chain and one pale
+lilac stone. A chatelaine is what a house's keeper wore at the belt to carry its keys.
+The Clothier sells it, and Skeletron drops it every time it falls. It casts whichever incantation is up and nothing else. It is the
+same man who knows where the Mile is and what to bring.
+
+**Court of Hands.** [LOCKED — built] Conjuration, Blood.
+
+*The page.* A torn scrap of cream paper with a hand pressed onto it in dark blood,
+fingers spread, the print rimmed in the lighter, wetter red where it soaked in, and one
+drip run off the heel of the palm.
+
+*What it does.* Where the cursor points, it finds the nearest ground, and hands come up
+out of it, three at a time, for five seconds. They are one colour, the red of fresh
+blood, flat, with no skin and no nails: arms to the elbow, the fingers splayed or
+crooked, some bent back at the wrist, each leaning its own way, and each lit round its
+edge with a thin red glow. They come up fast, stand a moment, and go back down. Anything
+over them is run through from below, again and again while it stays. Dark red vapour
+rises off the ground they came out of, and blood runs off each wrist onto it. A second
+click puts the whole court somewhere else. Held down past two seconds, the court follows
+the cursor along the ground and costs mana while it does.
+
+*The flavour line.* 'Can I get a show of hands?'
+
+*What it is.* **[PROPOSAL]** The hands along the body were what was people (above). These are the same
+hands, drawn up out of the ground where the programme put them, without the body. The
+book does not say whether they are the animal's or only its kind. **[OPEN]**
+
+**Everhunger.** [LOCKED — built] Conjuration, Blood.
+
+*The page.* The same torn cream paper, and on it a mouth in dark blood: two ragged lips,
+wide, the pale shapes of bone just visible in the middle of it, rimmed in the wet red,
+with blood run off the bottom.
+
+*What it does.* The caster's chest opens and blood goes out of it every way, and out of
+the blood comes a head. It is the head of Amalgaermis: the same split, the same shape,
+opening and shutting through the same four ways at a steady pace. But it is made of
+blood and nothing else, one flat red all through, no bone in the split, no rim. Where the
+bone would be there is nothing. It glows the same thin red as the court, leaves a faint
+wake of itself behind it, and trails dark red vapour from the back of the neck.
+
+It goes out level, toward whichever side the cursor is on. The first thing it bites is
+the one it wants. It does not go anywhere else after that: it goes on through, turns in
+a loop over the top, and comes back into the same body, each loop a little different
+from the last, like petals round a stem. Every bite, blood goes through and out the far
+side and the ground shakes a little, and the head is smaller for it. On the fifth it is
+spent, and that bite is the hardest. Anything else in its way it bites in passing, for
+less, without turning. If the one it wanted dies first, the head goes with it.
+
+*The flavour line.* 'It is never full. It only runs out.'
+
+*What it is.* **[PROPOSAL]** The animal ate itself down to its head, and then the head went. This is
+the head, and it is still doing the one thing. The caster's blood is what it is made of
+this time. The book says no more than that. **[OPEN]** Whether anything of the animal
+is in it, or only the shape.
 
 ---
 

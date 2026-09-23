@@ -74,18 +74,14 @@ Items: {
 		Tooltip:
 			'''
 			Throws a ball of fire that bursts on what it meets
-			Hold 3 seconds to gather it: twice the size, three times the damage, 40 mana
+			Hold 2 seconds to gather it: twice the size, three times the damage, 40 mana
 			'Enough to set a thing alight. Not much more.'
 			'''
 	}
 
 	SealOfAClothier: {
 		DisplayName: Clothier's Chatelaine
-		Tooltip:
-			'''
-			[c/9e6fab:A Seal]
-			Casts the incantation that is up
-			'''
+		Tooltip: "[c/9e6fab:A Seal]"
 	}
 
 	CourtOfHands: {
@@ -146,6 +142,8 @@ NPCs: {
 	AbomanationHead.DisplayName: Amalgaermis
 	AbomanationBody.DisplayName: Amalgaermis
 	AbomanationTail.DisplayName: Amalgaermis
+	PugreamStanding.DisplayName: Pugream
+	PugreamAtTheEye.DisplayName: Pugream
 }
 
 Biomes: {
