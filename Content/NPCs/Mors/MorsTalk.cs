@@ -43,28 +43,28 @@ namespace PisAndDag.Content.NPCs.Mors
         private const float Pace = 0.4f;
 
         private const string FirstAtGraveyard =
-            "Ah. I thought I saw thee dying, once. Or I did not. O nay, pay it no heed. My mind " +
-            "runs not straight, and hath not for some while. Folk crawl up out of this ground on " +
+            "Ah.|| I thought||, I saw thee dying|||, once. Or I did not.||| O nay,|| pay it no heed. My mind " +
+            "runs not straight||, and hath not for some while. Folk crawl up out of this ground on " +
             "some days. I have watched them at it, and never once been asked to help. This plot " +
             "had feeling in it. It had. Of that much I am near certain.";
 
         private const string FirstAtMonument =
-            "Ah. Thou, as well. I come here often. Or I came here once. I cannot tell which. " +
-            "These flowers have no business in such rock. One stood here a long while. I should " +
+            "Ah.|| Thou, as well. I come here often. Or I came here once. I||| cannot tell which. " +
+            "These flowers have no business in such rock.||| One stood here a long while. I should " +
             "have liked to meet him.";
 
         private const string AskPouch =
-            "He is not here now. That much I can manage. Who he was, I could not say. Ah. Before " +
-            "thou goest. A pouch. Berries in it, or near enough. I set it down somewhere in the " +
-            "cold part of the world. I would have it again, should it cross thy path.";
+            "O. He is not here now. That much I can manage.|| Who he be,|| I could not say.||| Ah. Before " +
+            "thou goest. A pouch.| Berries in it, or near enough. I set it down somewhere||| in the " +
+            "cold dark brick room of the world. I would have it again,| should it cross thy path.";
 
         private const string Thanks =
-            "Mm. Kindly meant. Put thyself to no trouble over it. It is but a pouch, and I have " +
-            "done without. I shall be somewhere when thou hast it. I am always somewhere. That is " +
+            "Mm.|||.||.|. Kindly meant.||| Put thyself to no trouble over it. It is but a pouch, and I|| have " +
+            "done without.||| I shall be somewhere when thou hast it.|| I am always somewhere.||| That much is" +
             "the one thing I can promise thee.";
 
         private const string Shrug =
-            "Aye. That is the sense of it. A man should keep what is his own. The knack never came " +
+            "Right.||.||.||. That is the sense of it. A man should keep what is his own. The knack never came " +
             "to me, and I have had a great while to learn it.";
 
         private const string Resting =
@@ -75,18 +75,18 @@ namespace PisAndDag.Content.NPCs.Mors
             "dost thou know? No matter. It suits thee.";
 
         private const string GraveyardClose =
-            "Mm. That is the right answer, I think. Most do talk.";
+            "Mm.||.||.||. That is the right answer,|| I think. Most do talk.";
 
         private const string Hurt =
-            "Thou art hurt. Fret not over it. It happens. It keeps happening, to all, and still " +
-            "none are used to it.";
+            "Thou art hurt. Fret not over it. It happens. It keeps happening, to all, and still|||| " +
+            "none|| are used to it.";
 
         private const string Known =
             "Ah. It is thee. I think it is thee. Correct me not. I had rather be wrong quietly.";
 
         private const string LostTrack =
-            "A moment. I have lost the thread of myself again. It comes back. Most of it comes " +
-            "back. I no longer count what does not.";
+            "A moment. I have lost the thread of myself again. It cometh back. Most of it shall be" +
+            "back.|| I no longer count what does not.";
 
         private const string HaveWeMetDied =
             "Mm. Thy face is one I have seen. Or one very like it. There are a great many faces, " +
@@ -106,9 +106,9 @@ namespace PisAndDag.Content.NPCs.Mors
             "not. Put it away.";
 
         private const string TheFlowers =
-            "Fireblossom. They open when the heat climbs and shut when it falls, and ask nothing " +
-            "further of any man. They come up only where a thing was finished. Properly finished. " +
-            "What was finished here I never made out, and I have had every chance to ask.";
+            "Fireblossom.||| They bloom when the heat climbs and shut when it falls, and ask nothing " +
+            "further of any man.|| They come up only where a thing was finished.|| Pro|per|ly| finished. " +
+            "What was finished here|| I never made out, and I have had every chance to ask.";
 
         private const string ThePouch =
             "Mm. A pouch. A good one, and the berries have kept, which is a wonder. Nay. I have " +

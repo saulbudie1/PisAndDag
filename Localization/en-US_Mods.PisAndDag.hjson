@@ -19,6 +19,11 @@ Items: {
 		Tooltip: They did not rot. They went soft instead.
 	}
 
+	ReliquaryKey: {
+		DisplayName: Reliquary Key
+		Tooltip: "'Cut for a door that was meant to stay shut.'"
+	}
+
 	GameChangingOrb: {
 		DisplayName: Ominous Orb
 		Tooltip:
@@ -104,6 +109,25 @@ Items: {
 			'It is never full. It only runs out.'
 			'''
 	}
+
+	EssenceOfTheFouled: {
+		DisplayName: Essence of the Fouled
+		Tooltip: "'It ate itself down to this.'"
+	}
+
+	AmalgaermisBag: {
+		DisplayName: Treasure Bag ({$Mods.PisAndDag.NPCs.AbomanationHead.DisplayName})
+		Tooltip: "{$CommonItemTooltip.RightClickToOpen}"
+	}
+
+	MakeshiftAltar: {
+		DisplayName: Makeshift Altar
+		Tooltip:
+			'''
+			Used to write incantations and spells
+			'Nobody blessed it. It works anyway.'
+			'''
+	}
 }
 
 Buffs: {
@@ -111,11 +135,39 @@ Buffs: {
 		DisplayName: Stillness
 		Description: Nothing will spawn near you in this company
 	}
+
+	ManaNausea1: {
+		DisplayName: Mana Nausea I
+		Description: The edges of your sight will not hold still
+	}
+
+	ManaNausea2: {
+		DisplayName: Mana Nausea II
+		Description: Everything swims but you
+	}
+
+	ManaNausea3: {
+		DisplayName: Mana Nausea III
+		Description: Nothing holds still, not even you
+	}
+
+	ManaPoisoning1: {
+		DisplayName: Mana Poisoning I
+		Description: Losing 10 life a second
+	}
+
+	ManaPoisoning2: {
+		DisplayName: Mana Poisoning II
+		Description: Losing 20 life a second, magic damage halved
+	}
 }
+
+DeathText.ManaPoisoning: "{0} drank one potion too many."
 
 Tiles: {
 	Game_Changing_Orb.MapEntry: Ominous Orb
 	BladeOfMorsInStone.MapEntry: Blade Of Mors In Stone
+	MakeshiftAltar.MapEntry: Makeshift Altar
 }
 
 Projectiles: {
@@ -155,12 +207,17 @@ Biomes: {
 
 BossLog: {
 	Megashark.SpawnInfo: Once the three machines have fallen, twenty rounds from a Minishark into the sea. It comes up under you.
-	Abomanation.SpawnInfo: Let small things go on the Wasted Mile. Bunnies, squirrels, red squirrels. None of them get away, and the tenth brings it.
+	Abomanation.SpawnInfo: Let small things run free on the Wasted Mile. Bunnies, squirrels, red squirrels. No rodent will get away, and the tenth brings them.
 }
 
 Hints: {
-	ClothierMile: Across the land, on the side that does not face the sea, there is a mile where nothing calls. I would not let a bunny go there. One goes quiet. Ten go quiet. Then something answers. Hee hee. Not that I have been, you understand.
+	ClothierMile: Far through the lands, opposite the sea, there is a mile where nothing calls. I would not let a bunny go there. One goes quiet. Ten will go quiet. Then something answers. Hee hee. Not that I have been, yknow?
 	Offering: These may satiate one and many.
+	GuideLegends: I feel like the balance of the world is disturbed, I can feel the intangible ominous presence everywhere. Did you do something?
+	GuideArsenal: An incantation does nothing sitting in your pack. You have to learn it by heart first, and I've only ever seen that done near a house someone lives in. Then you say it through a seal. Spells want a staff instead.
+	GuideAltar: Incantations were written, not taught. A book, an altar you could knock together from bones and wood, and something foul to write with. Nobody I've asked knows what.
+	GuideKingdom: Far east, past the field where every tree is a stump, there's a wall taller than any tree ever grew. A kingdom's, my books say. Its gates are still shut. The books don't say who shut them.
+	GuidePilgrim: A man came through here leaning on a bow taller than he was, with a sword on his back too long for him. He told me his name twice, as if the first time might not have taken.
 }
 
 Keybinds: {
@@ -197,5 +254,5 @@ Magic: {
 
 UI: {
 	WorldSizeExtraLarge: Grand
-	WorldDescriptionSizeExtraLarge: 1.5x the size of a large world. (Recommended for Pistol and Dagger)
+	WorldDescriptionSizeExtraLarge: 1.5x the size of a large. New Lore bosses and structures [c/fcbd1c:(Recommended)]
 }

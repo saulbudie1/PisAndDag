@@ -145,8 +145,14 @@ namespace PisAndDag.Content.Particles
             if (Main.dedServ || particles == null)
                 return;
 
-            foreach (PADParticle particle in particles)
+            // By index, and only over what was there when the tick began. A particle may
+            // spawn others from its own Update (a heaved tile lets go of its dust), and
+            // those are added to this list mid-loop: a foreach throws on that. These start
+            // moving on the next tick.
+            int count = particles.Count;
+            for (int i = 0; i < count; i++)
             {
+                PADParticle particle = particles[i];
                 if (particle == null)
                     continue;
 

@@ -7,12 +7,14 @@ using PisAndDag.Content.PADplayer;
 using PisAndDag.Content.Particles;
 using PisAndDag.Content.Structures;
 using PisAndDag.Content.Combat;
+using PisAndDag.Content.Items.Misc;
 using PisAndDag.Content.UI;
 using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
 using Terraria.GameContent;
 using Terraria.GameContent.Bestiary;
+using Terraria.GameContent.ItemDropRules;
 using Terraria.Graphics.CameraModifiers;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -40,7 +42,7 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
     ///
     /// It is called up a long way off (<see cref="Summon"/>) and comes to you through the
     /// surface in a slow wave with the camera on it; the fight starts when the camera is
-    /// back on you. No loot table yet.
+    /// back on you. Its loot is under ModifyNPCLoot and BossLoot.
     /// </summary>
     [AutoloadBossHead]
     public class AbomanationHead : ModNPC
@@ -111,6 +113,12 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
 
         /// <summary>Whether the second half has been announced here. Local: each machine roars once on seeing the health cross.</summary>
         private bool roared;
+
+        /// <summary>Whether the arrival's screech has gone off here. Local: every machine runs the arrival.</summary>
+        private bool screeched;
+
+        /// <summary>Ticks left with the mouth held wide for a screech or a roar. Local, like the rest of the face.</summary>
+        private int roarFace;
 
         // ---- the end. See Die(). All synced. ----
 
@@ -394,6 +402,11 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
                     NPC.alpha = 0;
             }
 
+            // The held face runs out on its own clock, whatever the head is doing: going
+            // too, or it would dig away with its mouth still wide.
+            if (roarFace > 0)
+                roarFace--;
+
             // Nobody left to chase, or nobody close enough to be worth it. Dig, and take
             // the whole body off the board once it is deep enough that nothing is going
             // to see it go. Latched: once it has turned to go, it goes.
@@ -417,15 +430,11 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             if (Enraged && !roared)
             {
                 roared = true;
-                SoundEngine.PlaySound(SoundID.Roar with { Pitch = Abomanation.RagePitch, PitchVariance = 0f, Volume = 1.2f }, NPC.Center);
 
-                // The ground answers it. Felt from most of a screen away.
-                if (Main.netMode != NetmodeID.Server)
-                {
-                    Main.instance.CameraModifiers.Add(new PunchCameraModifier(NPC.Center, new Vector2(0f, -1f),
-                        Abomanation.RageShake, Abomanation.RageShakeRate, Abomanation.RageShakeTicks,
-                        Abomanation.RageShakeReach, "Abomanation"));
-                }
+                // Not over its own end: a blow that takes it from the first half to
+                // nothing in one goes straight to that.
+                if (phase != DyingPhase)
+                    RageRoar();
             }
 
             Trace(player);
@@ -990,13 +999,30 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             if (ground > 0f)
                 arriveBase += (ground - arriveBase) * 0.05f;
 
+            // The screech: last, before the camera comes home. Its wave stands still for
+            // it, so it stays up out of the ash for the whole of it instead of going back
+            // under halfway through, and it rears a little higher and settles again. The
+            // clock the wave runs on is the arrival's less the screech, so it picks up
+            // exactly where it stopped. The same sum on every machine.
+            int screechAt = Abomanation.ScreechAt;
+            int into = arriveTimer - screechAt;
+            bool screeching = into >= 0 && into < Abomanation.ScreechTicks;
+            float clock = arriveTimer - Math.Clamp(into, 0, Abomanation.ScreechTicks);
+
+            if (screeching && !screeched && into < 20)
+            {
+                screeched = true;
+                Screech();
+            }
+
             // Starts at the trough, which is where Summon put it.
-            float theta = arriveTimer * MathHelper.TwoPi / Abomanation.ArrivePeriod + MathHelper.PiOver2;
+            float theta = clock * MathHelper.TwoPi / Abomanation.ArrivePeriod + MathHelper.PiOver2;
             float wave = (float)Math.Sin(theta) * Abomanation.ArriveWave;
-            float slope = (float)Math.Cos(theta) * Abomanation.ArriveWave * MathHelper.TwoPi / Abomanation.ArrivePeriod;
+            float slope = screeching ? 0f : (float)Math.Cos(theta) * Abomanation.ArriveWave * MathHelper.TwoPi / Abomanation.ArrivePeriod;
+            float rear = screeching ? Abomanation.ScreechRear * (float)Math.Sin(MathHelper.Pi * into / Abomanation.ScreechTicks) : 0f;
 
             NPC.velocity.X = arriveDir * Abomanation.ArriveSpeed;
-            NPC.velocity.Y = slope + (arriveBase + wave - NPC.Center.Y) * 0.1f;
+            NPC.velocity.Y = slope + (arriveBase + wave - rear - NPC.Center.Y) * 0.1f;
 
             if (NPC.soundDelay == 0)
             {
@@ -1042,6 +1068,44 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
 
             if (arriveTimer == panOut + Abomanation.ArriveLook && !BossIntro.Running)
                 BossIntro.PlayNameOnly(NPC.whoAmI);
+        }
+
+        /// <summary>
+        /// The screech at the end of the arrival: its own voice (Abomanation.ScreechSound),
+        /// the screen taking it (Cinematic.Roar, at full strength: the camera is on it and
+        /// nothing else is happening), and the mouth wide.
+        /// </summary>
+        private void Screech()
+        {
+            roarFace = Abomanation.ScreechTicks;
+
+            if (Main.dedServ)
+                return;
+
+            Cinematic.Roar(NPC, Abomanation.ScreechTicks, 1f, Abomanation.ScreechSound);
+        }
+
+        /// <summary>
+        /// The second half, announced: low, long and loud. Two voices of the vanilla roar
+        /// at once, the deep one an octave down (its two seconds drawn out to four) and
+        /// the one it has always had under it, both heard at full strength wherever the
+        /// player is; the screen takes it lightly (Cinematic.Roar at RageRoarStrength),
+        /// and the mouth is held wide for all four seconds.
+        ///
+        /// Unlimited instances on both, or a roar already playing (every rush has one)
+        /// would have the new one refused: vanilla's roar lets only one play at a time.
+        /// </summary>
+        private void RageRoar()
+        {
+            roarFace = Abomanation.RageRoarTicks;
+
+            if (Main.dedServ)
+                return;
+
+            SoundEngine.PlaySound(SoundID.Roar with { Pitch = Abomanation.RageDeepPitch, PitchVariance = 0f, Volume = 1f, MaxInstances = 0 });
+            SoundEngine.PlaySound(SoundID.Roar with { Pitch = Abomanation.RagePitch, PitchVariance = 0f, Volume = 0.75f, MaxInstances = 0 });
+
+            Cinematic.Roar(NPC, Abomanation.RageRoarTicks, Abomanation.RageRoarStrength, quiet: true);
         }
 
         /// <summary>Smoothstep. Zero slope at both ends.</summary>
@@ -1639,6 +1703,28 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         // ------------------------------------------------------------------- loot -----
 
         /// <summary>
+        /// Expert and master: a treasure bag for every player who fought it (AmalgaermisBag),
+        /// with the essence in it. Classic: the essence itself, 20 to 25 for every player who
+        /// fought it, each their own stack (PerPlayerDrop). All of it falls where PreKill
+        /// moved the head.
+        /// </summary>
+        public override void ModifyNPCLoot(NPCLoot npcLoot)
+        {
+            npcLoot.Add(ItemDropRule.BossBag(ModContent.ItemType<AmalgaermisBag>()));
+
+            LeadingConditionRule classic = new LeadingConditionRule(new Conditions.NotExpert());
+            classic.OnSuccess(new PerPlayerDrop(ModContent.ItemType<EssenceOfTheFouled>(),
+                EssenceOfTheFouled.PerKillLeast, EssenceOfTheFouled.PerKillMost));
+            npcLoot.Add(classic);
+        }
+
+        /// <summary>Healing Potions, not the Lesser ones vanilla gives a modded boss.</summary>
+        public override void BossLoot(ref int potionType)
+        {
+            potionType = ItemID.HealingPotion;
+        }
+
+        /// <summary>
         /// Drops fall from the part of the animal nearest the nearest player, not from
         /// the head. The head is wherever the last move left it, often deep in the
         /// ground or off the far side of the screen; the body is long enough that some
@@ -2177,10 +2263,11 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         }
 
         /// <summary>
-        /// Which face. Shut for a moment after a bite; wide while it rushes up, while it
-        /// is above ground arriving, and while it rises to die; a little open near the
-        /// player or an animal it is after; neutral otherwise. Eating itself, each piece
-        /// runs the four in order, neutral to shut, and shut is the chomp.
+        /// Which face. Wide through a screech or a roar; shut for a moment after a bite;
+        /// wide while it rushes up, while it is above ground arriving, and while it
+        /// rises to die; a little open near the player or an animal it is after; neutral
+        /// otherwise. Eating itself, each piece runs the four in order, neutral to shut,
+        /// and shut is the chomp.
         /// </summary>
         private int Mouth()
         {
@@ -2209,6 +2296,10 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
                         return Abomanation.MouthNeutral;
                 }
             }
+
+            // Screeching or roaring: wide open, whatever else is going on.
+            if (roarFace > 0)
+                return Abomanation.RoarMouth;
 
             if (chomp > 0)
                 return Abomanation.MouthShut;

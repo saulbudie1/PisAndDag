@@ -402,24 +402,80 @@ namespace PisAndDag.Content.UI
             hovered = -1;
         }
 
+        /// <summary>
+        /// A beat in a line: the speaker stops here for <see cref="PauseTicks"/> before
+        /// going on. Never shown. Two in a row is a longer beat.
+        /// </summary>
+        public const char Pause = '|';
+
+        private const int PauseTicks = 30;
+
+        /// <summary>Where the beats fall, counted in the line's non-space characters, which wrapping does not move.</summary>
+        private static readonly List<int> pauses = new();
+
         private static void SetLine(string text)
         {
             DynamicSpriteFont font = FontAssets.MouseText.Value;
 
-            wrapped = font.CreateWrappedText(text ?? "", PanelWidth - PadX * 2, Language.ActiveCulture.CultureInfo);
+            pauses.Clear();
+
+            var plain = new System.Text.StringBuilder();
+            int ordinal = 0;
+
+            foreach (char c in text ?? "")
+            {
+                if (c == Pause)
+                {
+                    pauses.Add(ordinal);
+                    continue;
+                }
+
+                plain.Append(c);
+
+                if (!char.IsWhiteSpace(c))
+                    ordinal++;
+            }
+
+            wrapped = font.CreateWrappedText(plain.ToString(), PanelWidth - PadX * 2, Language.ActiveCulture.CultureInfo);
             lineStart = Main.GameUpdateCount;
         }
 
-        /// <summary>How much of the line has arrived, in characters.</summary>
+        /// <summary>How much of the line has arrived, in characters, beats included.</summary>
         private static int Arrived()
         {
             // Unsigned: a start still in the future must read as nothing yet, not everything.
             if (Main.GameUpdateCount < lineStart)
                 return 0;
 
-            float arrived = (Main.GameUpdateCount - lineStart) * letters;
+            float budget = (Main.GameUpdateCount - lineStart) * letters;
 
-            return (int)Math.Min(arrived, wrapped.Length);
+            if (pauses.Count == 0)
+                return (int)Math.Min(budget, wrapped.Length);
+
+            float beat = PauseTicks * letters;
+            int ordinal = 0;
+            int next = 0;
+
+            for (int i = 0; i < wrapped.Length; i++)
+            {
+                if (!char.IsWhiteSpace(wrapped[i]))
+                {
+                    while (next < pauses.Count && pauses[next] == ordinal)
+                    {
+                        budget -= beat;
+                        next++;
+                    }
+
+                    ordinal++;
+                }
+
+                if (budget < 1f)
+                    return i;
+
+                budget -= 1f;
+            }
+
+            return wrapped.Length;
         }
 
         /// <summary>The answers to show: registered and allowed, or the replaced set, then Leave.</summary>

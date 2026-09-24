@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Xna.Framework;
+using PisAndDag.Content.Items.Misc;
 using PisAndDag.Content.Projectiles.Magic;
 using Terraria;
 using Terraria.DataStructures;
@@ -47,6 +48,19 @@ namespace PisAndDag.Content.Items.Mage.Incantation
             Vector2 chest = player.MountedCenter + new Vector2(dir * 10f, -4f * player.gravDir);
 
             Projectile.NewProjectile(source, chest, new Vector2(dir * EverHungerHead.Speed, 0f), Shot, damage, knockback, player.whoAmI);
+        }
+
+        /// <summary>How much Essence of the Fouled it is written with.</summary>
+        public const int Essence = 29;
+
+        /// <summary>Written at the Makeshift Altar: Essence of the Fouled and a Book.</summary>
+        public override void AddRecipes()
+        {
+            CreateRecipe()
+                .AddIngredient(ModContent.ItemType<EssenceOfTheFouled>(), Essence)
+                .AddIngredient(ItemID.Book)
+                .AddTile(ModContent.TileType<Content.Tiles.MakeshiftAltar>())
+                .Register();
         }
     }
 }

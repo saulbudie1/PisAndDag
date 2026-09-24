@@ -78,6 +78,22 @@ namespace PisAndDag
         public static bool ArchmageShimmer;
 
         /// <summary>
+        /// Whether the ways into the deep of the Kingdom of Grace are open: the gate at the head
+        /// of the stair under the lowest street, and the door of the chamber at the foot of the
+        /// crack. Both are shut in every world at first, and both open for good the first time
+        /// somebody carrying the Reliquary Key tries either one (GraceSeal). World state: saved,
+        /// sent to joining clients, never per player.
+        /// </summary>
+        public static bool GraceUnsealed;
+
+        /// <summary>
+        /// Whether the Guide has said what he felt when the orb broke. The first time anybody
+        /// talks to him after it breaks, that is what he says; after that it is one of his
+        /// lines (GuideHints). World state: saved, sent to joining clients, never per player.
+        /// </summary>
+        public static bool GuideSpokeOfLegends;
+
+        /// <summary>
         /// Runs whenever a world is loaded or generated, before LoadWorldData.
         /// Without this the static would leak between worlds inside one session — start a
         /// fresh character and it would still think Legends was on from your last world.
@@ -90,6 +106,8 @@ namespace PisAndDag
             DownedAbomanation = false;
             MileOfferings = 0;
             ArchmageShimmer = false;
+            GraceUnsealed = false;
+            GuideSpokeOfLegends = false;
         }
 
         /// <summary>
@@ -120,6 +138,12 @@ namespace PisAndDag
 
             if (ArchmageShimmer)
                 tag["ArchmageShimmer"] = true;
+
+            if (GraceUnsealed)
+                tag["GraceUnsealed"] = true;
+
+            if (GuideSpokeOfLegends)
+                tag["GuideSpokeOfLegends"] = true;
         }
 
         public override void LoadWorldData(TagCompound tag)
@@ -129,6 +153,8 @@ namespace PisAndDag
             DownedAbomanation = tag.ContainsKey("DownedAbomanation");
             MileOfferings = tag.ContainsKey("MileOfferings") ? tag.GetInt("MileOfferings") : 0;
             ArchmageShimmer = tag.ContainsKey("ArchmageShimmer");
+            GraceUnsealed = tag.ContainsKey("GraceUnsealed");
+            GuideSpokeOfLegends = tag.ContainsKey("GuideSpokeOfLegends");
         }
 
         // Brings joining clients in line with the server. Inert in singleplayer, but it
@@ -140,6 +166,8 @@ namespace PisAndDag
             writer.Write(DownedAbomanation);
             writer.Write(MileOfferings);
             writer.Write(ArchmageShimmer);
+            writer.Write(GraceUnsealed);
+            writer.Write(GuideSpokeOfLegends);
         }
 
         public override void NetReceive(BinaryReader reader)
@@ -149,6 +177,8 @@ namespace PisAndDag
             DownedAbomanation = reader.ReadBoolean();
             MileOfferings = reader.ReadInt32();
             ArchmageShimmer = reader.ReadBoolean();
+            GraceUnsealed = reader.ReadBoolean();
+            GuideSpokeOfLegends = reader.ReadBoolean();
         }
     }
 }

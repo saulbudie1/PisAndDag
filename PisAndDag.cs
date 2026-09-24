@@ -1,3 +1,4 @@
+using System.IO;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using Terraria;
@@ -7,6 +8,19 @@ using Terraria.ModLoader;
 
 namespace PisAndDag
 {
+    /// <summary>
+    /// Every packet this mod sends starts with one of these, saying which part of the mod
+    /// it is for. <see cref="PisAndDag.HandlePacket"/> reads it and hands the rest on.
+    /// </summary>
+    public enum PADPacket : byte
+    {
+        /// <summary>The Kingdom of Grace's guard map. See GraceWorld.</summary>
+        Grace,
+
+        /// <summary>Client to server: the Guide has said his line about the orb. See GuideHints.</summary>
+        GuideSpokeOfLegends,
+    }
+
     // Please read https://github.com/tModLoader/tModLoader/wiki/Basic-tModLoader-Modding-Guide#mod-skeleton-contents for more information about the various files in a mod.
     public class PisAndDag : Mod
     {
@@ -20,6 +34,27 @@ namespace PisAndDag
             LoadLegendsFilter();
             LoadWastedMileFilter();
             LoadMorsCloak();
+            LoadManaNauseaFilter();
+        }
+
+        public override void HandlePacket(BinaryReader reader, int whoAmI)
+        {
+            var kind = (PADPacket)reader.ReadByte();
+
+            switch (kind)
+            {
+                case PADPacket.Grace:
+                    Content.Structures.Grace.GraceWorld.HandlePacket(this, reader, whoAmI);
+                    break;
+
+                case PADPacket.GuideSpokeOfLegends:
+                    Content.NPCs.GuideHints.Heard();
+                    break;
+
+                default:
+                    Logger.Warn($"A packet of unknown kind {(byte)kind} came from {whoAmI} and was ignored.");
+                    break;
+            }
         }
 
         // RequestAssetIfExists, not Assets.Request. Request records the asset in the
@@ -97,6 +132,34 @@ namespace PisAndDag
             }
 
             Content.NPCs.Mors.MorsIdle.CloakEffect = cloak;
+        }
+
+        /// <summary>
+        /// What Mana Nausea does to the screen. ManaNauseaScreen switches it on and off from
+        /// the local player's buffs and needs the key in Filters.Scene first; Registered is
+        /// what tells it the key is there. Missing means the buffs are only icons.
+        /// </summary>
+        private void LoadManaNauseaFilter()
+        {
+            if (!RequestAssetIfExists("Effects/ManaNausea", out Asset<Effect> nausea))
+            {
+                Logger.Warn(
+                    "Mana Nausea screen filter disabled: Effects/ManaNausea.xnb is missing. " +
+                    "Compile Effects/ManaNausea.fx with fxcompiler or EasyXnb and place " +
+                    "the .xnb beside it.");
+                return;
+            }
+
+            // "NauseaPass" must match the pass name in the .fx technique block. VeryHigh: the
+            // game's config can raise a threshold (FilterPriorityThreshold) under which
+            // filters are not drawn, and this one is a buff's effect, not scenery.
+            Filters.Scene[Content.Buffs.ManaNauseaScreen.FilterKey] = new Filter(
+                new ScreenShaderData(nausea, "NauseaPass"),
+                EffectPriority.VeryHigh);
+
+            Filters.Scene[Content.Buffs.ManaNauseaScreen.FilterKey].Load();
+
+            Content.Buffs.ManaNauseaScreen.Registered = true;
         }
     }
 }

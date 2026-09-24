@@ -274,10 +274,13 @@ namespace PisAndDag.Content.NPCs.Pugream
                 Snap(npc);
         }
 
-        /// <summary>The moment it stops taking hits: a scream, a burst of it, and the ground shakes.</summary>
+        /// <summary>
+        /// The moment it stops taking hits: a scream, the screen takes it (Cinematic.Roar:
+        /// the rings, the dark, the shake, no camera), and a burst of it.
+        /// </summary>
         private static void Snap(NPC npc)
         {
-            SoundEngine.PlaySound(SoundID.Roar with { Pitch = 0.35f, Volume = 1.1f }, npc.Center);
+            Cinematic.Roar(npc, SnapRoar, 1f, SoundID.Roar with { Pitch = 0.35f, Volume = 1f });
             SoundEngine.PlaySound(SoundID.NPCHit1 with { Pitch = -0.6f }, npc.Center);
 
             for (int i = 0; i < 3; i++)
@@ -289,10 +292,10 @@ namespace PisAndDag.Content.NPCs.Pugream
                     Main.rand.NextFloat(-5f, 5f), Main.rand.NextFloat(-5f, 5f), 0, default, Main.rand.NextFloat(1.1f, 1.8f));
                 dust.noGravity = Main.rand.NextBool(3);
             }
-
-            if (Vector2.Distance(Main.LocalPlayer.Center, npc.Center) < 1600f)
-                Main.LocalPlayer.PIS().BumpScreenShake(9f, 20);
         }
+
+        /// <summary>The scream's length, in ticks. Short: the first dash is right behind it.</summary>
+        private const int SnapRoar = 60;
 
         private void Frenzy(NPC npc)
         {

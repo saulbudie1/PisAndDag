@@ -7,6 +7,7 @@ using PisAndDag.Content.Particles;
 using PisAndDag.Content.UI;
 using ReLogic.Content;
 using Terraria;
+using Terraria.Audio;
 using Terraria.Graphics.CameraModifiers;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -302,6 +303,29 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         public const int ArrivePanBack = 60;
 
         /// <summary>
+        /// The screech: the last thing it does before the camera comes home, this many
+        /// ticks of it, ending as the camera sets off. Its voice (ScreechSound) is two
+        /// seconds, so it fills this; the growl and the breath after it go out with the camera.
+        /// The screen takes it (Cinematic.Roar), the mouth is held wide, and its wave
+        /// stands still for it (AbomanationHead.Arrive), so it stays up out of the ash
+        /// rather than screeching its way back under.
+        /// </summary>
+        public const int ScreechTicks = 120;
+
+        /// <summary>How much higher it rears while it screeches, in pixels, on top of where its wave had it.</summary>
+        public const float ScreechRear = 24f;
+
+        /// <summary>The arrival tick the screech starts on.</summary>
+        public static int ScreechAt => ArriveTicks - ArrivePanBack - ScreechTicks;
+
+        /// <summary>
+        /// The screech's voice, made for it (Content/Sounds/AbomanationScreech.ogg): low and
+        /// rough, a roar with a scream riding on it. A growl first, two seconds of voice
+        /// falling away at the end, then a growl and a breath.
+        /// </summary>
+        public static readonly SoundStyle ScreechSound = new SoundStyle("PisAndDag/Content/Sounds/AbomanationScreech");
+
+        /// <summary>
         /// The whole arrival: pan out, look, the name's flight (rise, read, fly, settle,
         /// the same lengths every boss with a line gets), pan back. 540 at the plate's
         /// current lengths.
@@ -562,11 +586,14 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
 
         // -------------------------------------------------------------- second wind --
 
-        /// <summary>The shake with the roar. Strength in pixels, cycles a second, ticks, and how far away it is still felt.</summary>
-        public const float RageShake = 24f;
-        public const float RageShakeRate = 5f;
-        public const int RageShakeTicks = 45;
-        public const float RageShakeReach = 2400f;
+        /// <summary>
+        /// The roar at the change, on the screen: Cinematic.Roar, four seconds, and
+        /// lighter than a cutscene's (1): it goes off in the middle of the fight and
+        /// should not take the fight away. Its shake is the whole of the shake; the
+        /// ground punch it used to have is gone.
+        /// </summary>
+        public const int RageRoarTicks = 240;
+        public const float RageRoarStrength = 0.45f;
 
         // ---------------------------------------------------------------- the end ---
         //
@@ -643,6 +670,9 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         /// <summary>The head's sheet: four frames down. Neutral, mouth a little open, wide, shut.</summary>
         public const int HeadFrames = 4;
         public const int MouthNeutral = 0, MouthOpen = 1, MouthWide = 2, MouthShut = 3;
+
+        /// <summary>The face held through the screech and the roar: frame 2 counting from 0, the wide one.</summary>
+        public const int RoarMouth = MouthWide;
 
         /// <summary>Nearer than this to the player, or to an animal it is after, and the mouth opens a little.</summary>
         public const float MouthNear = 90f;
@@ -726,7 +756,13 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         /// <summary>Least ticks between whips in the second half.</summary>
         public const int RageWhipGap = 240;
 
-        /// <summary>The roar at the change: SoundID.Roar this far down in pitch, which also draws it out.</summary>
+        /// <summary>
+        /// The roar at the change: SoundID.Roar, twice at once. The deep voice an octave
+        /// down, as low as a sound can be played, which draws its two seconds out to
+        /// four; and under it the voice it has always had, this far down, for the body
+        /// of it. Low, long and loud.
+        /// </summary>
+        public const float RageDeepPitch = -1f;
         public const float RagePitch = -0.7f;
 
         // ------------------------------------------------------------------ legends --

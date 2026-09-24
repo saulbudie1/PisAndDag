@@ -21,7 +21,7 @@ namespace PisAndDag.Content.Structures
         {
             "Proceed at your own risk",
             "I̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶t̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶̶ [c/E02020:they] is hungry",
-            "[c/E02020:DO NOT ENTER!]",
+            "DO NOT ENTER!",
             "god bless their poor souls",
         };
 

@@ -74,8 +74,9 @@ namespace PisAndDag.Content.Structures
 
         /// <summary>
         /// Slots the shrine into vanilla worldgen. Position in the list matters: this has
-        /// to run after the jungle exists and has been grassed, but before the passes that
-        /// scatter clutter, or pots and vines end up sealed inside the walls.
+        /// to run once the spawn point is chosen (the shrine goes at the end of the forest
+        /// round it) and the surface is grassed and planted, so that what it clears away
+        /// is already there to clear.
         /// </summary>
         public override void ModifyWorldGenTasks(List<GenPass> tasks, ref double totalWeight)
         {

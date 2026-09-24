@@ -1,3 +1,4 @@
+using PisAndDag.Content.Combat;
 using PisAndDag.Content.UI;
 using Terraria;
 using Terraria.Audio;
@@ -42,9 +43,11 @@ namespace PisAndDag.Content.NPCs.Legends
 
         // ---- the roar --------------------------------------------------------------
 
-        /// <summary>Held at this for RoarTicks, then PisPlayer decays it at 0.9 a tick.</summary>
-        private const float RoarShake = 16f;
-        private const int RoarTicks = 22;
+        /// <summary>
+        /// The roar's length, in ticks (Cinematic.Roar). The King's eighty for the same
+        /// sound at -0.4, lengthened as the lower pitch lengthens it: 80 x 2^0.15.
+        /// </summary>
+        private const int RoarLength = 89;
 
         /// <summary>The sound the old Breach used, so the Wall keeps the voice it had.</summary>
         private const float RoarVolume = 1f;
@@ -58,8 +61,6 @@ namespace PisAndDag.Content.NPCs.Legends
                 ReturnTicks = Return,
                 ZoomIn = Zoom,
                 HoldShake = 0f,
-                TouchdownShake = RoarShake,
-                TouchdownShakeTicks = RoarTicks,
                 OnTouchdown = Roar,
             });
 
@@ -69,13 +70,24 @@ namespace PisAndDag.Content.NPCs.Legends
             BossPlate.NoWait(NPCID.WallofFlesh);
         }
 
+        /// <summary>
+        /// The name lands and the Wall roars (Cinematic.Roar): the rings out of its mouth,
+        /// the dim, the shake, in its own voice and from where it is. The camera is on it
+        /// at this tick, so it is felt and heard in full. If it is somehow gone, the voice
+        /// alone, where the player is.
+        /// </summary>
         private static void Roar()
         {
             if (Main.dedServ)
                 return;
 
-            SoundEngine.PlaySound(SoundID.ForceRoar with { Volume = RoarVolume, Pitch = RoarPitch },
-                Main.LocalPlayer.Center);
+            SoundStyle voice = SoundID.ForceRoar with { Volume = RoarVolume, Pitch = RoarPitch };
+
+            int wall = NPC.FindFirstNPC(NPCID.WallofFlesh);
+            if (wall >= 0)
+                Cinematic.Roar(Main.npc[wall], RoarLength, 1f, voice);
+            else
+                SoundEngine.PlaySound(voice, Main.LocalPlayer.Center);
         }
     }
 }

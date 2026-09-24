@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PisAndDag.Content.PADplayer;
@@ -10,6 +12,7 @@ using Terraria.DataStructures;
 using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
+using Terraria.ModLoader.IO;
 
 namespace PisAndDag.Content.NPCs.Legends
 {
@@ -86,39 +89,84 @@ namespace PisAndDag.Content.NPCs.Legends
         }
 
         // ---- herald ---------------------------------------------------------
+        //
+        // Called up by the King's arrival (LegendsKingSlime, the rite). Harmless and
+        // immortal, and going one way: to the altar, one hop at a time over the real
+        // ground (SlimeRite), up into its place in the pile there, and, when the pile
+        // goes, into him.
+        //
+        // Every machine works the hops out for itself from the same numbers, so the
+        // crowd moves the same everywhere with only the fields below sent. The server
+        // decides the two things that need one decider: which place each one gets, and
+        // when the rite moves on.
 
-        /// <summary>Called up by the King's arrival. Harmless, immortal, and on rails.</summary>
+        /// <summary>Called up by the King. Everything below means nothing without it.</summary>
         public bool Herald;
 
-        /// <summary>Where this one is headed. Y is the ground line of the altar.</summary>
-        public Vector2 HeraldGoal;
+        /// <summary>The King it came for, by index.</summary>
+        public short King = -1;
 
-        /// <summary>Per-slime jitter, so twenty of them do not move as one animation.</summary>
-        public float HeraldHopScale = 1f;
-        public float HeraldSpeedScale = 1f;
+        /// <summary>Its own dice (SlimeRite.Roll): its size, its stride, every hop and every rest.</summary>
+        public int Seed;
 
-        /// <summary>Ticks before this one sets off.</summary>
-        public int HeraldDelay;
+        /// <summary>Ticks it waits before it sets off.</summary>
+        public short Delay;
 
-        /// <summary>Beats spent sitting on the ground between hops.</summary>
-        public int HeraldRest;
+        /// <summary>Its place in the pile (SlimeRite.Place), or -1 before it has been given one.</summary>
+        public sbyte Slot = -1;
 
-        private int heraldRestTimer;
+        /// <summary>In its place.</summary>
+        public bool Seated;
 
-        private const float HeraldGravity = 0.5f;
-        private const float HeraldFall = 16f;
-        private const float HeraldHopY = 9f;
-        private const float HeraldHopX = 200f;
-        private const float HeraldArrived = 40f;
+        // Its hopping, worked out on every machine alike.
+        private bool grounded;
+        private float landY = float.NaN;
+        private int hops;
+        private int rested;
+        private int restFor;
+        private int goAt;
+        private bool sized;
+
+        // Its shape, for the draw: squash and stretch off how it is moving, and in the
+        // Fuse, where it is on its way into the middle.
+        private int sinceLanding = 60;
+        private float landedHard;
+        private Vector2 squash = Vector2.One;
+        private float lift;
+        private float turn;
+        private bool fromMiddle;
+        private Vector2 middle;
+        private float fade = 1f;
+
+        /// <summary>Near enough the altar to be given its place and jump for it.</summary>
+        private const float ClaimRange = 230f;
 
         /// <summary>
-        /// How long one hop is in the air, derived rather than picked.
-        ///
-        /// A hop rises and falls under HeraldGravity, so its airtime is fixed by the two
-        /// numbers above. Guessing it separately is how the horizontal speed ends up
-        /// mismatched and every hop overshoots the altar.
+        /// Where the hops aim: a ring round the pile, this far out from its middle, so
+        /// each one lands beside the pile and jumps into it rather than landing in it.
         /// </summary>
-        private static float HopTicks(float rise) => 2f * rise / HeraldGravity;
+        private const float WaitNear = 150f;
+        private const float WaitFar = 200f;
+
+        /// <summary>Ticks a landing stays in its shape, and ticks of crouch before a jump.</summary>
+        private const int LandTicks = 9;
+        private const int CrouchTicks = 5;
+
+        /// <summary>The breath it takes on the ground near the altar before the server throws it in.</summary>
+        private const int ClaimBreath = 8;
+
+        /// <summary>
+        /// The last tick a landing was heard. Twenty slimes each making a sound on every
+        /// landing is a hailstorm; one in five ticks is a crowd.
+        /// </summary>
+        private static uint lastPlop;
+
+        /// <summary>How far its hops reach, and how high they go, against the crowd's.</summary>
+        private float Stride => SlimeRite.Roll(Seed, 901, 0.85f, 1.2f);
+        private float Spring => SlimeRite.Roll(Seed, 902, 0.85f, 1.2f);
+
+        /// <summary>The server, or a single player: whoever decides.</summary>
+        private static bool Authority => Main.netMode != NetmodeID.MultiplayerClient;
 
         // ---- ai -------------------------------------------------------------
 
@@ -132,7 +180,7 @@ namespace PisAndDag.Content.NPCs.Legends
             // Heralds are the King's arrival, and the arrival is not a Legends thing.
             if (Herald)
             {
-                HeraldHop(npc);
+                HeraldAI(npc);
                 return false;
             }
 
@@ -158,82 +206,558 @@ namespace PisAndDag.Content.NPCs.Legends
             return !PADWorld.Legends || Roused(npc);
         }
 
-        /// <summary>
-        /// The summoned hop toward the altar.
-        ///
-        /// Tile collision is off and the altar's own Y is treated as the ground line, so
-        /// the arc is real but the terrain is not. Pathing twenty slimes over actual
-        /// ground would strand half of them behind a hill, and the ritual would sit there
-        /// waiting for arrivals that were never coming.
-        /// </summary>
-        private void HeraldHop(NPC npc)
+        /// <summary>A herald is not despawned for being far from everyone: it goes when the King lets it (HeraldAI).</summary>
+        public override bool CheckActive(NPC npc) => !Herald;
+
+        /// <summary>Made a herald of this King. The server's call, at the spawn.</summary>
+        internal void Summon(NPC npc, int king, int seed, int delay)
+        {
+            Herald = true;
+            King = (short)king;
+            Seed = seed;
+            Delay = (short)Math.Clamp(delay, 0, short.MaxValue);
+            Slot = -1;
+            Seated = false;
+
+            npc.netUpdate = true;
+        }
+
+        private void HeraldAI(NPC npc)
         {
             npc.damage = 0;
             npc.dontTakeDamage = true;
-            npc.noTileCollide = true;
             npc.chaseable = false;
+            npc.noTileCollide = true;
 
-            // UpdateNPC applies gravity of its own AFTER the AI runs, so leaving it on
-            // would pull twice per frame and the hop would land in half the airtime the
-            // arc below is built around.
+            // UpdateNPC adds gravity of its own after the AI has run, and the hops add
+            // their own here, the measured amount (SlimeRite.Gravity). Both would land
+            // every hop short of where it was aimed.
             npc.noGravity = true;
+            npc.aiAction = 0;
 
-            if (HeraldDelay > 0)
+            if (!sized)
             {
-                HeraldDelay--;
-                npc.velocity.X = 0f;
+                // Slimes come in sizes. Off the seed, so every machine agrees on it.
+                sized = true;
+                npc.scale = SlimeRite.Roll(Seed, 900, 0.8f, 1.25f);
             }
 
-            npc.velocity.Y += HeraldGravity;
+            LegendsKingSlime king = LegendsKingSlime.Of(King);
 
-            if (npc.velocity.Y > HeraldFall)
-                npc.velocity.Y = HeraldFall;
+            if (king == null || king.Phase == KingRite.None || king.Phase == KingRite.Done)
+            {
+                // No King, or none in the middle of arriving. The server lets it go back
+                // to being a slime; a client that has not heard of him yet just waits.
+                npc.velocity = Vector2.Zero;
 
-            npc.spriteDirection = npc.direction;
+                if (Authority)
+                    Dismiss(npc);
 
-            // Still in the air.
-            if (npc.Bottom.Y < HeraldGoal.Y || npc.velocity.Y < 0f)
                 return;
+            }
 
-            npc.position.Y = HeraldGoal.Y - npc.height;
-            npc.velocity.Y = 0f;
-            npc.velocity.X *= 0.6f;
+            npc.timeLeft = NPC.activeTime;
 
-            if (HeraldDelay > 0)
+            KingRite phase = king.Phase;
+
+            if (phase >= KingRite.Burst)
+            {
+                // It is in him now. The server took it away as he came out; a client
+                // that has not heard yet keeps it out of sight until it does.
+                npc.velocity = Vector2.Zero;
+                fade = 0f;
+
+                if (Authority)
+                    Vanish(npc);
+
                 return;
+            }
 
-            // A beat on the ground between hops, different per slime, so the crowd
-            // arrives as a scatter instead of in lockstep.
-            if (++heraldRestTimer < HeraldRest)
+            fade = 1f;
+            lift = 0f;
+            turn = 0f;
+            fromMiddle = false;
+
+            if (phase == KingRite.Stack || phase == KingRite.Fuse)
+            {
+                if (Slot < 0)
+                {
+                    // Nowhere in the pile for it. Should not happen: every one still out
+                    // was given a place when the camera came (LegendsKingSlime.CallIn).
+                    fade = 0f;
+
+                    if (Authority)
+                        Vanish(npc);
+
+                    return;
+                }
+
+                // Anyone not down yet is simply there. The pile does not wait.
+                if (!Seated)
+                    SitDown(npc, king.Altar, false);
+
+                Heap(npc, king);
                 return;
+            }
 
-            heraldRestTimer = 0;
-
-            float toGoal = HeraldGoal.X - npc.Center.X;
-
-            if (Math.Abs(toGoal) < HeraldArrived)
-                return;
-
-            npc.direction = Math.Sign(toGoal);
-
-            float rise = HeraldHopY * HeraldHopScale;
-
-            // Never overshoot: the last hop is only as long as the distance left, so they
-            // settle onto the altar instead of oscillating across it.
-            float reach = Math.Min(Math.Abs(toGoal), HeraldHopX * HeraldSpeedScale);
-
-            npc.velocity = new Vector2(npc.direction * reach / HopTicks(rise), -rise);
+            Travel(npc, king);
+            Shape(npc);
         }
 
-        /// <summary>True once this herald has reached its place and stopped.</summary>
-        public bool HeraldArrivedAt(NPC npc)
+        /// <summary>The Gather and the Approach: over the land to the altar, then up into its place.</summary>
+        private void Travel(NPC npc, LegendsKingSlime king)
         {
-            return Herald && Math.Abs(HeraldGoal.X - npc.Center.X) < HeraldArrived * 2f;
+            Vector2 altar = king.Altar;
+
+            if (Seated)
+            {
+                Sit(npc, altar);
+                return;
+            }
+
+            if (Slot >= 0)
+            {
+                FlyHome(npc, altar);
+                return;
+            }
+
+            if (!grounded)
+            {
+                Fall(npc, altar);
+                return;
+            }
+
+            npc.velocity = Vector2.Zero;
+            sinceLanding++;
+
+            if (Delay > 0)
+            {
+                Delay--;
+                goAt = int.MaxValue;
+                return;
+            }
+
+            rested++;
+
+            if (Math.Abs(altar.X - npc.Center.X) <= ClaimRange)
+            {
+                // Close. The server gives it a place after a breath and throws it in; a
+                // client crouches and waits to be told where.
+                goAt = Math.Min(restFor, ClaimBreath);
+
+                if (Authority && rested >= goAt)
+                    Claim(npc, king);
+
+                return;
+            }
+
+            goAt = restFor;
+
+            if (rested >= restFor)
+                Hop(npc, altar);
+        }
+
+        /// <summary>
+        /// One hop toward the altar. Aimed at real ground, a stride or what is left of the
+        /// way, whichever is less, and high enough to clear everything in between with a
+        /// slime's own bounce on top: SlimeRite.Launch gives the throw that lands there.
+        /// </summary>
+        private void Hop(NPC npc, Vector2 altar)
+        {
+            int n = hops++;
+
+            float x0 = npc.Center.X;
+            float y0 = npc.Bottom.Y;
+
+            // To the ring round the pile on this one's own side of it, a different spot
+            // on it every hop, so they arrive as a crowd and not in a queue.
+            float from = x0 < altar.X ? -1f : 1f;
+            float goal = altar.X + from * SlimeRite.Roll(Seed, n * 5, WaitNear, WaitFar);
+            float toGo = goal - x0;
+
+            // The far ones hurry.
+            float hurry = MathHelper.Clamp(Math.Abs(toGo) / 700f, 1f, 1.6f);
+            float reach = Math.Min(Math.Abs(toGo), SlimeRite.Roll(Seed, n * 5 + 1, 110f, 190f) * Stride * hurry);
+
+            float x1 = x0 + Math.Sign(toGo) * reach;
+            float y1 = SlimeRite.Ground(x1, y0, out float ground) ? ground : y0;
+
+            float height = (SlimeRite.Roll(Seed, n * 5 + 3, 30f, 50f) + reach * 0.18f) * Spring;
+            float top = Math.Min(SlimeRite.Highest(x0, x1, y0), Math.Min(y0, y1)) - height;
+
+            npc.velocity = SlimeRite.Launch(new Vector2(x0, y0), new Vector2(x1, y1), top, out _);
+
+            grounded = false;
+            landY = y1;
+
+            if (Main.netMode == NetmodeID.Server)
+                npc.netUpdate = true;
+        }
+
+        /// <summary>
+        /// Coming down. A hop knows where it lands; one met in the air (out of the sky, or
+        /// one this machine has only just heard of) looks straight down, near the altar's
+        /// height.
+        /// </summary>
+        private void Fall(NPC npc, Vector2 altar)
+        {
+            npc.velocity.Y = Math.Min(npc.velocity.Y + SlimeRite.Gravity, SlimeRite.MaxFall);
+
+            if (float.IsNaN(landY))
+                landY = SlimeRite.Ground(npc.Center.X, altar.Y, out float ground) ? ground : altar.Y;
+
+            if (npc.velocity.Y > 0f && npc.Bottom.Y + npc.velocity.Y >= landY)
+                Land(npc, landY);
+        }
+
+        private void Land(NPC npc, float ground)
+        {
+            float impact = npc.velocity.Y;
+
+            npc.position.Y = ground - npc.height;
+            npc.velocity = Vector2.Zero;
+
+            grounded = true;
+            landY = float.NaN;
+            rested = 0;
+            restFor = (int)SlimeRite.Roll(Seed, hops * 5 + 2, 6f, 16f);
+            sinceLanding = 0;
+            landedHard = MathHelper.Clamp((impact - 3f) / 9f, 0f, 1f);
+
+            if (impact > 1f)
+                Splat(npc, landedHard);
+        }
+
+        /// <summary>The server gives it the next place in the pile, and throws it there.</summary>
+        private void Claim(NPC npc, LegendsKingSlime king)
+        {
+            int slot = king.TakeSlot();
+
+            if (slot < 0)
+            {
+                // More of them than places. This one goes home.
+                Dismiss(npc);
+                return;
+            }
+
+            Slot = (sbyte)slot;
+            Throw(npc, king.Altar, 26f + 0.08f * Math.Abs(king.Altar.X - npc.Center.X));
+        }
+
+        /// <summary>
+        /// Up and into its place in the pile, from wherever it is, over the top of the
+        /// pile by <paramref name="over"/>. The server's call, and sent; every machine
+        /// flies it the same way from there (FlyHome).
+        /// </summary>
+        internal void Throw(NPC npc, Vector2 altar, float over)
+        {
+            Vector2 from = npc.Bottom;
+            Vector2 to = SlimeRite.Place(altar, Slot);
+            float top = Math.Min(Math.Min(from.Y, to.Y), SlimeRite.Top(altar) - 8f) - over;
+
+            npc.velocity = SlimeRite.Launch(from, to, top, out _);
+
+            grounded = false;
+            Delay = 0;
+            npc.netUpdate = true;
+        }
+
+        /// <summary>On its way into its place. Down onto it the moment it gets there.</summary>
+        private void FlyHome(NPC npc, Vector2 altar)
+        {
+            grounded = false;
+            npc.velocity.Y = Math.Min(npc.velocity.Y + SlimeRite.Gravity, SlimeRite.MaxFall);
+
+            if (npc.velocity.Y > 0f && npc.Bottom.Y + npc.velocity.Y >= SlimeRite.Place(altar, Slot).Y)
+                SitDown(npc, altar, true);
+        }
+
+        /// <summary>Into its place, with a plop when it got there by jumping.</summary>
+        private void SitDown(NPC npc, Vector2 altar, bool jumped)
+        {
+            Vector2 place = SlimeRite.Place(altar, Slot);
+            float impact = npc.velocity.Y;
+
+            npc.position = new Vector2(place.X - npc.width * 0.5f, place.Y - npc.height);
+            npc.velocity = Vector2.Zero;
+
+            Seated = true;
+            grounded = true;
+            landY = float.NaN;
+            sinceLanding = 0;
+            landedHard = jumped ? MathHelper.Clamp((impact - 2f) / 8f, 0.35f, 1f) : 0f;
+
+            if (jumped)
+                Splat(npc, landedHard);
+
+            if (Main.netMode == NetmodeID.Server)
+                npc.netUpdate = true;
+        }
+
+        private void Sit(NPC npc, Vector2 altar)
+        {
+            Vector2 place = SlimeRite.Place(altar, Slot);
+
+            npc.position = new Vector2(place.X - npc.width * 0.5f, place.Y - npc.height);
+            npc.velocity = Vector2.Zero;
+            sinceLanding++;
+        }
+
+        /// <summary>
+        /// Squash and stretch, off how it is moving: drawn out in the air, flattened by a
+        /// landing and flatter for a hard one, and crouched in the moment before it goes.
+        /// Sat in the pile, it breathes.
+        /// </summary>
+        private void Shape(NPC npc)
+        {
+            if (!grounded)
+            {
+                float s = Math.Min(Math.Abs(npc.velocity.Y) / SlimeRite.MaxFall * 0.3f, 0.22f);
+
+                squash = new Vector2(1f - s * 0.6f, 1f + s);
+                turn = MathHelper.Clamp(npc.velocity.X * 0.02f, -0.25f, 0.25f);
+                return;
+            }
+
+            float q = 0f;
+
+            if (sinceLanding < LandTicks)
+            {
+                float left = 1f - sinceLanding / (float)LandTicks;
+                q = (0.15f + 0.25f * landedHard) * left * left;
+            }
+
+            // Crouched for the jump, and held there by a client still waiting to be told.
+            if (!Seated && Slot < 0 && Delay <= 0)
+                q = Math.Max(q, 0.2f * MathHelper.Clamp((rested - (goAt - CrouchTicks)) / (float)CrouchTicks, 0f, 1f));
+
+            if (Seated)
+                q += 0.025f * (float)Math.Sin(Main.GameUpdateCount * 0.2f + Slot * 0.9f);
+
+            squash = new Vector2(1f + q, 1f - q);
+        }
+
+        /// <summary>
+        /// The Stack and the Fuse. In its place, bouncing with the rest (SlimeRite.Bounce),
+        /// and then drawn into the middle, stretched toward it and going faint as it
+        /// goes, the far ones first so they all arrive at once.
+        /// </summary>
+        private void Heap(NPC npc, LegendsKingSlime king)
+        {
+            Vector2 altar = king.Altar;
+            Vector2 place = SlimeRite.Place(altar, Slot);
+            int t = king.PhaseTimer;
+
+            npc.position = new Vector2(place.X - npc.width * 0.5f, place.Y - npc.height);
+            npc.velocity = Vector2.Zero;
+
+            if (king.Phase == KingRite.Stack)
+            {
+                SlimeRite.Bounce(t, SlimeRite.Row(Slot), out lift, out squash);
+                return;
+            }
+
+            // Its middle as it sat at the end of the Stack, crouched, and the pile's.
+            Vector2 crouched = SlimeRite.Crouched;
+            float half = npc.frame.Height * npc.scale * 0.5f;
+            Vector2 from = new Vector2(place.X, place.Y + 4f - half * crouched.Y);
+            Vector2 core = SlimeRite.Core(altar);
+
+            float u = SlimeRite.Drawn(t, Vector2.Distance(from, core));
+
+            if (u >= 1f)
+            {
+                fade = 0f;
+                return;
+            }
+
+            // Pointed at the middle, but never upside down: a slime pulled up is the same
+            // shape as one pulled down, and only one of them looks like a slime.
+            Vector2 toward = core - from;
+            float angle = toward.LengthSquared() > 1f ? MathHelper.WrapAngle(toward.ToRotation() - MathHelper.PiOver2) : 0f;
+
+            if (angle > MathHelper.PiOver2)
+                angle -= MathHelper.Pi;
+            else if (angle < -MathHelper.PiOver2)
+                angle += MathHelper.Pi;
+
+            float k = (float)Math.Pow(u, 1.5);
+            float letGo = Smooth(u * 3f);
+
+            fromMiddle = true;
+            middle = Vector2.Lerp(from, core, (float)Math.Pow(u, 2.2));
+            squash = Vector2.Lerp(crouched, new Vector2(1f - 0.45f * k, 1f + 1.1f * k), letGo);
+            turn = angle * letGo;
+            fade = 1f - 0.3f * k;
+        }
+
+        /// <summary>Not a herald any more: an ordinary slime again, where it stands. The server's call, and sent.</summary>
+        internal void Dismiss(NPC npc)
+        {
+            Release(npc);
+            npc.netUpdate = true;
+        }
+
+        private void Release(NPC npc)
+        {
+            Herald = false;
+            Seated = false;
+            Slot = -1;
+            King = -1;
+
+            npc.noTileCollide = false;
+            npc.noGravity = false;
+            npc.dontTakeDamage = false;
+            npc.chaseable = true;
+            npc.damage = npc.defDamage;
+
+            squash = Vector2.One;
+            lift = 0f;
+            turn = 0f;
+            fromMiddle = false;
+            fade = 1f;
+        }
+
+        /// <summary>Gone: into the King, or with nowhere to be. The server's call, sent at once.</summary>
+        private static void Vanish(NPC npc)
+        {
+            npc.active = false;
+
+            if (Main.netMode == NetmodeID.Server)
+                NetMessage.SendData(MessageID.SyncNPC, -1, -1, null, npc.whoAmI);
+        }
+
+        /// <summary>A landing: a little slime off the bottom of it, and a plop if it came down hard enough to hear.</summary>
+        private static void Splat(NPC npc, float hard)
+        {
+            if (Main.dedServ)
+                return;
+
+            int count = 2 + (int)(hard * 6f);
+
+            for (int i = 0; i < count; i++)
+            {
+                Dust dust = Dust.NewDustDirect(new Vector2(npc.position.X, npc.position.Y + npc.height - 6f), npc.width, 6,
+                    DustID.t_Slime, Main.rand.NextFloat(-2.5f, 2.5f) * (0.5f + hard), Main.rand.NextFloat(-2.5f, -0.5f) * (0.5f + hard),
+                    175, npc.color, Main.rand.NextFloat(0.8f, 1.2f));
+
+                dust.velocity *= 0.8f;
+            }
+
+            if (hard < 0.3f || Main.GameUpdateCount - lastPlop < 5)
+                return;
+
+            lastPlop = Main.GameUpdateCount;
+
+            SoundEngine.PlaySound(SoundID.NPCHit1 with
+            {
+                Volume = 0.2f + 0.3f * hard,
+                Pitch = 0.35f - 0.45f * hard,
+                PitchVariance = 0.15f,
+                MaxInstances = 4,
+            }, npc.Bottom);
+        }
+
+        private static float Smooth(float t)
+        {
+            t = MathHelper.Clamp(t, 0f, 1f);
+            return t * t * (3f - 2f * t);
+        }
+
+        // ---- sync -----------------------------------------------------------
+
+        public override void SendExtraAI(NPC npc, BitWriter bitWriter, BinaryWriter binaryWriter)
+        {
+            bitWriter.WriteBit(Herald);
+
+            if (!Herald)
+                return;
+
+            bitWriter.WriteBit(Seated);
+            binaryWriter.Write(King);
+            binaryWriter.Write(Seed);
+            binaryWriter.Write(Delay);
+            binaryWriter.Write(Slot);
+        }
+
+        public override void ReceiveExtraAI(NPC npc, BitReader bitReader, BinaryReader binaryReader)
+        {
+            bool herald = bitReader.ReadBit();
+
+            if (!herald)
+            {
+                // Let go by the server: a slime again here too.
+                if (Herald)
+                    Release(npc);
+
+                return;
+            }
+
+            bool seated = bitReader.ReadBit();
+
+            Herald = true;
+            King = binaryReader.ReadInt16();
+            Seed = binaryReader.ReadInt32();
+            Delay = binaryReader.ReadInt16();
+
+            sbyte slot = binaryReader.ReadSByte();
+
+            // Sat is sat: a packet sent a moment before this machine saw it land does
+            // not stand it back up.
+            Seated = seated || (Seated && slot == Slot);
+            Slot = slot;
+        }
+
+        // ---- draw -----------------------------------------------------------
+
+        /// <summary>
+        /// A herald, drawn the way vanilla draws a slime — two passes, the sprite faint
+        /// and then in its colour, the frame's bottom four pixels under its feet — with
+        /// the squash, the lean and the lift of whatever it is doing on top. In the Fuse
+        /// it is drawn about its middle, wherever that has got to.
+        /// </summary>
+        public override bool PreDraw(NPC npc, SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
+        {
+            if (!Herald)
+                return true;
+
+            if (fade <= 0.01f)
+                return false;
+
+            Main.instance.LoadNPC(npc.type);
+
+            Texture2D texture = TextureAssets.Npc[npc.type].Value;
+            Rectangle frame = npc.frame;
+            Color light = npc.GetNPCColorTintedByBuffs(drawColor);
+            SpriteEffects flip = npc.spriteDirection == 1 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
+
+            Vector2 at;
+            Vector2 origin;
+
+            if (fromMiddle)
+            {
+                at = middle - screenPos;
+                origin = new Vector2(frame.Width * 0.5f, frame.Height * 0.5f);
+            }
+            else
+            {
+                at = new Vector2(npc.position.X + npc.width / 2, npc.position.Y + npc.height + 4f + npc.gfxOffY - lift) - screenPos;
+                origin = new Vector2(frame.Width * 0.5f, frame.Height);
+            }
+
+            Vector2 scale = squash * npc.scale;
+
+            spriteBatch.Draw(texture, at, frame, npc.GetAlpha(light) * fade, turn, origin, scale, flip, 0f);
+
+            if (npc.color != default)
+                spriteBatch.Draw(texture, at, frame, npc.GetColor(light) * fade, turn, origin, scale, flip, 0f);
+
+            return false;
         }
     }
 
     /// <summary>
-    /// The King Slime. The arrival (the rite: heralds, altar, the mass he comes out
+    /// The King Slime. The arrival (the rite: heralds, altar, the pile he comes out
     /// of) and the death are his in every world; the rest here is Legends only: the
     /// bigger body, the bigger numbers, the rebuilt fight with the slam and the grab.
     /// Outside Legends the rite hands him to vanilla's own AI when it is done.
@@ -394,6 +918,15 @@ namespace PisAndDag.Content.NPCs.Legends
         /// </summary>
         private const float SlamDropLimit = 300f;
 
+        /// <summary>How many tiles the ground heaves out each way from a slam's landing.</summary>
+        private const int SlamWaveReach = 34;
+
+        /// <summary>How far the ground beside the body comes up when a slam lands, in pixels.</summary>
+        private const float SlamWaveLift = 20f;
+
+        /// <summary>Ticks the heave takes to run its whole reach.</summary>
+        private const int SlamWaveSpread = 36;
+
         /// <summary>Where the current climb set off from, so it can be timed exactly.</summary>
         private Vector2 slamStart;
 
@@ -417,88 +950,197 @@ namespace PisAndDag.Content.NPCs.Legends
         private const float StateSlamDrop = 13f;
         private const float StateSlamRecover = 14f;
 
-        // ---- ritual ---------------------------------------------------------
+        // ---- the arrival ----------------------------------------------------
+        //
+        // The heralds come (SlimeRite has the ground and the pile; LegendsSlime the
+        // hopping): over the land from beyond the altar and from behind the player, and
+        // out of the sky in between. Each is given a place in a pile on the altar as it
+        // gets near, and jumps into it. With most of them in, the camera goes over and
+        // any still out are thrown in. The pile settles, bounces as one three times,
+        // higher each time, and crouches; is pulled into its own middle; and he comes
+        // out of it all at once, wobbling into shape. He roars (Cinematic.Roar), his
+        // name comes up, and the fight starts while the camera walks home.
+        //
+        // The server runs it and sends the phase, the timer and the altar (SendExtraAI);
+        // every machine plays it from those, and nothing seen or heard is decided by one
+        // machine alone.
+        //
+        //     GATHER     until 14 are in their places, or ten seconds
+        //     APPROACH   90    the camera goes; anyone still out is thrown in
+        //     STACK     106    settle, three bounces, crouch (SlimeRite)
+        //     FUSE       24    into the middle, and the core alone a moment
+        //     BURST      48    him, wobbling; the crown catches the light; a breath in
+        //     ROAR       80    the roar, and his name coming up under him with it
+        //     HOLD       51    the name flown to the bar and settled
+        //     then the fight, the camera walking home over RiteReturn
 
-        private enum Rite { None, Gather, Approach, Melt, Rise, Hold, Withdraw, Done }
-
-        private Rite rite;
+        private KingRite rite;
         private int riteTimer;
 
-        /// <summary>Where the ritual is staged. Bottom-centre, on the ground.</summary>
+        /// <summary>Where the rite is staged. Bottom centre, on the ground.</summary>
         private Vector2 altar;
 
-        private const int HeraldCount = 20;
+        /// <summary>The phase this machine last played the start of, so each start is played once, on every machine.</summary>
+        private KingRite seen;
 
-        /// <summary>How many have to make it before the camera commits. Not all twenty —
-        /// one stuck straggler should not hold the whole opening hostage.</summary>
-        private const int HeraldsNeeded = 15;
+        private bool glinted;
+        private bool plated;
+        private bool finished;
+
+        /// <summary>This machine's player was in the scene: the camera is walked home for them when it ends.</summary>
+        private bool watching;
+
+        /// <summary>The server's count of places given out in the pile, and of heralds sent out of the sky.</summary>
+        private int slotsTaken;
+        private int skySent;
+
+        /// <summary>Which side of the player the altar went: the far heralds come from beyond it, the rest from behind the player.</summary>
+        private int side = 1;
+
+        /// <summary>How many have to be in their places before the camera goes. Not all twenty: one stuck straggler should not hold the whole opening hostage.</summary>
+        private const int HeraldsNeeded = 14;
 
         /// <summary>Ceiling on the gathering, whatever the heralds are doing.</summary>
-        private const int GatherLimit = 900;
+        private const int GatherLimit = 600;
 
         private const int RitePan = 90;
-        private const int RiteRise = 60;
+
+        /// <summary>After the pan: at most this long for the ones thrown in to land.</summary>
+        private const int ApproachGrace = 90;
+
+        private const int BurstTicks = 48;
+        private const int RoarTicks = 80;
+
+        /// <summary>Into the Burst, when the crown catches the light: as the size has settled.</summary>
+        private const int GlintAt = 18;
 
         /// <summary>
-        /// The heralds becoming him. Each one turns into a blob and slides in; the far
-        /// ones leave first so they all land across the same stretch. Once the last is
-        /// in, a beat with him whole, then he comes out of it. The cap is for a world
-        /// where something went wrong with the blobs; it should never be the exit.
+        /// Held on him while his plate finishes. His name comes up with the roar, the way
+        /// a title card does: started by hand a tick before it (BossIntro.PlayNameOnly,
+        /// on this machine's own count, so a late packet cannot hold it back), and the
+        /// plate's own LOOK is not waited for; the rite was the look. He has no line, so
+        /// the plain plate: rise, fly and settle, less what the roar has already spent,
+        /// and a moment more. Follows the plate's constants.
         /// </summary>
-        private const int MeltSpread = 25;
-        private const int MeltTravelLeast = 40;
-        private const int MeltTravelMost = 65;
-        private const int MeltHold = 20;
-        private const int MeltCap = 300;
+        private const int RiteHold = Content.UI.BossIntro.PlainPlateTicks - Content.UI.BossIntro.PlainLook - RoarTicks + 5;
 
-        /// <summary>The blobs and the dome, while there are any. Client only.</summary>
-        private SlimeMass mass;
+        /// <summary>The camera's walk home once the fight has started, and the zoom let go over the same.</summary>
+        private const int RiteReturn = 60;
 
-        /// <summary>Ticks since the mass was whole.</summary>
-        private int meltWhole;
+        /// <summary>
+        /// How far under the altar he is kept while the pile stands in for him: out of
+        /// the middle of the shot. BossPlate starts an own-arrival boss's name by itself
+        /// once the boss has sat in the middle of the screen for a moment, and the shot
+        /// is on the pile for longer than that; with him there his name would come up
+        /// in the middle of the pile's bounces.
+        /// </summary>
+        private const float SeedDepth = 160f;
+
+        /// <summary>The push in over the name's rise. Small; the zoom is a lean, not a cut.</summary>
+        private const float RiteZoom = 1.15f;
+
+        /// <summary>
+        /// How his plate runs: the plain one, a lean in over the rise, and the zoom let
+        /// go over the camera's walk home.
+        /// </summary>
+        private static readonly Content.UI.BossIntroProfile RiteProfile = new()
+        {
+            ZoomIn = RiteZoom,
+            ReturnTicks = RiteReturn,
+        };
+
+        /// <summary>His size while the pile stands in for him, unseen. Barely a slime, so nothing touches him.</summary>
+        private const float SeedScale = 0.2f;
+
+        /// <summary>How far from the player the altar is looked for, nearest to the ideal first.</summary>
+        private static readonly float[] AltarDistances = { 650f, 560f, 740f, 480f, 820f, 900f };
+
+        /// <summary>The altar's ground is no more than this far above or below the player's feet.</summary>
+        private const float AltarRise = 320f;
+
+        /// <summary>
+        /// The heralds: nine over the land from beyond the altar, three from behind the
+        /// player, eight out of the sky, twenty in all, one for every place in the pile.
+        /// The far ones start just past the edge of the screen and step outward.
+        /// </summary>
+        private const int FarHeralds = 9;
+        private const float FarNear = 520f;
+        private const float FarStep = 60f;
+        private const int BehindHeralds = 3;
+        private const int SkyHeralds = 8;
+
+        /// <summary>The first slime out of the sky, and the gap to each after.</summary>
+        private const int SkyFirst = 20;
+        private const int SkyEvery = 26;
+
+        /// <summary>A player this near the altar is in the scene: camera, bars, held still.</summary>
+        private const float SceneRange = 3500f;
+
+        /// <summary>How far above the altar the camera looks while it is still a pile.</summary>
+        private const float PileFocus = 44f;
+
+        /// <summary>
+        /// The camera's lean, as a zoom counting the player's own: in over the pan,
+        /// closer through the stack, and closer again while it goes into itself. The
+        /// pile is small; this is what makes it the whole shot.
+        /// </summary>
+        private const float LeanNear = 1.35f;
+        private const float LeanClose = 1.5f;
+        private const float LeanFuse = 0.06f;
+
+        /// <summary>How big he is on the first tick of the burst, as a share of himself.</summary>
+        private const float BurstFrom = 0.35f;
+
+        /// <summary>The blue of his middle, lit. And what flies off him when he comes out.</summary>
+        private static readonly Color CoreBlue = new Color(80, 150, 255);
+        private static readonly Color[] BurstSparks = { Color.White, new Color(160, 215, 255), new Color(70, 140, 255) };
+
+        /// <summary>
+        /// Vanilla's crown (Extra 39) is drawn over him at his middle, raised by 70 less
+        /// this for each of his six frames (Main.DrawNPCDirect_Inner), so it rides his
+        /// squash as he bounces.
+        /// </summary>
+        private static readonly float[] CrownRise = { 2f, -6f, 2f, 10f, 2f, 0f };
 
         /// <summary>The size he fights at: Legends' bigger body, or the 1.25 vanilla gives him at full health.</summary>
         private static float TargetScale => PADWorld.Legends ? 1.25f * SizeForMode() : 1.25f;
 
-        /// <summary>
-        /// Held on him, fully formed, while his plate runs. The name is started by hand
-        /// on the burst (BossIntro.PlayNameOnly, in Approach), so the plate's own LOOK
-        /// is not waited for — the approach pan was the look. He has no line, but the
-        /// rite has earned the long plate (RiteProfile.FullPlate): from the burst that
-        /// is rise, read, fly and settle, with the swell (RiteRise, 60) spent inside
-        /// the rise, and a moment before Withdraw. Follows the plate's constants.
-        /// </summary>
-        private const int RiteHold = Content.UI.BossIntro.TitlePlateTicks - Content.UI.BossIntro.TitleLook - RiteRise + 17;
+        private bool InRite => rite != KingRite.None && rite != KingRite.Done;
 
-        /// <summary>The push in over the swell. Small; the zoom is a lean, not a cut.</summary>
-        private const float RiteZoom = 1.15f;
+        /// <summary>Unseen, while the pile stands in for him.</summary>
+        private bool Hidden => rite >= KingRite.Gather && rite <= KingRite.Fuse;
 
         /// <summary>
-        /// How his plate runs: the long one, a lean in over the rise, and the zoom let
-        /// go over the same length as Withdraw's pan, which it roughly rides.
+        /// Not drawn: hidden, or the Burst has been reached but not yet played here. The
+        /// phase changes at the end of one tick and is played at the start of the next,
+        /// and without this he would be seen for the frame between, before his flash.
         /// </summary>
-        private static readonly Content.UI.BossIntroProfile RiteProfile = new()
+        private bool Veiled => Hidden || (rite == KingRite.Burst && seen != KingRite.Burst);
+
+        /// <summary>The server, or a single player: whoever decides.</summary>
+        private static bool Authority => Main.netMode != NetmodeID.MultiplayerClient;
+
+        /// <summary>Where the arrival is, for his heralds.</summary>
+        public KingRite Phase => rite;
+        public int PhaseTimer => riteTimer;
+        public Vector2 Altar => altar;
+
+        /// <summary>The King at this index, if there is one there.</summary>
+        public static LegendsKingSlime Of(int index)
         {
-            FullPlate = true,
-            ZoomIn = RiteZoom,
-            ReturnTicks = RitePan,
-        };
+            if (index < 0 || index >= Main.maxNPCs)
+                return null;
 
-        /// <summary>What the King swells out of. Barely a slime.</summary>
-        private const float SeedScale = 0.2f;
+            NPC npc = Main.npc[index];
 
-        private const float AltarNear = 500f;
-        private const float AltarFar = 900f;
+            if (!npc.active || npc.type != NPCID.KingSlime)
+                return null;
 
-        private const float HeraldSpawnNear = 1050f;
-        private const float HeraldSpawnStep = 130f;
+            return npc.TryGetGlobalNPC(out LegendsKingSlime king) ? king : null;
+        }
 
-        /// <summary>How far either side of the altar the crowd is allowed to gather.</summary>
-        private const float HeraldSpread = 130f;
-
-        private bool InRite => rite != Rite.None && rite != Rite.Done;
-
-        private bool Hidden => rite == Rite.Gather || rite == Rite.Approach || rite == Rite.Melt;
+        /// <summary>The next place in the pile, or -1 when they are all given out. The server's.</summary>
+        internal int TakeSlot() => slotsTaken < SlimeRite.Slots ? slotsTaken++ : -1;
 
         // ---- death ----------------------------------------------------------
         //
@@ -568,9 +1210,9 @@ namespace PisAndDag.Content.NPCs.Legends
 
         public override void OnSpawn(NPC npc, IEntitySource source)
         {
-            // Server-authoritative: it picks the altar and calls up the heralds, and the
-            // clients are told where everything ended up by the usual NPC sync.
-            if (Main.netMode == NetmodeID.MultiplayerClient)
+            // The server's: it picks the altar and calls up the heralds, and the clients
+            // are told the rest by the sync (SendExtraAI).
+            if (!Authority)
                 return;
 
             npc.TargetClosest(false);
@@ -581,35 +1223,87 @@ namespace PisAndDag.Content.NPCs.Legends
                 return;
 
             altar = PickAltar(player);
+            side = altar.X >= player.Center.X ? 1 : -1;
 
-            rite = Rite.Gather;
+            rite = KingRite.Gather;
             riteTimer = 0;
-            meltWhole = 0;
+            slotsTaken = 0;
+            skySent = 0;
 
             Resize(npc, SeedScale);
-            Anchor(npc);
+            Anchor(npc, SeedDepth);
 
-            SummonHeralds(npc);
+            SummonHeralds(npc, player);
 
             npc.netUpdate = true;
         }
 
         /// <summary>
-        /// A patch of ground the stated distance out from the player, on one side or the
-        /// other.
+        /// Somewhere to stand, a little way out from the player: on real ground near the
+        /// height of their feet, not water, and with room above it for all of him when he
+        /// comes. Both sides are tried at each distance, the nearest to the ideal first;
+        /// if nowhere will do, the old way, a guess on one side.
         /// </summary>
         private static Vector2 PickAltar(Player player)
         {
-            float side = Main.rand.NextBool() ? 1f : -1f;
-            float distance = Main.rand.NextFloat(AltarNear, AltarFar);
+            int first = Main.rand.NextBool() ? 1 : -1;
 
-            float x = player.Center.X + side * distance;
+            foreach (float distance in AltarDistances)
+            {
+                for (int k = 0; k < 2; k++)
+                {
+                    int way = k == 0 ? first : -first;
 
-            // Kept well inside the world edge, or a fight near the ocean stages its ritual
-            // out of bounds.
-            x = MathHelper.Clamp(x, 80f * 16f, (Main.maxTilesX - 80) * 16f);
+                    // Kept well inside the world edge, or a fight near the ocean stages
+                    // its rite out of bounds.
+                    float x = MathHelper.Clamp(player.Center.X + way * distance, 80f * 16f, (Main.maxTilesX - 80) * 16f);
 
-            return new Vector2(x, GroundAt(x));
+                    if (!SlimeRite.Ground(x, player.Bottom.Y, out float y, water: false))
+                        continue;
+
+                    if (Math.Abs(y - player.Bottom.Y) > AltarRise || !Room(x, y))
+                        continue;
+
+                    return new Vector2(x, y);
+                }
+            }
+
+            float guess = MathHelper.Clamp(player.Center.X + first * AltarDistances[0], 80f * 16f, (Main.maxTilesX - 80) * 16f);
+
+            return new Vector2(guess, SlimeRite.Ground(guess, player.Bottom.Y, out float ground) ? ground : GroundAt(guess));
+        }
+
+        /// <summary>
+        /// Room for him here, grown: nothing solid where his body will be, and the ground
+        /// a third of the way out either side not far off the middle's, so he does not
+        /// come out of the pile half inside a hill.
+        /// </summary>
+        private static bool Room(float x, float y)
+        {
+            float width = BaseWidth * TargetScale;
+            float height = BaseHeight * TargetScale + 32f;
+
+            int left = (int)((x - width * 0.5f) / 16f);
+            int right = (int)((x + width * 0.5f) / 16f);
+            int top = (int)((y - height) / 16f);
+            int bottom = (int)(y / 16f) - 1;
+
+            for (int i = left; i <= right; i++)
+            {
+                for (int j = top; j <= bottom; j++)
+                {
+                    if (SlimeRite.Blocks(i, j))
+                        return false;
+                }
+            }
+
+            for (int way = -1; way <= 1; way += 2)
+            {
+                if (!SlimeRite.Ground(x + way * width / 3f, y, out float near, water: false) || Math.Abs(near - y) > 48f)
+                    return false;
+            }
+
+            return true;
         }
 
         /// <summary>World Y of the first solid tile under a column.</summary>
@@ -630,62 +1324,162 @@ namespace PisAndDag.Content.NPCs.Legends
         }
 
         /// <summary>
-        /// Nails the King to the altar.
+        /// Nails the King to the altar, or to a point <paramref name="below"/> it.
         ///
         /// Written every tick of the ritual, and paired with noGravity. UpdateNPC adds
         /// gravity after the AI has run, so a boss that merely zeroes its velocity is
         /// still moved a little further down every single frame.
         /// </summary>
-        private void Anchor(NPC npc)
+        private void Anchor(NPC npc, float below = 0f)
         {
             npc.velocity = Vector2.Zero;
             npc.noGravity = true;
             npc.position.X = altar.X - npc.width * 0.5f;
-            npc.position.Y = altar.Y - npc.height;
+            npc.position.Y = altar.Y + below - npc.height;
         }
 
         /// <summary>
-        /// Twenty blue slimes. One kind on purpose: a crowd of colours reads as a zoo,
-        /// and a crowd of the same thing reads as a congregation. They differ in size.
+        /// The heralds that come over the land, sent at the spawn: out past the edge of
+        /// the screen beyond the altar, stepping outward, and from behind the player, so
+        /// they come past. The sky's come later, one at a time (SendSky). Blue slimes
+        /// all: a crowd of colours reads as a zoo, and a crowd of one kind as a
+        /// congregation. They differ in size.
         /// </summary>
-        private void SummonHeralds(NPC king)
+        private void SummonHeralds(NPC king, Player player)
         {
-            for (int i = 0; i < HeraldCount; i++)
+            for (int i = 0; i < FarHeralds; i++)
             {
-                // Alternating sides and stepping outward, then jittered, so they come over
-                // the horizon in a ragged line rather than as one block.
-                float side = i % 2 == 0 ? 1f : -1f;
-                float away = HeraldSpawnNear + i / 2 * HeraldSpawnStep
-                    + Main.rand.NextFloat(-90f, 90f);
+                float x = altar.X + side * (FarNear + i * FarStep + Main.rand.NextFloat(-30f, 30f));
+                SpawnHerald(king, x, GroundUnder(x, altar.Y), Main.rand.Next(0, 40), Vector2.Zero);
+            }
 
-                float x = altar.X + side * away;
-                float y = GroundAt(x) - 48f;
+            for (int i = 0; i < BehindHeralds; i++)
+            {
+                float x = player.Center.X - side * (NPC.sWidth * 0.5f + 140f + i * 110f);
+                SpawnHerald(king, x, GroundUnder(x, player.Bottom.Y), Main.rand.Next(0, 20), Vector2.Zero);
+            }
+        }
 
-                int index = NPC.NewNPC(king.GetSource_FromAI(), (int)x, (int)y, NPCID.BlueSlime);
+        /// <summary>
+        /// The slimes out of the sky, one every SkyEvery ticks from SkyFirst, or all that
+        /// are left at once when the camera comes. They drop from over the top of every
+        /// screen near the altar, somewhere either side of it, onto clear ground; where
+        /// there is no clear sky to fall out of, one comes over the land instead.
+        /// </summary>
+        private void SendSky(NPC king, bool all)
+        {
+            while (skySent < SkyHeralds && (all || riteTimer >= SkyFirst + skySent * SkyEvery))
+            {
+                int i = skySent++;
+                float x = altar.X + (i % 2 == 0 ? -1f : 1f) * Main.rand.NextFloat(140f, 460f);
+                float top = altar.Y - 700f;
 
-                if (index < 0 || index >= Main.maxNPCs)
+                foreach (Player player in Main.ActivePlayers)
+                {
+                    if (!player.dead && Vector2.Distance(player.Center, altar) < SceneRange)
+                        top = Math.Min(top, player.Center.Y - NPC.sHeight * 0.5f - 180f);
+                }
+
+                // Not off the top of the world.
+                top = Math.Max(top, 20f * 16f);
+
+                if (SlimeRite.Ground(x, altar.Y, out float ground) && SlimeRite.Open(x, top, ground - 8f))
+                {
+                    SpawnHerald(king, x, top, 0, new Vector2(0f, 2f));
+                    continue;
+                }
+
+                float far = altar.X + side * (FarNear + (FarHeralds + i) * FarStep);
+                SpawnHerald(king, far, GroundUnder(far, altar.Y), 0, Vector2.Zero);
+            }
+        }
+
+        /// <summary>The ground under this column near this height, or the height itself where there is none to find.</summary>
+        private static float GroundUnder(float x, float nearY) => SlimeRite.Ground(x, nearY, out float y) ? y : nearY;
+
+        /// <summary>One blue slime, feet here, made a herald of this King. The server's.</summary>
+        private static int SpawnHerald(NPC king, float x, float bottom, int delay, Vector2 velocity)
+        {
+            x = MathHelper.Clamp(x, 50f * 16f, (Main.maxTilesX - 50) * 16f);
+
+            int index = NPC.NewNPC(king.GetSource_FromAI(), (int)x, (int)bottom, NPCID.BlueSlime);
+
+            if (index < 0 || index >= Main.maxNPCs)
+                return -1;
+
+            NPC slime = Main.npc[index];
+
+            if (!slime.TryGetGlobalNPC(out LegendsSlime herald))
+            {
+                slime.active = false;
+                return -1;
+            }
+
+            slime.velocity = velocity;
+            herald.Summon(slime, king.whoAmI, Main.rand.Next(), delay);
+
+            return index;
+        }
+
+        /// <summary>This King's heralds still about, and how many of them are in their places.</summary>
+        private static int Heralds(NPC king, out int seated)
+        {
+            int count = 0;
+            seated = 0;
+
+            foreach (NPC slime in Main.ActiveNPCs)
+            {
+                if (!slime.TryGetGlobalNPC(out LegendsSlime herald) || !herald.Herald || herald.King != king.whoAmI)
                     continue;
 
-                NPC slime = Main.npc[index];
+                count++;
 
-                if (!slime.TryGetGlobalNPC(out LegendsSlime legends))
+                if (herald.Seated)
+                    seated++;
+            }
+
+            return count;
+        }
+
+        /// <summary>
+        /// The camera is coming: everyone not yet given a place is given one and thrown
+        /// at it, from wherever they are, high enough to be seen coming.
+        /// </summary>
+        private void CallIn(NPC king)
+        {
+            foreach (NPC slime in Main.ActiveNPCs)
+            {
+                if (!slime.TryGetGlobalNPC(out LegendsSlime herald) || !herald.Herald || herald.King != king.whoAmI)
                     continue;
 
-                legends.Herald = true;
+                if (herald.Seated || herald.Slot >= 0)
+                    continue;
 
-                // Their own spot in the crowd, not one shared point every slime stacks on.
-                legends.HeraldGoal = new Vector2(
-                    altar.X + Main.rand.NextFloat(-HeraldSpread, HeraldSpread), altar.Y);
+                int slot = TakeSlot();
 
-                legends.HeraldHopScale = Main.rand.NextFloat(0.75f, 1.35f);
-                legends.HeraldSpeedScale = Main.rand.NextFloat(0.7f, 1.3f);
-                legends.HeraldDelay = Main.rand.Next(0, 90);
-                legends.HeraldRest = Main.rand.Next(0, 14);
+                if (slot < 0)
+                {
+                    herald.Dismiss(slime);
+                    continue;
+                }
 
-                // Slimes come in sizes. Twenty identical ones read as a copy-paste.
-                slime.scale *= Main.rand.NextFloat(0.7f, 1.4f);
+                herald.Slot = (sbyte)slot;
+                herald.Throw(slime, altar, Math.Min(40f + 0.25f * Math.Abs(slime.Center.X - altar.X), 420f));
+            }
+        }
 
-                slime.netUpdate = true;
+        /// <summary>The pile is him now: the heralds go, all at once, and everyone is told.</summary>
+        private static void TakeHeralds(NPC king)
+        {
+            foreach (NPC slime in Main.ActiveNPCs)
+            {
+                if (!slime.TryGetGlobalNPC(out LegendsSlime herald) || !herald.Herald || herald.King != king.whoAmI)
+                    continue;
+
+                slime.active = false;
+
+                if (Main.netMode == NetmodeID.Server)
+                    NetMessage.SendData(MessageID.SyncNPC, -1, -1, null, slime.whoAmI);
             }
         }
 
@@ -711,6 +1505,10 @@ namespace PisAndDag.Content.NPCs.Legends
                 RunRite(npc);
                 return false;
             }
+
+            // The rite is over: he is put back to himself, once, on every machine.
+            if (rite == KingRite.Done && !finished)
+                Finish(npc);
 
             // Outside Legends the arrival was the whole of it: vanilla fights from here.
             if (!PADWorld.Legends)
@@ -1120,19 +1918,29 @@ namespace PisAndDag.Content.NPCs.Legends
         }
 
         /// <summary>
+        /// His size before scale: vanilla's own numbers, the ones AI_015 resizes him with.
+        ///
+        /// Not ContentSamples' King. SetDefaults multiplies the width and height by the
+        /// scale it sets (1.25 for him), so the sample is already scaled, and a second
+        /// scale on top made him a quarter too big for his own sprite: a hitbox reaching
+        /// into thin air over his head, the ninja too high inside him, and vanilla's
+        /// crown, which is placed off his middle, floating over his head.
+        /// </summary>
+        private const float BaseWidth = 98f;
+        private const float BaseHeight = 92f;
+
+        /// <summary>
         /// Anchored bottom-centre, the way the vanilla King Slime resizes itself. Growing
         /// from the top-left corner instead would drive it through the floor.
         /// </summary>
         private static void Resize(NPC npc, float scale)
         {
-            NPC sample = ContentSamples.NpcsByNetId[NPCID.KingSlime];
-
             float bottomX = npc.position.X + npc.width * 0.5f;
             float bottomY = npc.position.Y + npc.height;
 
             npc.scale = scale;
-            npc.width = Math.Max(2, (int)(sample.width * scale));
-            npc.height = Math.Max(2, (int)(sample.height * scale));
+            npc.width = Math.Max(2, (int)(BaseWidth * scale));
+            npc.height = Math.Max(2, (int)(BaseHeight * scale));
 
             npc.position.X = bottomX - npc.width * 0.5f;
             npc.position.Y = bottomY - npc.height;
@@ -1376,6 +2184,13 @@ namespace PisAndDag.Content.NPCs.Legends
 
             Land(npc, 1f);
 
+            // The floor heaves out from under it both ways in a wave that dies as it runs,
+            // and a fog of its own dust rolls off it. Only on a real landing: a drop that
+            // ran out over a pit has no floor under it to move, and a catch is made on the
+            // player, not on the ground.
+            if (landed)
+                GroundWave.Slam(npc.Bottom, npc.width * 0.5f, SlamWaveReach, SlamWaveLift, SlamWaveSpread);
+
             slamTries++;
 
             if (slamTries >= SlamTries)
@@ -1470,9 +2285,18 @@ namespace PisAndDag.Content.NPCs.Legends
         /// </summary>
         private static void GroundDust(NPC npc, float weight)
         {
-            int row = (int)((npc.position.Y + npc.height + 4f) / 16f);
-            int from = (int)(npc.position.X / 16f);
-            int to = (int)((npc.position.X + npc.width) / 16f);
+            GroundDust(npc.position.X, npc.position.X + npc.width, npc.position.Y + npc.height, weight);
+        }
+
+        /// <summary>The same, under a stretch of ground: the floor at this height, between these two x.</summary>
+        private static void GroundDust(float left, float right, float floor, float weight)
+        {
+            if (Main.dedServ)
+                return;
+
+            int row = (int)((floor + 4f) / 16f);
+            int from = (int)(left / 16f);
+            int to = (int)(right / 16f);
 
             int each = Math.Max(1, (int)(3 * weight));
 
@@ -1516,142 +2340,118 @@ namespace PisAndDag.Content.NPCs.Legends
             Main.LocalPlayer.PIS().BumpScreenShake(12f, 30);
         }
 
-        // ---- ritual ---------------------------------------------------------
+        // ---- the arrival, run ----------------------------------------------
 
         private void RunRite(NPC npc)
         {
+            // Asked afresh every tick (Scene), so it says whether the player was in the
+            // shot on the last tick of it.
+            watching = false;
+
             npc.dontTakeDamage = true;
             npc.damage = 0;
             npc.chaseable = false;
             npc.noTileCollide = true;
-            npc.aiAction = 1;
 
-            Anchor(npc);
+            // His frames, through vanilla's own frame code: the fast tremble while he
+            // forms and roars, his ordinary idle otherwise.
+            npc.aiAction = rite == KingRite.Burst || rite == KingRite.Roar ? 1 : 0;
+
+            // Before the size: he is not drawn as himself until this machine has played
+            // the start of the Burst (Veiled), and his size is his own from that tick.
+            bool entered = seen != rite;
+            seen = rite;
+
+            float size = Hidden ? SeedScale : TargetScale;
+
+            if (Math.Abs(npc.scale - size) > 0.0001f)
+                Resize(npc, size);
+
+            Anchor(npc, Hidden ? SeedDepth : 0f);
 
             switch (rite)
             {
-                case Rite.Gather:
-                    if (HeraldsReady() || riteTimer >= GatherLimit)
+                case KingRite.Gather:
+                    if (Authority)
+                        Gather(npc);
+
+                    break;
+
+                case KingRite.Approach:
+                    Scene(npc, Ease(riteTimer / (float)RitePan));
+
+                    if (Authority && riteTimer >= RitePan)
                     {
-                        rite = Rite.Approach;
-                        riteTimer = 0;
+                        int heralds = Heralds(npc, out int seated);
+
+                        if (seated >= heralds || riteTimer >= RitePan + ApproachGrace)
+                            Next(npc, KingRite.Stack);
                     }
 
                     break;
 
-                case Rite.Approach:
-                    Look(altar, Ease(riteTimer / (float)RitePan));
+                case KingRite.Stack:
+                    Scene(npc, 1f);
+                    StackBeat(npc);
 
-                    if (riteTimer >= RitePan)
-                    {
-                        Melt();
-
-                        rite = Rite.Melt;
-                        riteTimer = 0;
-                    }
+                    if (Authority && riteTimer >= SlimeRite.StackTicks)
+                        Next(npc, KingRite.Fuse);
 
                     break;
 
-                case Rite.Melt:
-                    Look(altar, 1f);
+                case KingRite.Fuse:
+                    Scene(npc, 1f);
+                    FuseBeat(npc);
 
-                    if (mass != null)
-                    {
-                        mass.Update();
-
-                        if (mass.Complete)
-                            meltWhole++;
-                    }
-
-                    // A server has no blobs to wait on and takes the long way round.
-                    bool whole = mass == null ? riteTimer >= MeltCap - MeltHold : meltWhole >= MeltHold;
-
-                    if (whole || riteTimer >= MeltCap)
-                    {
-                        // The plate, now. The camera is on the altar and the mass is
-                        // whole; the name rises under the seed as he swells out of it.
-                        // Left to BossPlate's own trigger it would wait for him to be
-                        // centred, and a grown King's centre is not the altar.
-                        Content.UI.BossIntro.PlayNameOnly(npc.whoAmI, RiteProfile);
-
-                        if (!Main.dedServ)
-                        {
-                            SoundEngine.PlaySound(SoundID.NPCDeath1 with { Pitch = -0.6f, Volume = 0.9f }, altar);
-                            Main.LocalPlayer.PIS().BumpScreenShake(9f, 26);
-                        }
-
-                        // He is his full size from the first frame he is seen; the mass
-                        // was already that size, and it is the skin over him that goes.
-                        Resize(npc, TargetScale);
-                        Anchor(npc);
-
-                        rite = Rite.Rise;
-                        riteTimer = 0;
-                    }
+                    if (Authority && riteTimer >= SlimeRite.FuseTicks + SlimeRite.FuseHold)
+                        Next(npc, KingRite.Burst);
 
                     break;
 
-                case Rite.Rise:
-                    Look(altar, 1f);
-                    Anchor(npc);
+                case KingRite.Burst:
+                    Scene(npc, 1f);
 
-                    // The skin lets go: thins, loosens a little, and is gone, and he is
-                    // what was under it.
-                    if (mass != null)
+                    if (entered)
                     {
-                        float gone = Ease(riteTimer / (float)RiteRise);
-                        mass.Update();
-                        mass.Alpha = 1f - gone;
-                        mass.Spread = 1f + 0.08f * gone;
+                        if (Authority)
+                            TakeHeralds(npc);
 
-                        if (!Main.dedServ && riteTimer % 3 == 0)
-                            SlimeDust(npc.position, npc.width, npc.height, 2, default);
+                        Burst(npc);
                     }
 
-                    if (riteTimer >= RiteRise)
+                    if (!glinted && riteTimer >= GlintAt)
                     {
-                        mass?.Dispose();
-                        mass = null;
-
-                        rite = Rite.Hold;
-                        riteTimer = 0;
+                        glinted = true;
+                        Glint(npc);
                     }
+
+                    if (riteTimer >= BurstTicks - 1)
+                        Announce(npc);
+
+                    if (Authority && riteTimer >= BurstTicks)
+                        Next(npc, KingRite.Roar);
 
                     break;
 
-                case Rite.Hold:
-                    Look(altar, 1f);
+                case KingRite.Roar:
+                    Scene(npc, 1f);
 
-                    if (riteTimer >= RiteHold)
-                    {
-                        rite = Rite.Withdraw;
-                        riteTimer = 0;
-                    }
+                    if (entered)
+                        Roar(npc);
+
+                    Announce(npc);
+                    Spit(npc);
+
+                    if (Authority && riteTimer >= RoarTicks)
+                        Next(npc, KingRite.Hold);
 
                     break;
 
-                case Rite.Withdraw:
-                    Look(altar, 1f - Ease(riteTimer / (float)RitePan));
+                case KingRite.Hold:
+                    Scene(npc, 1f);
 
-                    if (riteTimer >= RitePan)
-                    {
-                        rite = Rite.Done;
-
-                        npc.dontTakeDamage = false;
-                        npc.chaseable = true;
-                        npc.noTileCollide = false;
-                        npc.noGravity = false;
-                        npc.hide = false;
-                        npc.damage = baseDamage;
-
-                        // Handed to the jump cycle mid-wind-up, so the fight opens with a
-                        // beat of squash rather than with an instant jump.
-                        npc.ai[0] = RestShort;
-                        npc.ai[1] = 0f;
-                        npc.ai[2] = 0f;
-
-                        npc.netUpdate = true;
-                    }
+                    if (Authority && riteTimer >= RiteHold)
+                        Next(npc, KingRite.Done);
 
                     break;
             }
@@ -1660,28 +2460,513 @@ namespace PisAndDag.Content.NPCs.Legends
         }
 
         /// <summary>
-        /// Nothing is drawn at all while the ritual is still hiding the King — body, crown
-        /// and ninja alike. The crown and the ninja are separate draw passes inside
-        /// vanilla's King Slime draw and do not honour npc.alpha, so fading the body left
-        /// both of them hanging in mid-air over the altar.
+        /// On to the next phase, from its first tick. The server's call, and sent; the
+        /// timer is ticked up to zero at the end of this one.
+        /// </summary>
+        private void Next(NPC npc, KingRite phase)
+        {
+            rite = phase;
+            riteTimer = -1;
+            npc.netUpdate = true;
+        }
+
+        /// <summary>
+        /// The server, while they come: the sky's sent on time, and when enough are in
+        /// their places (or the gathering has gone on long enough) the rest are sent at
+        /// once and everyone still out is thrown in as the camera goes.
+        /// </summary>
+        private void Gather(NPC npc)
+        {
+            SendSky(npc, false);
+
+            int heralds = Heralds(npc, out int seated);
+            int expected = heralds + SkyHeralds - skySent;
+
+            if (seated < Math.Min(HeraldsNeeded, expected) && riteTimer < GatherLimit)
+                return;
+
+            SendSky(npc, true);
+            CallIn(npc);
+            Next(npc, KingRite.Approach);
+        }
+
+        /// <summary>
+        /// He is put back to himself for the fight, on every machine, and a player who
+        /// was watching gets the camera walked home and is let go; the jump cycle is the
+        /// server's. His opening wind-up is longer than the walk, so nothing lands on
+        /// anyone who cannot yet see him.
+        /// </summary>
+        private void Finish(NPC npc)
+        {
+            finished = true;
+
+            if (watching && !Main.dedServ)
+                PisPlayer.PanHome(Focus(), RiteReturn);
+
+            npc.dontTakeDamage = false;
+            npc.chaseable = true;
+            npc.noTileCollide = false;
+            npc.noGravity = false;
+            npc.hide = false;
+            npc.damage = baseDamage;
+            npc.aiAction = 0;
+
+            if (!Authority)
+                return;
+
+            // Handed to the jump cycle mid-wind-up, so the fight opens with a beat of
+            // squash rather than with an instant jump.
+            npc.ai[0] = RestShort;
+            npc.ai[1] = 0f;
+            npc.ai[2] = 0f;
+
+            npc.netUpdate = true;
+        }
+
+        /// <summary>
+        /// The shot, for a player near enough to be in it: on the pile, then on him, with
+        /// the bars, the interface away, the player held, and the camera leaning in
+        /// while it is a pile and snapping back out when he comes out of it.
+        /// </summary>
+        private void Scene(NPC npc, float blend)
+        {
+            if (Main.dedServ)
+                return;
+
+            Player me = Main.LocalPlayer;
+
+            if (!me.active || me.dead || Vector2.Distance(me.Center, altar) > SceneRange)
+                return;
+
+            watching = true;
+
+            PisPlayer.BlendCamera(Focus(), blend);
+            PisPlayer.HideUI();
+            Content.Combat.Cinematic.Hold();
+            Content.Combat.Cinematic.Frame();
+
+            switch (rite)
+            {
+                case KingRite.Approach:
+                    LeanTo(MathHelper.Lerp(1f, LeanNear, Ease(riteTimer / (float)RitePan)));
+                    break;
+
+                case KingRite.Stack:
+                    LeanTo(MathHelper.Lerp(LeanNear, LeanClose, riteTimer / (float)SlimeRite.StackTicks));
+                    break;
+
+                case KingRite.Fuse:
+                    LeanTo(LeanClose + LeanFuse * Math.Min(1f, riteTimer / (float)SlimeRite.FuseTicks));
+                    break;
+
+                case KingRite.Burst:
+                    // Out, fast, as he comes out: the size of him is the point.
+                    Content.Combat.Cinematic.Lean(1f, 0.25f);
+                    break;
+            }
+        }
+
+        /// <summary>Where the camera looks: the pile's middle while it is a pile, his after.</summary>
+        private Vector2 Focus() => altar - new Vector2(0f, Hidden ? PileFocus : BaseHeight * TargetScale * 0.45f);
+
+        /// <summary>
+        /// The camera leaned in to this zoom, counting the player's own: a framing, not a
+        /// multiple, so a player who already plays zoomed in that far is not pushed
+        /// further.
+        /// </summary>
+        private static void LeanTo(float zoom)
+        {
+            Content.Combat.Cinematic.Lean(Math.Max(1f, zoom / Math.Max(1f, Main.GameZoomTarget)));
+        }
+
+        /// <summary>The pile landing, three times: louder, harder, and the ground kicked up.</summary>
+        private void StackBeat(NPC npc)
+        {
+            if (Main.dedServ)
+                return;
+
+            int landed = SlimeRite.Landing(riteTimer);
+
+            if (landed == 0)
+                return;
+
+            float weight = landed / (float)SlimeRite.Bounces;
+
+            SoundEngine.PlaySound(SoundID.NPCHit1 with { Volume = 0.45f + 0.35f * weight, Pitch = -0.5f + 0.2f * (landed - 1), MaxInstances = 3 }, altar);
+            SoundEngine.PlaySound(SoundID.Item167 with { Volume = 0.25f + 0.35f * weight, Pitch = -0.2f }, altar);
+
+            Main.LocalPlayer.PIS().BumpScreenShake(2f + 3f * landed, 10 + 4 * landed);
+
+            float half = SlimeRite.Width * 0.5f;
+
+            for (int i = 0; i < 6 + landed * 5; i++)
+            {
+                Dust dust = Dust.NewDustDirect(new Vector2(altar.X - half, altar.Y - 8f), (int)SlimeRite.Width, 8, DustID.t_Slime,
+                    Main.rand.NextFloat(-4f, 4f) * (0.5f + weight), Main.rand.NextFloat(-3f, -0.5f) * (0.5f + weight),
+                    175, new Color(0, 80, 255, 100), Main.rand.NextFloat(1f, 1.5f));
+
+                dust.noGravity = Main.rand.NextBool();
+            }
+
+            GroundDust(altar.X - half, altar.X + half, altar.Y, 0.35f * landed);
+        }
+
+        /// <summary>
+        /// The pile going in: slime pulled off it into the middle, a gulp as each part
+        /// goes, and the middle lighting up, brighter and bigger the more of them are in
+        /// it, and shivering once they all are.
+        /// </summary>
+        private void FuseBeat(NPC npc)
+        {
+            if (Main.dedServ)
+                return;
+
+            int t = riteTimer;
+            Vector2 core = SlimeRite.Core(altar);
+            float full = Math.Min(1f, t / (float)SlimeRite.FuseTicks);
+
+            if (t < SlimeRite.FuseTicks)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    Vector2 out_ = Main.rand.NextVector2CircularEdge(1f, 0.7f) * Main.rand.NextFloat(55f, 110f);
+                    Vector2 swirl = out_.RotatedBy(MathHelper.PiOver2).SafeNormalize(Vector2.UnitX) * Main.rand.NextFloat(1f, 3f);
+
+                    PADParticleHandler.SpawnParticle(new SlimeGlob(core + out_, swirl, Main.rand.NextFloat(0.6f, 1.1f), 60,
+                        SlimeGlob.Blue, falls: false).HomeTo(core, 0));
+                }
+
+                if (t % 3 == 0)
+                {
+                    SoundEngine.PlaySound(SoundID.NPCHit1 with { Volume = 0.5f, Pitch = -0.6f + 0.8f * full, MaxInstances = 3 }, core);
+                }
+            }
+            else
+            {
+                Main.LocalPlayer.PIS().BumpScreenShake(2.5f, 2);
+            }
+
+            if (t % 2 == 0)
+            {
+                PADParticleHandler.SpawnParticle(new BloomGeneric(core, Vector2.Zero, CoreBlue * (0.5f + 0.5f * full),
+                    (24f + 80f * full) / 160f, 10));
+            }
+
+            Lighting.AddLight(core, 0.15f + 0.35f * full, 0.3f + 0.5f * full, 0.5f + 0.5f * full);
+        }
+
+        /// <summary>
+        /// He comes out: a flash, the landing of all of him at once, the pile thrown off
+        /// him in globs that all come back to him, and a burst of light where the middle
+        /// was.
+        /// </summary>
+        private void Burst(NPC npc)
+        {
+            if (Main.dedServ)
+                return;
+
+            Vector2 core = SlimeRite.Core(altar);
+
+            Content.Combat.Cinematic.Flash(new Color(110, 180, 255), 0.35f);
+
+            Land(npc, 1.25f);
+
+            SoundEngine.PlaySound(SoundID.Item14 with { Pitch = -0.4f, Volume = 0.7f }, core);
+            SoundEngine.PlaySound(SoundID.NPCDeath1 with { Pitch = -0.55f, Volume = 1f }, core);
+
+            for (int i = 0; i < 28; i++)
+            {
+                float angle = -MathHelper.PiOver2 + Main.rand.NextFloat(-1.35f, 1.35f);
+                Vector2 velocity = angle.ToRotationVector2() * Main.rand.NextFloat(5f, 11f);
+
+                PADParticleHandler.SpawnParticle(new SlimeGlob(core, velocity, Main.rand.NextFloat(0.8f, 1.5f), 120,
+                    SlimeGlob.Blue).HomeTo(npc, Main.rand.Next(26, 45)));
+            }
+
+            SparkShard.Spray(core, Color.White, 14, 7f, npc.height * 0.55f, 20, palette: BurstSparks);
+
+            PADParticleHandler.SpawnParticle(new BloomGeneric(core, Vector2.Zero, CoreBlue, npc.width * 1.8f / 160f, 26));
+        }
+
+        /// <summary>The crown catches the light, once, as he settles into his size.</summary>
+        private void Glint(NPC npc)
+        {
+            if (Main.dedServ)
+                return;
+
+            Jelly(out float size, out Vector2 stretch);
+
+            // A little over the middle of the crown: on it whichever way he faces.
+            Texture2D crown = TextureAssets.Extra[ExtrasID.KingSlimeCrown].Value;
+            Vector2 at = CrownAt(npc, size, stretch) - new Vector2(0f, crown.Height * 0.15f * size);
+
+            PADParticleHandler.SpawnParticle(new CrownGlint(at, 34f, 30, new Color(255, 244, 200)));
+
+            SoundEngine.PlaySound(SoundID.MaxMana with { Pitch = 0.2f, Volume = 0.7f }, at);
+        }
+
+        /// <summary>He roars (Cinematic.Roar: the rings, the dim, the shake), and something wet in it.</summary>
+        private static void Roar(NPC npc)
+        {
+            if (Main.dedServ)
+                return;
+
+            Content.Combat.Cinematic.Roar(npc, RoarTicks, 1f, SoundID.Roar with { Pitch = -0.4f, Volume = 1f });
+
+            SoundEngine.PlaySound(SoundID.NPCDeath1 with { Pitch = -0.85f, Volume = 0.9f }, npc.Center);
+        }
+
+        /// <summary>His name, once, under him: the plate, the long one (RiteProfile).</summary>
+        private void Announce(NPC npc)
+        {
+            if (plated)
+                return;
+
+            plated = true;
+            Content.UI.BossIntro.PlayNameOnly(npc.whoAmI, RiteProfile);
+        }
+
+        /// <summary>Slime shaken off the top of him while he roars, and left to fall.</summary>
+        private void Spit(NPC npc)
+        {
+            if (Main.dedServ || riteTimer >= 60 || riteTimer % 3 != 0)
+                return;
+
+            for (int i = 0; i < 2; i++)
+            {
+                float across = Main.rand.NextFloat(-0.42f, 0.42f);
+                Vector2 from = new Vector2(npc.Center.X + across * npc.width, npc.position.Y + npc.height * 0.3f);
+                Vector2 velocity = new Vector2(across * Main.rand.NextFloat(8f, 14f), Main.rand.NextFloat(-7f, -3f));
+
+                PADParticleHandler.SpawnParticle(new SlimeGlob(from, velocity, Main.rand.NextFloat(0.6f, 1.1f), 70, SlimeGlob.Blue));
+            }
+        }
+
+        // ---- the arrival, drawn ---------------------------------------------
+
+        /// <summary>
+        /// His shape while the rite has him, on top of his scale: an overall size, and a
+        /// stretch (x wider, y taller) about his feet. False when he is drawn exactly as
+        /// vanilla draws him.
+        ///
+        ///   BURST     out of the core at a third of himself, past his size and back,
+        ///             wobbling tall and wide as it settles; the last twelve ticks, a
+        ///             breath in, low and wide
+        ///   ROAR      up tall and narrow, rung like a bell at the start, trembling
+        ///   HOLD      breathing, and still by the end, so the hand back to vanilla's
+        ///             draw cannot be seen
+        /// </summary>
+        private bool Jelly(out float size, out Vector2 stretch)
+        {
+            size = 1f;
+            stretch = Vector2.One;
+
+            float t = riteTimer;
+
+            switch (rite)
+            {
+                case KingRite.Burst:
+                {
+                    size = 1f + (BurstFrom - 1f) * (float)Math.Exp(-t / 6f) * (float)Math.Cos(0.32f * t);
+
+                    float wobble = 0.25f * (float)Math.Exp(-t / 9f) * (float)Math.Sin(0.5f * t + 0.9f);
+                    float breath = 0.1f * Ease((t - (BurstTicks - 12)) / 12f);
+
+                    stretch = new Vector2((1f - wobble) * (1f + 0.8f * breath), (1f + wobble) * (1f - breath));
+                    return true;
+                }
+
+                case KingRite.Roar:
+                {
+                    float voice = Ease(t / 6f) * (1f - Ease((t - (RoarTicks - 18)) / 18f));
+                    float ring = 0.12f * (float)Math.Exp(-t / 6f) * (float)Math.Cos(0.8f * t);
+
+                    stretch = new Vector2(
+                        1f - 0.07f * voice - 0.6f * ring + 0.012f * (float)Math.Sin(3.1f * t) * voice,
+                        1f + 0.11f * voice + ring + 0.012f * (float)Math.Sin(2.6f * t) * voice);
+                    return true;
+                }
+
+                case KingRite.Hold:
+                {
+                    // Breathing, and still again by the end, so the hand back to
+                    // vanilla's draw cannot be seen.
+                    float breath = 0.018f * (float)Math.Sin(0.12f * t) * (1f - Ease((t - (RiteHold - 20)) / 20f));
+                    stretch = new Vector2(1f - 0.6f * breath, 1f + breath);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>The bottom centre of his frame, where vanilla anchors it: four pixels under his feet.</summary>
+        private static Vector2 Feet(NPC npc) =>
+            new Vector2(npc.position.X + npc.width / 2, npc.position.Y + npc.height + 4f + npc.gfxOffY);
+
+        /// <summary>Where vanilla draws the crown's middle, moved with his shape about his feet.</summary>
+        private static Vector2 CrownAt(NPC npc, float size, Vector2 stretch)
+        {
+            int frame = npc.frame.Height > 0 ? npc.frame.Y / npc.frame.Height : 0;
+            float rise = CrownRise[Math.Clamp(frame, 0, CrownRise.Length - 1)];
+
+            Vector2 vanilla = npc.Center + new Vector2(0f, npc.gfxOffY - (70f - rise) * npc.scale);
+            Vector2 feet = Feet(npc);
+
+            return feet + (vanilla - feet) * stretch * size;
+        }
+
+        // ---- holding someone, drawn -------------------------------------------
+
+        /// <summary>
+        /// Set by SlimeGrabOverlay on each frame it has drawn his body and crown over a
+        /// player he holds; read and cleared by his own draw. He leaves the body to the
+        /// overlay only while it is doing it, so a held player who somehow was not drawn
+        /// costs at most one frame of him.
+        /// </summary>
+        internal bool Carried;
+
+        /// <summary>Whether a held player may carry his body: in the fight, not the arrival or the death.</summary>
+        internal bool Carriable => rite == KingRite.Done && !dying;
+
+        /// <summary>
+        /// Of the players he holds, the one drawn last, or -1: the others draw in order
+        /// of index, and the local player after all of them. Only those drawn the
+        /// ordinary way, after the NPCs, count.
+        /// </summary>
+        internal static int Carrier(int king)
+        {
+            int carrier = -1;
+
+            for (int i = 0; i < Main.maxPlayers; i++)
+            {
+                Player player = Main.player[i];
+
+                if (!player.active || player.dead || player.ghost || player.stoned || player.ShouldNotDraw || player.isLockedToATile)
+                    continue;
+
+                if (i != Main.myPlayer && player.outOfRange)
+                    continue;
+
+                SlimeGrabPlayer grab = player.GetModPlayer<SlimeGrabPlayer>();
+
+                if (!grab.Held || grab.HeldBy != king)
+                    continue;
+
+                if (i == Main.myPlayer)
+                    return i;
+
+                carrier = i;
+            }
+
+            return carrier;
+        }
+
+        /// <summary>
+        /// His body and crown, placed and lit as vanilla draws them, as player draw data
+        /// for the overlay, and kept upright however the player they cover is turned.
+        /// </summary>
+        internal static void AddBodyAndCrown(NPC npc, List<DrawData> into)
+        {
+            Main.instance.LoadNPC(npc.type);
+
+            Texture2D body = TextureAssets.Npc[npc.type].Value;
+            Texture2D crown = TextureAssets.Extra[ExtrasID.KingSlimeCrown].Value;
+
+            Color light = npc.GetNPCColorTintedByBuffs(Lighting.GetColor((int)(npc.Center.X / 16f), (int)(npc.Center.Y / 16f)));
+            SpriteEffects flip = npc.spriteDirection == 1 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
+            Rectangle frame = npc.frame;
+
+            into.Add(new DrawData(body, Feet(npc) - Main.screenPosition, frame, npc.GetAlpha(light), npc.rotation,
+                new Vector2(frame.Width * 0.5f, frame.Height), npc.scale, flip, 0f) { ignorePlayerRotation = true });
+
+            into.Add(new DrawData(crown, CrownAt(npc, 1f, Vector2.One) - Main.screenPosition, null, light, 0f,
+                crown.Size() * 0.5f, 1f, flip, 0f) { ignorePlayerRotation = true });
+        }
+
+        /// <summary>
+        /// Nothing is drawn at all while the pile stands in for him — body, crown and
+        /// ninja alike. While the rite has him after that, he is drawn here, in its
+        /// shape (DrawKing). While he holds someone, only the ninja is drawn here; the
+        /// body and crown go over them (SlimeGrabOverlay).
         /// </summary>
         public override bool PreDraw(NPC npc, SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
         {
-            if (Hidden)
+            bool carried = Carried;
+            Carried = false;
+
+            if (Veiled)
                 return false;
 
             if (!BodyGone)
-                return true;
+            {
+                if (!dying && Jelly(out float size, out Vector2 stretch))
+                {
+                    DrawKing(npc, spriteBatch, screenPos, drawColor, size, stretch);
+                    return false;
+                }
 
-            // The body is gone but the ninja is not, and vanilla draws the two together —
-            // the crown is part of the King's own sprite and the ninja is a second pass
-            // tinted by the same colour, so there is no alpha that hides one and keeps
-            // the other. Refusing the whole draw and putting the ninja back by hand is
-            // what lets him outlive the thing he was riding in.
+                if (carried && Carriable && Carrier(npc.whoAmI) >= 0)
+                {
+                    DrawNinja(npc, spriteBatch, screenPos, drawColor);
+                    return false;
+                }
+
+                return true;
+            }
+
+            // The body is gone but the ninja is not, and vanilla draws them together: the
+            // body, the ninja inside it, and the crown (Extra 39) over it, all in one
+            // pass, so there is no alpha that hides one and keeps the others. Refusing
+            // the whole draw and putting the ninja back by hand is what lets him outlive
+            // the thing he was riding in; the crown went with the body, as its gore.
             if (!NinjaGone)
                 DrawNinja(npc, spriteBatch, screenPos, drawColor);
 
             return false;
+        }
+
+        /// <summary>
+        /// Him, the way vanilla draws him: the ninja, the body over him, and the crown
+        /// over that, placed off his middle and his frame. With the rite's shape on top,
+        /// about his feet: the ninja and the crown are carried by it and keep their own.
+        /// At a size and stretch of one this is vanilla's draw exactly, so the hand back
+        /// at the end of the rite does not show.
+        /// </summary>
+        private static void DrawKing(NPC npc, SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor, float size, Vector2 stretch)
+        {
+            Main.instance.LoadNPC(npc.type);
+
+            Texture2D body = TextureAssets.Npc[npc.type].Value;
+            Texture2D ninja = TextureAssets.Ninja.Value;
+            Texture2D crown = TextureAssets.Extra[ExtrasID.KingSlimeCrown].Value;
+
+            Color light = npc.GetNPCColorTintedByBuffs(drawColor);
+            SpriteEffects flip = npc.spriteDirection == 1 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
+            Vector2 feet = Feet(npc);
+            Vector2 shape = stretch * size;
+
+            Vector2 lag = new Vector2(-npc.velocity.X * 2f, -npc.velocity.Y);
+
+            if (npc.frame.Y == 120)
+                lag.Y += 2f;
+            else if (npc.frame.Y == 360)
+                lag.Y -= 2f;
+            else if (npc.frame.Y == 480)
+                lag.Y -= 6f;
+
+            Vector2 seat = new Vector2(npc.position.X + npc.width / 2, npc.position.Y + npc.height / 2) + lag;
+
+            spriteBatch.Draw(ninja, feet + (seat - feet) * shape - screenPos, null, light, npc.velocity.X * 0.05f,
+                new Vector2(ninja.Width / 2, ninja.Height / 2), size, SpriteEffects.None, 0f);
+
+            Rectangle frame = npc.frame;
+
+            spriteBatch.Draw(body, feet - screenPos, frame, npc.GetAlpha(light), npc.rotation,
+                new Vector2(frame.Width * 0.5f, frame.Height), npc.scale * shape, flip, 0f);
+
+            spriteBatch.Draw(crown, CrownAt(npc, size, stretch) - screenPos, null, light, 0f,
+                crown.Size() * 0.5f, size, flip, 0f);
         }
 
         /// <summary>
@@ -1926,15 +3211,6 @@ namespace PisAndDag.Content.NPCs.Legends
             Main.LocalPlayer.PIS().BumpScreenShake(7f, 20);
         }
 
-        private static void Look(Vector2 at, float blend)
-        {
-            if (Main.dedServ)
-                return;
-
-            // The rite keeps the interface up: the bar and the name are what it is for.
-            PisPlayer.BlendCamera(at, blend);
-        }
-
         /// <summary>Smoothstep. Zero slope at both ends, so pans start and stop softly.</summary>
         private static float Ease(float t)
         {
@@ -1942,76 +3218,35 @@ namespace PisAndDag.Content.NPCs.Legends
             return t * t * (3f - 2f * t);
         }
 
-        private static bool HeraldsReady()
+        // ---- sync -----------------------------------------------------------
+        //
+        // The rite is the server's; this is how the clients follow it. A new phase is
+        // taken with its timer; within a phase each machine keeps its own count, and a
+        // resend only moves it if it has drifted, so a late packet cannot put the
+        // animation back a few ticks.
+
+        public override void SendExtraAI(NPC npc, BitWriter bitWriter, BinaryWriter binaryWriter)
         {
-            int here = 0;
-
-            for (int i = 0; i < Main.maxNPCs; i++)
-            {
-                NPC slime = Main.npc[i];
-
-                if (!slime.active || !slime.TryGetGlobalNPC(out LegendsSlime legends))
-                    continue;
-
-                if (legends.HeraldArrivedAt(slime))
-                    here++;
-            }
-
-            return here >= HeraldsNeeded;
+            binaryWriter.Write((byte)rite);
+            binaryWriter.Write((short)Math.Clamp(riteTimer, short.MinValue, short.MaxValue));
+            binaryWriter.WriteVector2(altar);
         }
 
-        /// <summary>
-        /// Every herald becomes a blob and sets off for the altar. The slime NPCs go;
-        /// what slides in is the mass's own blobs, one per herald and the same size,
-        /// scaled together so that all of them add up to exactly one King. The far
-        /// ones leave first, so they all arrive across the same stretch.
-        /// </summary>
-        private void Melt()
+        public override void ReceiveExtraAI(NPC npc, BitReader bitReader, BinaryReader binaryReader)
         {
-            if (!Main.dedServ)
+            KingRite phase = (KingRite)binaryReader.ReadByte();
+            int timer = binaryReader.ReadInt16();
+            altar = binaryReader.ReadVector2();
+
+            if (phase != rite)
             {
-                NPC sample = ContentSamples.NpcsByNetId[NPCID.KingSlime];
-                float scale = TargetScale;
-
-                mass?.Dispose();
-                mass = new SlimeMass(altar, sample.width * scale, sample.height * scale, HeraldSpread);
+                rite = phase;
+                riteTimer = timer;
             }
-
-            for (int i = 0; i < Main.maxNPCs; i++)
+            else if (Math.Abs(timer - riteTimer) > 10)
             {
-                NPC slime = Main.npc[i];
-
-                if (!slime.active || !slime.TryGetGlobalNPC(out LegendsSlime legends) || !legends.Herald)
-                    continue;
-
-                if (mass != null)
-                {
-                    float radius = slime.width * 0.42f;
-                    float away = Math.Abs(slime.Center.X - altar.X);
-                    int delay = (int)MathHelper.Clamp(MeltSpread * (1f - away / HeraldSpread), 0f, MeltSpread) + Main.rand.Next(0, 12);
-                    int travel = Main.rand.Next(MeltTravelLeast, MeltTravelMost);
-
-                    mass.AddBlob(slime.Bottom, radius, delay, travel);
-
-                    // A little wet dust where the slime stops being a slime.
-                    SlimeDust(slime.position, slime.width, slime.height, 5, default);
-                }
-
-                slime.active = false;
-                slime.netUpdate = true;
+                riteTimer = timer;
             }
-
-            mass?.Normalise();
-
-            if (!Main.dedServ)
-                SoundEngine.PlaySound(SoundID.NPCHit1 with { Pitch = -0.4f, Volume = 0.7f }, altar);
-        }
-
-        /// <summary>The mass on the altar, while there is one. Drawn after the King, so in Rise it is the skin he comes out of.</summary>
-        public override void PostDraw(NPC npc, SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
-        {
-            if (rite == Rite.Melt || rite == Rite.Rise)
-                mass?.Draw(spriteBatch, screenPos);
         }
 
         /// <summary>
@@ -2075,7 +3310,8 @@ namespace PisAndDag.Content.NPCs.Legends
             && HeldBy < Main.maxNPCs
             && Main.npc[HeldBy].active
             && Main.npc[HeldBy].type == NPCID.KingSlime
-            && HeldTicks > 0;
+            && HeldTicks > 0
+            && !Player.dead;
 
         public void Seize(int npcIndex, int ticks)
         {
@@ -2204,33 +3440,37 @@ namespace PisAndDag.Content.NPCs.Legends
     ///
     /// Players draw after NPCs, so a held player stood on top of him, which is the
     /// opposite of being inside him. Vanilla's ninja reads as inside because the body
-    /// is drawn over the ninja, translucent. This is the same trick for the player: a
-    /// player layer past all the others that draws the King's current frame, in his own
-    /// tint and alpha, on top of the player. The body is not drawn twice at full
-    /// strength; only what lies over the player's sprite is covered, and it is his own
-    /// translucency that lets the player show through.
+    /// is drawn over the ninja, translucent. This is the same order for the player: the
+    /// King's own draw keeps only the ninja (LegendsKingSlime.PreDraw), and this layer,
+    /// after the player's, draws his body and crown over them, exactly where and as
+    /// vanilla would have. Drawn once, over the player drawn last of those he holds.
+    ///
+    /// Kept upright: player draw data is turned with the player (the held player tilts
+    /// the way the ninja does), and the body must not be.
     /// </summary>
     public class SlimeGrabOverlay : PlayerDrawLayer
     {
         public override Position GetDefaultPosition() => new AfterParent(PlayerDrawLayers.BeetleBuff);
 
         public override bool GetDefaultVisibility(PlayerDrawSet drawInfo) =>
-            drawInfo.drawPlayer.GetModPlayer<SlimeGrabPlayer>().Held;
+            drawInfo.shadow == 0f
+            && !drawInfo.headOnlyRender
+            && drawInfo.drawPlayer.GetModPlayer<SlimeGrabPlayer>().Held;
 
         protected override void Draw(ref PlayerDrawSet drawInfo)
         {
-            SlimeGrabPlayer grab = drawInfo.drawPlayer.GetModPlayer<SlimeGrabPlayer>();
-            NPC king = Main.npc[grab.HeldBy];
+            Player player = drawInfo.drawPlayer;
+            int held = player.GetModPlayer<SlimeGrabPlayer>().HeldBy;
+            NPC king = Main.npc[held];
 
-            Texture2D texture = TextureAssets.Npc[NPCID.KingSlime].Value;
-            Color light = Lighting.GetColor(king.Center.ToTileCoordinates());
-            Color tint = king.GetAlpha(king.GetNPCColorTintedByBuffs(light));
+            if (!king.TryGetGlobalNPC(out LegendsKingSlime state) || !state.Carriable)
+                return;
 
-            Vector2 at = king.Center - Main.screenPosition;
-            Vector2 origin = king.frame.Size() * 0.5f;
-            SpriteEffects flip = king.spriteDirection == 1 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
+            if (LegendsKingSlime.Carrier(held) != player.whoAmI)
+                return;
 
-            drawInfo.DrawDataCache.Add(new DrawData(texture, at, king.frame, tint, king.rotation, origin, king.scale, flip, 0));
+            LegendsKingSlime.AddBodyAndCrown(king, drawInfo.DrawDataCache);
+            state.Carried = true;
         }
     }
 }

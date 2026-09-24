@@ -1,6 +1,7 @@
 using PisAndDag.Content.Buffs;
 using PisAndDag.Content.UI;
 using Terraria;
+using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace PisAndDag.Content.NPCs.Pugream
@@ -29,18 +30,22 @@ namespace PisAndDag.Content.NPCs.Pugream
         private const float Pace = 0.7f;
 
         private const string FirstMeeting =
-            "Pugream. We haven't met. You've got the look of someone who nearly didn't walk away from " +
-            "something, and did. That's most of us, on a good day. Stay if you like. I'm only looking at the water.";
+            "Name's Pugream. We haven't met. You've got the look of someone who almost died but didn't! " +
+            "HA Ha Ha! That's most of us, on a good day! Stay if you like. I'm only looking at the water.";
+
+        /// <summary>After the one thing there is to say back. The bars are Dialogue.Pause: he hesitates.</summary>
+        private const string Coconuts =
+            "Oh by the way, I managed to gather some coconuts|||.|||.|||. Here, have one.|| Or two!";
 
         private const string Again =
-            "Pugream. I say it every time. It saves you pretending you remember.";
+            "Pugream! I say it every time. It saves you the pretending you remember.";
 
         private const string AgainOther =
-            "Pugream. We've spoken, maybe. Faces don't stay with people. Mine least of all.";
+            "Pugream. We've spoken,| I think. Faces don't stay with people. Mine least of all.";
 
         private const string TheSword =
             "It isn't mine. People think it is and I let them, it's easier. I'm taking it somewhere. " +
-            "It's heavier than it looks, and it looks heavy.";
+            "It's heavier than it looks, and it looks heavy!";
 
         private const string TheArrow =
             "I shoot at a lot of things. Supper, mostly. Whatever it was, it's done with, and you're " +
@@ -48,7 +53,7 @@ namespace PisAndDag.Content.NPCs.Pugream
 
         private const string WhereTo =
             "Wherever the road stops, I suppose. I'll know it when my feet do. It isn't far now. " +
-            "It's never far now, and then it is.";
+            "It's never far now, and then suddenly|.|.|. it is.";
 
         /// <summary>Back to his answers. Never remembered: a way back that goes grey is a trap (MorsTalk).</summary>
         private static readonly TalkOption Back =
@@ -68,12 +73,27 @@ namespace PisAndDag.Content.NPCs.Pugream
                 new TalkOption("Where you're going", _ => Dialogue.Say(WhereTo, Back)));
         }
 
+        /// <summary>Two coconuts, into the player's hands, and the conversation opens up again.</summary>
+        private static void GiveCoconuts()
+        {
+            Player player = Main.LocalPlayer;
+            player.QuickSpawnItem(player.GetSource_GiftOrReward(), ItemID.Coconut, 2);
+
+            Dialogue.Say(Coconuts, Back);
+        }
+
         private static string Opener(Player player, NPC npc)
         {
             if (PugreamPresence.Stage < 2)
             {
                 // Spoken to. He goes when nobody is looking.
                 PugreamPresence.Stage = 2;
+
+                // Locked, like Mors's first meetings: one thing to say back, and the
+                // player's feet do not work until it is said.
+                Dialogue.OpenAsScene(
+                    new TalkOption("!...", _ => GiveCoconuts()) { Remembered = false });
+
                 return FirstMeeting;
             }
 

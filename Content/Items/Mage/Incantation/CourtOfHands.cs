@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using PisAndDag.Content.Items.Misc;
 using PisAndDag.Content.Projectiles.Magic;
 using Terraria;
 using Terraria.DataStructures;
@@ -49,6 +50,19 @@ namespace PisAndDag.Content.Items.Mage.Incantation
             }
 
             Projectile.NewProjectile(source, ground, Vector2.Zero, Shot, damage, knockback, player.whoAmI);
+        }
+
+        /// <summary>How much Essence of the Fouled it is written with.</summary>
+        public const int Essence = 20;
+
+        /// <summary>Written at the Makeshift Altar: Essence of the Fouled and a Book.</summary>
+        public override void AddRecipes()
+        {
+            CreateRecipe()
+                .AddIngredient(ModContent.ItemType<EssenceOfTheFouled>(), Essence)
+                .AddIngredient(ItemID.Book)
+                .AddTile(ModContent.TileType<Content.Tiles.MakeshiftAltar>())
+                .Register();
         }
     }
 }
