@@ -28,6 +28,11 @@ namespace PisAndDag.Content.PADplayer
     ///
     /// Local to the player that owns it. The catalyst reads the selection to set its
     /// own numbers, and what leaves the hand is a projectile, which syncs itself.
+    ///
+    /// For testing, /magicarsenal max opens all ten whatever has been earned
+    /// (<see cref="Maxed"/>), and /magicarsenal normal shuts them back to what has; see
+    /// MagicArsenalCommand. <see cref="Unlocked"/> is never touched by it, so going back
+    /// is exact.
     /// </summary>
     public class MagicArsenal : ModPlayer
     {
@@ -37,8 +42,14 @@ namespace PisAndDag.Content.PADplayer
         /// <summary>How far from a town NPC's home tile the arsenal can be changed, in pixels. Fifty tiles: about a screen.</summary>
         public const float HomeReach = 800f;
 
-        /// <summary>How many of the ten can be used. Saved.</summary>
+        /// <summary>How many of the ten have been earned. Saved.</summary>
         public int Unlocked = StartSlots;
+
+        /// <summary>All ten open for testing, whatever has been earned. Saved, so it lasts until put back.</summary>
+        public bool Maxed;
+
+        /// <summary>How many of the ten can be used right now.</summary>
+        public int OpenSlots => Maxed ? MaxSlots : Unlocked;
 
         /// <summary>The slots, always <see cref="MaxSlots"/> long, air where empty. Saved.</summary>
         public readonly Item[] Slots = new Item[MaxSlots];
@@ -104,7 +115,7 @@ namespace PisAndDag.Content.PADplayer
         {
             List<Castable> list = new();
 
-            for (int i = 0; i < Unlocked && i < Slots.Length; i++)
+            for (int i = 0; i < OpenSlots && i < Slots.Length; i++)
             {
                 if (CastAt(i) is Castable cast && cast.Kind == kind)
                     list.Add(cast);
@@ -169,9 +180,64 @@ namespace PisAndDag.Content.PADplayer
                 Cycle(catalyst.Kind, -1);
         }
 
+        /// <summary>Opens all ten. Nothing earned changes.</summary>
+        public void Max() => Maxed = true;
+
+        /// <summary>
+        /// Back to the slots earned. Nothing is lost with the ones that shut: a cast in one
+        /// moves to the first empty slot still open, and if there is none it is given back to
+        /// the player, at their feet, the way a bag's loot is.
+        /// </summary>
+        /// <param name="moved">Casts moved into open slots.</param>
+        /// <param name="returned">Casts given back to the player.</param>
+        public void Normal(out int moved, out int returned)
+        {
+            moved = 0;
+            returned = 0;
+
+            if (!Maxed)
+                return;
+
+            Maxed = false;
+
+            for (int i = Unlocked; i < Slots.Length; i++)
+            {
+                if (Slots[i].IsAir)
+                    continue;
+
+                Item cast = Slots[i];
+                Slots[i] = new Item();
+
+                int free = -1;
+
+                for (int j = 0; j < Unlocked && j < Slots.Length; j++)
+                {
+                    if (Slots[j].IsAir)
+                    {
+                        free = j;
+                        break;
+                    }
+                }
+
+                if (free >= 0)
+                {
+                    Slots[free] = cast;
+                    moved++;
+                }
+                else
+                {
+                    Player.QuickSpawnItem(Player.GetSource_Misc("MagicArsenal"), cast, cast.stack);
+                    returned++;
+                }
+            }
+        }
+
         public override void SaveData(TagCompound tag)
         {
             tag["unlocked"] = Unlocked;
+
+            if (Maxed)
+                tag["maxed"] = true;
 
             // Every slot, air included, so a cast keeps its place across a save.
             tag["arsenal"] = Slots.Select(item => ItemIO.Save(item)).ToList();
@@ -183,6 +249,7 @@ namespace PisAndDag.Content.PADplayer
         public override void LoadData(TagCompound tag)
         {
             Unlocked = tag.ContainsKey("unlocked") ? System.Math.Clamp(tag.GetInt("unlocked"), 1, MaxSlots) : StartSlots;
+            Maxed = tag.ContainsKey("maxed") && tag.GetBool("maxed");
 
             for (int i = 0; i < Slots.Length; i++)
                 Slots[i] = new Item();

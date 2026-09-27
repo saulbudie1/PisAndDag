@@ -211,7 +211,7 @@ namespace PisAndDag.Content.UI
                 TitleColour, TitleStroke, new Vector2(0.9f));
 
             string note = nearHome
-                ? Language.GetTextValue("Mods.PisAndDag.Magic.Count", Filled(arsenal), arsenal.Unlocked)
+                ? Language.GetTextValue("Mods.PisAndDag.Magic.Count", Filled(arsenal), arsenal.OpenSlots)
                 : Language.GetTextValue("Mods.PisAndDag.Magic.NoHouseShort");
             float noteWidth = FontAssets.MouseText.Value.MeasureString(note).X * 0.75f;
             Utils.DrawBorderString(Main.spriteBatch, note, new Vector2(WindowX + width - Padding * 2 - noteWidth, WindowY + 2), NoteColour, 0.75f);
@@ -238,7 +238,7 @@ namespace PisAndDag.Content.UI
         {
             int count = 0;
 
-            for (int i = 0; i < arsenal.Unlocked; i++)
+            for (int i = 0; i < arsenal.OpenSlots; i++)
             {
                 if (!arsenal.Slots[i].IsAir)
                     count++;
@@ -250,7 +250,7 @@ namespace PisAndDag.Content.UI
         private static void DrawSlot(MagicArsenal arsenal, int index, Vector2 position, bool nearHome, Castable upSpell, Castable upIncantation)
         {
             Item item = arsenal.Slots[index];
-            bool locked = index >= arsenal.Unlocked;
+            bool locked = index >= arsenal.OpenSlots;
             Castable cast = locked ? null : arsenal.CastAt(index);
             bool up = cast != null && (cast.Type == upSpell?.Type || cast.Type == upIncantation?.Type);
 

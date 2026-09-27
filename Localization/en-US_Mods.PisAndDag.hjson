@@ -128,6 +128,60 @@ Items: {
 			'Nobody blessed it. It works anyway.'
 			'''
 	}
+
+	TreeBranchStaff: {
+		DisplayName: Branch Staff
+		Tooltip:
+			'''
+			[c/9e6fab:A Staff]
+			'Do you think the Dryad cut a tree branch for this?'
+			'''
+	}
+
+	ColdCall: {
+		DisplayName: Cold Call
+		Tooltip:
+			'''
+			Calls five icicles out of the staff in a wave, one full wave a cast
+			Each homes on the nearest enemy 
+			Inflicts Frostbite, and Chilled
+			'Somebody always picks up.'
+			'''
+	}
+
+	ForestNurtureMe: {
+		DisplayName: Forest, Nurture Me
+		Tooltip:
+			'''
+			Asks the forest to keep you a while
+			Faster life and mana regeneration, more defense, more speed
+			Can only be asked again as it fades
+			'The forest cannot say no. That is the trouble.'
+			'''
+	}
+
+	AquaticFirearms: {
+		DisplayName: Aquatic Firearms
+		Tooltip:
+			'''
+			Calls a Minishark, a Megashark and an S.D.M.G. above you
+			Held, they fire musket balls where you point, needing no ammo
+			After a few seconds, holding it drains mana
+			'All three answer to one finger.'
+			'''
+	}
+
+	ChlorophyteArmMe: {
+		DisplayName: Chlorophyte, Arm Me
+		Tooltip:
+			'''
+			Asks the jungle to arm you a while
+			Bullets you fire of lower rarity than chlorophyte become chlorophyte
+			They home, but hit as hard as they would have
+			Can only be asked again as it fades
+			'It was grown to stop one thing. It stops anything.'
+			'''
+	}
 }
 
 Buffs: {
@@ -160,6 +214,16 @@ Buffs: {
 		DisplayName: Mana Poisoning II
 		Description: Losing 20 life a second, magic damage halved
 	}
+
+	Nurtured: {
+		DisplayName: Nurtured
+		Description: Faster life and mana regeneration, more defense, more speed
+	}
+
+	Armed: {
+		DisplayName: Armed
+		Description: Lesser bullets you fire become chlorophyte
+	}
 }
 
 DeathText.ManaPoisoning: "{0} drank one potion too many."
@@ -185,6 +249,11 @@ Projectiles: {
 	CourtOfHandsRite.DisplayName: Court of Hands
 	CourtHand.DisplayName: Court of Hands
 	EverHungerHead.DisplayName: Everhunger
+	ColdCallIcicle.DisplayName: Cold Call
+	ColdCallHold.DisplayName: Cold Call
+	NurtureCall.DisplayName: Forest, Nurture Me
+	AquaticFirearmsBattery.DisplayName: Aquatic Firearms
+	ArmMeCall.DisplayName: Chlorophyte, Arm Me
 }
 
 NPCs: {

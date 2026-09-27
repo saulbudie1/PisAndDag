@@ -13,9 +13,10 @@ namespace PisAndDag.Content.Items.Mage
     /// <summary>
     /// The thing in the hand. A staff casts spells, a seal casts incantations, and
     /// neither has any numbers of its own: every tick it is held or sits in the bag it
-    /// copies its damage, mana, use time, channel and shot from whichever memorised
-    /// cast of its kind is selected, so the vanilla item machinery — mana cost, use
-    /// timing, the damage tooltip, prefixes — all just work on the cast that is up.
+    /// copies its damage, mana, use time, the wait after it, channel and shot from
+    /// whichever memorised cast of its kind is selected, so the vanilla item machinery —
+    /// mana cost, use timing, the damage tooltip, prefixes — all just work on the cast
+    /// that is up.
     ///
     /// Nothing selected, nothing happens: CanUseItem says no.
     ///
@@ -60,6 +61,7 @@ namespace PisAndDag.Content.Items.Mage
                 Item.mana = 0;
                 Item.channel = false;
                 Item.shoot = ProjectileID.None;
+                Item.reuseDelay = 0;
                 return;
             }
 
@@ -67,6 +69,7 @@ namespace PisAndDag.Content.Items.Mage
             Item.mana = cast.Mana;
             Item.useTime = cast.UseTime;
             Item.useAnimation = cast.UseTime;
+            Item.reuseDelay = cast.ReuseDelay;
             Item.channel = cast.Channel;
             Item.shoot = cast.Shot;
             Item.shootSpeed = cast.Speed;
@@ -127,7 +130,7 @@ namespace PisAndDag.Content.Items.Mage
 
             at.X += MagicColours.Width(line.Font, label, line.BaseScale);
             MagicColours.Stroked(Main.spriteBatch, line.Font, cast.DisplayName.Value, at,
-                colours.fill, colours.stroke, line.BaseScale, line.Rotation, line.Origin);
+                colours.fill, colours.stroke, line.BaseScale, line.Rotation, line.Origin, MagicColours.RampOf(cast.Element));
 
             return false;
         }

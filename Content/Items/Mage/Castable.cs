@@ -58,6 +58,13 @@ namespace PisAndDag.Content.Items.Mage
         public virtual float Speed => 10f;
         public virtual float Knockback => 2f;
 
+        /// <summary>
+        /// Ticks the catalyst waits after a cast before it will cast again. Vanilla's
+        /// reuseDelay: the hand stays up and nothing goes off, and use speed shortens it as it
+        /// shortens the cast.
+        /// </summary>
+        public virtual int ReuseDelay => 0;
+
         /// <summary>Whether it can go off right now. For casts that should not stack on themselves.</summary>
         public virtual bool CanCast(Player player) => true;
 
@@ -102,7 +109,9 @@ namespace PisAndDag.Content.Items.Mage
             bool held = Main.LocalPlayer.GetModPlayer<MagicArsenal>().Holds(Type);
 
             tooltips.Add(new TooltipLine(Mod, "PADKind", kind) { OverrideColor = MagicColours.Kinds[Kind].fill });
-            tooltips.Add(new TooltipLine(Mod, "PADDamage", Language.GetTextValue("Mods.PisAndDag.Magic.Damage", ScaledDamage(Main.LocalPlayer))));
+            // A cast that hurts nothing (a ward, a blessing) says nothing about damage.
+            if (CastDamage > 0)
+                tooltips.Add(new TooltipLine(Mod, "PADDamage", Language.GetTextValue("Mods.PisAndDag.Magic.Damage", ScaledDamage(Main.LocalPlayer))));
             tooltips.Add(new TooltipLine(Mod, "PADMana", Language.GetTextValue("Mods.PisAndDag.Magic.Mana", Mana)));
             tooltips.Add(new TooltipLine(Mod, "PADType", Language.GetTextValue("Mods.PisAndDag.Magic.Type", CastType)));
             tooltips.Add(new TooltipLine(Mod, "PADElement", Language.GetTextValue("Mods.PisAndDag.Magic.Element", Element)));
@@ -141,7 +150,8 @@ namespace PisAndDag.Content.Items.Mage
                     line.Rotation, line.Origin, line.BaseScale, -1f, 2f);
 
                 at.X += MagicColours.Width(line.Font, label, line.BaseScale);
-                MagicColours.Stroked(Main.spriteBatch, line.Font, Element, at, colours.fill, colours.stroke, line.BaseScale, line.Rotation, line.Origin);
+                MagicColours.Stroked(Main.spriteBatch, line.Font, Element, at, colours.fill, colours.stroke, line.BaseScale, line.Rotation, line.Origin,
+                    MagicColours.RampOf(Element));
                 return false;
             }
 
