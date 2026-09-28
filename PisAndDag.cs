@@ -31,7 +31,6 @@ namespace PisAndDag
             if (Main.dedServ)
                 return;
 
-            LoadLegendsFilter();
             LoadWastedMileFilter();
             LoadMorsCloak();
             LoadManaNauseaFilter();
@@ -66,28 +65,6 @@ namespace PisAndDag
         // is source only: run it through fxcompiler or EasyXnb and put the resulting
         // .xnb beside it. Until that exists, the mod loads without that effect and
         // logs a line saying so.
-
-        private void LoadLegendsFilter()
-        {
-            if (!RequestAssetIfExists("Effects/LegendsShader", out Asset<Effect> legends))
-            {
-                Logger.Warn(
-                    "Legends screen filter disabled: Effects/LegendsShader.xnb is missing. " +
-                    "Compile Effects/LegendsShader.fx with fxcompiler or EasyXnb and place " +
-                    "the .xnb beside it.");
-                return;
-            }
-
-            // "LegendsPass" must match the pass name in the .fx technique block.
-            Filters.Scene[LegendsScreenSystem.FilterKey] = new Filter(
-                new ScreenShaderData(legends, "LegendsPass"),
-                EffectPriority.High);
-
-            Filters.Scene[LegendsScreenSystem.FilterKey].Load();
-
-            // Only now is it safe for the driver system to touch Filters.Scene.
-            LegendsScreenSystem.Registered = true;
-        }
 
         /// <summary>
         /// The grade over the Wasted Mile. The biome switches it on and off through

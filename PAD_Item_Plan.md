@@ -249,9 +249,8 @@ The bow is a weapon, not a lore item, but it carries lore text. All proposals.
 
 # 4 · Magic — the memory system
 
-**[PLANNED, NOT BUILT. Nothing of this exists: the mod has no magic item, no summon item,
-no catalyst, no keybind for it and no save data. This is a multi-session build and it
-should not be attached to a boss's drop table.]**
+**[BUILT. §4.1–4.6 are the design as argued, kept for the reasoning; §4.7 is what exists,
+and wins where they differ.]**
 
 Lore for all of it is §XXIV of the Bible, *Where magic comes from* — drawn out of the
 land, not given by gods.
@@ -358,6 +357,125 @@ whether an element can only be learned in its own biome.
 5. The memory tile and its full UI.
 6. The memory consumable, capped at 10.
 7. Then, and only then, spells.
+
+## 4.7 What is built
+
+**This section is the state of the code. Where it and §4.1–4.6 disagree, this wins.**
+
+### The machine
+
+| Part | File | What it does |
+|---|---|---|
+| Magic Arsenal | `Content/PADplayer/MagicArsenal.cs` | `ModPlayer`. One pool of `MaxSlots` 10, `StartSlots` 3 open. `Unlocked` (earned), the slots (air included, so a cast keeps its place) and the selection per kind are saved. No two of the same cast. Slots take or give only within `HomeReach` (800 px, 50 tiles) of a town NPC's home tile. |
+| Arsenal window | `Content/UI/MagicArsenalUI.cs` | Ten slots beside the inventory, shut ones banded. Shares a corner with the Lore Codex; opening one closes the other. Right click a cast to select it; the selected one per kind wears the ember frame. Away from a house the slots show dimmed and a click says why. |
+| `Castable` | `Content/Items/Mage/Castable.cs` | Abstract `ModItem` for every spell and incantation. `Kind`, `CastDamage`, `Mana`, `UseTime`, `Shot`, `CastType`, `Element`; virtual `Channel`, `Speed`, `Knockback`, `ReuseDelay`, `CanCast`, `Cast`. Does nothing in the hand. |
+| `Catalyst` | `Content/Items/Mage/Catalyst.cs` | Abstract staff or seal. No numbers of its own: every tick it copies damage, mana, use time, reuse delay, channel and shot from the selected cast of its kind, so vanilla's mana, timing, tooltip and prefixes work on it. Nothing selected, `CanUseItem` is false. |
+| Keybinds | `PADKeybinds.SpellUp` (Up), `SpellDown` (Down) | Only while a catalyst is held, and only through casts of its kind. |
+| Colours | `Content/Items/Mage/MagicColours.cs` | Fill and stroke per kind and per element; see below. |
+| Makeshift Altar | `Content/Tiles/MakeshiftAltar.cs`, item in `Content/Items/Misc/` | Crafting station, 3×2, where casts are written. Nothing else. |
+| `/magicarsenal` | `MagicArsenalCommand.cs` | **Test only** (RELEASE_TODO). Bare: reports open and earned. `max`: all ten open (`Maxed`, saved). `normal`: back to `Unlocked`; a cast in a slot that shuts moves to the first empty open slot, or is given back to the player. `Unlocked` is never touched, so going back is exact. |
+
+**Where it left the design:**
+
+- Starts at **3** slots, not 2.
+- Memorising happens **near a lived-in house**, not at a memory tile. The Makeshift Altar
+  is only where casts are crafted.
+- **Nothing raises `Unlocked` yet.** The slot consumable (§4.6 step 6) is not built; only
+  `/magicarsenal max` opens more.
+- The selection is remembered per kind (spell, incantation), which with two catalyst kinds
+  is the same as per catalyst.
+
+### Catalysts
+
+| Catalyst | Class | Kind | Source |
+|---|---|---|---|
+| Branch Staff | `Staves/TreeBranchStaff` | Spell | Dryad's shop |
+| Clothier's Chatelaine | `Seals/SealOfAClothier` | Incantation | Clothier's shop; Skeletron (classic drop, bag in expert and master) |
+
+The only seal comes after Skeletron, so no incantation can be cast before him.
+
+### Casts
+
+| Cast | Class | Kind | Type | Element | Damage | Mana | Use time | Rarity | Source |
+|---|---|---|---|---|---|---|---|---|---|
+| Cold Call | `Spell/ColdCall` | Spell | Evocation | Frost | 36 | 14 | 25, then 15 reuse delay | Green | Altar: 30 Ice Block, Book, 5 Sapphire |
+| Aquatic Firearms | `Spell/AquaticFirearms` | Spell | Conjuration | Conquest | 92 (the S.D.M.G.'s shot) | 50, then 30/s after 3 s | 20, channel | Red | **none yet** |
+| Meagre Flame | `Incantation/MeagreFlame` | Incantation | Evocation | Flame | 40 | 18 | 60, channel | Green | Fire Imp, 1 in 20 |
+| Court of Hands | `Incantation/CourtOfHands` | Incantation | Conjuration | Blood | 30 | 18 | 45, channel | Green | Altar: 20 Essence of the Fouled, Book |
+| Everhunger | `Incantation/EverHunger` | Incantation | Conjuration | Blood | 51 | 18 | 30 | Green | Altar: 29 Essence of the Fouled, Book |
+| Forest, Nurture Me | `Incantation/ForestNurtureMe` | Incantation | Abjuration | Flora and Fauna | 0 | 25 | 30 | Blue | Dryad's shop |
+| Chlorophyte, Arm Me | `Incantation/ChlorophyteArmMe` | Incantation | Transmutation | Flora and Fauna | 0 | 30 | 30 | Lime | Witch Doctor's shop, after Plantera |
+
+All under `Content/Items/Mage/`. Seven casts against ten slots: §4.2 wants twenty to thirty.
+
+### Element colours (`MagicColours`)
+
+| Element | Fill | Stroke |
+|---|---|---|
+| Flame | `#792620` | `#d77f2d` |
+| Blood | `#ff4242` | `#680303` |
+| Frost | `#9fe2ff` | `#1d3b7a` |
+| Flora and Fauna | `#0f3311` | `#1d9f49` |
+| Conquest | `#7a3a24` | ramp, bottom to top: `#bdab51` → `#c8a55b` → `#dbd88f` |
+
+Kind words: Spell `#38462b` on `#da7210`; Incantation `#d65a51` on `#5d7ba2`.
+
+**A ramp stroke** (`StrokeRamps`, `RampOf`) cannot come from vanilla's shadow pass, which
+draws a glyph in one colour. `Stroked(..., ramp)` lays the text out word by word exactly as
+`ChatManager` does (the same kerning and spacing through `DynamicSpriteFont`'s public
+`SpriteCharacters`), draws the four outline offsets at spread 2 a glyph row at a time, each
+row in its colour along the ramp, then the fill over it with `ChatManager.WaveColor`. Plain
+text only, no colour codes. `Castable` and `Catalyst` pass the ramp to the element and
+"Up:" lines. Add an element with a ramp by adding one entry to each dictionary.
+
+### Aquatic Firearms
+
+Held, a Minishark, Megashark and S.D.M.G. hang over the caster, strongest on top (offsets
+0,-38 / 0,-63 / 0,-92), turn to the cursor and fire musket balls.
+
+- **Numbers are read off the real guns** (`AquaticFirearmsBattery.Stats`, from
+  `new Item(type)`, so PSItem's use times 6 / 6 / 4 are in): use time, speed, knockback,
+  crit, sound, and vanilla's scatter (±0.4 per axis, ±0.2 for the S.D.M.G.).
+- **Shot damage is gun + musket ball, rounded:** 13 / 32 / 92 before magic bonuses.
+  *(Designed as ×2/3; changed to full by the user. The doc comments in
+  `AquaticFirearmsBattery.cs` still say ×2/3.)*
+- No ammo. The bullets are `ProjectileID.Bullet` from `GetSource_FromThis()`, set to
+  magic damage and given the gun's crit after spawning.
+- **Mana:** the 50 cast pays for `FreeTicks` 180; then `DrainPerSecond` 30, paid a point at
+  a time. Let go, run dry, put the staff away or change spell, and they leave.
+- **Look:** `AquaticFirearmsSkin` paints each gun's silhouette with a deep-sea nebula and
+  stars drifting in two layers (`AquaticNebula.png` 256×64, `AquaticStars.png` 128×64),
+  CPU-painted, no shader. Rim and halo are tinted by a glow that swings between two colours
+  per gun (`GlowA` / `GlowB` in the battery). In: three Bezier ribbon waves out of the caster's
+  back, each gun growing out of its wave (ease-out-back). Out: the same backwards, top
+  gun first (ease-in-back). The wave sides are frozen at cast, so turning does not flip
+  them.
+- One-off sounds and bursts go through a `played` bitmask with a 6-tick late window, so a
+  skipped or repeated tick neither loses nor doubles them.
+- One battery at a time (`CanCast`: `ownedProjectileCounts == 0`). The tooltip's damage
+  line shows all three shots.
+
+### Chlorophyte, Arm Me
+
+Puts on **Armed** (`Content/Buffs/Armed.cs`) for 20 s; will not recast while more than
+5 s are left. `ArmMeCall` is the cast effect only (green motes drawn in, a bloom,
+chlorophyte dust and jungle leaves).
+
+- **The turning** is `ArmedRounds`, a hook on
+  `On_Projectile.NewProjectile_IEntitySource_float_float_float_float_int_int_float_int_float_float_float`
+  (every overload ends there). A lesser bullet whose owner is Armed is made a
+  `ChlorophyteBullet` instead, with its damage, speed and knockback as given: it homes and
+  hits as hard as it would have, and loses its own effect (a Cursed Bullet's fire).
+- **Only the player's own shots:** the source must be an `EntitySource_Parent` whose entity
+  is the owner, or a non-hostile projectile of theirs. NPC bullets never turn. Covers
+  Aquatic Firearms' guns.
+- **Lesser** is worked out in `PostSetupContent`: a bullet projectile takes the lowest
+  rarity among the ammo that **defines** it (vanilla ammo for a vanilla bullet, the same
+  mod's ammo for a modded one) and is lesser below Lime. Luminite and Chlorophyte Bullets
+  stay. The list is logged to `client.log` at load. Vanilla result: 12 kinds (14, 36, 89,
+  104, 242, 279, 283, 284, 285, 286, 287, 981).
+- **Why "defines":** LuiAFK Reborn's Unlimited ammo clones every vanilla bullet at rarity
+  10. Letting all ammo vote made every kind rarer than chlorophyte and nothing turned.
 
 ---
 

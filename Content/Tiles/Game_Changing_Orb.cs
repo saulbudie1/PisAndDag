@@ -25,10 +25,11 @@ namespace PisAndDag.Content.Tiles
         private static readonly int[] ValidAnvils = { TileID.Anvils, TileID.MythrilAnvil };
 
         /// <summary>
-        /// How long the world reacts to the orb breaking: 3 seconds. The shake and the
-        /// screen filter share this so they cannot drift apart.
+        /// How long the shake holds at full when the orb breaks, before it dies away: the
+        /// impact only. The rest of the stir is LegendsScreenSystem's scene, whose camera
+        /// takes over from the shake as it rises.
         /// </summary>
-        private const int StirDurationTicks = 180;
+        public const int ImpactShakeTicks = 40;
 
         public override void SetStaticDefaults()
         {
@@ -123,9 +124,9 @@ namespace PisAndDag.Content.Tiles
 
             if (Main.netMode != NetmodeID.Server)
             { 
-                Main.LocalPlayer.PIS().AddScreenShake(12f, StirDurationTicks);
+                Main.LocalPlayer.PIS().AddScreenShake(12f, ImpactShakeTicks);
                  
-                LegendsScreenSystem.Trigger(StirDurationTicks);
+                LegendsScreenSystem.Trigger();
             }
         }
     }

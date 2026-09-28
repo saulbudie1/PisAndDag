@@ -19,7 +19,8 @@ namespace PisAndDag.Content.Combat
     ///
     /// Anything that wants one asks for it EVERY TICK it wants it — <see cref="Frame"/>
     /// for the letterbox, <see cref="Look"/> for the camera, <see cref="Hold"/> for the
-    /// player, <see cref="Lean"/> for a zoom — and stops asking when it is done. Nothing
+    /// player, <see cref="Lean"/> for a zoom, <see cref="Cover"/> for something laid over
+    /// the whole picture — and stops asking when it is done. Nothing
     /// is switched on or off, so a boss that dies, despawns or loses its packet
     /// mid-scene cannot leave the camera stuck on a patch of dirt or the player stuck in
     /// place: the moment it stops asking, everything eases back.
@@ -86,6 +87,17 @@ namespace PisAndDag.Content.Combat
         private const float FlashDecay = 0.86f;
 
         private static Texture2D pool;
+
+        // ---- the cover -------------------------------------------------------------
+        //
+        // Something laid over the whole picture of the world: whatever the scene asking
+        // for it draws, in raw screen pixels, first, so the shade, the roar and the bars
+        // all land on top of it, and shown whether or not the interface is. Asked for
+        // every tick like the rest, with the thing that draws it; stop asking and it is
+        // gone the next tick. One at a time: the last to ask in a tick is the one drawn.
+
+        private static Action<SpriteBatch> coverWanted;
+        private static Action<SpriteBatch> cover;
 
         // ---- the lean --------------------------------------------------------------
         //
@@ -213,6 +225,20 @@ namespace PisAndDag.Content.Combat
 
         /// <summary>Whether a shade or a flash is on screen at all.</summary>
         public static bool Shaded => shade > 0.004f || flash > 0.004f;
+
+        /// <summary>
+        /// Lay something over the whole picture of the world, this tick.
+        /// <paramref name="draw"/> is called once a frame, inside an open sprite batch with
+        /// no transform on it (raw screen pixels), before the shade, the roar and the bars.
+        /// It decides everything about what it draws, fades included.
+        /// </summary>
+        public static void Cover(Action<SpriteBatch> draw)
+        {
+            coverWanted = draw;
+        }
+
+        /// <summary>Whether something is laid over the world right now.</summary>
+        public static bool Covered => cover != null;
 
         /// <summary>
         /// Lean the camera in (or back out to 1) by this much on top of the player's own
@@ -393,6 +419,9 @@ namespace PisAndDag.Content.Combat
 
             holding = holdAsked;
 
+            // No easing: whoever asks for a cover does its own fading.
+            cover = coverWanted;
+
             // The pool moves wherever it is asked to be; only its strength eases, so it
             // can be handed from one subject to the next without sliding between them.
             if (shadeAsked)
@@ -443,6 +472,7 @@ namespace PisAndDag.Content.Combat
             holdAsked = false;
             frameAsked = false;
             shadeAsked = false;
+            coverWanted = null;
         }
 
         private static float MoveToward(float from, float to, float step)
@@ -500,13 +530,15 @@ namespace PisAndDag.Content.Combat
                 Main.QueueMainThreadAction(() => oldPool.Dispose());
         }
 
-        /// <summary>A world left mid-roar or mid-lean does not take either into the next one.</summary>
+        /// <summary>A world left mid-roar, mid-lean or mid-cover does not take any of them into the next one.</summary>
         internal static void Reset()
         {
             roarAge = -1;
             roarNpc = -1;
             lean = 1f;
             leanAsked = false;
+            cover = null;
+            coverWanted = null;
         }
 
         /// <summary>
@@ -642,23 +674,26 @@ namespace PisAndDag.Content.Combat
             }
         }
 
+        /// <summary>Height of one bar once fully in, in screen pixels, for laying a shot out between them. Zero when the screen is already this wide.</summary>
+        public static float FullBarHeight => Math.Max(0f, (Main.screenHeight - Main.screenWidth / Wide) * 0.5f);
+
         /// <summary>Height of one bar right now, in screen pixels. Zero when the screen is already this wide.</summary>
         internal static int BarHeight()
         {
             if (frame <= 0f)
                 return 0;
 
-            float full = Math.Max(0f, (Main.screenHeight - Main.screenWidth / Wide) * 0.5f);
-
-            return (int)Math.Round(full * MathHelper.SmoothStep(0f, 1f, frame));
+            return (int)Math.Round(FullBarHeight * MathHelper.SmoothStep(0f, 1f, frame));
         }
 
         /// <summary>
-        /// The bars, in raw screen pixels. Called from inside an open sprite batch with
-        /// no transform on it; both draw paths below arrange that.
+        /// The cover, the shade, the roar and the bars, in that order, in raw screen pixels.
+        /// Called from inside an open sprite batch with no transform on it; both draw paths
+        /// below arrange that.
         /// </summary>
         internal static void DrawBars(SpriteBatch spriteBatch)
         {
+            cover?.Invoke(spriteBatch);
             DrawShade(spriteBatch);
             DrawRoar(spriteBatch);
 
@@ -753,7 +788,7 @@ namespace PisAndDag.Content.Combat
 
         public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
         {
-            if (!Cinematic.Framed && !Cinematic.Shaded && !Cinematic.Roaring)
+            if (!Cinematic.Framed && !Cinematic.Shaded && !Cinematic.Roaring && !Cinematic.Covered)
                 return;
 
             layers.Insert(0, new LegacyGameInterfaceLayer("PisAndDag: Letterbox", () =>
@@ -766,7 +801,7 @@ namespace PisAndDag.Content.Combat
         private static void DrawBarsOverEverything(GameTime gameTime)
         {
             // Only when the interface path did not run this frame.
-            if (!Main.hideUI || Main.gameMenu || (!Cinematic.Framed && !Cinematic.Shaded && !Cinematic.Roaring))
+            if (!Main.hideUI || Main.gameMenu || (!Cinematic.Framed && !Cinematic.Shaded && !Cinematic.Roaring && !Cinematic.Covered))
                 return;
 
             // Linear, as the interface path is: the pool and the rings are stretched far

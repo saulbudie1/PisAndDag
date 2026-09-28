@@ -10,6 +10,7 @@ Things in the tree that are for testing, or unfinished, or should not ship. Tick
 - [ ] **`/megashark`** — `MegasharkCommand.cs`. The real summon is the Minishark (`MegasharkCall.cs`).
 - [ ] **`/legends`** — `LegendsCommand.cs`. Legends is switched on by the Orb.
 - [ ] **`/struct`** — `StructCommand.cs`. Worldgen structures place themselves.
+- [ ] **`/magicarsenal`** — `MagicArsenalCommand.cs`, plus `MagicArsenal.Maxed`, `Max()`, `Normal()` and the `"maxed"` save key. Slots should only open by being earned.
 - [ ] `Description` strings on any command that survives should not say "for testing".
 
 ## Should not be packed — `build.txt`
@@ -40,12 +41,19 @@ Then check the built size dropped.
 - [ ] **Event bosses as plain** (`BossPlate.NotBosses`) — list was built from vanilla's boss-head set; check Old One's Army in play, and whether Betsy should be a boss after all.
 - [ ] **Lore Bible: "nine hundred years"** — 5 in the Bible, 3 in the chronicle. You said ~300 and no number. Strip them; keep the figure in `PAD_Lore_Planning.md` only.
 - [ ] **White Death** — still a registered boss (`Content/NPCs/WhiteDeath`). Is it shipping?
+- [ ] **Aquatic Firearms** — no source. Red rarity, so it belongs late.
+- [ ] **Reliquary Key** — no source.
+- [ ] **Arsenal slots** — nothing raises them past 3 (the memory consumable, Item Plan §4.6 step 6, is not built).
+- [ ] **Incantations before Skeletron** — the only seal comes after him, but Meagre Flame drops earlier.
 
 ## Known rough edges
 
 - [ ] `QuickSpawnClonedItem` obsolete warnings.
 - [ ] `AshDissolve.cs:75` fade bug.
 - [ ] `Content/Projectiles/Ranged/ChlorophyteBullet.cs` / `.png` — was marked for deletion.
+- [ ] `Content/NPCs/Legends/SlimeMass.cs`, `Content/Sounds/AbomanationWarn.ogg`, the `Content/Tiles/SealGlass.cs` stub — to delete.
+- [ ] `AquaticFirearmsBattery.cs` doc comments still say damage ×2/3; the code is gun + ball.
+- [ ] Placeholder art — every row in `PlaceholderTextures.md`.
 - [ ] `description.txt` is still the template placeholder. `build.txt` version is `1.0` — set it honestly.
 
 ## Last

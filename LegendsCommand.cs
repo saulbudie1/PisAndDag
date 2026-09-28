@@ -4,11 +4,11 @@ using Terraria.ModLoader;
 namespace PisAndDag
 {
     /// <summary>
-    /// Development helper for the Legends flag and its screen effect.
+    /// Development helper for the Legends flag and its scene.
     ///
     ///   /legends          report the current flag
     ///   /legends on|off   set it, so an orb can be placed and broken again
-    ///   /legends fx       fire the stir effect on its own, without a tile
+    ///   /legends fx       play the stir on its own, without a tile
     ///
     /// The flag is permanent by design, which makes it awkward to test: once it is set,
     /// orbs cannot be placed and breaking one does nothing. This is the way back.
@@ -40,15 +40,14 @@ namespace PisAndDag
                         break;
 
                     case "fx":
-                        // Runs the shake and the filter without touching a tile, so the
-                        // shader can be tuned without replacing and rebreaking an orb.
-                        Main.LocalPlayer.PIS().AddScreenShake(12f, 180);
-                        LegendsScreenSystem.Trigger(180);
+                        // The whole scene without touching a tile, so it can be tuned without
+                        // replacing and rebreaking an orb.
+                        Main.LocalPlayer.PIS().AddScreenShake(12f, Content.Tiles.Game_Changing_Orb.ImpactShakeTicks);
+                        LegendsScreenSystem.Trigger();
 
-                        caller.Reply(LegendsScreenSystem.Registered
-                            ? "Fired the stir effect."
-                            : "Shake fired, but the screen filter is NOT registered — "
-                              + "Effects/LegendsShader.xnb is missing.");
+                        caller.Reply(LegendsPlate.Available
+                            ? "Played the stir."
+                            : "Played the stir, but without the red: the plate could not hook the draw. See client.log.");
                         return;
 
                     default:
@@ -57,8 +56,7 @@ namespace PisAndDag
                 }
             }
 
-            caller.Reply("PADWorld.Legends = " + PADWorld.Legends
-                + " | filter registered: " + LegendsScreenSystem.Registered);
+            caller.Reply("PADWorld.Legends = " + PADWorld.Legends + " | plate available: " + LegendsPlate.Available);
         }
     }
 }

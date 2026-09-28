@@ -9,8 +9,9 @@
 > **Start here:** **§12.9 — build a local compiler before writing any code.** Then §12.12
 > (the live TODO), §12.10 and §11.9 (verified API facts), and the version traps in §11.9
 > (`WorldGen.Convert`'s fake radius, `BiomeConversionID` not existing in 1.4.4).
+> For magic: `PAD_Item_Plan.md` §4.7 (what is built), then §13.5 (the live TODO) and §13.3.
 >
-> **Sessions: 0–10 = session 1, §11 = session 2, §12 = session 3.** Later wins.
+> **Sessions: 0–10 = session 1, §11 = session 2, §12 = session 3, §13 = session 4.** Later wins.
 
 ---
 
@@ -1395,6 +1396,7 @@ physics at `WhipTossBoost 4`.
   one pool of ten, cast through a staff or a seal held in hand, cycled with two keybinds
   that skip what the held catalyst cannot cast. **Nothing of it exists**: no magic item, no
   summon item, no catalyst, no save data. Multi-session build, and §4.6 is the order.
+  *[Superseded in session 4: built. See `PAD_Item_Plan.md` §4.7.]*
 - `PAD_NPC_Plan.md` **§2.8 — the Abomanation's drops.** A material plus recipes rather than
   a random weapon pick. Gaping Jaw, the whip, a hand minion, a bow of teeth, the lore
   number. The two incantations are held back until the memory system exists.
@@ -1425,3 +1427,126 @@ Start with one scene and three figures.
   in the signatures and obvious in `Player.Hurt` and `Player.DryCollision`.
 - **When the user says a feature "does not work", check the layer below the obvious one.**
   "Wings are immune to the ragdoll" was immunity frames. Nothing to do with wings.
+
+---
+
+# SESSION 4
+
+> **The log starts late.** The magic system (spells, incantations, catalysts, the Magic
+> Arsenal, the Makeshift Altar, the mana potion effects) was built over rounds that were
+> not written up here. What exists is recorded in **`PAD_Item_Plan.md` §4.7**; read that
+> first. This section covers the last round in detail and what it taught.
+>
+> Where session 4 disagrees with 1–3, session 4 wins.
+
+---
+
+## 13.1 What landed
+
+| Work | Where | Notes |
+|---|---|---|
+| `/magicarsenal`, `max`, `normal` | `MagicArsenalCommand.cs`, `MagicArsenal.Maxed` / `OpenSlots` / `Max()` / `Normal()` | Test command. `Maxed` is saved as `"maxed"`. The UI reads `OpenSlots`. |
+| Conquest element and its ramp stroke | `MagicColours.cs` | First element whose stroke is a ramp. Item Plan §4.7. |
+| Aquatic Firearms | `Spell/AquaticFirearms.cs`, `Projectiles/Magic/AquaticFirearmsBattery.cs`, `AquaticFirearmsSkin.cs` | No source yet. Damage changed by the user to gun + ball (was ×2/3). |
+| Chlorophyte, Arm Me + Armed | `Incantation/ChlorophyteArmMe.cs`, `Buffs/Armed.cs`, `Projectiles/Magic/ArmMeCall.cs` | Witch Doctor, after Plantera. |
+| Fix: Armed turned nothing | `ArmedRounds.PostSetupContent` | §13.4. |
+
+Localization added: `Items.AquaticFirearms`, `Items.ChlorophyteArmMe`, `Buffs.Armed`,
+`Projectiles.AquaticFirearmsBattery`, `Projectiles.ArmMeCall`. Placeholder rows added to
+`PlaceholderTextures.md` for `AquaticFirearms.png`, `ChlorophyteArmMe.png`, `Armed.png`.
+
+---
+
+## 13.2 The compiler, as it stands
+
+§12.9 still holds, with two changes:
+
+- The script (`build.sh`, recreate it per §12.9 in a new container) compiles with
+  **`-define:CLIENT`** added.
+- **Clean baseline is now 0 errors, 13 warnings.** Anything above that is yours.
+
+---
+
+## 13.3 Verified this session (tML 1.4.4, against the DLL IL)
+
+- `On_Projectile.NewProjectile_IEntitySource_float_float_float_float_int_int_float_int_float_float_float`
+  hooks the real implementation; the `Vector2` overload forwards to it. One hook sees every
+  projectile made.
+- In `NewProjectile`, `owner == -1` means `Main.myPlayer`. Do the same substitution before
+  reading `Main.player[owner]` in a hook.
+- `ApplyStatsFromSource`: a parent **projectile** passes on its `CritChance`; a player
+  **item** source adds `GetWeaponCrit`. A bullet fired from a projectile does not get the
+  gun's crit by itself: add it after spawning.
+- `EntitySource_ItemUse_WithAmmo` → `EntitySource_ItemUse` → `EntitySource_Parent`.
+  `Projectile.GetSource_FromThis()` is an `EntitySource_Parent`. One `is EntitySource_Parent`
+  test covers both (as §12.6 found for critters).
+- `PostSetupContent` runs after `ContentSamples.Initialize`: `ContentSamples.ItemsByType`
+  is safe to read there, modded items included.
+- `ItemID.Count` 5456, `ProjectileID.Count` 1022.
+- Mod PNGs load as raw images with **straight** alpha; vanilla XNB textures are
+  **premultiplied**. Reading a vanilla sprite's pixels (`AquaticFirearmsSkin`) must allow
+  for it.
+- `ChatManager`'s text shadow is four offsets (±x, ±y) at spread 2; it draws text a word at
+  a time; `DrawColorCodedString` applies `ChatManager.WaveColor` to the fill.
+- `DynamicSpriteFont` exposes `SpriteCharacters` and `DefaultCharacterData` publicly;
+  `SpriteCharacterData` has public fields `Texture`, `Glyph`, `Padding`, `Kerning`. Enough
+  to lay text out exactly as vanilla does and draw it by hand.
+- Vanilla gun numbers (damage / shoot speed / use time / crit / sound): Minishark 6 / 7 / 8 /
+  0 / Item11, Megashark 25 / 10 / 7 / 0 / Item11, S.D.M.G. 85 / 12 / 5 / +10 / Item40.
+  PSItem makes the use times 6 / 6 / 4. Musket Ball 7 damage, 4 speed, 2 knockback. Scatter
+  is `rand(-40, 40) × 0.01` per axis, `× 0.005` for the S.D.M.G.
+- The sixteen vanilla bullet ammo and their projectiles (rarity): Musket Ball, Tungsten
+  Bullet 14 (0); Endless Musket Pouch 14 (2); Meteor Shot 36 (1); Silver Bullet 981 (0);
+  Crystal 89, Cursed 104, High Velocity 242, Ichor 279, Venom 283, Party 284, Nano 285,
+  Exploding 286, Golden 287 (all 3); Chlorophyte 207 (7); Luminite 638 (9).
+
+---
+
+## 13.4 Errors hit this session and their fixes
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Armed on, every bullet stays normal | **LuiAFK Reborn** clones each vanilla bullet as Unlimited ammo with the same projectile and `rare = 10`. Taking a projectile's rarity from *all* ammo made every kind rarer than chlorophyte, so the lesser set was empty. | A projectile's rarity comes only from the ammo that **defines** it: vanilla ammo for a vanilla bullet, its own mod's ammo for a modded one. Simulated: old rule `[]`, new rule the 12 expected. The set is now logged at load. |
+| Waves would flip sides if the player turned mid-cast | Drawn from the live `player.direction` | Directions frozen at cast (`outDir`, `backDir`) |
+| One-off sounds could be lost or doubled | Keyed to exact ages; a skipped or repeated tick misses or repeats | `Once(bit, age, at)` on a `played` bitmask with a 6-tick late window |
+| A doc comment claimed a meaning for Conquest | Invented, not in the Bible | Removed. **Never write lore into a comment that the Bible does not say.** |
+
+How the LuiAFK fault was found: `client.log` showed a clean load, the hook registered and
+no exceptions, so the fault was in logic, not wiring. Then LuiAFK's `.tmod` was extracted
+and its DLL read (workshop folder `steamapps/workshop/content/1281930`, access granted).
+
+---
+
+## 13.5 Open TODO after session 4
+
+**Needs the user's hands (no delete tool):**
+
+1. Delete `Content/NPCs/Legends/SlimeMass.cs`, `Content/Sounds/AbomanationWarn.ogg`,
+   `Content/Projectiles/Ranged/ChlorophyteBullet.cs` + `.png`, and the `Content/Tiles/SealGlass.cs` stub.
+
+**Unfinished:**
+
+2. **Aquatic Firearms has no source.** Red rarity; it has to be cheated in.
+3. **Reliquary Key has no source.**
+4. **No incantation can be cast before Skeletron**: the only seal (Clothier's Chatelaine)
+   comes from the Clothier and Skeletron, while Meagre Flame drops from Fire Imps before
+   him.
+5. **Nothing raises the arsenal past 3 slots** except `/magicarsenal max`.
+6. The doc comments in `AquaticFirearmsBattery.cs` (class summary and `GunStats.ShotBase`)
+   still say ×2/3; the code is gun + ball.
+7. Placeholder art for everything new: `PlaceholderTextures.md`.
+
+**Not yet confirmed in game:** Arm Me's conversion after the fix.
+
+---
+
+## 13.6 Process notes
+
+- **When a feature "does nothing", read `client.log` first.** It told us the hook loaded
+  and nothing threw, which ruled out half the causes before any code was read.
+- **Suspect the other mods in the user's list.** Anything that scans all content
+  (`ContentSamples`, every item, every projectile) sees their content too. Read their DLL
+  rather than guess.
+- **Log what a load-time rule decided.** One `Mod.Logger.Info` line turns the next
+  "it does not work" into a fact.
+- **Simulate a rule against the real data before shipping it**, as §12.13 says for motion.

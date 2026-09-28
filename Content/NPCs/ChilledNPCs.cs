@@ -4,21 +4,11 @@ using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace PisAndDag.Content.NPCs
-{
-    /// <summary>
-    /// Chilled on creatures. Vanilla puts Chilled only on players and has no slowing debuff for
-    /// NPCs at all, so this teaches Chilled to slow them. Cold Call puts it on.
-    ///
-    /// The slow is Calamity's (CalamityGlobalNPC.PostAI): once the creature has moved itself,
-    /// its velocity is divided by one plus <see cref="Slow"/>, every tick. Bosses are left alone,
-    /// as Calamity leaves them, and so is anything vanilla counts as part of one.
-    /// </summary>
+{ 
     public class ChilledNPCs : GlobalNPC
-    {
-        /// <summary>Calamity's figure for its lighter slows (Webbed, Time Distortion).</summary>
+    { 
         public const float Slow = 0.15f;
-
-        /// <summary>What a chilled creature is drawn through: cooler, never brighter.</summary>
+         
         private static readonly Color Tint = new Color(170, 215, 255);
 
         private static bool Chilled(NPC npc) =>
