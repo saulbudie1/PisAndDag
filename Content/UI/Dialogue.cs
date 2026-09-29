@@ -165,6 +165,8 @@ namespace PisAndDag.Content.UI
         {
             registry.Clear();
             Close(silent: true);
+            faceIndex = -1;
+            faceType = -1;
             ReleaseZoom();
             fade = 0f;
             panel = null;
@@ -181,6 +183,10 @@ namespace PisAndDag.Content.UI
         /// <summary>Who is speaking. -1 when nobody.</summary>
         private static int npcIndex = -1;
         private static int npcType = -1;
+
+        /// <summary>Who spoke last, for the face on the panel while it fades out after them.</summary>
+        private static int faceIndex = -1;
+        private static int faceType = -1;
 
         /// <summary>The line, and the line broken to the panel's width.</summary>
         private static string wrapped = "";
@@ -291,6 +297,8 @@ namespace PisAndDag.Content.UI
         {
             npcIndex = npc.whoAmI;
             npcType = npc.type;
+            faceIndex = npc.whoAmI;
+            faceType = npc.type;
             replaced = null;
             locked = false;
             pendingScene = null;
@@ -677,6 +685,18 @@ namespace PisAndDag.Content.UI
 
             ChatManager.DrawColorCodedStringWithShadow(spriteBatch, font, shown,
                 new Vector2(box.X + PadX, box.Y + PadTop), TextColour * fade, 0f, Vector2.Zero, Vector2.One);
+
+            // The speaker's face on the corner: black until they have said who they are,
+            // which may be in this very line.
+            NPC face = npc;
+
+            if (face == null && faceIndex >= 0 && Main.npc[faceIndex].active && Main.npc[faceIndex].type == faceType)
+                face = Main.npc[faceIndex];
+
+            if (npc != null)
+                DialoguePortrait.Hear(npc, shown);
+
+            DialoguePortrait.DrawOnPanel(spriteBatch, face, box, panel.Value, fade);
 
             if (answers == null)
             {

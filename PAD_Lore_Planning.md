@@ -324,3 +324,46 @@ Lines on the table:
 - What exactly does the rifle take, and is it stated or only shown?
 - Does he fire for the player once, ever? If he does, the Court learns of it — the same shape as the first Quietus and the Orb alerting the Sky.
 - Is he a boss in the bar sense at all? He is currently `boss = true` with a head icon and no way to hurt him, which is either a bug or the joke.
+
+---
+
+# 9. The Clanmaster — plan
+
+New. Nothing in the Bible and nothing in the mod yet. **Clanmaster** is a working name, taken from his sword.
+
+## 9.1 Decided
+
+- A knight: a medieval swordsman with a straight sword, not a katana. Very strong and fast. He deflects projectiles, dodges, and parries.
+- His clan was destroyed half a year before the Working (the Archmage's act, §XIII; the Timeline's year zero). He went to kill the head of the clan that did it, and by then death no longer held: the man survived being killed. So he trapped him, to kill him once and for all when it could be done.
+- **The questline is the restoration.** The player helps him make Mors remember (§XXXII.3).
+- Met again after Mors remembers, he has killed his prisoner. He has lived too long, and what he wants now is a warrior's death, a deserved one. He asks the player for it.
+- **An optional boss.** Post–Moon Lord, and he can be stronger than the Archmage.
+- **The end of the fight is a choice.** When he is bleeding out, the player can:
+  - **kill him**: his wish is granted. No sword. An achievement, **Wish Maker**.
+  - **spare him**: the player gets the sword, and he dies dissatisfied.
+- He is built to be likable, so players want to give him the death he asks for.
+- The choice is offered by a very small picture in a corner of the screen, over the cinematic, drawing as little attention as it can.
+
+### The sword: Clanmaster's Corpse Piler
+
+One side rusted, one side clean. He fights the player with the clean side.
+
+## 9.2 Proposed in discussion, not decided
+
+- **§XXXII.3 gives the motive.** When Mors remembers, "everyone who had been living on the amnesia now goes". A man three hundred years old is exactly that. So his death is coming whatever the player does, and what he wants is to choose its kind: a sword, not a bed. The spare branch then needs nothing special: the player walks away and death takes him the dull way, which is why he dies dissatisfied. (Tension to settle: if the restoration takes the overstayed at once, he cannot be met after it. He has to be going, not gone.)
+- **Kill is the Quietus.** §XVI: after the restoration the Blade of Mors ends what is already dying, in the last sliver. The last minute of this fight is that sliver. §XVI also says the first Quietus is what turns the Low Court toward the player: decide whether this may be the first, or must not be.
+- **The sword reads twice.** The rusted side did three hundred years of killing on one man who kept getting up: §XIV's recut stone, in steel. The clean side has not been used since, because nobody was worth it. Fighting the player with it is the compliment.
+- **The picture in the corner:** the Blade of Mors item sprite, about 24 px, faint, pulsing slowly. Kill is using the Blade while it is up; spare is doing nothing until it fades (8 to 10 seconds), so not choosing is the choice. Without the Blade: straight to spare, or the fight is gated on carrying it. Undecided.
+- **His part in the restoration is self-interest.** The prisoner cannot be ended until death works, so he helps. He may know where the Clerk is: the Clerk's archive is a copy of Mors's lost memory (§XIV).
+- **Likable, concretely:** courteous, dryly funny, generous with advice, three centuries good at patience. He treats the player as a peer rather than a tool, which sets him beside Pugream (§XXXI) in the book's structure. The prison is never shown before the restoration: players like him first and learn what his patience was for afterwards.
+- **Where his dead are:** the clan's battlefield can be one of §XIV's un-rotted fields, the bodies still lying where they fell.
+- **The mirror:** his clan died before the Working, so theirs was one of the last killings that held; his enemy's came after, and did not. The same line Bustworth's patricide stands on (§XIX).
+- **Achievements:** the installed tModLoader has a `ModAchievement` type (members not yet checked). Keep any system small: a handful for choices like this one, not a kill list.
+
+## 9.3 Open
+
+- Who the two clans are: families of Grace, a people outside the kingdom, or two sides of the goblin war's siege line (§XXI)? Not "houses": the Bible already uses that for the learned houses (§XXVII).
+- Did the enemy head know the Working was coming, and time the massacre? Too close to Bustworth if confirmed; better suspected and never answered.
+- The withheld fact: what the prisoner did, or what the Clanmaster's own clan did first. A revenge story is stronger if the player can never be sure who began it.
+- His name. Where he is met before the restoration, and where the prison is.
+- Can he be killed without the Blade of Mors?

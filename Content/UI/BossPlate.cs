@@ -39,6 +39,14 @@ namespace PisAndDag.Content.UI
         public BossIntroProfile Intro;
 
         /// <summary>
+        /// For an OwnIntro boss whose own cutscene starts the name itself
+        /// (BossIntro.PlayNameOnly) at its own moment, however long the boss has sat in
+        /// the middle of the shot before it. The name is still started for it once it can
+        /// be hurt, if the cutscene never did.
+        /// </summary>
+        public bool NameByHand;
+
+        /// <summary>
         /// False for a boss that must keep moving through its arrival (the Wall). True
         /// otherwise: BossArrivalWait holds the boss still until the camera is home.
         /// </summary>
@@ -389,6 +397,15 @@ namespace PisAndDag.Content.UI
             Entry(npcType).OwnIntro = when ?? (_ => true);
         }
 
+        /// <summary>
+        /// This type's own arrival starts its name itself, at its own moment: it is not
+        /// started for it when the boss has been centred for a beat.
+        /// </summary>
+        public static void NamesItself(int npcType)
+        {
+            Entry(npcType).NameByHand = true;
+        }
+
         /// <summary>This type keeps moving through its arrival; BossArrivalWait leaves it alone.</summary>
         public static void NoWait(int npcType)
         {
@@ -444,6 +461,7 @@ namespace PisAndDag.Content.UI
                 Intro = reg?.Intro,
                 Waits = reg?.Waits ?? true,
                 Plain = plain,
+                NameByHand = reg?.NameByHand ?? false,
             };
         }
 
@@ -639,6 +657,18 @@ namespace PisAndDag.Content.UI
             if (BossIntro.Running)
             {
                 nameFlightPending = false;
+                return;
+            }
+
+            // One that names itself waits for its own cue, or for being able to be hurt.
+            if (current.NameByHand)
+            {
+                if (!npc.dontTakeDamage)
+                {
+                    nameFlightPending = false;
+                    BossIntro.PlayNameOnly(npc.whoAmI, current.Intro);
+                }
+
                 return;
             }
 

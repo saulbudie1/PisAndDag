@@ -67,6 +67,9 @@ namespace PisAndDag.Content.NPCs.Pugream
             // camera in when the player walks up (Dialogue).
             Stillness.Register(pugream);
 
+            // His face on the panel; black until he says his name, which is the first thing he says.
+            DialoguePortrait.Register(pugream, "PisAndDag/Content/NPCs/Pugream/Pugream_Head");
+
             Dialogue.Register(pugream, Opener, HeadHeight, Pace,
                 new TalkOption("The sword", _ => Dialogue.Say(TheSword, Back)),
                 new TalkOption("The arrow", _ => Dialogue.Say(TheArrow, Back)),

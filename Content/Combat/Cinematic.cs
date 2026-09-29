@@ -845,15 +845,54 @@ namespace PisAndDag.Content.Combat
 
         public override bool CanUseItem(Item item) => !Cinematic.Holding;
 
+        /// <summary>Ticks of immunity a hold keeps topped up. Renewed every tick it lasts.</summary>
+        private const int CoverTicks = 2;
+
+        /// <summary>Held last tick. The tick a hold ends is when what it did to the blink is undone.</summary>
+        private bool held;
+
         public override void PostUpdateEquips()
         {
             if (!Cinematic.Holding)
+            {
+                if (held)
+                    LetGo();
+
                 return;
+            }
+
+            held = true;
 
             // A player who cannot move or fight should not be killable by a passing
-            // zombie while they watch. Two ticks, renewed while held, gone the tick after.
+            // zombie while they watch.
             Player.immune = true;
-            Player.immuneTime = Math.Max(Player.immuneTime, 2);
+            Player.immuneTime = Math.Max(Player.immuneTime, CoverTicks);
+
+            // Without the blink. The game blinks an immune player by stepping immuneAlpha
+            // every tick (Player.UpdateImmunity), and past halfway it does not draw the
+            // player at all (Player.GetImmuneAlpha): in a held shot that is the player
+            // flashing in and out, and in the Legends poster the silhouette with it.
+            // immuneNoBlink holds the alpha at nothing from the next tick; it is zeroed
+            // here as well because this tick's step has already been taken.
+            Player.immuneNoBlink = true;
+            Player.immuneAlpha = 0;
+        }
+
+        /// <summary>
+        /// The hold is over. The cover it kept topped up goes with it, and immunity that runs
+        /// longer (a real hit taken just before the scene) blinks again, as a hit should.
+        /// </summary>
+        private void LetGo()
+        {
+            held = false;
+
+            if (Player.immuneTime <= CoverTicks)
+            {
+                Player.immune = false;
+                Player.immuneTime = 0;
+            }
+
+            Player.immuneNoBlink = false;
         }
     }
 }

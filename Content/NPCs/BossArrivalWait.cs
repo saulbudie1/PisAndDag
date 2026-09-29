@@ -207,6 +207,13 @@ namespace PisAndDag.Content.NPCs
 
         public bool Waiting => left > 0;
 
+        /// <summary>
+        /// For a leader: from its spawn until the camera is home. Waiting, or not yet
+        /// ticked at all, when the length of its wait is still to be decided. (A part
+        /// never decides one, so ask its leader.)
+        /// </summary>
+        public bool Arriving => left != 0;
+
         private static bool Leads(NPC npc) => (npc.boss || Heads.Contains(npc.type)) && !Parts.Contains(npc.type);
 
         /// <summary>The leader type a part belongs to; a leader is its own.</summary>

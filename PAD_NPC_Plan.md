@@ -286,7 +286,7 @@ same way, so the player learns one signal (`Content/Combat/CCBypass.cs`):
 - **Nothing bypasses quietly.** A new attack that ignores knockback resistance, shields,
   or immunity frames sets the flag or it does not ship.
 
-## 2.8 Drops — **DESIGNED, NOT BUILT**
+## 2.8 Drops — **DESIGNED; the whip is built**
 
 Everything comes off the animal: a mouth, a hand, a tooth. Nothing here is a generic
 slot-filler, and nothing should be.
@@ -302,7 +302,7 @@ says it out loud (§XXVII).
 | Class | Item | Notes |
 |---|---|---|
 | Melee | **Gaping Jaw** | Left click bites. Captures an NPC under a threshold, which goes **non-lethal** and is dragged; after a hold it is crushed. Second attack is a fast short-range bite, ~30. |
-| Summon | **Joint Arms of the Defiled** | A whip. Carries the blood spill (`AbomanationChain.Slashed`). |
+| Summon | **Joint Arms of the Defiled** | **Built.** A whip, every player's own off the kill (in the bag in expert). 30 damage, a 25-tick swing, Firecracker's reach, no tag. Five cracks in a row that land charge the next, which gives Many Hands (10% summon damage, 16 s). Spatters blood where it strikes, on the animal's scale (`JointArmsOfTheDefiledProj`). Built on `Content/Projectiles/Base/BaseWhip.cs`. |
 | Summon | **a hand minion** | **[GAP]** A whip is a tag weapon, not a class. A severed hand that crawls or hauls itself along and grabs things. Without this, summoners get half a reward. |
 | Ranged | **a bow of teeth** | With teeth-tipped arrows as its ammo. |
 | Lore | **the number** | First kill only. The tally-plate says the number and the animal shows what it looks like (§XXI); this is where the player is given it. Uses the existing `LoreLock` system. |
@@ -319,7 +319,8 @@ says it out loud (§XXVII).
   from your minions is a straight DPS loss. Durendal is 0, Snapthorn is 1. High knockback
   fights the class. Either drop it and lean on the tag bonus, or keep it and accept this is
   a *space-control* whip with a weak tag. 35 damage is also high for pre-Wall; Firecracker
-  is 40 and that is post-mech. **22 to 26** with a strong tag.
+  is 40 and that is post-mech. **22 to 26** with a strong tag. *Built at 30 damage with no tag, by
+  request; the streak and Many Hands are what it gives instead.*
 - **The arrows.** There is essentially **no lifesteal pre-hardmode in vanilla**, and that is
   deliberate; 1 to 3 HP an arrow with a fast bow out-heals the tier. Gate it: on crit only,
   or an internal cooldown, or only below half health. And ammo is a poor trophy — the drop

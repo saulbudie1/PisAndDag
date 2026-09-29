@@ -8,6 +8,7 @@ using PisAndDag.Content.Particles;
 using PisAndDag.Content.Structures;
 using PisAndDag.Content.Combat;
 using PisAndDag.Content.Items.Misc;
+using PisAndDag.Content.Items.Summoner;
 using PisAndDag.Content.UI;
 using Terraria;
 using Terraria.Audio;
@@ -1704,9 +1705,9 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
 
         /// <summary>
         /// Expert and master: a treasure bag for every player who fought it (AmalgaermisBag),
-        /// with the essence in it. Classic: the essence itself, 20 to 25 for every player who
-        /// fought it, each their own stack (PerPlayerDrop). All of it falls where PreKill
-        /// moved the head.
+        /// with the essence and Joint Arms of the Defiled in it. Classic: the essence itself,
+        /// 20 to 25 for every player who fought it, and the whip, one each, every stack each
+        /// player's own (PerPlayerDrop). All of it falls where PreKill moved the head.
         /// </summary>
         public override void ModifyNPCLoot(NPCLoot npcLoot)
         {
@@ -1715,6 +1716,7 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             LeadingConditionRule classic = new LeadingConditionRule(new Conditions.NotExpert());
             classic.OnSuccess(new PerPlayerDrop(ModContent.ItemType<EssenceOfTheFouled>(),
                 EssenceOfTheFouled.PerKillLeast, EssenceOfTheFouled.PerKillMost));
+            classic.OnSuccess(new PerPlayerDrop(ModContent.ItemType<JointArmsOfTheDefiled>(), 1, 1));
             npcLoot.Add(classic);
         }
 

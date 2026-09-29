@@ -9,9 +9,10 @@ namespace PisAndDag.Content.Particles
     /// <summary>
     /// One tile of ground heaved up by a blow and settling back: after a wait it is kicked
     /// up a little way and comes down again slowly, drawn as itself, with the earth it came
-    /// up on showing under it. A row of these with their waits and heights stepped off from
-    /// the centre is a wave running out through the floor and dying as it goes
-    /// (<see cref="GroundWave"/>).
+    /// up on showing under it. Up is the floor's way; a tile in a wall or a ceiling is
+    /// heaved out of its face the same way (the push), toward the open side. A row of these
+    /// with their waits and heights stepped off from the centre is a wave running out
+    /// through the ground and dying as it goes (<see cref="GroundWave"/>).
     ///
     /// The moment it starts to rise it throws its own dust and a puff of dust fog in the
     /// colour of the ground. Only whole solid tiles lift: sloped and half tiles (their frames
@@ -35,6 +36,9 @@ namespace PisAndDag.Content.Particles
         private readonly int away;
         private readonly Color fog;
 
+        /// <summary>Which way it is heaved, one tile's step: out of the face it is in. (0, -1) for a floor.</summary>
+        private readonly Point push;
+
         private readonly Texture2D texture;
         private readonly Rectangle frame;
         private readonly bool whole;
@@ -46,8 +50,21 @@ namespace PisAndDag.Content.Particles
         /// <param name="away">Which way the wave is running: -1 west, 1 east, 0 both.</param>
         /// <param name="fog">The colour of the dust it throws.</param>
         public LiftedTile(Point tile, int wait, int rise, float height, int away, Color fog)
+            : this(tile, wait, rise, height, away, fog, new Point(0, -1))
+        {
+        }
+
+        /// <param name="tile">The tile, in tile coordinates.</param>
+        /// <param name="wait">Ticks before it moves.</param>
+        /// <param name="rise">Ticks out and back.</param>
+        /// <param name="height">How far out it goes, in pixels.</param>
+        /// <param name="away">Which way the wave is running along the face: -1 toward lower x (or y on a wall), 1 higher, 0 both.</param>
+        /// <param name="fog">The colour of the dust it throws.</param>
+        /// <param name="push">Which way it is heaved, out of its face: (0, -1) a floor, (0, 1) a ceiling, (1, 0) or (-1, 0) a wall.</param>
+        public LiftedTile(Point tile, int wait, int rise, float height, int away, Color fog, Point push)
         {
             this.tile = tile;
+            this.push = push;
             this.wait = Math.Max(0, wait);
             this.rise = Math.Max(2, rise);
             this.height = height;
@@ -90,7 +107,11 @@ namespace PisAndDag.Content.Particles
             if (!t.HasTile)
                 return;
 
-            // Its own dust, knocked up out of it.
+            // Along its face, and out of it. A floor: across, and up.
+            Vector2 along = push.X == 0 ? Vector2.UnitX : Vector2.UnitY;
+            Vector2 outward = new Vector2(push.X, push.Y);
+
+            // Its own dust, knocked out of it.
             for (int i = 0; i < 2; i++)
             {
                 int index = WorldGen.KillTile_MakeTileDust(tile.X, tile.Y, t);
@@ -99,20 +120,21 @@ namespace PisAndDag.Content.Particles
 
                 Dust dust = Main.dust[index];
                 dust.noGravity = false;
-                dust.velocity = new Vector2(Main.rand.NextFloat(-1.5f, 1.5f) + away * Main.rand.NextFloat(0.5f, 2f),
-                    -Main.rand.NextFloat(2f, 4f + height * 0.2f));
+                dust.velocity = along * (Main.rand.NextFloat(-1.5f, 1.5f) + away * Main.rand.NextFloat(0.5f, 2f))
+                    + outward * Main.rand.NextFloat(2f, 4f + height * 0.2f);
                 dust.scale = Main.rand.NextFloat(0.8f, 1.2f);
             }
 
-            // The fog it lets go, rolling on the way the wave runs.
+            // The fog it lets go at its face, rolling on the way the wave runs.
+            Vector2 face = Position + new Vector2(push.X > 0 ? 16f : 0f, push.Y > 0 ? 16f : 0f);
             int puffs = height > 8f ? 2 : 1;
             for (int i = 0; i < puffs; i++)
             {
-                Vector2 at = Position + new Vector2(Main.rand.NextFloat(0f, 16f), Main.rand.NextFloat(-6f, 2f));
-                Vector2 push = new Vector2(away * Main.rand.NextFloat(0.6f, 2.2f) + Main.rand.NextFloat(-0.4f, 0.4f),
-                    -Main.rand.NextFloat(0.3f, 1.1f));
+                Vector2 at = face + along * Main.rand.NextFloat(0f, 16f) - outward * Main.rand.NextFloat(-6f, 2f);
+                Vector2 roll = along * (away * Main.rand.NextFloat(0.6f, 2.2f) + Main.rand.NextFloat(-0.4f, 0.4f))
+                    + outward * Main.rand.NextFloat(0.3f, 1.1f);
 
-                PADParticleHandler.SpawnParticle(new DustFog(at, push, fog,
+                PADParticleHandler.SpawnParticle(new DustFog(at, roll, fog,
                     Main.rand.Next(70, 120), Main.rand.NextFloat(0.45f, 0.75f), Main.rand.NextFloat(0.28f, 0.4f)));
             }
         }
@@ -133,15 +155,43 @@ namespace PisAndDag.Content.Particles
             Color light = Lighting.GetColor(tile);
             Vector2 at = Position - Main.screenPosition;
 
-            // Under it, the earth it came up on: its own bottom rows drawn from its underside
-            // down to where it really sits, in shadow. This also covers the tile the world
-            // still draws in place, which would otherwise show a second top under this one.
-            Rectangle earth = new Rectangle(frame.X, frame.Y + 14, 16, 2);
-            Color shade = Color.Lerp(Color.Black, light, 0.6f);
-            spriteBatch.Draw(texture, at + new Vector2(0f, 16f - lift), earth, shade, 0f,
-                Vector2.Zero, new Vector2(1f, lift / 2f), SpriteEffects.None, 0f);
+            // Behind it, the earth it came out of: its own back rows (the bottom two, for a
+            // floor) drawn from its back to where it really sits, in shadow. This also covers
+            // the tile the world still draws in place, which would otherwise show a second
+            // face behind this one.
+            Rectangle earth;
+            Vector2 earthAt;
+            Vector2 earthScale;
 
-            spriteBatch.Draw(texture, at - new Vector2(0f, lift), frame, light, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
+            if (push.Y < 0)
+            {
+                earth = new Rectangle(frame.X, frame.Y + 14, 16, 2);
+                earthAt = new Vector2(0f, 16f - lift);
+                earthScale = new Vector2(1f, lift / 2f);
+            }
+            else if (push.Y > 0)
+            {
+                earth = new Rectangle(frame.X, frame.Y, 16, 2);
+                earthAt = Vector2.Zero;
+                earthScale = new Vector2(1f, lift / 2f);
+            }
+            else if (push.X > 0)
+            {
+                earth = new Rectangle(frame.X, frame.Y, 2, 16);
+                earthAt = Vector2.Zero;
+                earthScale = new Vector2(lift / 2f, 1f);
+            }
+            else
+            {
+                earth = new Rectangle(frame.X + 14, frame.Y, 2, 16);
+                earthAt = new Vector2(16f - lift, 0f);
+                earthScale = new Vector2(lift / 2f, 1f);
+            }
+
+            Color shade = Color.Lerp(Color.Black, light, 0.6f);
+            spriteBatch.Draw(texture, at + earthAt, earth, shade, 0f, Vector2.Zero, earthScale, SpriteEffects.None, 0f);
+
+            spriteBatch.Draw(texture, at + new Vector2(push.X, push.Y) * lift, frame, light, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
         }
     }
 }

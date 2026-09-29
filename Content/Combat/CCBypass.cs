@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PisAndDag.Content.Particles;
@@ -55,6 +56,17 @@ namespace PisAndDag.Content.Combat
         {
             PADParticleHandler.SpawnParticle(new CCBypassStar(entity));
             SoundEngine.PlaySound(Note, entity.Center);
+        }
+
+        /// <summary>
+        /// The same, on a part that is no entity of its own (a tentacle, an arm): the star
+        /// rides on wherever <paramref name="where"/> says the part is, asked every tick it
+        /// shows, and the note sounds from where it is now.
+        /// </summary>
+        public static void Warn(Func<Vector2> where)
+        {
+            PADParticleHandler.SpawnParticle(new CCBypassStar(where));
+            SoundEngine.PlaySound(Note, where());
         }
 
         /// <summary>

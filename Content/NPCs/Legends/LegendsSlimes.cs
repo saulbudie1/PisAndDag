@@ -903,6 +903,9 @@ namespace PisAndDag.Content.NPCs.Legends
         /// <summary>Planted after a miss, before it tries again.</summary>
         private const float SlamRecover = 120f;
 
+        /// <summary>The last of the recovery: the squash that says a second one is coming.</summary>
+        private const float RecoverTell = 25f;
+
         /// <summary>Attempts per slam. Two, then it gives up and moves on.</summary>
         private const int SlamTries = 2;
 
@@ -2119,7 +2122,7 @@ namespace PisAndDag.Content.NPCs.Legends
                 npc.noTileCollide = false;
                 npc.noGravity = false;
                 npc.velocity.X *= 0.8f;
-                npc.aiAction = npc.ai[0] >= SlamRecover - 25f ? 1 : 0;
+                npc.aiAction = npc.ai[0] >= SlamRecover - RecoverTell ? 1 : 0;
 
                 if (npc.ai[0] >= SlamRecover)
                     BeginRise(npc, player);
@@ -2288,8 +2291,8 @@ namespace PisAndDag.Content.NPCs.Legends
             GroundDust(npc.position.X, npc.position.X + npc.width, npc.position.Y + npc.height, weight);
         }
 
-        /// <summary>The same, under a stretch of ground: the floor at this height, between these two x.</summary>
-        private static void GroundDust(float left, float right, float floor, float weight)
+        /// <summary>The same, under a stretch of ground: the floor at this height, between these two x. Skeletron's blows throw it too.</summary>
+        internal static void GroundDust(float left, float right, float floor, float weight)
         {
             if (Main.dedServ)
                 return;
@@ -2338,6 +2341,566 @@ namespace PisAndDag.Content.NPCs.Legends
                 return;
 
             Main.LocalPlayer.PIS().BumpScreenShake(12f, 30);
+        }
+
+        // ---- the hops, alive ------------------------------------------------
+        //
+        // His frames are vanilla's: an idle wobble, a quicker one for the tell, and two for
+        // the air. On a body this size that is not enough to read as a jump, so every
+        // machine that draws him also shapes him over those frames, from nothing but what
+        // it can see: on the ground or not, how fast and which way he is going, and how
+        // near his tell is to its end (Coil). Nothing here is sent, and nothing here moves
+        // him or touches what he can hit.
+        //
+        //     COIL     lower and wider as the tell runs out, trembling, leant back from
+        //              the way he is about to go; deepest before the big bound and the slam
+        //     LAUNCH   tall and thin the moment he leaves, slime and dirt thrown off his base
+        //     AIR      drawn out by his speed, round at the top of the jump, leaning into
+        //              his way; slime dripping off him, a stream when he falls fast
+        //     LAND     flattened by how hard he came down, then wobbling back into shape;
+        //              the crown hops off his head as he comes back up, lands crooked, rights
+        //
+        // His shape and his lean are springs, so whatever cuts into whatever, he never
+        // snaps from one to the next; the crown has a spring of its own and its own small
+        // fall. In every world: the hop is his, Legends or not. The rite has its own shapes
+        // (Jelly), and the teleport and his death only let him settle.
+
+        /// <summary>
+        /// How he is drawn over his frame: stretched about his feet (x wider, y taller),
+        /// then turned by a lean about a point Pivot of his height above them, the crown
+        /// tipped and lifted on its own. At rest it is vanilla's draw exactly.
+        /// </summary>
+        internal readonly struct Pose
+        {
+            public readonly Vector2 Stretch;
+            public readonly float Lean;
+            public readonly float Pivot;
+            public readonly float CrownTilt;
+            public readonly float CrownLift;
+
+            public Pose(Vector2 stretch, float lean, float pivot, float crownTilt, float crownLift)
+            {
+                Stretch = stretch;
+                Lean = lean;
+                Pivot = pivot;
+                CrownTilt = crownTilt;
+                CrownLift = crownLift;
+            }
+
+            /// <summary>A stretch and nothing else: the rite's shapes.</summary>
+            public static Pose Of(Vector2 stretch) => new Pose(stretch, 0f, 0f, 0f, 0f);
+
+            public static Pose Rest => Of(Vector2.One);
+
+            public bool IsRest => Stretch == Vector2.One && Lean == 0f && CrownTilt == 0f && CrownLift == 0f;
+        }
+
+        /// <summary>The shape's spring: its pull toward where it wants to be, and the share of its speed it loses a tick.</summary>
+        private const float JiggleStiffness = 0.22f;
+        private const float JiggleDamping = 0.16f;
+
+        /// <summary>No flatter or taller than this, whatever throws him.</summary>
+        private const float JiggleLimit = 0.4f;
+
+        /// <summary>How much narrower being taller makes him: 1 would keep his area, 0 his width.</summary>
+        private const float Thinning = 0.7f;
+
+        /// <summary>How low he is at the very end of a tell: a hop, the big bound, the slam.</summary>
+        private const float CoilHop = 0.14f;
+        private const float CoilBound = 0.2f;
+        private const float CoilSlam = 0.24f;
+
+        /// <summary>How far he leans back from his way as a tell ends, in radians.</summary>
+        private const float CoilLean = 0.05f;
+
+        /// <summary>The trembling at the end of a tell and while he hangs over the player: up and down, and side to side.</summary>
+        private const float Tremble = 0.02f;
+        private const float TrembleRate = 1.9f;
+        private const float Shiver = 0.02f;
+        private const float ShiverRate = 2.7f;
+
+        /// <summary>Gathered in on himself while he hangs, before the drop.</summary>
+        private const float HangGather = 0.07f;
+
+        /// <summary>
+        /// How tall he is as he leaves the ground, by the speed he leaves at, and how much
+        /// of the way there he goes at once. Squash to stretch in a tick is what makes the
+        /// launch read as a push rather than a lift.
+        /// </summary>
+        private const float LaunchPerSpeed = 0.022f;
+        private const float LaunchLeast = 0.1f;
+        private const float LaunchMost = 0.28f;
+        private const float LaunchSnap = 0.7f;
+        private const float LaunchKick = 0.04f;
+
+        /// <summary>The slam leaves from a standstill, so its launch cannot be read off its speed.</summary>
+        private const float SlamLaunch = 0.3f;
+
+        /// <summary>How drawn out he is in the air by his speed, and how round near the top of a jump.</summary>
+        private const float AirPerSpeed = 0.022f;
+        private const float AirMost = 0.26f;
+        private const float ApexRound = 0.05f;
+        private const float ApexBand = 3f;
+
+        /// <summary>How hard a landing throws him flat, by the speed he came down at.</summary>
+        private const float LandPerSpeed = 0.016f;
+        private const float LandLeast = 0.06f;
+        private const float LandMost = 0.24f;
+
+        /// <summary>The lean's spring, and how far he leans into his way through the air by his speed.</summary>
+        private const float LeanStiffness = 0.16f;
+        private const float LeanDamping = 0.24f;
+        private const float LeanPerSpeed = 0.032f;
+        private const float LeanMost = 0.16f;
+
+        /// <summary>A tick's share of the way between standing and flying, for where the lean turns.</summary>
+        private const float AloftBlend = 0.3f;
+
+        /// <summary>The crown's tilt: its spring, and the most it will tip.</summary>
+        private const float CrownStiffness = 0.1f;
+        private const float CrownDamping = 0.09f;
+        private const float CrownTiltMost = 0.35f;
+
+        /// <summary>The crown's hop: how fast it falls back, and how much of that it bounces.</summary>
+        private const float CrownFall = 0.55f;
+        private const float CrownBounce = 0.3f;
+
+        /// <summary>
+        /// Coming back up out of a landing throws the crown: harder the flatter he was, no
+        /// harder than this, and only in the wobble of a landing, not in a tell.
+        /// </summary>
+        private const float PopPerDepth = 16f;
+        private const float PopMost = 4f;
+        private const float PopFrom = 0.08f;
+        private const int PopWindow = 24;
+        private const float PopTilt = 0.22f;
+
+        /// <summary>The crown tips back as he launches.</summary>
+        private const float LaunchTilt = 0.03f;
+
+        /// <summary>A second launch or landing this soon after the last is the net putting him right, not him.</summary>
+        private const int EventGap = 8;
+
+        /// <summary>One drip in this many ticks in the air, on average; faster than this, one in two.</summary>
+        private const int DripEvery = 6;
+        private const float DripFast = 12f;
+
+        /// <summary>Whether he was standing when this machine last looked, and whether it has looked since he was last himself.</summary>
+        private bool standing;
+        private bool primed;
+
+        /// <summary>The fastest he has fallen since he left the ground: how hard he lands.</summary>
+        private float peakFall;
+
+        /// <summary>The floor he last stood on, for the ground his launch kicks up.</summary>
+        private float floorY;
+
+        /// <summary>Ticks since he last launched and last landed, as seen here.</summary>
+        private int sinceLaunch = EventGap;
+        private int sinceLanding = EventGap;
+
+        /// <summary>His drift as he came down: the way the crown tips.</summary>
+        private float landingDrift;
+
+        private int shapeClock;
+
+        /// <summary>His shape: 0 is himself, above it taller and thinner, below it lower and wider. With its speed.</summary>
+        private float jiggle;
+        private float jiggleSpeed;
+
+        /// <summary>His lean, clockwise, in radians. With its speed.</summary>
+        private float lean;
+        private float leanSpeed;
+
+        /// <summary>0 standing, 1 in the air, eased: the lean turns about his feet on the ground and his middle in the air.</summary>
+        private float aloft;
+
+        /// <summary>The crown's own tilt, and how far it has hopped off his head in pixels. Each with its speed.</summary>
+        private float crownTilt;
+        private float crownTiltSpeed;
+        private float crownLift;
+        private float crownLiftSpeed;
+
+        /// <summary>How hard he trembles this tick, 0 to 1.</summary>
+        private float quiver;
+
+        public override void PostAI(NPC npc)
+        {
+            if (!Main.dedServ)
+                Animate(npc);
+        }
+
+        /// <summary>One tick of his shape, after his AI has had its say and before he moves.</summary>
+        private void Animate(NPC npc)
+        {
+            shapeClock++;
+            sinceLaunch++;
+            sinceLanding++;
+
+            // The rite shapes him itself, and gone is gone; picked up afresh when he is back.
+            if (InRite || npc.hide)
+            {
+                Settle();
+                return;
+            }
+
+            // Being moved rather than moving: nothing he does in these is a hop, and his
+            // shape only goes quietly back to himself.
+            bool calm = dying || npc.ai[1] == StateTeleportOut || npc.ai[1] == StateTeleportIn;
+
+            // Standing: on something, not rising, and not passing through the ground on the
+            // slam's climb. Not "not moving": he hangs dead still in the air before the drop.
+            bool grounded = !npc.noTileCollide && npc.velocity.Y >= 0f && Standing(npc);
+
+            if (calm || !primed)
+            {
+                primed = !calm;
+                standing = grounded;
+            }
+            else if (standing && !grounded)
+            {
+                standing = false;
+                peakFall = 0f;
+                Launched(npc);
+            }
+            else if (!standing && grounded)
+            {
+                standing = true;
+                Landed(npc);
+            }
+
+            if (standing)
+                floorY = npc.position.Y + npc.height;
+            else
+                peakFall = Math.Max(peakFall, npc.velocity.Y);
+
+            float coil = calm ? 0f : Coil(npc, grounded);
+            float target = 0f;
+            float leanTarget = 0f;
+
+            if (!calm)
+            {
+                if (grounded)
+                {
+                    target = -CoilDepth(npc) * coil;
+                    leanTarget = -npc.direction * CoilLean * coil;
+                }
+                else if (npc.ai[1] == StateSlamHang)
+                {
+                    target = -HangGather;
+                }
+                else
+                {
+                    float speed = Math.Abs(npc.velocity.Y);
+
+                    target = Math.Min(AirMost, speed * AirPerSpeed) - ApexRound * Math.Max(0f, 1f - speed / ApexBand);
+                    leanTarget = MathHelper.Clamp(npc.velocity.X * LeanPerSpeed, -LeanMost, LeanMost);
+                }
+            }
+
+            quiver = calm ? 0f : grounded ? coil : npc.ai[1] == StateSlamHang ? 1f : 0f;
+
+            float was = jiggleSpeed;
+
+            jiggleSpeed += (target - jiggle) * JiggleStiffness - jiggleSpeed * JiggleDamping;
+            jiggle = MathHelper.Clamp(jiggle + jiggleSpeed, -JiggleLimit, JiggleLimit);
+
+            // The turn from going down to coming back up, low in a landing's wobble.
+            if (grounded && !calm && sinceLanding <= PopWindow && was < 0f && jiggleSpeed >= 0f && jiggle < -PopFrom)
+                PopCrown(-jiggle);
+
+            leanSpeed += (leanTarget - lean) * LeanStiffness - leanSpeed * LeanDamping;
+            lean += leanSpeed;
+
+            aloft += ((grounded ? 0f : 1f) - aloft) * AloftBlend;
+
+            crownTiltSpeed += -crownTilt * CrownStiffness - crownTiltSpeed * CrownDamping;
+            crownTilt = MathHelper.Clamp(crownTilt + crownTiltSpeed, -CrownTiltMost, CrownTiltMost);
+
+            if (crownLift > 0f || crownLiftSpeed > 0f)
+            {
+                crownLiftSpeed -= CrownFall;
+                crownLift += crownLiftSpeed;
+
+                if (crownLift <= 0f)
+                {
+                    crownLift = 0f;
+                    crownLiftSpeed = crownLiftSpeed < -1.2f ? -crownLiftSpeed * CrownBounce : 0f;
+                }
+            }
+
+            Quieten();
+
+            if (!grounded && !calm)
+                Drip(npc);
+        }
+
+        /// <summary>Himself again at once: the rite, or while he is gone.</summary>
+        private void Settle()
+        {
+            primed = false;
+            quiver = 0f;
+
+            jiggle = jiggleSpeed = 0f;
+            lean = leanSpeed = 0f;
+            aloft = 0f;
+            crownTilt = crownTiltSpeed = 0f;
+            crownLift = crownLiftSpeed = 0f;
+        }
+
+        /// <summary>What is too small to see is put to nothing, so a still King is drawn by vanilla again.</summary>
+        private void Quieten()
+        {
+            if (Math.Abs(jiggle) < 0.001f && Math.Abs(jiggleSpeed) < 0.001f)
+                jiggle = jiggleSpeed = 0f;
+
+            if (Math.Abs(lean) < 0.001f && Math.Abs(leanSpeed) < 0.001f)
+                lean = leanSpeed = 0f;
+
+            if (Math.Abs(crownTilt) < 0.001f && Math.Abs(crownTiltSpeed) < 0.001f)
+                crownTilt = crownTiltSpeed = 0f;
+
+            if (aloft < 0.001f)
+                aloft = 0f;
+        }
+
+        /// <summary>
+        /// Something under his feet: ground or a top he can stand on just below them, or a
+        /// slope or half block his feet are sunk into.
+        /// </summary>
+        private static bool Standing(NPC npc)
+        {
+            float bottom = npc.position.Y + npc.height;
+
+            int left = (int)(npc.position.X / 16f);
+            int right = (int)((npc.position.X + npc.width - 1f) / 16f);
+            int below = (int)((bottom + 4f) / 16f);
+            int within = (int)((bottom - 2f) / 16f);
+
+            for (int x = left; x <= right; x++)
+            {
+                Tile under = Framing.GetTileSafely(x, below);
+
+                if (under.HasUnactuatedTile && (Main.tileSolid[under.TileType] || Main.tileSolidTop[under.TileType]))
+                    return true;
+
+                Tile sunk = Framing.GetTileSafely(x, within);
+
+                if (sunk.HasUnactuatedTile && Main.tileSolid[sunk.TileType] && !Main.tileSolidTop[sunk.TileType])
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// How far through his tell he is, 0 to 1, off his own clock: the hop's countdown,
+        /// the slam's crouch, the end of its recovery. Vanilla's jump cycle runs on the
+        /// same numbers (its squash is the last 30 of ai[0]), so a vanilla King reads the
+        /// same way; its teleport is not a tell.
+        /// </summary>
+        private static float Coil(NPC npc, bool grounded)
+        {
+            if (!grounded || npc.aiAction != 1)
+                return 0f;
+
+            float state = npc.ai[1];
+            float clock = npc.ai[0];
+
+            if (state >= 0f && state <= 3f)
+                return MathHelper.Clamp((clock - SquashLead) / -SquashLead, 0f, 1f);
+
+            if (state == StateSlamCrouch)
+                return MathHelper.Clamp(clock / SlamCrouch, 0f, 1f);
+
+            if (state == StateSlamRecover)
+                return MathHelper.Clamp((clock - (SlamRecover - RecoverTell)) / RecoverTell, 0f, 1f);
+
+            return 0f;
+        }
+
+        /// <summary>How low this tell takes him: the slam lowest, then the big bound (the fourth jump of a cycle), then a hop.</summary>
+        private static float CoilDepth(NPC npc)
+        {
+            float state = npc.ai[1];
+
+            if (state == StateSlamCrouch || state == StateSlamRecover)
+                return CoilSlam;
+
+            return state == 3f ? CoilBound : CoilHop;
+        }
+
+        /// <summary>He has left the ground: up tall at once, the crown tipped back, and slime and dirt thrown off his base.</summary>
+        private void Launched(NPC npc)
+        {
+            if (sinceLaunch < EventGap)
+            {
+                sinceLaunch = 0;
+                return;
+            }
+
+            sinceLaunch = 0;
+
+            bool slam = npc.ai[1] == StateSlamRise;
+
+            float launch = slam
+                ? SlamLaunch
+                : MathHelper.Clamp(-npc.velocity.Y * LaunchPerSpeed, LaunchLeast, LaunchMost);
+
+            jiggle += (launch - jiggle) * LaunchSnap;
+            jiggleSpeed = LaunchKick;
+            crownTiltSpeed -= npc.direction * LaunchTilt;
+
+            ThrowOff(npc, slam ? 1.2f : MathHelper.Clamp(-npc.velocity.Y / 10f, 0.4f, 1.3f));
+        }
+
+        /// <summary>He has come down: thrown flat by how hard, and slime splashed off both sides.</summary>
+        private void Landed(NPC npc)
+        {
+            if (sinceLanding < EventGap)
+            {
+                sinceLanding = 0;
+                return;
+            }
+
+            sinceLanding = 0;
+            landingDrift = npc.velocity.X;
+
+            jiggleSpeed -= MathHelper.Clamp(peakFall * LandPerSpeed, LandLeast, LandMost);
+
+            Splash(npc, MathHelper.Clamp(peakFall / 12f, 0.4f, 1.5f));
+        }
+
+        /// <summary>The crown thrown off his head as he comes back up: up by how flat he was, and tipped the way he was going.</summary>
+        private void PopCrown(float depth)
+        {
+            crownLiftSpeed = Math.Max(crownLiftSpeed, Math.Min(PopMost, depth * PopPerDepth));
+
+            float way = Math.Abs(landingDrift) > 0.5f
+                ? Math.Sign(landingDrift)
+                : Main.rand.NextBool() ? 1f : -1f;
+
+            crownTiltSpeed += way * depth * PopTilt;
+        }
+
+        /// <summary>
+        /// His launch: a wet sound, slime thrown out and up off both edges of his base to
+        /// fall and splat, and the ground he pushed off kicked up.
+        /// </summary>
+        private void ThrowOff(NPC npc, float strength)
+        {
+            SoundEngine.PlaySound(SoundID.NPCHit1 with { Pitch = -0.5f - 0.2f * strength, Volume = 0.35f + 0.3f * strength, MaxInstances = 3 },
+                npc.Bottom);
+
+            float half = npc.width * 0.5f;
+            int globs = 3 + (int)(4f * strength);
+
+            for (int i = 0; i < globs; i++)
+            {
+                float side = i % 2 == 0 ? -1f : 1f;
+
+                Vector2 from = new Vector2(npc.Center.X + side * half * Main.rand.NextFloat(0.5f, 0.95f),
+                    floorY - Main.rand.NextFloat(2f, 12f));
+
+                Vector2 velocity = new Vector2(side * Main.rand.NextFloat(1.5f, 4.5f), Main.rand.NextFloat(-4.5f, -1.5f))
+                    * (0.6f + 0.4f * strength);
+
+                PADParticleHandler.SpawnParticle(new SlimeGlob(from, velocity, Main.rand.NextFloat(0.6f, 1.05f), 80, SlimeGlob.Blue));
+            }
+
+            int drops = 8 + (int)(10f * strength);
+
+            for (int i = 0; i < drops; i++)
+            {
+                Dust dust = Dust.NewDustDirect(new Vector2(npc.position.X, floorY - 10f), npc.width, 10,
+                    DustID.t_Slime, 0f, 0f, 120, new Color(0, 80, 255, 100), Main.rand.NextFloat(1.1f, 1.7f));
+
+                dust.velocity = new Vector2(Main.rand.NextFloat(-5f, 5f) * (0.6f + 0.4f * strength), Main.rand.NextFloat(-2.5f, -0.5f));
+                dust.noGravity = Main.rand.NextBool(3);
+            }
+
+            GroundDust(npc.position.X, npc.position.X + npc.width, floorY, 0.2f * strength);
+        }
+
+        /// <summary>
+        /// His landing's spray: slime splashed out off both sides of him, to fall and splat.
+        /// In Legends that is all, since the fight's own landing (Land) throws the smoke and
+        /// the ground and shakes the screen; outside it vanilla has no landing at all, so
+        /// here it is the wet half of one: a sound, slime, a little ground, no shake.
+        /// </summary>
+        private static void Splash(NPC npc, float weight)
+        {
+            float half = npc.width * 0.5f;
+            float floor = npc.position.Y + npc.height;
+            int globs = 3 + (int)(5f * weight);
+
+            for (int i = 0; i < globs; i++)
+            {
+                float side = i % 2 == 0 ? -1f : 1f;
+
+                Vector2 from = new Vector2(npc.Center.X + side * half * Main.rand.NextFloat(0.6f, 1f),
+                    floor - Main.rand.NextFloat(4f, 14f));
+
+                Vector2 velocity = new Vector2(side * Main.rand.NextFloat(2.5f, 7f), Main.rand.NextFloat(-5.5f, -2f))
+                    * (0.7f + 0.3f * weight);
+
+                PADParticleHandler.SpawnParticle(new SlimeGlob(from, velocity, Main.rand.NextFloat(0.7f, 1.2f), 90, SlimeGlob.Blue));
+            }
+
+            if (PADWorld.Legends)
+                return;
+
+            SoundEngine.PlaySound(SoundID.NPCHit1 with { Pitch = -0.75f, Volume = 0.35f + 0.25f * weight, MaxInstances = 3 },
+                npc.Bottom);
+
+            int drops = 8 + (int)(8f * weight);
+
+            for (int i = 0; i < drops; i++)
+            {
+                Dust dust = Dust.NewDustDirect(new Vector2(npc.position.X, floor - 10f), npc.width, 10,
+                    DustID.t_Slime, 0f, 0f, 120, new Color(0, 80, 255, 100), Main.rand.NextFloat(1.1f, 1.7f));
+
+                dust.velocity = new Vector2(Main.rand.NextFloat(-6f, 6f), Main.rand.NextFloat(-3f, -0.5f)) * (0.6f + 0.4f * weight);
+                dust.noGravity = Main.rand.NextBool(3);
+            }
+
+            GroundDust(npc, 0.25f * weight);
+        }
+
+        /// <summary>Slime dripping off him in the air: now and then, and a stream when he is going fast.</summary>
+        private static void Drip(NPC npc)
+        {
+            bool fast = npc.velocity.Length() > DripFast;
+
+            if (!Main.rand.NextBool(fast ? 2 : DripEvery))
+                return;
+
+            Vector2 from = new Vector2(npc.Center.X + Main.rand.NextFloat(-0.35f, 0.35f) * npc.width,
+                npc.position.Y + npc.height - Main.rand.NextFloat(4f, 16f));
+
+            // Less than his own speed, so it falls away from him rather than riding along.
+            Vector2 velocity = npc.velocity * 0.4f + new Vector2(Main.rand.NextFloat(-0.6f, 0.6f), Main.rand.NextFloat(0.5f, 1.5f));
+
+            PADParticleHandler.SpawnParticle(new SlimeGlob(from, velocity, Main.rand.NextFloat(0.45f, 0.8f), 90, SlimeGlob.Blue));
+        }
+
+        /// <summary>His shape this frame, over his frame. Rest exactly when nothing is moving it.</summary>
+        internal Pose Posed()
+        {
+            float shape = jiggle;
+            float wide = 1f;
+
+            if (quiver > 0f)
+            {
+                shape += Tremble * quiver * (float)Math.Sin(shapeClock * TrembleRate);
+                wide += Shiver * quiver * (float)Math.Sin(shapeClock * ShiverRate);
+            }
+
+            Vector2 stretch = shape == 0f && wide == 1f
+                ? Vector2.One
+                : new Vector2((float)Math.Pow(1f + shape, -Thinning) * wide, 1f + shape);
+
+            return new Pose(stretch, lean, aloft * 0.5f, crownTilt, crownLift);
         }
 
         // ---- the arrival, run ----------------------------------------------
@@ -2698,7 +3261,7 @@ namespace PisAndDag.Content.NPCs.Legends
 
             // A little over the middle of the crown: on it whichever way he faces.
             Texture2D crown = TextureAssets.Extra[ExtrasID.KingSlimeCrown].Value;
-            Vector2 at = CrownAt(npc, size, stretch) - new Vector2(0f, crown.Height * 0.15f * size);
+            Vector2 at = CrownAt(npc, size, Pose.Of(stretch)) - new Vector2(0f, crown.Height * 0.15f * size);
 
             PADParticleHandler.SpawnParticle(new CrownGlint(at, 34f, 30, new Color(255, 244, 200)));
 
@@ -2804,8 +3367,11 @@ namespace PisAndDag.Content.NPCs.Legends
         private static Vector2 Feet(NPC npc) =>
             new Vector2(npc.position.X + npc.width / 2, npc.position.Y + npc.height + 4f + npc.gfxOffY);
 
-        /// <summary>Where vanilla draws the crown's middle, moved with his shape about his feet.</summary>
-        private static Vector2 CrownAt(NPC npc, float size, Vector2 stretch)
+        /// <summary>
+        /// Where vanilla draws the crown's middle, moved with his shape: stretched about
+        /// his feet, lifted off his head by its own hop, and turned with his lean.
+        /// </summary>
+        private static Vector2 CrownAt(NPC npc, float size, Pose pose)
         {
             int frame = npc.frame.Height > 0 ? npc.frame.Y / npc.frame.Height : 0;
             float rise = CrownRise[Math.Clamp(frame, 0, CrownRise.Length - 1)];
@@ -2813,7 +3379,44 @@ namespace PisAndDag.Content.NPCs.Legends
             Vector2 vanilla = npc.Center + new Vector2(0f, npc.gfxOffY - (70f - rise) * npc.scale);
             Vector2 feet = Feet(npc);
 
-            return feet + (vanilla - feet) * stretch * size;
+            return Turned(npc, feet + (vanilla - feet) * pose.Stretch * size - new Vector2(0f, pose.CrownLift), pose);
+        }
+
+        /// <summary>
+        /// Where vanilla seats the ninja: his middle, lagging his motion twice as hard
+        /// sideways as vertically, and nudged by whichever squash frame is showing.
+        /// </summary>
+        private static Vector2 NinjaSeat(NPC npc)
+        {
+            Vector2 lag = new Vector2(-npc.velocity.X * 2f, -npc.velocity.Y);
+
+            if (npc.frame.Y == 120)
+                lag.Y += 2f;
+            else if (npc.frame.Y == 360)
+                lag.Y -= 2f;
+            else if (npc.frame.Y == 480)
+                lag.Y -= 6f;
+
+            return new Vector2(npc.position.X + npc.width / 2, npc.position.Y + npc.height / 2) + lag;
+        }
+
+        /// <summary>A point of his, moved with his shape: stretched about his feet, then turned with his lean.</summary>
+        private static Vector2 Shaped(NPC npc, Vector2 point, float size, Pose pose)
+        {
+            Vector2 feet = Feet(npc);
+
+            return Turned(npc, feet + (point - feet) * pose.Stretch * size, pose);
+        }
+
+        /// <summary>Turned with his lean, about the point Pivot of his height above his feet.</summary>
+        private static Vector2 Turned(NPC npc, Vector2 point, Pose pose)
+        {
+            if (pose.Lean == 0f)
+                return point;
+
+            Vector2 pivot = Feet(npc) - new Vector2(0f, npc.height * pose.Pivot);
+
+            return point.RotatedBy(pose.Lean, pivot);
         }
 
         // ---- holding someone, drawn -------------------------------------------
@@ -2863,10 +3466,11 @@ namespace PisAndDag.Content.NPCs.Legends
         }
 
         /// <summary>
-        /// His body and crown, placed and lit as vanilla draws them, as player draw data
-        /// for the overlay, and kept upright however the player they cover is turned.
+        /// His body and crown, placed and lit as vanilla draws them and in the shape his
+        /// hops have him in, as player draw data for the overlay, and kept upright however
+        /// the player they cover is turned.
         /// </summary>
-        internal static void AddBodyAndCrown(NPC npc, List<DrawData> into)
+        internal static void AddBodyAndCrown(NPC npc, Pose pose, List<DrawData> into)
         {
             Main.instance.LoadNPC(npc.type);
 
@@ -2877,10 +3481,11 @@ namespace PisAndDag.Content.NPCs.Legends
             SpriteEffects flip = npc.spriteDirection == 1 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
             Rectangle frame = npc.frame;
 
-            into.Add(new DrawData(body, Feet(npc) - Main.screenPosition, frame, npc.GetAlpha(light), npc.rotation,
-                new Vector2(frame.Width * 0.5f, frame.Height), npc.scale, flip, 0f) { ignorePlayerRotation = true });
+            into.Add(new DrawData(body, Turned(npc, Feet(npc), pose) - Main.screenPosition, frame, npc.GetAlpha(light),
+                npc.rotation + pose.Lean, new Vector2(frame.Width * 0.5f, frame.Height), npc.scale * pose.Stretch, flip, 0f)
+                { ignorePlayerRotation = true });
 
-            into.Add(new DrawData(crown, CrownAt(npc, 1f, Vector2.One) - Main.screenPosition, null, light, 0f,
+            into.Add(new DrawData(crown, CrownAt(npc, 1f, pose) - Main.screenPosition, null, light, pose.Lean + pose.CrownTilt,
                 crown.Size() * 0.5f, 1f, flip, 0f) { ignorePlayerRotation = true });
         }
 
@@ -2888,7 +3493,8 @@ namespace PisAndDag.Content.NPCs.Legends
         /// Nothing is drawn at all while the pile stands in for him — body, crown and
         /// ninja alike. While the rite has him after that, he is drawn here, in its
         /// shape (DrawKing). While he holds someone, only the ninja is drawn here; the
-        /// body and crown go over them (SlimeGrabOverlay).
+        /// body and crown go over them (SlimeGrabOverlay). Otherwise he is drawn here
+        /// while his hops shape him (Animate), and left to vanilla while nothing does.
         /// </summary>
         public override bool PreDraw(NPC npc, SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
         {
@@ -2898,17 +3504,25 @@ namespace PisAndDag.Content.NPCs.Legends
             if (Veiled)
                 return false;
 
+            Pose pose = Posed();
+
             if (!BodyGone)
             {
                 if (!dying && Jelly(out float size, out Vector2 stretch))
                 {
-                    DrawKing(npc, spriteBatch, screenPos, drawColor, size, stretch);
+                    DrawKing(npc, spriteBatch, screenPos, drawColor, size, Pose.Of(stretch));
                     return false;
                 }
 
                 if (carried && Carriable && Carrier(npc.whoAmI) >= 0)
                 {
-                    DrawNinja(npc, spriteBatch, screenPos, drawColor);
+                    DrawNinja(npc, spriteBatch, screenPos, drawColor, pose);
+                    return false;
+                }
+
+                if (!pose.IsRest)
+                {
+                    DrawKing(npc, spriteBatch, screenPos, drawColor, 1f, pose);
                     return false;
                 }
 
@@ -2921,19 +3535,20 @@ namespace PisAndDag.Content.NPCs.Legends
             // the whole draw and putting the ninja back by hand is what lets him outlive
             // the thing he was riding in; the crown went with the body, as its gore.
             if (!NinjaGone)
-                DrawNinja(npc, spriteBatch, screenPos, drawColor);
+                DrawNinja(npc, spriteBatch, screenPos, drawColor, pose);
 
             return false;
         }
 
         /// <summary>
         /// Him, the way vanilla draws him: the ninja, the body over him, and the crown
-        /// over that, placed off his middle and his frame. With the rite's shape on top,
-        /// about his feet: the ninja and the crown are carried by it and keep their own.
-        /// At a size and stretch of one this is vanilla's draw exactly, so the hand back
-        /// at the end of the rite does not show.
+        /// over that, placed off his middle and his frame. With a shape on top (Pose),
+        /// about his feet: the ninja and the crown are carried by it and keep their own
+        /// size. At a size of one and a pose at rest this is vanilla's draw exactly, so
+        /// the hand back to vanilla, at the end of the rite and whenever a hop has settled,
+        /// does not show.
         /// </summary>
-        private static void DrawKing(NPC npc, SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor, float size, Vector2 stretch)
+        private static void DrawKing(NPC npc, SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor, float size, Pose pose)
         {
             Main.instance.LoadNPC(npc.type);
 
@@ -2943,54 +3558,28 @@ namespace PisAndDag.Content.NPCs.Legends
 
             Color light = npc.GetNPCColorTintedByBuffs(drawColor);
             SpriteEffects flip = npc.spriteDirection == 1 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
-            Vector2 feet = Feet(npc);
-            Vector2 shape = stretch * size;
-
-            Vector2 lag = new Vector2(-npc.velocity.X * 2f, -npc.velocity.Y);
-
-            if (npc.frame.Y == 120)
-                lag.Y += 2f;
-            else if (npc.frame.Y == 360)
-                lag.Y -= 2f;
-            else if (npc.frame.Y == 480)
-                lag.Y -= 6f;
-
-            Vector2 seat = new Vector2(npc.position.X + npc.width / 2, npc.position.Y + npc.height / 2) + lag;
-
-            spriteBatch.Draw(ninja, feet + (seat - feet) * shape - screenPos, null, light, npc.velocity.X * 0.05f,
-                new Vector2(ninja.Width / 2, ninja.Height / 2), size, SpriteEffects.None, 0f);
-
             Rectangle frame = npc.frame;
 
-            spriteBatch.Draw(body, feet - screenPos, frame, npc.GetAlpha(light), npc.rotation,
-                new Vector2(frame.Width * 0.5f, frame.Height), npc.scale * shape, flip, 0f);
+            spriteBatch.Draw(ninja, Shaped(npc, NinjaSeat(npc), size, pose) - screenPos, null, light,
+                npc.velocity.X * 0.05f + pose.Lean, new Vector2(ninja.Width / 2, ninja.Height / 2), size, SpriteEffects.None, 0f);
 
-            spriteBatch.Draw(crown, CrownAt(npc, size, stretch) - screenPos, null, light, 0f,
+            spriteBatch.Draw(body, Turned(npc, Feet(npc), pose) - screenPos, frame, npc.GetAlpha(light), npc.rotation + pose.Lean,
+                new Vector2(frame.Width * 0.5f, frame.Height), npc.scale * pose.Stretch * size, flip, 0f);
+
+            spriteBatch.Draw(crown, CrownAt(npc, size, pose) - screenPos, null, light, pose.Lean + pose.CrownTilt,
                 crown.Size() * 0.5f, size, flip, 0f);
         }
 
         /// <summary>
-        /// The ninja, placed the way vanilla places him: lagging the King's motion, twice
-        /// as hard sideways as vertically, tilted by the horizontal speed, and nudged by
-        /// whichever squash frame is showing.
+        /// The ninja alone, placed the way vanilla places him (NinjaSeat), tilted by the
+        /// horizontal speed, and carried by the King's shape.
         /// </summary>
-        private static void DrawNinja(NPC npc, SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
+        private static void DrawNinja(NPC npc, SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor, Pose pose)
         {
             Texture2D ninja = TextureAssets.Ninja.Value;
 
-            Vector2 lag = new Vector2(-npc.velocity.X * 2f, -npc.velocity.Y);
-
-            if (npc.frame.Y == 120)
-                lag.Y += 2f;
-            else if (npc.frame.Y == 360)
-                lag.Y -= 2f;
-            else if (npc.frame.Y == 480)
-                lag.Y -= 6f;
-
-            Vector2 at = npc.position - screenPos + npc.Size * 0.5f + lag;
-
-            spriteBatch.Draw(ninja, at, null, npc.GetNPCColorTintedByBuffs(drawColor),
-                npc.velocity.X * 0.05f, ninja.Size() * 0.5f, 1f, SpriteEffects.None, 0f);
+            spriteBatch.Draw(ninja, Shaped(npc, NinjaSeat(npc), 1f, pose) - screenPos, null, npc.GetNPCColorTintedByBuffs(drawColor),
+                npc.velocity.X * 0.05f + pose.Lean, new Vector2(ninja.Width / 2, ninja.Height / 2), 1f, SpriteEffects.None, 0f);
         }
 
         // ---- death ----------------------------------------------------------
@@ -3469,7 +4058,7 @@ namespace PisAndDag.Content.NPCs.Legends
             if (LegendsKingSlime.Carrier(held) != player.whoAmI)
                 return;
 
-            LegendsKingSlime.AddBodyAndCrown(king, drawInfo.DrawDataCache);
+            LegendsKingSlime.AddBodyAndCrown(king, state.Posed(), drawInfo.DrawDataCache);
             state.Carried = true;
         }
     }

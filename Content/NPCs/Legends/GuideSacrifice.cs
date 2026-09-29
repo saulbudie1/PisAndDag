@@ -519,7 +519,8 @@ namespace PisAndDag.Content.NPCs.Legends
 
         /// <summary>
         /// The Wall's full-life speed, from its AI (NPC.cs, aiStyle 27): 1.5, expert
-        /// ×1.35 + 0.35, the good world ×1.1 + 0.2. Master runs the expert branch.
+        /// ×1.35 + 0.35, the good world ×1.1 + 0.2. Master runs the expert branch. In
+        /// Legends it walks faster than that (LegendsWall.Pace), and the budget has to know.
         /// </summary>
         private static float WallSpeed()
         {
@@ -530,6 +531,9 @@ namespace PisAndDag.Content.NPCs.Legends
 
             if (Main.getGoodWorld)
                 speed = speed * 1.1f + 0.2f;
+
+            if (PADWorld.Legends)
+                speed *= LegendsWall.Pace;
 
             return speed;
         }

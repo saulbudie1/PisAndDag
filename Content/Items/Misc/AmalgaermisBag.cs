@@ -1,3 +1,4 @@
+using PisAndDag.Content.Items.Summoner;
 using PisAndDag.Content.NPCs.Abomanation_Small;
 using Terraria;
 using Terraria.GameContent.ItemDropRules;
@@ -8,8 +9,8 @@ namespace PisAndDag.Content.Items.Misc
 {
     /// <summary>
     /// Amalgaermis's treasure bag, one for every player who fought it, in expert and master
-    /// (AbomanationHead.ModifyNPCLoot). A placeholder: it holds the essence and the kill's
-    /// coins and nothing else yet. The texture is a placeholder too (PlaceholderTextures.md).
+    /// (AbomanationHead.ModifyNPCLoot). It holds the essence, Joint Arms of the Defiled and
+    /// the kill's coins. The texture is a placeholder (PlaceholderTextures.md).
     /// </summary>
     public class AmalgaermisBag : ModItem
     {
@@ -39,6 +40,8 @@ namespace PisAndDag.Content.Items.Misc
         {
             itemLoot.Add(ItemDropRule.Common(ModContent.ItemType<EssenceOfTheFouled>(), 1,
                 EssenceOfTheFouled.PerKillLeast, EssenceOfTheFouled.PerKillMost));
+
+            itemLoot.Add(ItemDropRule.Common(ModContent.ItemType<JointArmsOfTheDefiled>()));
 
             // In expert the kill's money goes in the bag rather than on the ground.
             itemLoot.Add(ItemDropRule.CoinsBasedOnNPCValue(ModContent.NPCType<AbomanationHead>()));

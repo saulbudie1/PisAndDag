@@ -19,6 +19,15 @@ namespace PisAndDag
 
         /// <summary>Client to server: the Guide has said his line about the orb. See GuideHints.</summary>
         GuideSpokeOfLegends,
+
+        /// <summary>
+        /// A player taken by one of the Wall's tentacles: client to server from the one
+        /// taken, server to the other clients. See WallGrabPlayer.
+        /// </summary>
+        WallGrab,
+
+        /// <summary>Server to clients: something behind the Wall was eaten. See LegendsWall.</summary>
+        WallAte,
     }
 
     // Please read https://github.com/tModLoader/tModLoader/wiki/Basic-tModLoader-Modding-Guide#mod-skeleton-contents for more information about the various files in a mod.
@@ -48,6 +57,14 @@ namespace PisAndDag
 
                 case PADPacket.GuideSpokeOfLegends:
                     Content.NPCs.GuideHints.Heard();
+                    break;
+
+                case PADPacket.WallGrab:
+                    Content.NPCs.Legends.WallGrabPlayer.HandlePacket(this, reader, whoAmI);
+                    break;
+
+                case PADPacket.WallAte:
+                    Content.NPCs.Legends.LegendsWall.HandleAte(reader);
                     break;
 
                 default:

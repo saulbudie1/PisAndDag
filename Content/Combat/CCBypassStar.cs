@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Xna.Framework;
 using PisAndDag.Content.Particles;
 using Terraria;
@@ -29,6 +30,9 @@ namespace PisAndDag.Content.Combat
         /// <summary>What it rides on. The star sits on its centre until either is gone.</summary>
         private readonly Entity follow;
 
+        /// <summary>Or, for a part that is no entity of its own, where that part is, asked each tick.</summary>
+        private readonly Func<Vector2> where;
+
         public CCBypassStar(Entity follow)
         {
             this.follow = follow;
@@ -38,10 +42,21 @@ namespace PisAndDag.Content.Combat
             Color = CCBypass.Warning;
         }
 
+        public CCBypassStar(Func<Vector2> where)
+        {
+            this.where = where;
+            Position = where();
+            Lifetime = CCBypass.WarnTicks;
+            Scale = Size;
+            Color = CCBypass.Warning;
+        }
+
         public override void Update()
         {
             if (follow != null && follow.active)
                 Position = follow.Center;
+            else if (where != null)
+                Position = where();
 
             // Flashing: whole ticks on, whole ticks off. No fade; a fade is not a flash.
             bool on = Time / Blink % 2 == 0;

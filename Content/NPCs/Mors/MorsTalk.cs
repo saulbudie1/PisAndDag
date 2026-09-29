@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework;
 using PisAndDag.Content.Buffs;
 using PisAndDag.Content.Items.LoreItem;
 using PisAndDag.Content.Items.Melee;
@@ -145,6 +146,10 @@ namespace PisAndDag.Content.NPCs.Mors
             // Nothing spawns while he is stood there. It is not kindness; the world
             // simply does not put anything down in front of him.
             Stillness.Register(mors);
+
+            // His face on the panel: the head of his own rig, its opaque part (14, 0 to 38, 34
+            // of the 68 x 74 canvas). He never gives his name, so it stays black.
+            DialoguePortrait.Register(mors, "PisAndDag/Content/NPCs/Mors/MorsIdle_head", new Rectangle(14, 0, 24, 34));
 
             Dialogue.Register(mors, Opener, HeadHeight, Pace,
                 new TalkOption("Have we met",

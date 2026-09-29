@@ -256,6 +256,9 @@ namespace PisAndDag.Content.UI
                 return;
             }
 
+            // Their face on the chat box's corner, lines or no lines.
+            DialoguePortrait.DrawOnChat(spriteBatch, npc);
+
             List<TalkOption> options = Current(player, npc, scratch);
 
             if (options.Count == 0)
@@ -438,6 +441,7 @@ namespace PisAndDag.Content.UI
         {
             TalkOptions.Clear();
             Dialogue.Clear();
+            DialoguePortrait.Clear();
         }
 
         public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
