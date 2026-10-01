@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using PisAndDag.Content.Combat;
 using Terraria;
 using Terraria.GameContent;
+using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace PisAndDag.Content.NPCs
@@ -70,6 +71,31 @@ namespace PisAndDag.Content.NPCs
         public bool CCQuiet;
 
         private bool wasBypass;
+
+        // ---------------------------------------------------------------- for nothing --
+
+        /// <summary>
+        /// Set just before this NPC is killed by something that was no one's doing
+        /// (KillForNothing): its death is only seen. PreKill turns away its items, its
+        /// money and its hearts, and OnKill with them. Read only where the world is
+        /// decided, which is the only place anything drops.
+        /// </summary>
+        public bool GivesNothing;
+
+        public override bool PreKill(NPC npc) => !GivesNothing;
+
+        /// <summary>
+        /// Kills it outright, where the world is decided, and nothing is had from it; its
+        /// death is seen on every machine (the strike is sent). No player is credited.
+        /// </summary>
+        public static void KillForNothing(NPC npc)
+        {
+            if (Main.netMode == NetmodeID.MultiplayerClient || !npc.active || npc.life <= 0)
+                return;
+
+            npc.PAD().GivesNothing = true;
+            npc.StrikeInstantKill();
+        }
 
         public override bool PreAI(NPC npc)
         {

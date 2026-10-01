@@ -20,7 +20,8 @@ namespace PisAndDag.Content.Combat
     /// Anything that wants one asks for it EVERY TICK it wants it — <see cref="Frame"/>
     /// for the letterbox, <see cref="Look"/> for the camera, <see cref="Hold"/> for the
     /// player, <see cref="Lean"/> for a zoom, <see cref="Cover"/> for something laid over
-    /// the whole picture — and stops asking when it is done. Nothing
+    /// the whole picture, <see cref="Fade"/> for a fade to black between play and a scene
+    /// — and stops asking when it is done. Nothing
     /// is switched on or off, so a boss that dies, despawns or loses its packet
     /// mid-scene cannot leave the camera stuck on a patch of dirt or the player stuck in
     /// place: the moment it stops asking, everything eases back.
@@ -98,6 +99,19 @@ namespace PisAndDag.Content.Combat
 
         private static Action<SpriteBatch> coverWanted;
         private static Action<SpriteBatch> cover;
+
+        // ---- the fade ----------------------------------------------------------------
+        //
+        // The picture of the world gone to black, by however much is asked: the cut from
+        // play into a scene (or between two shots of one), done as a fade, so that whatever
+        // has to jump while nobody can see (the camera, the zoom, the player) jumps then.
+        // Asked for every tick with the amount wanted, 0 to 1; the one asking does the
+        // timing, so a fade can take as long as the scene wants and hang at black. Stop
+        // asking and it is gone the next tick. Over the cover, under the shade, the roar
+        // and the bars, and under the interface like all of them.
+
+        private static float fadeWanted;
+        private static float fade;
 
         // ---- the lean --------------------------------------------------------------
         //
@@ -239,6 +253,19 @@ namespace PisAndDag.Content.Combat
 
         /// <summary>Whether something is laid over the world right now.</summary>
         public static bool Covered => cover != null;
+
+        /// <summary>
+        /// Fade the picture of the world to black by this much, 0 (none) to 1 (all), this
+        /// tick. The one asking does the timing, in and out; two asking in one tick get the
+        /// darker of the two.
+        /// </summary>
+        public static void Fade(float amount)
+        {
+            fadeWanted = Math.Max(fadeWanted, MathHelper.Clamp(amount, 0f, 1f));
+        }
+
+        /// <summary>Whether the picture is faded at all right now.</summary>
+        public static bool Faded => fade > 0.004f;
 
         /// <summary>
         /// Lean the camera in (or back out to 1) by this much on top of the player's own
@@ -419,8 +446,9 @@ namespace PisAndDag.Content.Combat
 
             holding = holdAsked;
 
-            // No easing: whoever asks for a cover does its own fading.
+            // No easing: whoever asks for a cover, or a fade, does its own timing.
             cover = coverWanted;
+            fade = fadeWanted;
 
             // The pool moves wherever it is asked to be; only its strength eases, so it
             // can be handed from one subject to the next without sliding between them.
@@ -473,6 +501,7 @@ namespace PisAndDag.Content.Combat
             frameAsked = false;
             shadeAsked = false;
             coverWanted = null;
+            fadeWanted = 0f;
         }
 
         private static float MoveToward(float from, float to, float step)
@@ -539,6 +568,8 @@ namespace PisAndDag.Content.Combat
             leanAsked = false;
             cover = null;
             coverWanted = null;
+            fade = 0f;
+            fadeWanted = 0f;
         }
 
         /// <summary>
@@ -687,13 +718,19 @@ namespace PisAndDag.Content.Combat
         }
 
         /// <summary>
-        /// The cover, the shade, the roar and the bars, in that order, in raw screen pixels.
+        /// The cover, the fade, the shade, the roar and the bars, in that order, in raw screen pixels.
         /// Called from inside an open sprite batch with no transform on it; both draw paths
         /// below arrange that.
         /// </summary>
         internal static void DrawBars(SpriteBatch spriteBatch)
         {
             cover?.Invoke(spriteBatch);
+
+            Texture2D pixel = TextureAssets.MagicPixel.Value;
+
+            if (fade > 0f)
+                spriteBatch.Draw(pixel, new Rectangle(0, 0, Main.screenWidth, Main.screenHeight), Color.Black * fade);
+
             DrawShade(spriteBatch);
             DrawRoar(spriteBatch);
 
@@ -701,8 +738,6 @@ namespace PisAndDag.Content.Combat
 
             if (height <= 0)
                 return;
-
-            Texture2D pixel = TextureAssets.MagicPixel.Value;
 
             spriteBatch.Draw(pixel, new Rectangle(0, 0, Main.screenWidth, height), Color.Black);
             spriteBatch.Draw(pixel, new Rectangle(0, Main.screenHeight - height, Main.screenWidth, height), Color.Black);
@@ -788,7 +823,7 @@ namespace PisAndDag.Content.Combat
 
         public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
         {
-            if (!Cinematic.Framed && !Cinematic.Shaded && !Cinematic.Roaring && !Cinematic.Covered)
+            if (!Cinematic.Framed && !Cinematic.Shaded && !Cinematic.Roaring && !Cinematic.Covered && !Cinematic.Faded)
                 return;
 
             layers.Insert(0, new LegacyGameInterfaceLayer("PisAndDag: Letterbox", () =>
@@ -801,7 +836,7 @@ namespace PisAndDag.Content.Combat
         private static void DrawBarsOverEverything(GameTime gameTime)
         {
             // Only when the interface path did not run this frame.
-            if (!Main.hideUI || Main.gameMenu || (!Cinematic.Framed && !Cinematic.Shaded && !Cinematic.Roaring && !Cinematic.Covered))
+            if (!Main.hideUI || Main.gameMenu || (!Cinematic.Framed && !Cinematic.Shaded && !Cinematic.Roaring && !Cinematic.Covered && !Cinematic.Faded))
                 return;
 
             // Linear, as the interface path is: the pool and the rings are stretched far

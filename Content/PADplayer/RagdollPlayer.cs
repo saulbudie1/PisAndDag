@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -118,7 +119,9 @@ namespace PisAndDag.Content.PADplayer
         /// </summary>
         public void Throw(Vector2 velocity, RagdollStyle style, int lie = DefaultLie)
         {
-            if (Player.whoAmI != Main.myPlayer)
+            // Nothing throws the dead: a hit that killed them is over (and a throw held over
+            // would go off on them where they come back).
+            if (Player.whoAmI != Main.myPlayer || Player.dead)
                 return;
 
             pending = true;
@@ -130,8 +133,22 @@ namespace PisAndDag.Content.PADplayer
         /// <summary>The held throw goes on after the hurt has finished with the velocity.</summary>
         public override void PostHurt(Player.HurtInfo info)
         {
-            if (pending)
+            if (pending && !Player.dead)
                 Launch();
+        }
+
+        /// <summary>
+        /// Dead, nothing of it is kept: a dead player's update stops before PostUpdate (Player.Update),
+        /// so a throw held over, or one in the air, would otherwise go on where they come back.
+        /// </summary>
+        public override void Kill(double damage, int hitDirection, bool pvp, PlayerDeathReason damageSource)
+        {
+            Stand();
+        }
+
+        public override void OnRespawn()
+        {
+            Stand();
         }
 
         private void Launch()

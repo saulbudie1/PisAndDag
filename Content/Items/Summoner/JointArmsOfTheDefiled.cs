@@ -15,12 +15,12 @@ namespace PisAndDag.Content.Items.Summoner
     /// <summary>
     /// Joint Arms of the Defiled: a whip, from Amalgaermis. Every player's own off the kill in
     /// classic, and in the treasure bag in expert and master (AbomanationHead.ModifyNPCLoot,
-    /// AmalgaermisBag). 30 damage, a 25-tick swing, as long as a Firecracker; the swing itself
+    /// AmalgaermisBag). 30 damage, a 35-tick swing, as long as a Firecracker; the swing itself
     /// is JointArmsOfTheDefiledProj.
     ///
     /// Its streak is the Chlorophyte Rifle's, on a whip (JointArmsStreak): a crack that lands
     /// counts one, however many it hits; five in a row charge it; the next crack spends the
-    /// charge and gives Many Hands, 10% more summon damage for 16 seconds. A crack that lands
+    /// charge and gives Many Hands, 50% more summon damage for 11 seconds. A crack that lands
     /// nothing, 3.5 seconds without one landing, putting the whip away, or dying ends the
     /// streak. The crack that spends it starts the next one if it lands.
     ///

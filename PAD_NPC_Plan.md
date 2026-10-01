@@ -302,7 +302,7 @@ says it out loud (§XXVII).
 | Class | Item | Notes |
 |---|---|---|
 | Melee | **Gaping Jaw** | Left click bites. Captures an NPC under a threshold, which goes **non-lethal** and is dragged; after a hold it is crushed. Second attack is a fast short-range bite, ~30. |
-| Summon | **Joint Arms of the Defiled** | **Built.** A whip, every player's own off the kill (in the bag in expert). 30 damage, a 25-tick swing, Firecracker's reach, no tag. Five cracks in a row that land charge the next, which gives Many Hands (10% summon damage, 16 s). Spatters blood where it strikes, on the animal's scale (`JointArmsOfTheDefiledProj`). Built on `Content/Projectiles/Base/BaseWhip.cs`. |
+| Summon | **Joint Arms of the Defiled** | **Built.** A whip, every player's own off the kill (in the bag in expert). 30 damage, a 35-tick swing, Firecracker's reach, no tag. Five cracks in a row that land charge the next, which gives Many Hands (50% summon damage, 11 s). Spatters blood where it strikes, on the animal's scale (`JointArmsOfTheDefiledProj`). Built on `Content/Projectiles/Base/BaseWhip.cs`. |
 | Summon | **a hand minion** | **[GAP]** A whip is a tag weapon, not a class. A severed hand that crawls or hauls itself along and grabs things. Without this, summoners get half a reward. |
 | Ranged | **a bow of teeth** | With teeth-tipped arrows as its ammo. |
 | Lore | **the number** | First kill only. The tally-plate says the number and the animal shows what it looks like (§XXI); this is where the player is given it. Uses the existing `LoreLock` system. |

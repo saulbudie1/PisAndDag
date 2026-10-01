@@ -18,10 +18,20 @@ namespace PisAndDag.Content.UI
     ///
     /// A townsperson's face is their map head (TownNPCProfiles, so a shimmered or
     /// variant one is the one shown). A speaker with no map head is given one with
-    /// <see cref="Register"/>. A face nobody has put a name to yet is pitch black, a
-    /// silhouette: a townsperson is always named, and anyone else is named once their own
-    /// name has been spoken in a line to the player (<see cref="Hear"/>), after which the
-    /// face comes up out of the black and stays up in that world (DialogueIntroductions).
+    /// <see cref="Register(int, string, Rectangle?)"/>, or several layers of one canvas with
+    /// <see cref="Register(int, string[], Rectangle?)"/> (a face and the hair over it). A face
+    /// nobody has put a name to yet is pitch black, a silhouette: a townsperson is always
+    /// named, and anyone else is named once their own name has been spoken in a line to the
+    /// player (<see cref="Hear"/>), after which the face comes up out of the black and stays
+    /// up in that world (DialogueIntroductions).
+    ///
+    /// The Dialogue panel also writes who is speaking on a tab over its top edge
+    /// (<see cref="LabelName"/>, <see cref="LabelTitle"/>): "???" until they are named, then
+    /// their name, and their title after it if they have one (<see cref="Name"/>). Someone the
+    /// player has a word for but never a name goes by that word instead of "???"
+    /// (<see cref="KnownAs"/>): Mors is the Tall Elder, and his face stays black. Someone who
+    /// says their name not quite as it is written is named by the way they say it
+    /// (<see cref="SpokenAs"/>).
     /// </summary>
     public static class DialoguePortrait
     {
@@ -56,12 +66,33 @@ namespace PisAndDag.Content.UI
 
         private sealed class Face
         {
-            public string Path;
+            /// <summary>Back to front, all on one canvas: the same frame is cut from each.</summary>
+            public string[] Paths;
             public Rectangle? Frame;
-            public Asset<Texture2D> Texture;
+            public Asset<Texture2D>[] Textures;
         }
 
+        /// <summary>What the panel's tab says for one speaker. Every part optional.</summary>
+        private sealed class Label
+        {
+            /// <summary>Once named. Null means the NPC's own name.</summary>
+            public string Name;
+
+            /// <summary>After the name, once named. Null means the name goes alone.</summary>
+            public string Title;
+
+            /// <summary>Before they are named. Null means "???".</summary>
+            public string KnownAs;
+
+            /// <summary>Their name as they say it in a line, if it is not quite the NPC's own. Null means the NPC's own.</summary>
+            public string Spoken;
+        }
+
+        /// <summary>The tab for someone the player cannot put a name to.</summary>
+        public const string Unknown = "???";
+
         private static readonly Dictionary<int, Face> faces = new();
+        private static readonly Dictionary<int, Label> labels = new();
 
         /// <summary>When each type was named this session, for the rise out of the black.</summary>
         private static readonly Dictionary<int, uint> namedAt = new();
@@ -72,12 +103,79 @@ namespace PisAndDag.Content.UI
         /// </summary>
         public static void Register(int npcType, string texture, Rectangle? frame = null)
         {
-            faces[npcType] = new Face { Path = texture, Frame = frame };
+            Register(npcType, new[] { texture }, frame);
+        }
+
+        /// <summary>
+        /// A face drawn from several layers of one canvas, back to front, the same
+        /// <paramref name="frame"/> cut from each: a face and the hair over it.
+        /// </summary>
+        public static void Register(int npcType, string[] layers, Rectangle? frame = null)
+        {
+            faces[npcType] = new Face { Paths = layers, Frame = frame };
+        }
+
+        /// <summary>
+        /// What the tab says once this speaker is named: <paramref name="name"/> (null for the
+        /// NPC's own), and <paramref name="title"/> after it if given.
+        /// </summary>
+        public static void Name(int npcType, string name = null, string title = null)
+        {
+            Label label = LabelOf(npcType);
+            label.Name = name;
+            label.Title = title;
+        }
+
+        /// <summary>What the tab says before this speaker is named, in place of "???".</summary>
+        public static void KnownAs(int npcType, string epithet)
+        {
+            LabelOf(npcType).KnownAs = epithet;
+        }
+
+        /// <summary>
+        /// Their name as they say it, where that is not the NPC's own name as written: 'Dame' Quilt
+        /// says "Dame Quilt". A line with this in it names them (<see cref="Hear"/>).
+        /// </summary>
+        public static void SpokenAs(int npcType, string spoken)
+        {
+            LabelOf(npcType).Spoken = spoken;
+        }
+
+        private static Label LabelOf(int npcType)
+        {
+            if (!labels.TryGetValue(npcType, out Label label))
+                labels[npcType] = label = new Label();
+
+            return label;
+        }
+
+        /// <summary>The first part of the tab: the name, the word the player has for them, or "???".</summary>
+        public static string LabelName(NPC npc)
+        {
+            if (npc == null)
+                return Unknown;
+
+            labels.TryGetValue(npc.type, out Label label);
+
+            if (!Named(npc))
+                return label?.KnownAs ?? Unknown;
+
+            return label?.Name ?? npc.TypeName;
+        }
+
+        /// <summary>The second part of the tab, after the name: their title once named, or null.</summary>
+        public static string LabelTitle(NPC npc)
+        {
+            if (npc == null || !Named(npc) || !labels.TryGetValue(npc.type, out Label label))
+                return null;
+
+            return label.Title;
         }
 
         internal static void Clear()
         {
             faces.Clear();
+            labels.Clear();
             namedAt.Clear();
         }
 
@@ -93,7 +191,8 @@ namespace PisAndDag.Content.UI
             if (npc == null || Named(npc) || string.IsNullOrEmpty(shown))
                 return;
 
-            string name = npc.TypeName;
+            labels.TryGetValue(npc.type, out Label label);
+            string name = label?.Spoken ?? npc.TypeName;
 
             if (string.IsNullOrEmpty(name) || !shown.Contains(name, StringComparison.Ordinal))
                 return;
@@ -105,7 +204,7 @@ namespace PisAndDag.Content.UI
         /// <summary>On the Dialogue panel, whose box is <paramref name="box"/>, drawn in its own <paramref name="panel"/>.</summary>
         internal static void DrawOnPanel(SpriteBatch spriteBatch, NPC npc, Rectangle box, Texture2D panel, float alpha)
         {
-            if (npc == null || !TryFace(npc, out Texture2D texture, out Rectangle frame))
+            if (npc == null || !TryFace(npc, out Texture2D[] layers, out Rectangle frame))
                 return;
 
             Rectangle rect = new Rectangle(box.X - PanelOutX, box.Y - PanelOutY, Size, Size);
@@ -117,13 +216,19 @@ namespace PisAndDag.Content.UI
             window.Inflate(-4, -4);
             spriteBatch.Draw(TextureAssets.MagicPixel.Value, window, new Rectangle(0, 0, 1, 1), Window * alpha);
 
-            DrawFace(spriteBatch, npc, texture, frame, rect, alpha);
+            DrawFace(spriteBatch, npc, layers, frame, rect, alpha);
         }
+
+        /// <summary>
+        /// The right edge of the portrait's frame on the Dialogue panel whose box is
+        /// <paramref name="box"/>: the name tab starts a little past it.
+        /// </summary>
+        internal static int PanelFrameRight(Rectangle box) => box.X - PanelOutX + Size;
 
         /// <summary>On vanilla's chat box, for the townsperson the player is talking to.</summary>
         internal static void DrawOnChat(SpriteBatch spriteBatch, NPC npc)
         {
-            if (npc == null || !TryFace(npc, out Texture2D texture, out Rectangle frame))
+            if (npc == null || !TryFace(npc, out Texture2D[] layers, out Rectangle frame))
                 return;
 
             int left = Main.screenWidth / 2 - TextureAssets.ChatBack.Width() / 2;
@@ -131,10 +236,10 @@ namespace PisAndDag.Content.UI
 
             Utils.DrawInvBG(spriteBatch, rect, ChatBlue);
 
-            DrawFace(spriteBatch, npc, texture, frame, rect, 1f);
+            DrawFace(spriteBatch, npc, layers, frame, rect, 1f);
         }
 
-        private static void DrawFace(SpriteBatch spriteBatch, NPC npc, Texture2D texture, Rectangle frame, Rectangle rect, float alpha)
+        private static void DrawFace(SpriteBatch spriteBatch, NPC npc, Texture2D[] layers, Rectangle frame, Rectangle rect, float alpha)
         {
             // Pixel art: never drawn up, only down if it would not fit.
             float scale = Math.Min(1f, Inner / (float)Math.Max(frame.Width, frame.Height));
@@ -144,7 +249,10 @@ namespace PisAndDag.Content.UI
             // Round to whole pixels at scale 1 so it does not shimmer.
             at = new Vector2((float)Math.Floor(at.X), (float)Math.Floor(at.Y));
 
-            spriteBatch.Draw(texture, at, frame, Tint(npc) * alpha, 0f, origin, scale, SpriteEffects.None, 0f);
+            Color tint = Tint(npc) * alpha;
+
+            foreach (Texture2D layer in layers)
+                spriteBatch.Draw(layer, at, frame, tint, 0f, origin, scale, SpriteEffects.None, 0f);
         }
 
         /// <summary>Pitch black until named; then up out of the black, and itself.</summary>
@@ -161,20 +269,33 @@ namespace PisAndDag.Content.UI
             return Color.Lerp(Color.Black, Color.White, up * up * (3f - 2f * up));
         }
 
-        private static bool TryFace(NPC npc, out Texture2D texture, out Rectangle frame)
+        private static bool TryFace(NPC npc, out Texture2D[] layers, out Rectangle frame)
         {
-            texture = null;
+            layers = null;
             frame = Rectangle.Empty;
 
             if (faces.TryGetValue(npc.type, out Face face))
             {
-                face.Texture ??= ModContent.Request<Texture2D>(face.Path);
+                if (face.Textures == null)
+                {
+                    face.Textures = new Asset<Texture2D>[face.Paths.Length];
 
-                if (!face.Texture.IsLoaded)
-                    return false;
+                    for (int i = 0; i < face.Paths.Length; i++)
+                        face.Textures[i] = ModContent.Request<Texture2D>(face.Paths[i]);
+                }
 
-                texture = face.Texture.Value;
-                frame = face.Frame ?? texture.Bounds;
+                foreach (Asset<Texture2D> asset in face.Textures)
+                {
+                    if (!asset.IsLoaded)
+                        return false;
+                }
+
+                layers = new Texture2D[face.Textures.Length];
+
+                for (int i = 0; i < layers.Length; i++)
+                    layers[i] = face.Textures[i].Value;
+
+                frame = face.Frame ?? layers[0].Bounds;
                 return true;
             }
 
@@ -188,8 +309,8 @@ namespace PisAndDag.Content.UI
             if (head == null || !head.IsLoaded)
                 return false;
 
-            texture = head.Value;
-            frame = texture.Bounds;
+            layers = new[] { head.Value };
+            frame = head.Value.Bounds;
             return true;
         }
     }

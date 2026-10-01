@@ -35,6 +35,12 @@ namespace PisAndDag.Content.UI
         /// </summary>
         public bool Remembered = true;
 
+        /// <summary>
+        /// Its own colour, in place of the gold: pulsed the way the gold is (Main.mouseTextColor),
+        /// and still grey once heard. Null means gold.
+        /// </summary>
+        public Color? Colour;
+
         /// <summary>Label parsed once, on first draw.</summary>
         internal TextSnippet[] Snippets;
 
@@ -297,6 +303,70 @@ namespace PisAndDag.Content.UI
         internal static int DrawOptionLines(SpriteBatch spriteBatch, List<TalkOption> options, NPC npc,
             float right, float top, int hoveredBefore, HashSet<string> heard)
         {
+            float y = top;
+            int nowHovered = -1;
+
+            for (int i = 0; i < options.Count; i++)
+            {
+                bool clicked = DrawOne(spriteBatch, options[i], npc, right, 1f, y, nowHovered == -1, heard,
+                    out bool over, out float height);
+
+                if (over)
+                    nowHovered = i;
+
+                y += height + RowGap;
+
+                // The click may have replaced the list under this loop.
+                if (clicked)
+                    break;
+            }
+
+            // Vanilla ticks on both entering and leaving a chat button, not just entering.
+            if (nowHovered != hoveredBefore)
+                SoundEngine.PlaySound(SoundID.MenuTick);
+
+            return nowHovered;
+        }
+
+        /// <summary>
+        /// Two lines on one row, one in each bottom corner of a box: the first with its left
+        /// edge on <paramref name="left"/>, the second with its right edge on
+        /// <paramref name="right"/>. For a choice that is a fork rather than a list. Same
+        /// looks, hover and click as <see cref="DrawOptionLines"/>; returns which is hovered.
+        /// </summary>
+        internal static int DrawOptionCorners(SpriteBatch spriteBatch, List<TalkOption> options, NPC npc,
+            float left, float right, float top, int hoveredBefore, HashSet<string> heard)
+        {
+            int nowHovered = -1;
+
+            for (int i = 0; i < options.Count && i < 2; i++)
+            {
+                bool clicked = DrawOne(spriteBatch, options[i], npc, i == 0 ? left : right, i == 0 ? 0f : 1f, top,
+                    nowHovered == -1, heard, out bool over, out _);
+
+                if (over)
+                    nowHovered = i;
+
+                if (clicked)
+                    break;
+            }
+
+            if (nowHovered != hoveredBefore)
+                SoundEngine.PlaySound(SoundID.MenuTick);
+
+            return nowHovered;
+        }
+
+        /// <summary>
+        /// One line: measured, hovered, drawn, clicked. It sits with the point
+        /// <paramref name="alignX"/> of the way along its width (0 its left edge, 1 its right)
+        /// on <paramref name="anchorX"/>, its top on <paramref name="top"/>. Only takes the
+        /// hover when <paramref name="mayHover"/>, so two lines never both swell. True when it
+        /// was clicked; <paramref name="height"/> is its height at rest.
+        /// </summary>
+        private static bool DrawOne(SpriteBatch spriteBatch, TalkOption option, NPC npc, float anchorX, float alignX,
+            float top, bool mayHover, HashSet<string> heard, out bool over, out float height)
+        {
             Player player = Main.LocalPlayer;
             DynamicSpriteFont font = FontAssets.MouseText.Value;
 
@@ -310,92 +380,83 @@ namespace PisAndDag.Content.UI
             int greyLevel = (int)(Main.mouseTextColor * HeardGrey);
             Color grey = new Color(greyLevel, greyLevel, greyLevel, Main.mouseTextColor);
 
-            float y = top;
-            int nowHovered = -1;
+            // A line with a colour of its own wears it in the gold's place, on the same pulse.
+            Color colour = gold;
 
-            for (int i = 0; i < options.Count; i++)
+            if (option.Colour is Color own)
             {
-                TalkOption option = options[i];
-                string key = TalkMemory.Key(npc.type, option);
-
-                if (option.Snippets == null)
-                {
-                    // Colour here is a placeholder: the draw passes ignoreColors, so every
-                    // snippet takes the colour of the moment.
-                    option.Snippets = ChatManager.ParseMessage(option.Label, Color.White).ToArray();
-                    ChatManager.ConvertNormalSnippets(option.Snippets);
-                }
-
-                // Measured through the snippet path, so a leading icon counts: its
-                // UniqueDraw reports its box when asked for size.
-                Vector2 baseSize = ChatManager.GetStringSize(font, option.Snippets, new Vector2(BaseScale));
-
-                // Right-aligned to the box, centre anchored so the hover swell grows
-                // outward from the middle rather than past the border.
-                Vector2 centre = new Vector2(right - baseSize.X * 0.5f, y + baseSize.Y * 0.5f);
-
-                // Screen and mouse are both in UI space here: the layer is
-                // InterfaceScaleType.UI and PlayerInput.SetZoom_UI has already divided
-                // Main.mouseX/Y and Main.screenWidth/Height by Main.UIScale.
-                Rectangle box = new Rectangle(
-                    (int)(centre.X - baseSize.X * 0.5f) - HitPadding,
-                    (int)(centre.Y - baseSize.Y * 0.5f) - HitPadding,
-                    (int)baseSize.X + HitPadding * 2,
-                    (int)baseSize.Y + HitPadding * 2);
-
-                bool over = nowHovered == -1 && box.Contains(Main.mouseX, Main.mouseY) && PADMouse.Steering;
-
-                Vector2 scale = new Vector2(BaseScale);
-                Vector2 drawSize = baseSize;
-
-                if (over)
-                {
-                    nowHovered = i;
-
-                    // mouseInterface stops the click from also firing whatever the player
-                    // is holding; releaseUseItem stops a held button carrying over.
-                    player.mouseInterface = true;
-                    player.releaseUseItem = false;
-
-                    scale *= HoverScale;
-                    drawSize = ChatManager.GetStringSize(font, option.Snippets, scale);
-                }
-
-                // No origin trick: ChatManager applies origin to letters but hands a
-                // UniqueDraw snippet its raw position, so an origin would split an icon
-                // from its words. Top-left placed by hand keeps them together.
-                Vector2 topLeft = centre - drawSize * 0.5f;
-
-                // Shadow stays black rather than vanilla's hover-brown, on purpose: black
-                // is the one colour a snippet can recognise as "this is the shadow pass".
-                ChatManager.DrawColorCodedStringShadow(spriteBatch, font, option.Snippets, topLeft,
-                    Color.Black, 0f, Vector2.Zero, scale);
-                ChatManager.DrawColorCodedString(spriteBatch, font, option.Snippets, topLeft,
-                    option.Remembered && heard.Contains(key) ? grey : gold, 0f, Vector2.Zero, scale,
-                    out _, -1f, ignoreColors: true);
-
-                y += baseSize.Y + RowGap;
-
-                if (over && PADMouse.Pressed)
-                {
-                    PADMouse.Consume();
-                    SoundEngine.PlaySound(SoundID.MenuTick);
-
-                    if (option.Remembered)
-                        heard.Add(key);
-
-                    option.Click?.Invoke(npc);
-
-                    // The click may have replaced the list under this loop.
-                    break;
-                }
+                float pulse = Main.mouseTextColor / 255f;
+                colour = new Color((int)(own.R * pulse), (int)(own.G * pulse), (int)(own.B * pulse), Main.mouseTextColor);
             }
 
-            // Vanilla ticks on both entering and leaving a chat button, not just entering.
-            if (nowHovered != hoveredBefore)
-                SoundEngine.PlaySound(SoundID.MenuTick);
+            string key = TalkMemory.Key(npc.type, option);
 
-            return nowHovered;
+            if (option.Snippets == null)
+            {
+                // Colour here is a placeholder: the draw passes ignoreColors, so every
+                // snippet takes the colour of the moment.
+                option.Snippets = ChatManager.ParseMessage(option.Label, Color.White).ToArray();
+                ChatManager.ConvertNormalSnippets(option.Snippets);
+            }
+
+            // Measured through the snippet path, so a leading icon counts: its
+            // UniqueDraw reports its box when asked for size.
+            Vector2 baseSize = ChatManager.GetStringSize(font, option.Snippets, new Vector2(BaseScale));
+            height = baseSize.Y;
+
+            // Placed by its anchor, centre anchored so the hover swell grows outward from
+            // the middle rather than past the border.
+            Vector2 centre = new Vector2(anchorX - baseSize.X * alignX + baseSize.X * 0.5f, top + baseSize.Y * 0.5f);
+
+            // Screen and mouse are both in UI space here: the layer is
+            // InterfaceScaleType.UI and PlayerInput.SetZoom_UI has already divided
+            // Main.mouseX/Y and Main.screenWidth/Height by Main.UIScale.
+            Rectangle box = new Rectangle(
+                (int)(centre.X - baseSize.X * 0.5f) - HitPadding,
+                (int)(centre.Y - baseSize.Y * 0.5f) - HitPadding,
+                (int)baseSize.X + HitPadding * 2,
+                (int)baseSize.Y + HitPadding * 2);
+
+            over = mayHover && box.Contains(Main.mouseX, Main.mouseY) && PADMouse.Steering;
+
+            Vector2 scale = new Vector2(BaseScale);
+            Vector2 drawSize = baseSize;
+
+            if (over)
+            {
+                // mouseInterface stops the click from also firing whatever the player
+                // is holding; releaseUseItem stops a held button carrying over.
+                player.mouseInterface = true;
+                player.releaseUseItem = false;
+
+                scale *= HoverScale;
+                drawSize = ChatManager.GetStringSize(font, option.Snippets, scale);
+            }
+
+            // No origin trick: ChatManager applies origin to letters but hands a
+            // UniqueDraw snippet its raw position, so an origin would split an icon
+            // from its words. Top-left placed by hand keeps them together.
+            Vector2 topLeft = centre - drawSize * 0.5f;
+
+            // Shadow stays black rather than vanilla's hover-brown, on purpose: black
+            // is the one colour a snippet can recognise as "this is the shadow pass".
+            ChatManager.DrawColorCodedStringShadow(spriteBatch, font, option.Snippets, topLeft,
+                Color.Black, 0f, Vector2.Zero, scale);
+            ChatManager.DrawColorCodedString(spriteBatch, font, option.Snippets, topLeft,
+                option.Remembered && heard.Contains(key) ? grey : colour, 0f, Vector2.Zero, scale,
+                out _, -1f, ignoreColors: true);
+
+            if (!over || !PADMouse.Pressed)
+                return false;
+
+            PADMouse.Consume();
+            SoundEngine.PlaySound(SoundID.MenuTick);
+
+            if (option.Remembered)
+                heard.Add(key);
+
+            option.Click?.Invoke(npc);
+            return true;
         }
     }
 

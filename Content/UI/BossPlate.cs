@@ -47,6 +47,13 @@ namespace PisAndDag.Content.UI
         public bool NameByHand;
 
         /// <summary>
+        /// For a boss that names itself: the bar waits for the name too. Nothing of the plate
+        /// shows through its arrival until its own cutscene starts the name, and then the bar
+        /// fades up with it (the Queen Slime, on her roar).
+        /// </summary>
+        public bool BarWithName;
+
+        /// <summary>
         /// False for a boss that must keep moving through its arrival (the Wall). True
         /// otherwise: BossArrivalWait holds the boss still until the camera is home.
         /// </summary>
@@ -406,6 +413,15 @@ namespace PisAndDag.Content.UI
             Entry(npcType).NameByHand = true;
         }
 
+        /// <summary>
+        /// For a type that names itself: its bar stays down until its name is started, and
+        /// comes up with it, so nothing of the plate shows before its own cue.
+        /// </summary>
+        public static void BarWaitsForName(int npcType)
+        {
+            Entry(npcType).BarWithName = true;
+        }
+
         /// <summary>This type keeps moving through its arrival; BossArrivalWait leaves it alone.</summary>
         public static void NoWait(int npcType)
         {
@@ -462,6 +478,7 @@ namespace PisAndDag.Content.UI
                 Waits = reg?.Waits ?? true,
                 Plain = plain,
                 NameByHand = reg?.NameByHand ?? false,
+                BarWithName = reg?.BarWithName ?? false,
             };
         }
 
@@ -557,9 +574,9 @@ namespace PisAndDag.Content.UI
                 shield = stashShield;
                 shieldMax = stashShieldMax;
                 drain = MathHelper.Lerp(drain, life, DrainRate);
-                fade = Math.Min(fade + 1f, FadeInTicks);
 
                 PendingNameFlight(npc);
+                FadeUp();
                 Light(npc);
                 return;
             }
@@ -577,9 +594,9 @@ namespace PisAndDag.Content.UI
                     life = mine.life;
                     lifeMax = Math.Max(mine.lifeMax, 1);
                     drain = MathHelper.Lerp(drain, life, DrainRate);
-                    fade = Math.Min(fade + 1f, FadeInTicks);
 
                     PendingNameFlight(mine);
+                    FadeUp();
                     Light(mine);
                     return;
                 }
@@ -604,6 +621,18 @@ namespace PisAndDag.Content.UI
 
             if (fade <= 0f)
                 fade = 0f;
+        }
+
+        /// <summary>
+        /// The bar comes up, a tick at a time: but not while it waits for a name that has not
+        /// been started yet (BarWaitsForName).
+        /// </summary>
+        private static void FadeUp()
+        {
+            if (nameFlightPending && (current?.BarWithName ?? false))
+                return;
+
+            fade = Math.Min(fade + 1f, FadeInTicks);
         }
 
         /// <summary>A new fight. Resolve what to show, then choose which arrival it gets.</summary>

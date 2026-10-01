@@ -28,8 +28,8 @@ namespace PisAndDag.Content.Projectiles.Summoner
     /// </summary>
     public class JointArmsOfTheDefiledProj : BaseWhip
     {
-        /// <summary>Firecracker's reach (1.4 on a 30-tick swing), on this whip's 25-tick swing.</summary>
-        public override float RangeMultiplier => 1.4f * 30f / 25f;
+        /// <summary>Firecracker's reach (1.4 on a 30-tick swing), on this whip's 35-tick swing.</summary>
+        public override float RangeMultiplier => 1.4f * 30f / 35f;
 
         public override float MultihitKeep => 0.8f;
 

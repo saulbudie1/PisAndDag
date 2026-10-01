@@ -151,6 +151,10 @@ namespace PisAndDag.Content.NPCs.Mors
             // of the 68 x 74 canvas). He never gives his name, so it stays black.
             DialoguePortrait.Register(mors, "PisAndDag/Content/NPCs/Mors/MorsIdle_head", new Rectangle(14, 0, 24, 34));
 
+            // And the panel's tab has no name for him either: only what anyone would call
+            // him who had seen him once.
+            DialoguePortrait.KnownAs(mors, "The Tall Elder");
+
             Dialogue.Register(mors, Opener, HeadHeight, Pace,
                 new TalkOption("Have we met",
                     _ => Dialogue.Say(GraveyardZone.Deaths > 0 ? HaveWeMetDied : HaveWeMetNever, Back)),

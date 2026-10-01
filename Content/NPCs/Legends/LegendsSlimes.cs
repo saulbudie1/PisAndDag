@@ -1571,9 +1571,10 @@ namespace PisAndDag.Content.NPCs.Legends
                 npc.localAI[0]--;
             }
 
-            // Only from a standing start, and never on top of anything else.
+            // Only from a standing start, and never on top of anything else, and not with
+            // someone inside him (HoldingAnyone).
             if (!player.dead && npc.ai[2] >= TeleportPressure && npc.ai[1] < StateTeleportOut
-                && npc.velocity.Y == 0f)
+                && npc.velocity.Y == 0f && !HoldingAnyone(npc))
             {
                 StartTeleport(npc, player);
             }
@@ -1707,7 +1708,9 @@ namespace PisAndDag.Content.NPCs.Legends
             // can never be in flight together.
             npc.localAI[3]++;
 
-            if (npc.localAI[3] >= SpecialEvery)
+            // Not while he is holding someone: the special waits for the first jump after he
+            // lets go (HoldingAnyone says why).
+            if (npc.localAI[3] >= SpecialEvery && !HoldingAnyone(npc))
             {
                 npc.localAI[3] = 0f;
 
@@ -1950,6 +1953,37 @@ namespace PisAndDag.Content.NPCs.Legends
         }
 
         // ---- the slam -------------------------------------------------------
+
+        /// <summary>
+        /// Whether anyone is inside him now. While someone is, he starts neither special.
+        ///
+        /// The slam's climb aims over its target's head and follows them (BeginRise). A
+        /// target he is holding is pinned to his own middle, so the mark climbed with him:
+        /// straight up he rose ten times too high, and sideways it fed on itself, because
+        /// the held player hangs behind him by twice his sideways speed. Any stray half
+        /// pixel (his size follows his health, the drain heals him every second, and
+        /// Entity.Center rounds an odd width down) doubled every tick until he was thrown
+        /// off the world with the player in him, where vanilla's own reads of the tile
+        /// under the player ran off the end of the tile array. The teleport is held back
+        /// with it, so the rule is one rule: he has you, he hops.
+        /// </summary>
+        private static bool HoldingAnyone(NPC npc)
+        {
+            for (int i = 0; i < Main.maxPlayers; i++)
+            {
+                Player player = Main.player[i];
+
+                if (!player.active)
+                    continue;
+
+                SlimeGrabPlayer grab = player.GetModPlayer<SlimeGrabPlayer>();
+
+                if (grab.HeldBy == npc.whoAmI && grab.Held)
+                    return true;
+            }
+
+            return false;
+        }
 
         /// <summary>
         /// Vanishes and picks somewhere to come back.

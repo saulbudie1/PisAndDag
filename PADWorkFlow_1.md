@@ -11,7 +11,8 @@
 > (`WorldGen.Convert`'s fake radius, `BiomeConversionID` not existing in 1.4.4).
 > For magic: `PAD_Item_Plan.md` §4.7 (what is built), then §13.5 (the live TODO) and §13.3.
 >
-> **Sessions: 0–10 = session 1, §11 = session 2, §12 = session 3, §13 = session 4.** Later wins.
+> **Sessions: 0–10 = session 1, §11 = session 2, §12 = session 3, §13 = session 4,
+> §14 = session 5, §15 = session 6.** Later wins. The newest open TODO is §15.8.
 
 ---
 
@@ -1550,3 +1551,1507 @@ and its DLL read (workshop folder `steamapps/workshop/content/1281930`, access g
 - **Log what a load-time rule decided.** One `Mod.Logger.Info` line turns the next
   "it does not work" into a fact.
 - **Simulate a rule against the real data before shipping it**, as §12.13 says for motion.
+
+---
+
+# SESSION 5
+
+> Bosses in Legends (the Wall, Skeletron, the Queen Bee), the arrival and dialogue UI,
+> the level dash, and the first summoner weapon with a whip base class. Long, and cut
+> by two context compactions and one dropped link to the computer, so the earliest
+> rounds are summarised rather than told in full. The code's own doc comments are the
+> fuller account; every class named here opens with one.
+>
+> Where session 5 disagrees with 1–4, session 5 wins.
+
+---
+
+## 14.1 What landed
+
+| Work | Where | Notes |
+|---|---|---|
+| The Wall of Flesh, Legends | `Content/NPCs/Legends/LegendsWall.cs` (`LegendsWall`, `LegendsWallStats`, `LegendsWallLaser`, `WallGrabPlayer`, `WallTentacleDraw`, `WallGrabOverlay`) | Life ×1.12, damage ×1.5, walks ×1.1. Behind it in the underworld is death. At 40% it roars and four tentacles come out of the mouth (walk ×1.15): a lash every ~4 s takes whoever it touches into the mouth for 6 s, 45 life/s out of them, 200/s into the Wall (cap 40%). Reach `MaxReach` 448, sway `Sway` 0.7 (both were cut to 7/10 by request). The lash tell plays the CCBypass warning and glows the tentacle (`CCBypass.Warn(Func<Vector2>)`). |
+| Skeletron, Legends | `LegendsSkeletron.cs` (`LegendsSkeletron`, `LegendsSkeletronHand`, `SkeletronBreathSkull`, `SkeletronArrival`) | Life ×1.5, damage ×1.2. Four moves, never the same one twice running: Clap, Smash (hands rise 180 px apart, touch, and come down together), Breath (jaw drops, six skulls: `SkeletronHead.png` + `SkeletronJaw.png`), Dive (the head dives at any angle along a see-through path lerping red to orange; `GroundWave.Strike` for walls and ceilings). In every world he touches nothing while being introduced. |
+| King Slime's hops | `LegendsSlimes.cs` | More life in the hop. Earlier rounds; see the file. |
+| Guide's hint before Legends | `GuideHints.cs`, hjson `GuideHut` | The hut on the trail seaward. The user's own text. |
+| Speaker portraits | `Content/UI/DialoguePortrait.cs` (+ `Dialogue.cs`, `TalkOptions.cs`, `PugreamTalk.cs`, `MorsTalk.cs`) | The speaker's head in the top-left corner of every dialogue box. Pitch black until the speaker has said their own name to the player (`DialogueIntroductions`, per world). Town NPCs are always named. |
+| Boss plate: a boss that names itself | `BossPlate.NamesItself(type)` / `NameByHand` | For an own-intro boss whose cutscene calls `BossIntro.PlayNameOnly` itself. Queen Bee uses it. |
+| The Queen Bee | `Content/NPCs/Legends/LegendsQueenBee.cs`, `QueenBeeGround.cs`, `HoneyGlint.cs`, `Particles/HoneyMote.cs`, `HoneyRipple.cs` | See §14.2. |
+| Level dashes | `Content/PADplayer/LevelDash.cs` | While any dash is underway (`Player.dashDelay < 0`), no fall: Tabi, Shield of Cthulhu, Solar and the rest go level and drop when spent. All worlds. |
+| Base whip | `Content/Projectiles/Base/BaseWhip.cs` | See §14.3. |
+| Joint Arms of the Defiled | `Content/Items/Summoner/JointArmsOfTheDefiled.cs` (+ `JointArmsStreak`), `Projectiles/Summoner/JointArmsOfTheDefiledProj.cs`, `Buffs/ManyHands.cs` | See §14.4. Amalgaermis's first weapon drop. |
+
+Localization added: `GuideHut`, `SkeletronBreathSkull`, `Items.JointArmsOfTheDefiled` (with
+`Streak`, `Charged`), `Buffs.ManyHands`, `Projectiles.JointArmsOfTheDefiledProj`. Placeholder
+rows added for the Wall's tentacle sprites, Skeletron's head and jaw, the whip's icon and
+sheet, and the Many Hands icon.
+
+---
+
+## 14.2 The Queen Bee
+
+**All worlds.**
+
+- *Arrival.* The camera goes to the nearest honey (in 90×60 tiles). If there is none, the
+  summon digs a pool beside the player (`QueenBeeGround.BuildPool`): 32 tiles of honey in
+  rows 10/8/8/6, a hive bucket with a flat 3-tile hive rim each side, only in plain ground
+  with open air above. She comes up out of it dripping, flies level with the player
+  (faint gold), shakes herself, roars as her name comes up (`NamesItself`), and the camera
+  walks home. No honey and nowhere to dig: she flies in from vanilla's spawn.
+- *Death.* Her death is refused (`CheckDead`). She goes to the nearest flat hive
+  (`FindNest`, 150×90 tiles; any flat ground if no hive), settles, strains three times,
+  and leaves a larva (`PlaceLarva`). Then she swells and bursts, with gores 303–308 thrown
+  out in a ring (`Explode`). The server then sets life to 0, calls `checkDead` and sends
+  `SyncNPC`: that is when the loot drops.
+- *Larva.* Only a pickaxe breaks it. `LarvaWardSystem` turns off `tileCut` and
+  `tileObsidianKill` for tile 231, `LarvaWard.CanExplode` refuses explosions, and a whole
+  larva ignores losing its ground (`TileFrame` returns false). Once one piece has been
+  mined, vanilla takes over and the Queen comes as before.
+
+**Legends.**
+
+- Life ×1, body ×1.3, stingers ×1.75 (bees vanilla), size ×0.75.
+- `Charge` is vanilla's charge state rewritten. She lines up ×1.5 faster (pushes ×1.5²,
+  speed cap ×1.5), dashes twice as far past the player, and lets out 5–10 bees per dash.
+- At 35% she cries out, goes to the nearest honey (180×110 tiles, or builds a pool),
+  plunges in and comes up gold. From then on she has +15 flat defense
+  (`ModifyIncomingHit`), regains 20 life/s up to 35%, and wears a pulsing glow with bands
+  climbing her and a light-gold glint (`HoneyGlint`).
+
+**How it is built.** One `BeeScene` state machine run by the server and synced in
+`SendExtraAI` (scene, timer, spot, nest, level side, three flags). Clients adopt a packet
+only when the scene changed or the clock drifted more than 6 ticks. During a scene she is
+untouchable and harmless (`Hush`).
+
+**HoneyGlint** draws without a shader. In `Main.OnPreDraw` it renders streaks into a
+frame-sized render target, then draws her frame over it with a blend that keeps
+`destination × source alpha`. That leaves the glint cut to her shape, which `PreDraw`
+adds over her.
+
+---
+
+## 14.3 `BaseWhip` — how to make a whip
+
+ExampleMod's `ExampleWhipProjectile` turned into an abstract base (house style:
+sealed hooks, `Safe*` virtuals).
+
+1. Projectile: `class X : BaseWhip`. Override what differs:
+   - The numbers: `Segments` (20), `RangeMultiplier` (1), `MultihitKeep` (0.8, the damage
+     kept per extra enemy hit), `TagBuff`/`TagTicks`, and optionally `ChargeTicks` (the
+     example's hold-to-lengthen; the item then needs `channel`).
+   - The sheet: `Frame(i, count)`, `Origin(...)`, `Scale(...)`. `i` 0 is the handle and
+     `count - 2` is the tip. The defaults are the example's 10-wide sheet.
+   - The hooks: `OnWhipHit(target, hit, damage, first)` (owner only), `OnCrack(tip)` (all
+     machines), `OnCrackEnd(landed)` (owner only). Drawing: `DrawWhip`, using
+     `DrawLine`/`DrawPieces(points, colour, offset)`.
+2. Item: `Item.DefaultToWhip(type, damage, knockback, shootSpeed, useTime)` and
+   `MeleePrefix() => true`.
+3. The ai slots: `ai[0]` is vanilla's clock, `ai[1]` the charge, `ai[2]` is free (sent in
+   the spawn packet).
+
+**Reach** is `shootSpeed × the item sample's useAnimation × 2 × RangeMultiplier`, so a
+slower swing reaches further on the same settings. To keep a length, scale
+`RangeMultiplier` by `oldUseTime / newUseTime`. Firecracker is 1.4 at 30 ticks with
+shootSpeed 4.
+
+---
+
+## 14.4 Joint Arms of the Defiled
+
+- 30 damage, **35 use time** (the user's change from 25), knockback 2, Green, 1g 50s.
+  `RangeMultiplier` is `1.4 × 30 / 35` = Firecracker's length. No tag. `MultihitKeep` 0.8.
+- **Streak** (`JointArmsStreak`, the Chlorophyte Rifle's rules). A crack that hits anything
+  counts 1. A crack that hits nothing, 210 ticks without a hit, putting the whip away or
+  dying resets it. At 5 it is charged. The next crack spends it in `Shoot`, sends
+  `ai[2] = 1` so it glows red and bursts at the crack, and gives **Many Hands: +50% summon
+  damage for 11 s** (the user's change from 10% / 16 s). Whips inherit Summon damage in
+  full, so the whip gains too. The spending crack counts toward the next streak if it lands.
+- Every hit spatters blood on Amalgaermis's own scale (`Spatter`, `Abomanation.Blood*`).
+- **Drop:** guaranteed. `PerPlayerDrop` in classic, in `AmalgaermisBag` in expert/master.
+  `PAD_NPC_Plan.md` §2.8 row marked built.
+- Tooltip uses `{$CommonItemTooltip.Whips}` (vanilla's "Your summons will focus struck
+  enemies"). Flavour: *'The end of it is the worst of it.'*
+- Art is placeholder: the tip is the animal's tail end (the user's "anus tip").
+
+---
+
+## 14.5 Verified this session (tML 1.4.4, against the DLL IL)
+
+- **`NPC.StrikeNPC` runs `HitEffect`, then the hit sound, then `checkDead`.** A boss whose
+  death `CheckDead` refuses still plays vanilla's death `HitEffect` first (gores, 50 dust).
+  Cut it at the source with `On_NPC.VanillaHitEffect` (it exists in TerrariaHooks): run
+  `orig` with `life` set to 1 for that call. Done in `LegendsQueenBee.HitNotKilled`.
+- `checkDead`: `NPCLoader.CheckDead` runs before `DeathSound`, `NPCLoot` and
+  `active = false`. The only things before it are For the Worthy extras for types 13,
+  36 and the hornets.
+- `Main.OnPreDraw` is invoked inside `DoDraw`, after `DrawToMap`, `InitTargets` and
+  `UpdateDisplaySettings`, and **before** the backbuffer `Clear(Black)`. It is safe for
+  your own render targets; restore the previous targets afterwards.
+- **`BlendState.Additive` is SourceAlpha/One.** A `Color × float` scales alpha too, so the
+  colour is squared (half strength adds a quarter). For linear adding, use a
+  `BlendState` of One/One.
+- Whips:
+  - `Projectile.WhipSettings` is a struct field with `Segments` and `RangeMultiplier`.
+  - `FillWhipControlPoints(proj, list)` takes two parameters in 1.4.4.
+  - The crack is at `ai[0] == (int)(timeToFlyOut / 2)`; the projectile is killed at
+    `ai[0] >= timeToFlyOut`.
+  - Whips use neither `ai[1]` nor `ai[2]`, and `ai[2]` is in the `SyncProjectile`
+    packet.
+  - `Item.DefaultToWhip` sets `autoReuse = false`.
+  - Vanilla range multipliers: Leather 0.75, Spinal Tap 0.95, Snapthorn 1, Firecracker
+    1.4, Cool Whip 1.5, Durendal 1.75 (20 segments), Morning Star 1.6 (40), Dark Harvest
+    2.15 (30), Kaleidoscope 2.2 (40).
+  - Vanilla multi-hit damage kept per hit: Leather 0.5, Snapthorn 0.6, Firecracker 0.66,
+    Cool 0.7, Durendal 0.8, Kaleidoscope 0.8, Dark Harvest 0.9, Spinal Tap 0.9, Morning
+    Star 0.95. Modded whips must do it themselves in `OnHitNPC`.
+  - Firecracker: 37 dmg, 2 kb, speed 4, 30 ticks, rarity 4, sells 3g. Spinal Tap: 27, 2,
+    5, 30, Green, 1g 50s.
+- `SummonMeleeSpeedDamageClass` inherits Generic and Summon in full, and only attack speed
+  from Melee.
+- `ModProjectile.OnKill` is the hook to use (`Kill` is still there).
+  `ILocalizedModType.GetLocalization(suffix)` works with one argument.
+- Queen Bee (aiStyle 43): state `ai[0] == 2` flies above the player, then goes to 1
+  (bees). The charge is `ai[0] == 0` (odd `ai[1]` = dashing). The sheet is 172×1824, 12
+  frames of 152 (0–3 dash, 4–11 hover), picked by `localAI[0]`.
+- Larva (tile 231): `tileCut` and `tileObsidianKill` are true in vanilla. Its
+  TileObjectData has `LavaDeath = false`.
+- `Player.dashDelay < 0` for as long as a dash is underway. `PreUpdateMovement` runs after
+  gravity and before movement.
+- `NPC.HitModifiers.Defense` is a `StatModifier`; add to `.Flat`.
+- **tModLoader rewrites the hjson when it builds** and may drop quotes (`Streak: "Streak:
+  {0}/{1}"` came back unquoted, which is still valid). Re-stage it before every edit.
+
+---
+
+## 14.6 Errors hit this session and their fixes
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Queen Bee's honey glint barely visible | `BlendState.Additive` squared the streak strength | One/One blend; strengths 0.65 / 0.5. Checked with a numpy model of the real blend maths before shipping |
+| Killing blow threw her death gores, then she flew to the nest intact | `HitEffect` runs before `CheckDead` | `On_NPC.VanillaHitEffect` detour (§14.5) |
+| Her scenes stalled after Emerge and after Swell | Missing scene transitions | `EmergeDone`; Swell → Burst |
+| Camera never went home after her death | `watching` reset every tick | `DeathShot` up to `HomeAt`, then `PanHome` |
+| Clients never saw her die in multiplayer | Life set to 0 without a strike | `SyncNPC` after the server's `checkDead` |
+| `SendUserFile` returned 500 for some files | Upload side | `device_commit_files` with `stagedPath` under `/mnt/user-data/outputs/` works as the fallback |
+
+---
+
+## 14.7 Open TODO after session 5
+
+**Needs the user's hands (no delete tool):**
+
+1. Delete `Effects/LegendsShader.fx` and `Effects/LegendsShader.xnb`.
+2. §13.5's list, where not yet done.
+
+**Not yet confirmed in game.** None of this session's work has been tested in game by me.
+The riskiest parts:
+
+- the Queen Bee's scenes in multiplayer, and the pool digging in odd terrain;
+- the whip's streak and charged crack;
+- the level dash with every dash accessory and mount;
+- the refused-death hit effect.
+
+**Unfinished:**
+
+3. Amalgaermis's other drops (§2.8 of `PAD_NPC_Plan.md`): Gaping Jaw, the hand minion,
+   the tooth bow, the number, trophy and mask.
+4. Placeholder art (`PlaceholderTextures.md`).
+
+---
+
+## 14.8 Process notes
+
+- **Re-stage before every edit, even files you delivered an hour ago.** The user edits
+  between rounds (this session: the whip's numbers, straight into the files) and tModLoader
+  rewrites the hjson on build.
+- **When a link drops mid-request, answer what was asked first.** The user's messages
+  survive; read them all before acting. "make it 50%" meant the buff.
+- **Model the render maths, not just the picture.** The glint mockup looked right; the
+  blend state in code did something else. A numpy model of the exact blend equations
+  caught it.
+- **Trace a boss's death through `StrikeNPC` → `HitEffect` → `checkDead`** before refusing
+  a death: anything vanilla shows on death has already happened by the time `CheckDead`
+  is asked.
+
+---
+
+# SESSION 6
+
+> A spear (Visus), the Kingdom of Grace as a biome with its own light, and the
+> Flamethrower's fire redrawn. Two small tools came out of it that later work should reuse:
+> `Strip` (a bending ribbon of triangles) and `Easing` (a motion in pieces). Cut by one
+> context compaction, after the code was written and before it was delivered.
+>
+> **§14 (session 5) was written last round but never reached the computer**: the copy
+> there stayed at session 4. It is delivered now, with this. See §15.7.
+>
+> Where session 6 disagrees with 1–5, session 6 wins.
+
+---
+
+## 15.1 What landed
+
+| Work | Where | Notes |
+|---|---|---|
+| Visus | `Content/Items/Melee/Visus.cs` (+ `VisusDrop`, `VisusBag`), `Projectiles/Melee/VisusHold.cs` (`VisusGrip`, `VisusPose`, `VisusLayer`), `VisusThrust.cs`, `VisusChop.cs`, `Buffs/VisusShut.cs` (removed later, see the note at the top of §15.2) | §15.2. Eye of Cthulhu drop. |
+| The Kingdom of Grace, a biome | `Content/Biomes/GraceBiome.cs`, `GraceLight.cs`, `Particles/GraceMote.cs`, `Effects/Grace.fx`, `PisAndDag.LoadGraceFilter` | §15.3. **`Grace.fx` must be compiled by hand.** `GraceBuilder.WardFloor` went from `private` to `internal` for it. |
+| Flamethrower and Elf Melter flames | `Content/Projectiles/Ranged/FlamethrowerFlames.cs` (+ `FlameBillow.png`), `Particles/FlameSmoke.cs` | §15.4. Look only; damage and behaviour are vanilla's. |
+| `Strip` | `Content/Graphics/Strip.cs` (+ `Smear.png`, `SoftLine.png`, `Streak.png`) | §15.5. |
+| `Easing` | `Content/Projectiles/Base/Easing.cs` | §15.5. |
+| Flesh Maiden (added at the end of the session) | `Content/Items/Melee/FleshMaiden.cs` (+ `FleshMaidenState`), `Projectiles/Melee/FleshMaidenStrike.cs` (+ `FleshMaidenGrip`), `FleshMaidenSmash.cs`; `VisusHold.cs` changed to draw it | §15.10. |
+
+Localization added: `Items.Visus`, `Buffs.VisusShut`, `Projectiles.VisusThrust`,
+`Projectiles.VisusChop`, `Biomes.GraceBiome`. Placeholder rows added for `Visus.png`,
+`VisusShut.png` (the item overlay), `VisusSpear.png`, `VisusSpearGlow.png`, the Shut Eye
+icon, and the biome's bestiary icon and background.
+
+---
+
+## 15.2 Visus
+
+> **CHANGED at the end of session 6; this note wins over the bullets below.** The user's
+> "takes 60 seconds" meant ticks. The blow now **takes 60 ticks** (`Visus.ChopTicks`: the
+> multiplier is 60 / 45, which comes to exactly 60 at base speed, checked by running tML's
+> `CombinedHooks` maths on .NET 8), and the next blow **waits 120 ticks from the end of the
+> last** (`VisusPose.Rest`: set in `VisusChop.OnKill`, counted down in `PostUpdate`, read by
+> `CanUseItem`). **Shut Eye is gone**, as the user asked ("delete things that are excess"):
+> the buff and its icon and localization, the inventory overlay (`Items/Melee/VisusShut.png`),
+> the glint and note when the blow was ready again, and the "once a minute" tooltip line.
+> The eye still shuts at the end of the blow and stays shut while it rests, half open for the
+> last 10 ticks, open when the blow is ready (`VisusPose.RestingEye`, seen during a thrust).
+> **Later still:** the blow does **triple** damage (`Visus.ChopDamage` 3), not double.
+
+- **Numbers.** 52 melee damage, 45-tick use, knockback 6.5, Green, sells 1g, no auto reuse,
+  `noMelee` + `noUseGraphic` (the projectiles are the weapon). One at a time: `CanUseItem`
+  refuses while a thrust or a blow of the owner's is still out.
+- **Left click, the thrust** (`VisusThrust`). Drawn back, driven out, held, drawn in, as
+  shares of the use: back by 0.16, out by 0.40, held to 0.58, hits 0.20–0.62. The front hand
+  slides along the shaft (`Grip`: 56 → 64 → 14 texels from the butt), so the point reaches
+  112 px (7 tiles) from the centre on a level thrust. Hits along the line from the front
+  hand to the point, 14 px thick, each enemy once a thrust (`localNPCHitCooldown = -1`),
+  `ownerHitCheck`, cuts grass.
+- **The step** (`Lunge`, owner only): 32 px × |cos angle| over 0.12–0.60 of the thrust,
+  eased, capped at 4 px/tick, measured from where the player actually went (so walls and
+  slopes are honoured), and it only ever raises forward speed. Ground friction is added back
+  because the game takes it off before the player moves. Skipped mounted or grappling.
+- **Right click, the blow** (`VisusChop`). ×2 damage, ×1.3 use time, ×1.5 knockback, then
+  **Shut Eye** (`VisusShut`: 3600 ticks, debuff, persists through death, the Nurse cannot
+  remove it). The swing is four `Easing` pieces in degrees: lift −25 → −120, hang to −130,
+  down to +60 (`PolyIn` degree 3, so the weight is at the bottom), settle to +66. The ground
+  stops it: from the start of the downswing the hammer's teeth (6 px bitten in) and the point
+  are tested against solid tiles; the first tick one is in, the contact angle is bisected
+  8 times between last tick and this, and the head stays there: sound, a 6/14 screen shake,
+  `GroundWave.Strike`, tile dust, sparks; it stops hitting 2 ticks later. The first enemy
+  hit stalls it 5 ticks. It hits along its whole sweep since last tick (tested at four
+  angles from last tick's to this tick's), so nothing is stepped over at the bottom, where
+  it moves a tile a tick.
+- **The eye.** Three frames (open, half, shut) and a glow sheet (added light, drawn only
+  over the open frame). In a thrust it stays as it rests, with a glint as the point
+  arrives. In the blow it opens and glows crimson through the swing and shuts at the end
+  (Shut Eye has begun). When Shut Eye runs out it opens over 21 ticks, with a cold glint and
+  a low `MaxMana` note if Visus is in hand (`VisusPose`). The inventory icon has
+  `VisusShut.png` drawn over it meanwhile.
+- **How it is drawn.** `VisusLayer`, a `PlayerDrawLayer` between `SolarShield` and
+  `ArmOverItem` (vanilla's slot for a held item behind the front arm), while
+  `VisusPose.Held`. The projectiles only draw what trails behind (`PreDraw`, which runs
+  before the player is drawn): the thrust's streak, the blow's three shadows and its smear
+  (`Strip`: a dark band, crimson light, a blood edge, a hot core).
+- **Poses are written once, "upright"** (`VisusGrip`): facing right, y down, from
+  `RotatedRelativePoint(MountedCenter)`. World = (x·direction, y·gravDir); world angle =
+  (a or π−a), negated under reversed gravity; composite arm rotation = (angle − π/2)·gravDir;
+  the sprite flips vertically when (direction < 0) XOR (gravDir < 0). The shaft sits on
+  half the frame height (`Axis` 18), so a flipped frame keeps its origin. The back hand
+  finds where the back arm can reach the shaft (`BackArmOnto`: 48-step root search, then
+  16 bisections).
+- **Drop.** Classic: `PerPlayerDrop` under `Conditions.NotExpert`. Expert and master: the
+  Eye's treasure bag (`ItemDropRule.Common`).
+
+---
+
+## 15.3 The Kingdom of Grace's light
+
+**Where.** `GraceBiome.Covers(x, y)`: extra large world, the plain's span
+(`Layout.Plain`), no deeper than 4 rows under the plain's level. The level is found again
+from the saved `"Grace.Court"` mark: its bottom minus `GraceBuilder.WardFloor` is plan row
+0, the ground line. Marks are saved and sent by `GraceWorld`, so it works on clients.
+The Undercity, the Crypt, the fissure and the Font are below it and keep their dark.
+
+**The filter** (`"PisAndDag:Grace"`, pass `GracePass`, ps_3_0). Registered in
+`PisAndDag.LoadGraceFilter` through `RequestAssetIfExists("Effects/Grace")`; if the .xnb is
+missing it logs one warning and `GraceBiome.FilterReady` stays false, so nothing breaks.
+`SpecialVisuals` → `ManageSpecialBiomeVisuals`; the filter manager fades `uOpacity` over a
+second in and out. What it does, in order: a grade (blue sky to hazy gold, warmer,
+highlights toward gold, shadows lifted to brown, saturation 1.1; weaker at night), the sun
+(the light map below: haze in drifting bands where the sun reaches, and what it falls on
+brightened), a glow off the brightest things (two rings of 8 taps, no loops), a warm glare
+where vanilla draws the sun, a warm vignette.
+
+**The light map** (`GraceLight`, client only, nothing saved). Every frame the filter is in
+use (`PostDrawTiles`, which is before the filter is drawn), one texel a tile over the view,
+8 tiles round it and 44 more toward the sun, sides rounded up to 32. Light is carried from
+the sun's side a row at a time (a column at a time when the sun is low), each row blending
+the two tiles it comes from. A solid block stops it, glass (tile 54) lets it through, a
+platform or table 0.72, anything else placed 0.92, water most of it. **A glass wall with no
+block in front of it is a window: a source of its own colour** (×0.85), so halls get
+slanting shafts, colonnades bars, towers shadows. Two textures alternate so one is never
+written while bound. Parameters: `uColor` the sun's colour, `uSecondaryColor` (sun x, sun y
+on screen, day 0–1), `uDirection` toward the sun, image 1 the map, `uImageOffset` the map's
+top-left in world pixels from the view's top-left (bottom edge under reversed gravity).
+
+**Without the shader** the plain still changes: `ModifySunLightColor` warms the tile light
+(×1.08, 0.96, 0.74, fading in over a second on the plain; the sky is left alone, the grade
+does it) and `GraceMote`s hang where `Lit` says the sun reaches (walked through the tiles,
+no map needed).
+
+**Sun model.** Day = smoothstep in over the first 7% of the day and out over the last 7%.
+Tilt from −1.15 to +1.15 rad across the day, rising on the left. Colour (1, .86, .56) at
+noon to (1, .60, .28) low, by the square of how low.
+
+---
+
+## 15.4 The flames
+
+`FlamethrowerFlames : GlobalProjectile` on `ProjectileID.Flames` (Flamethrower and Elf
+Melter). `PreAI` returns false and keeps vanilla's clock exactly (`localAI[0]++`, die at 72,
+velocity ×0.95 from 60); vanilla's `AI_193_Flamethrower` does nothing else but throw dust,
+which is what this replaces (§15.6). Damage, hitbox, reach and debuffs are untouched.
+
+Drawn as a row of billows back along each burst's streak (vanilla's streak length), each
+given the fuel's age there: size, colour ramp (blue root, white-yellow, orange, red edge),
+rise, soot. Four layers: soot (covers), outer flame and inner flame (mostly add, cover a
+little so the colour holds against a bright sky), and a hot core while young. Placement,
+turn and noise frame come from a hash of the flame's identity, so every machine draws the
+same fire and it does not boil. `ai[0] == 1` (the cold flame) is drawn blue. Embers, soot
+puffs (`FlameSmoke`: dark, drawn over rather than added, carries on then rises), a nozzle
+flare, and sparks on hit. All textures premultiplied white, four 64 px frames.
+
+---
+
+## 15.5 Two tools to reuse
+
+**`Strip`** (`Content/Graphics/Strip.cs`): a band that bends, which a sprite batch cannot
+draw. `Strip.Begin()`, then `Strip.Pair(first, second, firstColour, secondColour, u)` for
+each step along the band (world pixels; v 0 on the first edge, 1 on the second), then
+`Strip.Draw(texture, sampler)` **with no sprite batch open**: End the batch before, Begin it
+again after with the game's own settings. It is a `BasicEffect` (texture × vertex colour)
+through `Main.GameViewMatrix.TransformationMatrix`, so it lands where a sprite would, zoom
+and reversed gravity included. Premultiplied blend: alpha 0 adds light, alpha darkens. The
+vertex array grows as needed.
+
+**`Easing`** (`Content/Projectiles/Base/Easing.cs`): `Easing.At(progress, Piece[])`. A
+`Piece(ease, start, from, shift, degree)` runs from `start` in the progress until the next
+piece starts, going from `from` to `from + shift`. Eases: Linear, Sine In/Out/InOut, Poly
+In/Out/InOut (t to the degree), ExpOut. Same idea as Calamity's `CurveSegment` +
+`PiecewiseAnimation`, own code. Not named `Curve`: FNA already has
+`Microsoft.Xna.Framework.Curve`.
+
+---
+
+## 15.6 Verified this session (tML 1.4.4, against the DLL IL)
+
+- **`ScreenShaderData.Apply`** sets `uColor`, `uOpacity` (= `CombinedOpacity`),
+  `uSecondaryColor`, `uTime` (= `Main.GlobalTimeWrappedHourly`), `uScreenResolution`
+  (= screen size / `GameViewMatrix.Zoom`, i.e. the view in world pixels), `uScreenPosition`,
+  `uTargetPosition`, `uImageOffset`, `uIntensity`, `uProgress`, `uDirection`, `uZoom`; then
+  binds each `UseImage` texture to device slot `index + 1` and sets `uImageSize{index+1}`.
+  Pass the sampler to `UseImage` yourself; otherwise it is picked by whether the size is a
+  power of two.
+- The view's top-left in the world is `screenPosition + screenSize × 0.5 × (1 − 1/zoom)`.
+  A pixel's world offset from it is `coords × uScreenResolution`.
+- `AI_193_Flamethrower`: `localAI[0]++`, `Kill` at 60 + 12, `velocity × 0.95` from 60, then
+  dust and nothing else.
+- FNA defines `Microsoft.Xna.Framework.Curve`: a class of that name clashes in any file
+  using that namespace.
+- The particle handler's additive bucket is `BlendState.Additive` (SourceAlpha, One): its
+  textures stay straight white. Everything drawn under `AlphaBlend` wants premultiplied
+  textures (tML loads mod PNGs straight, §13.3).
+- `PlayerDrawLayers.SolarShield` → `ArmOverItem` is the slot for something held behind the
+  front arm. Draw a held weapon there, not from the projectile, and its trail from the
+  projectile's `PreDraw`.
+- In `Main.DoDraw`: `FilterManager.BeginCapture`, … `DoDraw_WallsTilesNPCs`,
+  `SystemLoader.PostDrawTiles`, `DrawProjectiles`, `DrawPlayers_AfterProjectiles`, …
+  `FilterManager.EndCapture` (where the filters are applied). So filter parameters set in
+  `PostDrawTiles` are used the same frame, and a projectile's `PreDraw` is behind the
+  player. `ModifySunLightColor` is called from `DoDraw` too (`ApplyColorOfTheSkiesToTiles`).
+- `Filter.IsInUse()`, `Filter.GetShader()`, `ScreenShaderData.UseImage(Texture2D, int,
+  SamplerState)`, `UseImageOffset`, `UseDirection`, `UseSecondaryColor(float, float, float)`
+  exist as used.
+- **Use time.** `CombinedHooks.TotalUseTime` = max(1, (int)(useTime × player mult × item mult
+  ÷ use speed)), truncated, not rounded. `TotalAnimationTime` is the same for the animation,
+  with the speed-adjusted use time folded in. A multiplier that should land on a whole number
+  can truncate one short: run it before trusting it (45 × (60f / 45f) is exactly 60 on .NET 8).
+- `ItemCheck_Inner` turns `altFunctionUse` 1 into 2 **before** `ItemCheck_CheckCanUse`, so
+  `CanUseItem` sees 2 on a right click.
+- `ModProjectile.OnKill(int timeLeft)` runs on each machine where the projectile is killed,
+  whether it ran out or was cut short.
+
+---
+
+## 15.7 Errors hit this session and their fixes
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Visus's 2-px shaft came out black | An auto-outline pass outlined the whole shaft | Parts drawn explicitly |
+| The blow came to rest at the wrong angle on flat ground | Which point of the head was tested against the ground | The teeth less a 6 px bite, and the point; the first correction went the wrong way, so check the rest angle in the preview |
+| Build error on `Curve` | FNA's `Microsoft.Xna.Framework.Curve` | Renamed to `Easing` |
+| Glass blocks stopped the sun in the preview | The built kingdom has glass as tiles (54) as well as walls | Glass tiles let it through, tinted |
+| The sky went mint and grey | The warm grade on a blue sky gives mint; a sky already warmed by `ModifySunLightColor` reads as grey to the shader's sky test | Blue sky turned to gold in the shader; the background colour is no longer touched |
+| Halls had no shafts | Back-wall windows face the viewer, not the sun | Windows are light sources in the map |
+| `FilterReady` never assigned (warning) | Filter not registered yet | `LoadGraceFilter` |
+| No way to compile `.fx` here | vkd3d-compiler 1.2 has no HLSL front end | `Grace.fx` written conservatively for ps_3_0 (explicit taps, no `[unroll]`, a local float before `.xxx`). **It has not been through a compiler.** |
+| King Slime (Legends) shook side to side harder and harder and threw the player off the world; the log had `IndexOutOfRangeException` in `Player.FloorVisuals`, `Player.UpdateBiomes`, `Main.UpdateAudio_DecideOnNewMusic` and `NPC.SpawnNPC`, all at once | His slam could start while he still held the player (a grab lasts 3–5 s, and once he is hurt his wind-ups are short enough for three jumps and the crouch to fit inside it). The climb aims over the target's head and follows them, and a held target is pinned to his middle: vertically he rose ~10× too high, sideways the grab's lag (twice his sideways speed) made the aim feed on itself, doubling any half-pixel stray every tick (the drain heals him, his size follows his health, `Entity.Center` rounds an odd width down). Simulated: off the world 15–25 ticks after the nudge. Vanilla then read the tile under the player past the end of the tile array | Neither special (slam or teleport) starts while he holds anyone (`LegendsKingSlime.HoldingAnyone`); it waits for the first jump after he lets go |
+| Session 5 missing from the handoff on the computer | The committed copy was the session 4 one (device mtime 8 s after session 5 was written, size unchanged) | Re-delivered with this section. **After committing a document, list the folder and check the size.** |
+
+---
+
+## 15.8 Open TODO after session 6
+
+**Needs the user's hands:**
+
+1. **Compile `Effects/Grace.fx` with EasyXnb (`Effects/Compiler`) into `Effects/Grace.xnb`.**
+   Until then the plain only gets the warm tile light and the motes. If it will not
+   compile, send the compiler's error.
+2. Delete `Effects/LegendsShader.fx` and `Effects/LegendsShader.xnb` (still there).
+3. Delete `Content/Buffs/VisusShut.cs`, `Content/Buffs/VisusShut.png` and
+   `Content/Items/Melee/VisusShut.png` (Shut Eye, removed; nothing uses them, and the mod
+   builds with or without them).
+4. §14.7 and §13.5, where not yet done.
+
+**Not yet confirmed in game.** Nothing from this session has run. Riskiest:
+
+- `Grace.fx` itself, and the light map lining up with the world under zoom and reversed
+  gravity;
+- Visus's step in multiplayer, and the blow's ground stop on slopes, platforms and
+  half-blocks;
+- the flames against a bright sky and in the dark (designed against a model of the blend
+  sums, not seen in game).
+
+**Unfinished:** placeholder art for everything new (`PlaceholderTextures.md`).
+
+---
+
+## 15.9 Process notes
+
+- **Emulate a look before shipping it.** The Grace grade and light map were run in Python
+  over renders of the generated kingdom (the structure harness) first; that is what found
+  the mint sky and the missing shafts. Visus's poses, streak and smear were checked the
+  same way (`Claude outputs/visus_preview.gif`, `grace_light_compare.png`).
+- **Held weapons are player layers, trails are projectile draws.** The layer puts the spear
+  between the back arm and the front one; a projectile's `PreDraw` is behind the player,
+  which is where a trail belongs.
+- **Write a pose once, in the player's own frame**, and map it to the world in one place
+  (`VisusGrip.ToWorld`/`ToWorldAngle`). Facing and gravity then cost nothing.
+- **Check the computer after every commit of a document.** §15.7.
+
+---
+
+## 15.10 The Flesh Maiden (added at the end of the session)
+
+Visus grown over. Made from Visus and 13 Essence of the Fouled at a Demon or Crimson Altar
+(`TileID.DemonAltar` covers both): after Amalgaermis, before the Wall.
+
+- **Numbers.** 47 melee damage, ~~30 ticks~~ **40 ticks** (50 for the smash, §15.10.1),
+  knockback 6, Orange, sells 2g, **no auto reuse** (the user's choice: one click a step; kept
+  in the rework as a nerf). `noMelee` + `noUseGraphic`; the projectiles are the weapon.
+  ~~It never moves the player.~~ The combo never moves the player; the smash throws them back
+  (§15.10.1).
+- **Left click, the combo** (`FleshMaidenStrike`, ai[0] the step, ~~30~~ 40 ticks each): a swing
+  down, a swing up, then a thrust. The shape is Calamity's Biting Embrace (Broken Biome Blade:
+  `SwingMode` 0 a small up-to-down slash, 1 a large down-to-up slash, 2 a thrust; a `Combo`
+  counter on the weapon, reset after about 50 idle ticks). Ours is its own code: the step comes
+  from `FleshMaidenState.NextStep()` in `Shoot`, and the combo starts over after 60 ticks
+  without a strike or smash out (`Idle`, zeroed by each of them every tick).
+  - **Swings.** An arc laid about the aim, the aim held within ±46° of level: a wind-up, then
+    a sweep on a steep ease-out (`PolyOut`, degree 3), then a settle. Down: ~~−55 → −78, → +74,
+    → +62~~ −34 → −48, → +44, → +36 degrees; up: ~~+50 → +74, → −74, → −62~~ +32 → +44, → −48,
+    → −40 (about 90° each, §15.10.1). The swing down stops on the ground (the blade's edge less
+    a 6 px bite, or the point, in a solid tile; the angle halved out as Visus's blow does) and
+    comes back up ~~14°~~ 10° off it over 8 ticks. The swing up starts from the ground when
+    its wind-up would be in it (`floor`), and throws dirt as it tears up. **The swing up is
+    drawn turned over on its shaft**, so the blade leads both swings.
+  - **The thrust.** Visus's timing; the grip goes 66 → 78 → 12 texels from the butt, the point
+    160 px (10 tiles) out when level.
+  - **Hits.** The shaft past the hand (16 px wide) and the whole head (40 px wide), over 6
+    samples of the sweep since last tick; each enemy once a strike; the first hit of a swing
+    holds it still 3 ticks.
+- **Right click, the smash** (`FleshMaidenSmash`): VisusChop's swing fitted into ~~30~~ 50 ticks
+  (top .30, down .42, through .62, hits to .70), ~~×2~~ ×2.5 damage, ×1.5 knockback, the same ground
+  stop, a 4-tick stall on the first hit, 8 sweep samples. The next smash waits **60 ticks from
+  the end of the last** (`FleshMaidenState.Rest`, set in `OnKill`).
+- **The eye** is Visus's: shut while the smash rests, half open over the last 10 ticks.
+- **Blood** is Amalgaermis's (`Abomanation.Blood`, and Joint Arms of the Defiled's spatter
+  maths, `FleshMaidenGrip.Bleed`).
+- **Shared with Visus: the drawing in the hands.** `VisusLayer` now draws a `PolearmArt`
+  (sheet, glow, length, frame height: `PolearmArt.Visus`, `PolearmArt.FleshMaiden`), handed
+  over by `VisusGrip.Hold(..., art, turned)`; `VisusPose.Turned` flips the sheet over the
+  shaft. Visus passes neither and draws as before.
+- **Previewed** by emulating the code in Python on flat ground (`Claude outputs/flesh_maiden_preview.gif`):
+  the swing down meets the floor at about level, blade first; the swing up starts lying on
+  it; the thrust reaches 159.8 px; the smash lands at about level. *[Previewed again after the
+  rework, with the throw: §15.10.1.]*
+- **Art** is placeholder: `FleshMaiden.png` (96x96), `FleshMaidenSpear.png` (168x144, three
+  eye frames), `FleshMaidenSpearGlow.png` (`PlaceholderTextures.md` has the points the code
+  reads).
+- Flavour: *'The eye has company now.'*
+
+**Not yet confirmed in game:** all of it; most of all the turned-over swing up under reversed
+gravity and facing left, and the ground stops on slopes and platforms.
+
+### 15.10.1 Reworked (same session, after the first delivery)
+
+The user: smaller swings, 40 ticks, no auto reuse; the smash on right click, about 50 ticks,
+2.5 times the damage, and throwing its wielder back 2 tiles up and 10 back as it lands,
+spilling blood. Asked and answered: smaller arcs (about 90°, not raised as high; the thrust
+still aims wherever you point), and the throw on impact.
+
+- **Timing.** `UseTicks` 40. The smash is `SmashTicks` 50 through
+  `UseTimeMultiplier`/`UseAnimationMultiplier` = 1.25 when `altFunctionUse == 2` (40 × 1.25 is
+  exactly 50; melee speed shortens both, tML's own rounding: 45 at ×1.1, 40 at ×1.25).
+  `Shoot` still hands each projectile `itemAnimationMax` as its length.
+- **Arcs.** The tables above; the swing up's lowest point is a named constant (`UpLowest`
+  44), used for its ground test too. On flat ground with a level aim the floor takes the
+  lower half, so each swing shows about 49° (the blade's edge meets the floor at +0.6°).
+- **The throw** (`FleshMaidenState.Throw`, called by the smash's `ThrowBack`): the moment the
+  smash meets the ground, or at `ThroughAt` if nothing is under it, once a smash. The wielder
+  goes 2 tiles up and 10 back, away from the side they face; a burst of 14 droplets, then 2 a
+  tick for 26 ticks (`Spill`). The smash stops hitting 2 ticks after the throw and stops
+  looking for the ground. It runs on every machine the smash runs on (everyone sees the
+  blood); only the owner's copy moves the player.
+  - **Up** is one push worked out a tick at a time as `Player.Update` does it: gravity is
+    added before the move (IL 0x60dc, every tick for a normal player, standing too), so
+    v = (g + √(g² + 8gh)) / 2 with the size of this tick's gravity (Featherfall leaves the
+    field signed by `gravDir`). At g 0.4: 5.264 px/tick, peak 32.03 px, down again after
+    25.3 ticks.
+  - **Back** is steered in `PreUpdateMovement` (IL 0x8207: after vanilla's run, friction and
+    gravity, before the collisions) by how far the player really went last tick, toward
+    `throwSpeed × ticks` (160 / 25.3 = 6.32 px/tick), never past 160, at most 1.5 × that to
+    catch up. It stops dead at 160 px, at a wall (under 0.25 px gained in a tick), after 90
+    ticks, or when something else has the player (`Held`: dead, frozen/webbed/stoned, hook,
+    rope, mount, the Wall's tongue). Walk and jump are held off (`SetControls`) meanwhile.
+  - **No stop on landing, on purpose.** Brought down short of 160 (a low roof, rising ground)
+    the player skids the rest of the way, so the 10 tiles hold wherever there is room. An
+    earlier draft stopped on `velocity.Y == 0` in `PreUpdateMovement`, which never fires
+    there: gravity has already been added by then.
+  - **Checked** in .NET floats with vanilla's collision (lands flush, TileCollision returns
+    the gap; a ceiling bump leaves velocity.Y 0.01, IL 0x8495): flat ground, either facing
+    and under reversed gravity, peak 32.03 px, lands on tick 26 at exactly 160 px;
+    Featherfall peak 32.02, lands tick 44 at 160; a 3-tile tunnel comes down at 44 px and
+    skids to 160 by tick 27.
+- **Tooltip:** "Right click smashes it down for 2.5 times the damage" / "The smash throws you
+  back" (was "... for double damage").
+- **Previewed** (`Claude outputs/flesh_maiden_preview.gif`, `work/flesh/flesh_anim.py`, now
+  with a `Thrower` that mirrors the throw): the swing down meets the floor on tick 12 of 40;
+  the thrust reaches 160 px; the smash lands on tick 30 of 50 and the throw carries the
+  player to the 10-tile mark.
+
+**Not yet confirmed in game:** the throw in multiplayer, and in water or honey (the move is
+slowed there and the steering makes it up).
+
+---
+
+# SESSION 7
+
+> Beneath Grace (the underground of the Kingdom of Grace as a biome of its own, with its own
+> grade and its own water), and the Queen Slime remade in the King's manner: her gel alive,
+> her arrival out of the Gelatin Crystal, her wings, her death, and two moves of Legends. The
+> same conversation as the end of session 6 (the Flesh Maiden rework, §15.10.1), after a
+> second context compaction; written and delivered in one piece.
+>
+> Where session 7 disagrees with 1–6, session 7 wins.
+
+---
+
+## 16.1 What landed
+
+| Work | Where | Notes |
+|---|---|---|
+| Beneath Grace, a biome | `Content/Biomes/GraceDeepBiome.cs` (+ `GraceDeepAir`), `GraceDeepWater.cs` (`GraceDeepWaterStyle`, `GraceDeepWaterfallStyle`, `GraceDeepSplash`, `GraceDeepDroplet`), `Effects/GraceDeep.fx`, `PisAndDag.LoadGraceDeepFilter` | §16.2. **`GraceDeep.fx` must be compiled by hand.** `GraceBiome.Below` went from `private` to `internal` for it. |
+| The Queen Slime, every world | `Content/NPCs/Legends/LegendsQueenSlime.cs` (+ `LegendsQueenSlimeShots`, `LegendsQueenSlimeSystem`), `.Look.cs`, `.Rite.cs`, `.Wings.cs`, `.Death.cs`, `QueenSlimeArt.cs`, the art in `Content/NPCs/Legends/QueenSlime/`, `Content/Particles/QueenShard.cs` | §16.3 to §16.6. |
+| The Queen Slime, Legends | `LegendsQueenSlime.Moves.cs`, `QueenSlimeGrab.cs` (a `ModPlayer`), `Content/Projectiles/NPCs/QueenSlimeCore.cs` | §16.7. |
+
+Localization added: `Biomes.GraceDeepBiome` (*Beneath Grace*, *the halls beneath Grace*),
+`Projectiles.QueenSlimeCore` (*Crystal Core*). Placeholder rows added for the biome's icon and
+background, the wings, the shards, the crystal's cracks, and the four white textures of her
+arrival and death.
+
+Previews: `Claude outputs/queen_slime_preview.gif` (the arrival, the wings, the two moves, the
+death, one after the other).
+
+---
+
+## 16.2 Beneath Grace
+
+- **Where.** `GraceDeepBiome.Covers(x, y)`: a Grand world (`ExtraLargeWorld.Active`), over the
+  plain's span (`Layout.Plain`), deeper than `GraceBiome.PlainLevel + GraceBiome.Below` (the
+  plain's own biome ends 4 tiles under its level), and no lower than `GraceDeepBiome.Bottom`:
+  the bottom of `GraceWorld.Area` (the guard map's rectangle, saved and synced), or on a world
+  without one, the bottom of the lowest mark the builders left. The cellars, the harbour basin,
+  the Undercity, the Reliquary, the fissure, the Font and the Rootworks round the Shimmer.
+  `Priority` is `BiomeHigh`.
+- **The grade** (`Effects/GraceDeep.fx`, pass `GraceDeepPass`, filter
+  `"PisAndDag:GraceDeep"`, `EffectPriority.High`; colour gold (1, 0.8, 0.48), secondary blue
+  (0.22, 0.42, 0.8)): the dark sunk into sapphire, cool and deep; the middle tones a fifth
+  desaturated; what is lit turned gold, a little more saturated, and glowing (three rings of
+  taps round each pixel, gold); a soft S-curve; a vignette, blue at the edges; faint bands of
+  blue haze fixed to the world, in the dark only. Loaded with `RequestAssetIfExists`: without
+  the `.xnb` there is no grade and a warning in the log, nothing worse
+  (`GraceDeepBiome.FilterReady`).
+- **The water**, clear and mint (118, 227, 194). Vanilla's own water textures recoloured and
+  made see-through (0.40 to 0.70 opaque, premultiplied: the base 0.40, the ripples and streaks
+  0.46, the light 0.56, the surface line 0.70), where vanilla's are opaque and drawn at 0.6.
+  `LightColorMultiplier` 0.93, 0.99, 0.97 (vanilla 0.88, 0.96, 1.015). Its own falls, splash
+  dust (`UpdateType = DustID.Water`) and ceiling drips (`UpdateType = GoreID.WaterDrip`,
+  `LiquidDroplet`, 15 frames).
+  - **Why a hook as well as `ModBiome.WaterStyle`.** `Main.CalculateWaterStyle` takes a
+    fountain first, then a blood moon's night (style 9), then *the surface background's own
+    water* for background styles 1 to 8, and only after all that asks the modded styles
+    (`WaterStylesLoader.ChooseStyle`). The plain runs to the sea, whose background picks one.
+    So `GraceDeepAir` detours `On_Main.CalculateWaterStyle`: while the local player is Beneath
+    Grace, Grace's water, unless a water fountain on screen says otherwise.
+- **The motes.** Two tries a tick at 0.18: a `GraceMote`, gold (255, 206, 128) or one in five
+  pale mint (165, 236, 212), in open air with no liquid, only where `Lighting.Brightness` is 0.1
+  or more, brighter with it. None in the dark.
+- **Art.** The water textures are vanilla's recoloured (generator
+  `work/queen/water/make_water.py`); the bestiary icon and background are placeholders.
+
+---
+
+## 16.3 The Queen Slime: her gel alive (every world)
+
+`LegendsQueenSlime` (a `GlobalNPC` for `NPCID.QueenSlimeBoss`, partial across six files) does
+for her what `LegendsKingSlime` does for the King. Vanilla's AI (`AI_121`) fights her the rest
+of the time, untouched; a scene or a move of hers takes the tick instead (`PreAI` false) and
+hands her back at rest (`Release`: `ai[0..2]` zeroed, vanilla picks its next move in its own
+time).
+
+- **Her shape** (`.Look.cs`, `Animate`, every client, nothing sent): springs as the King's.
+  Coiled low and wide as vanilla's tells run out (the hop's countdown, the slam's wait, the gel's
+  gathering, read off vanilla's own `ai[1]`); tall the moment she leaves the ground, gel thrown
+  off her base; drawn out by her speed in the air; flattened by how hard she lands, and the
+  crown hops off her head as she comes back up; a slow breath in flight. A **ripple**: her body
+  is drawn in 14 slices, and a wave runs up them after every landing and every blow (each slice
+  swells and shifts as it passes), with a trace of it always there.
+- **A fifth see-through** (`Opacity` 0.8): her body and her wings. Her core and crown are whole.
+- **Drawn as vanilla draws her body**: an immediate batch (`AlphaBlend`, `PointClamp`,
+  `DepthStencilState.Default`, `CullNone`), `GameShaders.Misc["QueenSlime"].Apply()` **with no
+  draw data** (vanilla passes null: `uSourceRect` is then (0, 0, 4, 4)), her drawn, the game's
+  deferred batch back, then `Main.pixelShader.CurrentTechnique.Passes[0].Apply()`. The slices
+  are drawn from the same sheet, so the shader sees each of her pixels as it would have. Core
+  (`Extra_186`) and crown (`Extra_177`) where vanilla puts them, riding her shape: vanilla's
+  per-frame offsets are `QueenSlimeArt.CoreRise`/`CrownRise` (they differ only at frame 6).
+- **Her slam** is given its full weight: stretched on the drop, and on the landing that ends it
+  (`slamming`, remembered from the tick before, since vanilla has already reset `ai[0]` on the
+  landing tick) the whole of her weight, the dust sheet, the ground heaved (`GroundWave.Slam`)
+  and the screen shaken, without a second copy of vanilla's sound.
+- **Her gel** as particles: `SlimeGlob` in her three colours (`QueenSlimeArt.Gel`) off her
+  launches, landings and drips; vanilla's tinted slime dust (`DustID.TintableDust` with
+  `NPC.AI_121_QueenSlime_GetDustColor()`).
+- **Her afterimages** in the slam's drop and the dash, through the same shader.
+- **Screen shake** from anything of hers is scaled by distance (`Near`: all of it within 700 px,
+  none past 2100).
+
+---
+
+## 16.4 The arrival (`.Rite.cs`, every world)
+
+On `OnSpawn` (server; the summoner from `EntitySource_BossSpawn.Target`) she is hidden where
+she will form and the rite starts. Ticks:
+
+| Step | Ticks | What |
+|---|---|---|
+| RISE | 70 | The Gelatin Crystal (`Item_4988`) flies up out of the hand that held it, on an arc (a quadratic curve 60 px over the higher end), turning twice and slowing to upright, growing to 3×; the camera goes with it and leans in to 1.75 |
+| CRACK | 120 | It hangs, bobbing; cracks at 24, 58 and 92 (`QueenSlimeCrystalCracks.png`, each stage over the last), each a jolt of 14 ticks, a crystal impact, splinters and sparks; the light out of it grows; after the third it trembles more and more. Lean creeps to 1.9 |
+| BURST | 24 | A flash of pink, shattering, splinters and a ball of light; what is left is its shape in white (`QueenSlimeMorph.png` frame 0) in a glow of her colours |
+| MELT | 48 | The white shape runs, weightless and wobbling like something liquid, into the shape of her core (morph frames 0 to 15, 3× to 1.5×) |
+| GLOW | 120 | It hangs, breathing, light drawn into it; a slow pulse; a breath in at the end |
+| GROW | 54 | She swells out of it, white (`QueenSlimeWhite.png`) with her colours round her (`QueenSlimeHalo.png`): a damped spring from 0.08 of her size, past it to about 1.12, and back; her colours come into her from a third of the way; the white core fades into her own; gel thrown off her and pulled back in. The camera snaps out to 1.35 |
+| CROWN | 36 | Her crown falls 150 px onto her head, turning, and lands at 18 with a clink and a glint; she gives under it |
+| FALL | until she lands | Gravity; a heavy landing (her slam's sound, the dust, the ground heaved) |
+| ROAR | 90 | `Cinematic.Roar` (pitch +0.2) with a wet sound; her name comes up (`BossIntro.PlayNameOnly`, the plain plate, zoom 1.15); gel shaken off her top |
+| HOLD | 41 | `PlainPlateTicks − PlainLook − RoarTicks + 5`, as the King's and the Queen Bee's. Then the fight, the camera walking home over 60 |
+
+*[Later in session 7: her bar no longer shows through the rite; it comes up with her name at
+ROAR (`BossPlate.BarWaitsForName`). And every tick of the rite, anything hostile within 3000 px
+with less than 500 life is killed and gives nothing (`ClearScene`). See §16.14.]*
+
+- **Where.** `FindRiteSpot`: ground to the summoner's front at 300, 240, 360, 180, 420, 120 or
+  480 px (then the other side), within 240 px of their feet, with a 132 px wide column clear
+  from over her crown to the ground; her core forms 190 px over it. None (a tunnel): over the
+  summoner, as high as the room allows.
+- **The shot** is the King's: letterbox, interface away, the player held and made immune, for
+  anyone within 3000 px; leans as a framing that counts the player's own zoom.
+- **Her opening pause** after it is one second, not vanilla's 160 ticks: `EndRite` sets
+  `localAI[0]` to her life (vanilla's own marker that its first tick is done, and where it
+  would set `ai[1] = −100`).
+- **Glows are tints.** Every glow of hers (the crystal's, the white shapes', the one behind her,
+  her core's red) is three tints of her colours, widest faintest (`DrawGlow`: 0.3, 0.5, 0.8 of
+  the strength, as colour *and* alpha), and a little added light. Added light alone went white
+  on the Hallow's day sky and hid the shapes (§16.10).
+
+---
+
+## 16.5 The wings (`.Wings.cs`, every world)
+
+At half her life, before vanilla's second half starts (`PreAI`, the server's). Untouchable and
+harmless throughout. A teleport half done is undone first (`Resize` to 1, `hide` off).
+
+| Step | Ticks | What |
+|---|---|---|
+| LAND | up to 90 | Down to the ground if she is not on it |
+| CROUCH | 34 | Lower and wider, trembling; a low pulse |
+| SPROUT | 16 | Her wings come out of her back folded (frame 0) and shoot up: from inside her (34 px down) and a quarter size, past full size, and back; gel burst off her back |
+| SPREAD | 40 | They open (frames 1 to 5 over 22 ticks) and grow to 1.25×: a gust both ways along the ground, streaks of air, a jolt, a flash of her colour |
+| TAKEOFF | 64 | Wings up for 8, then the first beat hard and fast and a push of 12 px/tick up, dying at 0.93 a tick; the screen shaken, and if she was standing, the ground heaved (`GroundWave.Slam`), a ring of dust, and dust that rises with her for 36 ticks; the wings settle to their flight size |
+
+*[Superseded later in session 7: SPROUT, SPREAD and TAKEOFF are retimed and made stronger, and the flap is a new bent wingbeat. See §16.13.]*
+
+*[Later in session 7: once her wings are out she never has more than half her life, or vanilla
+would put her back in its first half with her wings still on. See §16.14.]*
+
+- **The wings are remade** (`QueenSlimeWings.png`, `work/queen/art/wings.py`): feathered, a
+  leading edge of coverts, primaries, secondaries and tertials, tips in her colours; the right
+  wing, the left mirrored (origin mirrored by hand: `(344 − 22, 222)`, since a flip mirrors the
+  texture inside the same quad). Flight size 0.8: each reaches about 235 px from its root, so
+  with her they span about three times her width. They tip with her rise and fall, beat faster
+  the faster she flies, and carry a trace of her colours going round.
+  *[Superseded later in session 7: the flap (frames 6 to 11, one straight wing turned about its
+  root) is replaced by `QueenSlimeWingbeat.png` and the beat in `.Beat.cs`. See §16.13.]*
+- Vanilla's wings (`Extra_185`) are no longer drawn (her `PreDraw` returns false).
+
+---
+
+## 16.6 The death (`.Death.cs`, every world)
+
+`CheckDead` refuses her first death (life pinned at 1, untouchable) and starts this; the blow
+that killed her is shown as one she lived through (`HitNotKilled`, a detour of
+`NPC.VanillaHitEffect`, the Queen Bee's pattern). At the end the server zeroes her life and
+calls `checkDead` again, and that one is let through (`ending`), the loot with it.
+
+| Step | Ticks | What |
+|---|---|---|
+| SPASM | 72 | A roar gone wrong (`Cinematic.Roar`, 0.6, pitch +0.5); she convulses where she hangs (random kicks to her shape, jerks off true, a ripple always running, gel thrown, wet sounds), wings beating at nothing |
+| FALL | until she lands | Her wings break into splinters (`QueenShard`, 40 a wing, along their length; sparks, a shatter) and she drops; a heavy landing |
+| FRENZY | 900 | She throws herself about: 60% of throws at the player (where they will be, their speed × 24), the rest within 190 px of her; 70 to 280 px high; worked out to land where aimed (NPC gravity 0.3, fastest fall 10); 2 to 24 ticks between. **She hurts while she does** (contact, and vanilla's slam shockwave, `QueenSlimeSmash`, 40, where each lands) |
+| STILL | up to 90 | One last landing, and she stays |
+| SHUDDER | 180 | Harder and harder, whiter and whiter (`QueenSlimeWhite.png` to 0.8, flickering), glowing; wet sounds closer and higher; letterbox and a small lean for anyone near, nobody held |
+| BURST | 30 | Her own death sound (`NPCDeath64`) in an explosion; a flash; gel (70), her dust (150, as vanilla's death), smoke, rolling dust, motes, sparks, three balls of light, the ground heaved; her crown thrown up (`GoreID.QueenSlimeCrown`; vanilla's wing gores are not thrown, her wings being splinters already). **Every slime of hers dies** (`StrikeInstantKill` on 658, 659, 660, the server's). Then her life to 0 and `checkDead`, `DeathSound` null |
+
+*[Superseded later in session 7: FRENZY is 480 (eight seconds). At the BURST her slimes pop and
+give nothing (`QueenSlimeMinions.Expire`), as they now do by themselves at ten seconds. See §16.14.]*
+*[And later again: thirty seconds, not ten. See §16.15.]*
+
+---
+
+## 16.7 Legends: her numbers and two moves
+
+- **Numbers** (`SetDefaults`, before difficulty scaling): life, contact damage and defense ×1.2;
+  her gel and her slam's shockwave ×1.2 (`LegendsQueenSlimeShots`, for 922 and 926 spawned by
+  her, `EntitySource_Parent`). Her minions are untouched.
+  *[Superseded later in session 7: contact damage and her gel and shockwave are ×1.1; life and
+  defense stay ×1.2. See §16.14.]*
+- **Picked in place of vanilla's** (`ConsiderMove`, the server's, after her AI): a fresh pick
+  from rest (state 0 last tick, 3 to 5 now). The pick after one of hers is always vanilla's.
+- **The core** (first half, on the ground, 30% of picks, the player within 1300 px):
+  - TELL 50: her core glows red and rises in her (14 px), swelling; red drawn into it; a pulse,
+    and a clear note 16 ticks before.
+  - OUT: `QueenSlimeCore` (hostile, **200**: the game doubles a hostile projectile's damage
+    against a player and the world's difficulty multiplies it, so 400 / 800 / 1200). Its way,
+    in its own frame: along = R sin(πu), out = W sin(πu) u, u from 0 to 1; out low, round the
+    far end where it slows, back higher, on the side away from the ground. R is 960 (half a
+    1920 screen) or 160 past the player, at most 1600; W is R/2. The axis is turned off the
+    line to the player by the angle of the point on its way out at their distance (found by
+    halving), so the way out passes exactly through where they stood. Its length in ticks is
+    πR/26, 70 to 150. The last 15% bends to wherever her core is. Spinning 0.42 rad a tick and
+    unsteadily, tumbling (narrower and wider), red (a tinted glow in its own shape, a trail),
+    red light, red torch dust, vanilla's boomerang whirr (`Item7`) every 8 ticks. Start, clock
+    and axis are all it needs (ai[0] owner, ai[1] axis, ai[2] reach with the side in its
+    sign; start and clock sent): every machine flies it alike. The server ends it early if she
+    is no longer waiting for it.
+    *[Superseded later in session 7: a hit takes exactly 150 from a player (`Damage` 75, and
+    `ModifyHitPlayer` sets the final damage), whatever the difficulty. It flies at half the
+    speed: πR/13 ticks, 140 to 300. See §16.14.]*
+  - CATCH 20: back into her with a gulp; the red goes out of it.
+- **The dash** (second half, flying, 35% of picks, within 1500 px):
+  - LINE up to 80: to 400 px to the player's side, level with them.
+  - TELL 30: draws back 40 px, wings raised, a cry (`ForceRoar`, pitch +0.4), trembling.
+  - CHARGE up to 60: across at 22 px/tick, tracking their height a little, wings swept, her
+    body drawn out along the way, afterimages, streaks of air. Anyone she touches is taken; past
+    them by 400, or out of time, it is over (END 24).
+  - HOLD 246: whoever she took is inside her (`QueenSlimeGrab`): pinned at her middle, lagging
+    her movement, tipped with it, no controls, no items; **50 a second through any armour**
+    (their own client, `Player.Hurt` on the WrongBugNet immunity slot, cleared first, so no other
+    immunity stops it and it gives none), four times; **150 life into her a second** (the
+    server, at the 60-tick marks, `HealEffect`). She hovers, working at them; drawn over them
+    (`DrawHolding`, after the players: her body goes through vanilla's shader, which player draw
+    data cannot carry).
+    *[Later in session 7: the life into her never takes her past half. See §16.14.]*
+  - SPIT 24: out, thrown clear (7 px/tick away, 6 up), 60 ticks' grace.
+- The grab is asked for every tick (`Hold`); the tick she stops asking they are out, so a death,
+  a despawn or a lost packet cannot leave anyone stuck in her.
+
+---
+
+## 16.8 How her scenes run in multiplayer
+
+- The server (or a single player) decides every scene and move, and each step's start
+  (`Go`/`Next`, `netUpdate`); `SendExtraAI` carries the scene, the step, its clock, the rite's
+  three places, the side, the last move, who is held, and what she has lost (bits: wings out,
+  dying, wings broken, core out). A packet moves a client's clock only on a new step or 6 ticks
+  of drift.
+- Every machine runs the scene from that. `Entered()` is true once, the first tick a machine
+  sees a step (and resets the marks); `Crossed(mark)` is true once as the clock passes a mark,
+  wherever a packet moved it. Everything seen or heard is played on every machine; nothing that
+  moves her or hurts anyone is decided anywhere but the server.
+- **`Restore`**: whatever a scene did to her is undone on every machine the tick it sees the
+  scene end or change, the server's by `Release`, a client's by the packet. It also resets the
+  step memory, so the same move can start again later.
+- `CheckDead` can run on a client that dealt the killing blow itself; its guess is overwritten
+  by the server's (`dying` is taken from the packet, not added to).
+
+---
+
+## 16.9 Verified this session (tML 1.4.4, against the DLL IL; where the 1.4.5 decompile was read first, the 1.4.4 IL was checked after)
+
+- `NPC.UpdateNPC` order: `AI()` (PreAI, AI, PostAI; PostAI runs even when PreAI returned
+  false), then gravity (0.3, scaled down near the top of the world; `maxFallSpeed` 10, only
+  when `!noGravity`; so vanilla's slam never passes 10, whatever its AI asks), then
+  collision, then `FindFrame`, trails, net. On the ground, `velocity.Y` is exactly 0 during AI.
+- Queen Slime (657): 114×100, damage 60, defense 26, life 18000, `knockBackResist` 0,
+  `DeathSound` `NPCDeath64`. Vanilla draws her slam's afterimages from `oldPos`, so her trail
+  cache is kept (`NPCID.Sets.TrailingMode` 6 in the 1.4.5 decompile; the 1.4.4 value sits in
+  an array blob and was not read). `AI_121`: state 0 picks after 60
+  ticks (second half 120); a first tick of `ai[1] = −100` unless `localAI[0]` is set; slam
+  (4): wait 30, rise to 60 toward 384 px over the target, hang (30, or 10 in the second half),
+  fall; lands to state 0 with `Item167` and projectile 922 (40); gel (5): gather 50, a ring of
+  6 (10 in the second half) of 926 (30); minions every 2% (1.5%) of life lost, spawned at the
+  end of her AI; half life resets her to state 0. Frames: idle 0–3 every 10 ticks, rising
+  4–7 (then 20–23 in the second half), falling 8–10.
+- `MiscShaderData.Apply(DrawData? = null)`: with draw data it sets `uSourceRect`,
+  `uWorldPosition`, `uImageSize0` from it; without, `uSourceRect` (0, 0, 4, 4). Vanilla draws
+  her body with null.
+- `Player.Hurt` (the public 10-argument one): `cooldownCounter` −1 tests `immune`; 0 to 3 test
+  `hurtCooldowns[counter]`; a hit then sets that slot 40 (80 with a Cross Necklace), not
+  general immunity. `ImmunityCooldownID.WrongBugNet` is 3.
+- `NPC.StrikeInstantKill()` strikes and, in multiplayer, sends the strike. `NPC.HealEffect`
+  broadcasts from the server. `NPCLoader.CheckDead` is called by `checkDead` on any machine.
+- `NPC.SpawnBoss` sets `target` and `timeLeft × 20` **after** `NewNPC` (so after `OnSpawn`),
+  and touches nothing else.
+- `Entity.GetSource_FromAI` is `EntitySource_Parent`. `Gore.NewGore(IEntitySource, ...)`.
+  `GoreID.QueenSlimeCrown` 1258, `GoreID.QueenSlimeWing` 1259. `DustID.TintableDust` is 4 (=
+  `t_Slime`, her vanilla dust), crystal shards 68/69/70, `RedTorch` 60.
+- In `Main.DoDraw`, `DrawPlayers_AfterProjectiles` runs between an `End` and a `Begin`: a
+  detour of it draws in a batch of its own.
+- Mod PNGs: `ImageIO.ToRaw` clears the colour of fully transparent pixels on load (the wings'
+  sheet has palette colours under its transparent pixels; harmless, but any preview must do
+  the same).
+- `ModBiome` localization: `DisplayName` and `TownNPCDialogueName` (the second is
+  `IShoppingBiome.NameKey`).
+
+---
+
+## 16.10 Errors hit this session and their fixes
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Build: `MathHelper.Clamp` on ints | XNA's is float only; the float result fed a `Rectangle` | `Math.Clamp` |
+| Build: `DrawData` not found | Missing `using Terraria.DataStructures` | Added (then not needed: see the shader row) |
+| The wings' sheet at 344×4608 | Over 4096 on a side | Two columns of six (688×2304) |
+| The wings read as bones | Joint dots and thin sticks for the arm | A thick leading edge of coverts, no dots, softer feather outlines |
+| The cracks did not show | White lines on a pale crystal | Dark lines with light leaking through them |
+| In the preview, the burst was a flat white disk and the white shapes lost in white | Glows as added light only, on the Hallow's bright sky (and the preview's own bloom was blended wrong) | Glows as tints plus a little light (`DrawGlow`, `QueenSlimeArt.DrawRed`); the preview blends additive particles as `BlendState.Additive` does |
+| A rectangle round each wing in the preview | The preview kept colour under transparent pixels | The preview clears it, as tML does on load |
+| Her body shader given her frame as draw data | Assumed the shader needed `uSourceRect` | Applied with none, exactly as vanilla (§16.3) |
+| A launch played as she was let fall in her arrival and her death | Hanging with no gravity leaves `velocity.Y` 0, which reads as standing the tick gravity comes back | `velocity.Y = 0.01` as she is let go (vanilla's slam does the same) |
+| A scene ended and another started between two packets would leave the first's changes on a client | `Restore` only ran on a scene ending in nothing | `Restore` on any change of scene |
+
+---
+
+## 16.11 Open TODO after session 7
+
+**Needs the user's hands:**
+
+1. **Compile `Effects/GraceDeep.fx` with EasyXnb (`Effects/Compiler`) into
+   `Effects/GraceDeep.xnb`.** Until then Beneath Grace has its water and its motes but no
+   grade. Its syntax was checked with `glslangValidator` in HLSL mode (§16.12); it has not been
+   through fxc.
+2. **`VisusHold.cs` still loads the level spear sheets** (`Projectiles/Melee/VisusSpear.png`,
+   `VisusSpearGlow.png`, `FleshMaidenSpear.png`, `FleshMaidenSpearGlow.png`), which are now only
+   in `Tools/ArtBackup`. A missing asset stops the mod loading (§13.3). Put them back, or take
+   those loads out, whichever the diagonal work intends. Not touched here.
+   *[Done later in session 7: the user moved to the diagonal sheets; the code draws only them.
+   See §16.13.]*
+3. §15.8 and earlier, where not yet done.
+
+**Not yet confirmed in game.** Nothing from this session has run. Riskiest:
+
+- the arrival in multiplayer, and in a cramped spot (`FindRiteSpot`'s fallback);
+- the dash's grab in multiplayer (the held player's client drains, the server heals), and a
+  player let go inside terrain if she held them in a wall (she climbs out of solid ground while
+  holding);
+- the core's way with the player far above or below her;
+- vanilla's shader for her body through slices (the preview could only approximate the shader);
+- the death's frenzy on rough ground.
+
+**Unfinished:** placeholder art for everything new (`PlaceholderTextures.md`).
+
+---
+
+## 16.12 Process notes
+
+- **A shader's syntax can be checked here.** `glslangValidator` (apt `glslang-tools`) reads
+  HLSL: strip the `technique` block, then
+  `glslangValidator -D --hlsl-dx9-compatible -e <PassName> -S frag -V file.hlsl -o /dev/null`.
+  It catches undeclared names, wrong swizzles and type errors; it is not fxc, and says nothing of
+  ps_3_0's instruction limits. `Grace.fx` and `ManaNausea.fx` pass it.
+- **A software sprite batch for previews** is in `work/queen/preview/` (`render.py`: premultiplied
+  `AlphaBlend`, point sampling, rotation about an origin, per-axis scale, flips, a camera; `fx.py`:
+  cut-down particles; `queen.py`: her springs and draw ported). The scene scripts (`arrival.py`,
+  `wings.py`, `moves.py`, `death.py`) run the C#'s timings tick by tick. Reuse it for any boss.
+- **Glows on a bright sky are tints.** Light added to the Hallow's day sky is white at once; a
+  tint of the colour with its alpha shows there and in a cave alike, and a little light on top
+  keeps it glowing in the dark.
+- **Do what vanilla does, exactly, where vanilla does it**: her shader applied with no draw
+  data; the pixel shader put back after the batch is.
+
+
+---
+
+## 16.13 Later in session 7: the spears on the diagonal, and her wings' beat
+
+**The spears.** The user moved Visus and the Flesh Maiden to the diagonal sheets and put the
+level ones (`VisusSpear`, `FleshMaidenSpear` and their glows) in `Tools/ArtBackup`. The mod then
+built (0 errors) but would not load: `VisusLayer.Load` and the projectiles' `Texture` still asked
+for the level sheets (four `MissingResourceException`s in `client.log`, nothing else).
+
+- `PolearmArt` is now one diagonal sheet: its path, its glow's, the length butt to point, the
+  frame size and where the butt is. `Place` always draws it, turned an eighth less than it is
+  held (an eighth more when mirrored, the pivot mirrored with it). `DiagonalSheet` is gone.
+- `VisusGrip.SpearTexture` and `GlowTexture` are the diagonal sheets, so `VisusChop` and
+  `VisusThrust` load them; the Flesh Maiden's projectiles take `PolearmArt.FleshMaiden.SheetPath`.
+  `VisusChop`'s shadows go through `Place`, as the Flesh Maiden's smash already did.
+  `VisusGrip.Axis` and `FrameHeight` (the level sheet's) are gone.
+- **The geometry did not change.** Measured on the art: the shaft of both diagonal sheets runs
+  through the butt the code has ((5.3604, 86.6396) in 92 px frames; (4.9756, 121.0244) in 128)
+  with its middle on 0 across, and 120 and 168 texels to the point; `VisusGrip.Point`, `Teeth`,
+  `Eye` and `FleshMaidenGrip.Point`, `Eye`, `Edge`, `Hook` all land on their parts.
+
+**Her wings' beat** (`.Beat.cs`, new; `QueenSlimeWingbeat.png`, new). The user's note: the flap
+was too quick and flat, and a wing is not straight all the time (references: a dragon's and a
+bat's wingbeats, the arm leading and the hand trailing).
+
+- **The art.** `work/queen/art/wingbeat.py`, from the same rig as the wings (`wings.py`): 24
+  frames of one beat, keyed (upper arm, forearm bend, hand bend, fan) at frames 0, 3, 5, 8, 10,
+  12, 14, 16, 18, 20, 22 and Catmull-Rom between. On the way down the arm goes first and the tip
+  is still up; at the bottom the tip curls down and in; on the way up the wrist rises first and
+  the hand hangs; the feathers close on the way up and open on the way down. Frame 8 is the
+  wings' spread (`QueenSlimeWings.png` frame 5) pixel for pixel, so the opening hands on to the
+  beat without a jump (checked: identical once the roots are lined up).
+- **The clock.** A beat takes 100 ticks hovering, 74 at speed 9, 64 climbing at 6 up. A curve
+  (keys in `BeatPose`) maps time to frames: held at the top, fast through the push, slow at the
+  bottom and on the way up. The push is at 0.3 of the beat: her gel pressed (`BeatGel`) and a
+  kick, the air thrown down off both wings (`WindStreak`s), the ground's dust blown out under her
+  if it is within 22 tiles (`Downwash`), `Item32` pitched down. Her body sinks between pushes
+  and is thrown up by them (`BeatBob`, up to 6 px either way, drawn only). The underside is
+  darker on the way up (`BeatLit`); her colours flare as the wing turns into the push
+  (`BeatSheen`). While it sweeps fast, faint shadows of where it was 3 and 6 ticks before.
+- **Glides.** Every 3 to 5 beats, not climbing and slower than 7: the push slows into the spread
+  and holds it 30 to 48 ticks, her body drifting down, then pushes the harder (1.3).
+- **Falling** (vanilla's slam): the wings go up at three times the pace and stay up.
+- The dash's tell holds the top frame; the charge keeps the old swept frame (`QueenSlimeWings`
+  frame 2); her death's spasm beats through the new frames, fast and out of time. Frames 6 to 11
+  of `QueenSlimeWings.png` are no longer drawn.
+- Everything here is drawn by each client on its own clock (nothing sent), except the takeoff's,
+  which runs off the scene's synced ticks, its second push included.
+
+**The transition, stronger** ("the pierce and spread need more strength"):
+
+| Step | Ticks | What |
+|---|---|---|
+| SPROUT | 22 | The folded wings stab out of her in 5 ticks, from 34 px inside her and a fifth of their size to 1.4 of it, flicked outward, then ring back (a damped spring, two shudders). A hard kick to her gel and a big ripple; 14 globs a side thrown high, sparks, a burst of light at each root, three streaks of air shooting up each side; a wet tear, the wing sound, a cast, a deep thump (`Item14` low); the screen jolted (8) and a flash of her colour; the glow behind her flares to 0.75 |
+| SPREAD | 40 | They snap open in 12 ticks (frames 0 to 5, easing out) growing to 1.42, then ring down to 1.25. At the snap: her gel squashed, the ripple up; 28 puffs of dust a side blown along the ground, 7 streaks of air a side and 14 out all round her, light and sparks off the middle of each wing, the ground's own dust thrown up and the ground rolling out (`GroundWave.Slam`, 16 tiles, 6 px); Betsy's gust, the wing sound, a thump and a whoosh; the screen shaken (10) and a flash (0.22); the glow behind her to 0.85 |
+| TAKEOFF | 90 | The wings lift from the spread to the top of the beat (14) while she sinks into herself, come down harder and harder (8), and at 22 the push (as before: 12 up, the shake, the ground heaved, the dust rising with her); the rest of that beat in 34; the second beat at the climbing pace, its push at 76: 5 more up and the gust. Then vanilla, flying, the beat going on from where the scene left it |
+
+**Verified for this.** In the IL of tML 1.4.4 and its FNA: `SpriteBatch.Draw` takes the origin in
+the destination quad and a flip only swaps texture coordinates (`GenerateVertexInfo`), so a
+mirrored frame's pivot is `(x, height - y)`; `SoundStyle.PitchVariance` has a setter; FNA `Color`
+has a `(int, int, int, int)` constructor. In the mod's own code: `GroundWave` only draws;
+`WindStreak` is drawn along its velocity. Read only in the 1.4.5 decompile, not checked in 1.4.4:
+vanilla's phase two flies with `noGravity` except in the slam's drop (`AI_121`, case 4); the beat
+does not depend on it, it follows `noGravity` whatever sets it.
+
+**Hit this time:** `BurstTicks` was already the arrival's (`.Rite.cs`), so the stab is `StabTicks`.
+A glide's hold sat just after the push point, so the push fired before the glide: a gliding beat
+pushes as it leaves the spread instead.
+
+**Preview:** `work/queen/preview/transition2.py` (the crouch to the flight, with the stab, the
+snap, the takeoff, beats and a glide) and `beat2.py` (the clock and curves, kept in step with
+`.Beat.cs` by hand); `flight2.py` puts the old flap beside the new.
+
+**Not yet confirmed in game:** the new load (the spears), how the beat reads at the game's own
+scale and light, the downwash on uneven ground, the takeoff's second push in multiplayer.
+
+
+---
+
+## 16.14 Later in session 7: her slimes, her core, her numbers, her half, her plate, the frenzy, the arrival cleared
+
+The user's notes, all on the Queen Slime: her slimes should "die by itself and give nothing but
+effects after 10 seconds"; the core took 600, then 794, from a player and should take 150; her
+Legends damage should be 1.1; she "sometimes revert[s] back to her wingless phase with wingless
+attacks but wings as cosmetics"; her plate showed before the roar; the death's jumping went on
+too long (the user chose eight seconds); the core should fly at half the speed; and "on her spawn
+animation, every hostile npc below 500 hp is killed instantly".
+
+| What | Where | How |
+|---|---|---|
+| Her slimes pop at ten seconds (every world) | `Content/NPCs/Legends/QueenSlimeMinions.cs` (new, a `GlobalNPC` on 658, 659, 660) | The server counts `age`; at 600, `Expire`: `popped` set, a `SyncNPC` sent (so a client has the flag before the kill reaches it), then `PADGlobalNPC.KillForNothing`. The last 90 ticks tell it: its colour lerped to white by a shine that beats faster and faster (0.15 to 0.9 rad a tick, the phase summed so it never jumps), its light, crystal dust off it. The pop (`HitEffect`, where `popped` and dead): `Item27` up and quiet, crystal dust, six globs, sparks, a small ball of light, over vanilla's own death. `SendExtraAI`: the bit and the age (a client's age moved on 6 ticks' drift). Her death's BURST pops them all the same way (`KillHerSlimes`). |
+| Nothing given | `PADGlobalNPC.GivesNothing`, `PreKill`, `KillForNothing` | Set on the server just before `StrikeInstantKill`. `PreKill` false turns away her slimes' (and the cleared NPCs') items, `OnKill`, `DoDeathEvents`, money and hearts. Not synced: nothing drops on a client. |
+| The core: exactly 150 | `QueenSlimeCore` | `Damage` 75 (what the game doubles to 150); `ModifyHitPlayer` adds `Exactly` to `modifiers.ModifyHurtInfo`, which sets `info.Damage` to 150 after defense and everything else. Why it took 794: 200, doubled as every hostile projectile's damage is against a player (`Projectile.Damage`: `Main.DamageVar(damage, -Main.player[owner].luck) * 2`), then doubled again by the world's difficulty (Expert ×2, Master ×3), which tModLoader applies to every hostile projectile that hits a player (`CombinedHooks.ModifyHitByProjectile`, below), less a little defense. |
+| The core: half the speed | `QueenSlimeCore.PeakSpeed` 13 (was 26) | A way takes πR/13 ticks, 140 to 300 (was 70 to 150). Its shape and reach are the same. |
+| Legends numbers | `LegendsQueenSlime.QueenDamage` and `QueenShots` 1.1 (were 1.2) | Contact damage, gel and shockwave. Life and defense stay 1.2. The grab's drain (50 a second) was never scaled and is not. |
+| Her half | `PreAI` and `.Moves.cs` `Heal` | The cause: vanilla's `AI_121` works out her half from her life every tick (`life <= lifeMax / 2`), so the dash's 150 a second could lift her over half, and vanilla went back to its first half (hops, no flying) while her wings were still drawn. Now, once `transitioned` and not `dying`, life over half is cut to half every tick, and `Heal` never fills past half. |
+| The plate waits for the roar | `BossPlate.BarWaitsForName` (new registration), `BossPlateEntry.BarWithName`, `BossPlate.FadeUp` | The cause: the name waited for her roar, but the bar faded in the moment vanilla reported her, at her spawn, all through the rite. Now, for a type registered so, the bar's fade is held at 0 while its name is still owed (`nameFlightPending`), and it comes up with the name when `Announce` starts it at ROAR. A player who joins after the rite gets both the moment she can be hurt, as before. Registered in `LegendsQueenSlimeSystem.PostSetupContent`. |
+| Frenzy, eight seconds | `.Death.cs` `FrenzyTicks` 480 (was 900) | |
+| The arrival cleared | `.Rite.cs` `ClearScene`, `Cleared`, `ClearBelow` 500 | Every tick of the rite, the server's: every NPC within `SceneRange` (3000 px) of where she forms, with less than 500 life, that is not friendly, not a town NPC, not a critter (`CountsAsACritter`, `Sets.CountsAsCritter`, `Sets.TownCritter`, `Sets.ActsLikeTownNPC`), not a boss or a part of a boss's fight (`boss`, `Sets.ShouldBeCountedAsBoss`, and `BossArrivalWait.OfAFight`: its `Parts`, `Heads` and `WormParts`), not `immortal`, not `dontTakeDamage`, and not a segment living on another's life (`realLife` elsewhere; its head is taken and the body goes with it), is killed by `KillForNothing`. The user did not say whether they should drop anything; they give nothing, so a summoning cannot farm them. To let them drop, call `StrikeInstantKill` instead. |
+
+*[Superseded later in session 7: her slimes last thirty seconds (`Lifetime` 1800), not ten (600). See §16.15.]*
+
+**Verified for this** (tML 1.4.4 IL):
+
+- `NPC.NPCLoot`: `CountKillForAchievements`; the bestiary kill and banners only if there were
+  interactions (`GetWereThereAnyInteractions`); the statue check (`AnyInteractions`, statue
+  spawns only); then `NPCLoader.PreKill`, and only if it is true `DoDeathEvents_BeforeLoot`,
+  `NPCLoot_DropItems`, `NPCLoader.OnKill`, `DoDeathEvents`, `NPCLoot_DropMoney`,
+  `NPCLoot_DropHeals`. It returns at once on a multiplayer client.
+- `NPC.StrikeInstantKill`: `StrikeNPC(new HitInfo { InstantKill = true }, false, true)`, then
+  `NetMessage.SendStrikeNPC` in multiplayer. `StrikeNPC` does not look at `dontTakeDamage`;
+  `immortal` keeps the life; an instant kill shows no number; `HitEffect` runs before
+  `checkDead`, with the life already taken.
+- `NetMessage.SendData` writes `NPCLoader.WriteExtraAI` for every NPC, vanilla types included.
+  `MessageID.SyncNPC` is 23; `SendData` takes `number` by name.
+- `NPC.CountsAsACritter` is `lifeMax <= 5 && damage == 0`, and not 594 or 686.
+  `NPCID.Sets.CountsAsCritter`, `TownCritter`, `ActsLikeTownNPC`, `ShouldBeCountedAsBoss` are
+  `bool[]`.
+- `SetDefaults`: the bound town NPCs (105, 106, 123, 354, 376, 579, 589) and the Eternia Crystal
+  (548) are `friendly`; the Target Dummy (488) is `immortal`. Her slimes: 658 and 659 are 24×18,
+  `aiStyle` 1, 40 damage, 150 life; 660 is 40×30, `aiStyle` 14, 50 damage, 120 life; all
+  `NPCDeath1`, no `value`.
+- `GlobalNPC.DrawEffects(NPC, ref Color)` is called in `Main.DrawNPCDirect` before `PreDraw`;
+  her slimes are drawn by the ordinary path (only 657 has its own in `DrawNPCDirect_Inner`).
+- `HurtModifiers.ToHurtInfo` invokes `ModifyHurtInfo` last, after `SourceDamage` and
+  `GetDamage`; `Player.Hurt` takes `info.Damage` from life as it is. A projectile's
+  `ModifyHitPlayer` runs inside `PlayerLoader.ModifyHurt` (`CombinedHooks.ModifyHitByProjectile`),
+  before any `ModPlayer.ModifyHurt`. Vanilla's endurance, solar, beetle and paladin cuts are
+  `FinalDamage` multipliers, so they come before it too.
+- **Every hostile projectile that hits a player is scaled by the world's difficulty, by
+  tModLoader.** `CombinedHooks.ModifyHitByProjectile` calls the projectile's `ModifyHitPlayer`
+  and the player's `ModifyHitByProjectile`, applies the banner's defense and the cold cut, then,
+  unless the projectile was reflected or `ProjectileID.Sets.PlayerHurtDamageIgnoresDifficultyScaling`
+  is set for its type, multiplies `SourceDamage` by `Main.GameModeInfo.EnemyDamageMultiplier`
+  (Journey: the difficulty slider's strength). That is on top of vanilla's doubling in
+  `Projectile.Damage`. So a hostile projectile of damage D hits for about 2D in Classic, 4D in
+  Expert and 6D in Master, less defense. This is true of every boss's projectiles in this mod,
+  as the line in §16.7 ("the world's difficulty multiplies it") says.
+- `SoundStyle.MaxInstances` has a setter.
+
+**Not yet confirmed in game:** the pop and its tell at the game's own scale; the clearing in a
+busy spot (and in multiplayer, where every death is a strike sent); the bar and the name coming up
+together at the roar; that her half holds through a whole dash.
+
+
+---
+
+## 16.15 Later in session 7: her slimes at thirty seconds, and the Fly Swatter
+
+**Her slimes** last thirty seconds now, not ten (the user's word): `QueenSlimeMinions.Lifetime`
+1800. Nothing else moves: the tell is still the last 90 ticks, the age still fits the short it is
+sent in, and her death still pops them all at once.
+
+**The Fly Swatter** (`Content/Items/Melee/FlySwatter.cs`, `FlySwatter.png`, new). The user's
+spec: 3 iron and 2 web at an anvil; short; 20 damage, 50 against the Queen Bee, and any bee
+(not her) killed at once.
+
+| What | How |
+|---|---|
+| The item | Melee, 20 damage, knockback 3, swung (`ItemUseStyleID.Swing`), 18 ticks, auto swing, `Item1`; white, 3 silver. |
+| Bees | `ModifyHitNPC`: `NPCID.Bee` (210) or `BeeSmall` (211), `modifiers.SetInstantKill()`. Hornets are not bees and take the swatter's plain damage. |
+| The Queen Bee | `ModifyHitNPC`: `SourceDamage *= 2.5`, so 50 at base, and prefixes and melee bonuses scale it as they do the 20. Her defense still counts. |
+| Short | A 32x32 sprite (16x16 art at 2x). A swung item's hitbox is the held sprite's frame times its scale (`Player.ItemCheck_GetMeleeHitbox`; 32x32 on a dedicated server), so the size of the art is its reach. |
+| Recipe | `RecipeGroupID.IronBar` 3 (iron or lead), `ItemID.Cobweb` 2, `TileID.Anvils`. |
+| Text | *Kills bees in one hit* / *Deals 2.5 times the damage to the Queen Bee* / *'Meant for flies. Nobody told the bees.'* |
+
+*[Superseded later in session 7: 12 damage, 70 at base against the Queen Bee, hornets die in one swat too, and a swing goes through everything it touches. See §16.16.]*
+
+**Verified for this** (tML 1.4.4 IL): a swung item's hit goes `Player.ProcessHitAgainstNPC` to
+`CombinedHooks.ModifyPlayerHitNPCWithItem`, which calls `ItemLoader.ModifyHitNPC` first;
+`NPC.HitModifiers.SetInstantKill` sets `_instantKill`, which `ToHitInfo` copies to
+`HitInfo.InstantKill`, and the strike packet (28) carries it as a flag, so every machine kills the
+bee. `NPCID` has no other bee (the hornets are 42, 176, 231 to 235 and the negative sizes; the
+Cochineal, Cyan and Lac Beetles are beetles).
+
+**Not yet confirmed in game:** the swatter's look in the hand and its reach against bees in the
+air.
+
+
+---
+
+## 16.16 Later in session 7: the Fly Swatter again, and Rage! Sweet Fire
+
+**The Fly Swatter**, the user's second pass: it should go through a swarm so all of it dies,
+hornets should die too ("even those 300 sth hp hornets"), 12 damage, and 70 against the Queen Bee.
+
+| What | How |
+|---|---|
+| Numbers | `Damage` 12. The Queen Bee: `SourceDamage *= 70 / 12`, so 70 at base, and prefixes and melee bonuses scale it as they do the 12. |
+| Hornets | `Swattable`: `Bee`, `BeeSmall`, and the hornets `Hornet` (42), `MossHornet` (176), `HornetFatty`, `HornetHoney`, `HornetLeafy`, `HornetSpikey`, `HornetStingy` (231 to 235). Their sizes (the negative net IDs) share these types. The Moss Hornet has 220 life, the "300 something" of an Expert world. The Vortex pillar's Alien Hornet and Alien Queen are not included. |
+| Through | Vanilla's swing hits one thing, then waits a third of the swing: `Player.ItemCheck_MeleeHitNPCs` skips every NPC while `attackCD > 0`, and `ProcessHitAgainstNPC` ends with `ApplyAttackCooldown()` (`attackCD = max(1, itemAnimationMax * 0.33)`). A hook on `On_Player.ItemCheck_MeleeHitNPCs` (TerrariaHooks), for the swatter only, runs the loop again with `attackCD` cleared for as long as something new is hit, and leaves it at 0. Each NPC is still hit once a swing (`meleeNPCHitCooldown`). Hooked there and not on `ApplyAttackCooldown`, which is small enough that the JIT could inline it into its callers, where a detour would not reach. |
+| Text | *Kills bees and hornets in one hit* / *Hits everything its swing touches* / *Deals 70 base damage to the Queen Bee* / the flavour line as before. |
+
+**Rage! Sweet Fire** (`Content/Items/Mage/Incantation/RageSweetFire.cs`, new): an incantation,
+Flame, Enchantment. Asked for as: *25% damage increase for every fire related items/projectiles
+(flamethrowers, solar stuffs and anything that has the affinity for burn)*; a moving fire aura
+round the player, light; a Lava Bucket, 15 Souls of Fright, 50 Living Fire Blocks and a Book at
+the altar. The user's answers: the element is **Flame** (the mod's own, as Meagre Flame's), the
+burns are On Fire!, Hellfire and Daybreak only (*Cursed Inferno and Shadowflame are dark*, and
+Frostburn was not chosen), and the aura only shows.
+
+| What | Where | How |
+|---|---|---|
+| The cast | `RageSweetFire` | `Castable`, incantation, 0 damage, 40 mana, use time 30, Pink, 4 gold. Puts on Sweet Fire for 30 s; not again while more than 5 s are left (`CanCast`), as the other two. Written at the Makeshift Altar. |
+| The buff | `Content/Buffs/SweetFire.cs` (`SweetFire`, `SweetFirePlayer`) | `SweetFirePlayer.ModifyHitNPCWithProj` and `ModifyHitNPCWithItem`: a fire hit's `SourceDamage += 0.25`, where the hit is worked out (the owner's machine). |
+| What is fire | `Content/Combat/FireAffinity.cs` (`FireAffinity`, `FireAffinitySystem`) | Projectiles by type: `FireArrow`, `BallofFire`, `Flamarang`, `Flamelash`, `Sunfury`, `Flames` (both flamethrowers; in 1.4.4 the Elf Melter shoots it with `ai[0]` 1, the cold flame, and it counts), the five flares, `InfernoFriendlyBolt`/`Blast`, `ImpFireball`, the Molotov and its three fires, `Spark`, `WandOfSparkingSpark`, `Cascade`, `HelFire`, the three Flameburst shots, `DD2PhoenixBowShot`, `FireWhip`, `FlamingMace`, `Volcano`; the sun's `SolarWhipSword` and its explosion, `Daybreak` and its explosion, `SolarFlareChainsaw`, `SolarFlareDrill`, `SolarCounter`; `HellfireArrow`; and `MeagreFlameBall` (added in `PostSetupContent`). Swings by item: `FieryGreatsword`, `MoltenPickaxe`, `MoltenHamaxe`, `DD2SquireDemonSword`, `WaffleIron`, `SolarFlareAxe`, `SolarFlareHammer`, `SolarFlarePickaxe`, `LunarHamaxeSolar`. And melee set alight the way vanilla does it: a swing or a melee projectile with the Magma Stone, a swing, melee projectile or whip with the Flask of Fire (`meleeEnchant` 3), not with `noEnchantments`. Never `npcProj` or `trap`. |
+| The ring | `Content/Particles/SweetFireAura.cs`, `SweetFireAura.png` (new) | One per player, on every client (made by `SweetFirePlayer.PostUpdate` while the buff is on). Three flames going round a flattened circle at the waist (30 by 10, 6 px under the centre), 0.07 rad a tick; a 12-dot tail each, 0.1 rad apart, cooling white, yellow, orange, red and rising 10 px; the far side dimmer and smaller; a little light at each flame; an ember now and then. Grows in over 20 ticks; the owner's fades over the buff's last second; when the buff goes it throws 16 embers out and goes over 16 ticks. Drawn about the player's position of the moment, so it keeps to them. The dot is 16x16, white, stored premultiplied, drawn in the alpha pass as light plus a little cover, so it keeps its colour on a bright sky; drawn additive, the first try, it went white there (preview). |
+| The cast's look | `Content/Projectiles/Magic/SweetFireCall.cs` | As `NurtureCall`: hidden, sent to everyone. Embers drawn in for 12 ticks with a breath of fire (`Item20`), then at 20 a burst: two balls of light, sparks, torch dust, `Item20` and `Item14`. |
+| Art | `RageSweetFire.png` (page, 60x60), `Content/Buffs/SweetFire.png` (32x32) | Placeholders, rows in `PlaceholderTextures.md`. `work/fire/art.py` draws both (the page on `IncantationTemplate.png`). |
+| Text | `Items.RageSweetFire`, `Buffs.SweetFire`, `Projectiles.SweetFireCall` | *Asks the fire to rage with you a while* / *Your fire deals 25% more damage* / *Flamethrowers, solar weapons and anything that sets foes alight* / *Can only be asked again as it fades* / *'Whoever named it had not yet been burned.'* The buff: *25% increased damage with fire*. |
+
+*[Added to later in session 7: other mods' fire is learned as it is used, and mods can say so through Mod.Call. See §16.17.]*
+
+**Verified for this** (tML 1.4.4 IL):
+
+- Where vanilla sets an NPC On Fire! (24), Hellfire (323) or Daybreak (189): `Projectile.StatusNPC`
+  and `Player.StatusToNPC` only. `Projectile.Kill`'s and `VanillaAI`'s other `NPC.AddBuff` calls
+  give Lovestruck and the like, Wet, Slimed and Poisoned. The projectile list above is every
+  type-guarded fire block of `StatusNPC` but `FlamesTrap` (188, a trap's): a small parser over the
+  IL (`work/fire/blocks.py`), every fire `AddBuff` in the method then matched to its guard, and
+  the ones it could not follow read by hand (954's and 15's buff is a local, the whips are a
+  `switch` on `type - 912`, of which 913 is the Firecracker). 979's local is Frostburn. The item list is `StatusToNPC`'s switch.
+- `ModPlayer.ModifyHitNPCWithProj(Projectile, NPC, ref NPC.HitModifiers)` and
+  `ModifyHitNPCWithItem(Item, NPC, ref NPC.HitModifiers)`. `Projectile.melee` is internal in
+  1.4.4; it returns `CountsAsClass(DamageClass.Melee)`, which is what is used.
+- `StatModifier` has `+` and `*` with a float. `Player.HasBuff<T>()`.
+- The strike packet (28) carries `HitInfo.InstantKill` as a flag.
+- A swing's hit goes `Player.ProcessHitAgainstNPC`, `CombinedHooks.ModifyPlayerHitNPCWithItem`,
+  `ItemLoader.ModifyHitNPC` first.
+
+**Previews:** `work/fire/aura_preview.py` (the ring and its embers on a dark and a bright ground,
+the player standing, then running, then the buff ending).
+
+**Not yet confirmed in game:** all of it: the swatter's pass through a swarm, the ring's look at
+the game's own scale and light, the damage on a hit (the number should read 25% higher for a
+fire weapon with the buff on), the recipe at the altar.
+
+
+---
+
+## 16.17 Later in session 7: Sweet Fire and other mods
+
+The user asked whether flame minions, flame swords and other mods count. Vanilla's did already:
+the Imp's fireballs, the Flameburst sentries' shots and the Firecracker are in the projectile
+list; the Fiery Greatsword (and its volcano), Brand of the Inferno, Waffle's Iron, the molten
+and solar tools are in the item list; and any swing or melee projectile the Magma Stone or the
+Flask of Fire sets alight counts. Other mods' did not, and now do.
+
+| What | Where | How |
+|---|---|---|
+| Learned | `FireAffinityPlayer` (in `FireAffinity.cs`) | `ModifyHitNPCWithProj` / `ModifyHitNPCWithItem`, if the projectile or item is another mod's and not yet known (and no Magma Stone or Flask of Fire could be the burn): note `FireAffinity.Burn(target)`, every fire debuff's ticks added up. `OnHitNPCWithProj` / `OnHitNPCWithItem`: if it went up, the type is fire from then on (added to `Projectiles` or `Items`, logged once). The first burning hit itself is not raised; the sets start over each session. Vanilla types are never learned: their lists are exact. |
+| Fire debuffs | `FireAffinity.Debuffs`, `NamedFire`, `AddModded` | On Fire!, Hellfire, Daybreak; and at load every other mod's debuff (`Main.debuff`) whose internal name has a word that starts `fire`, `flame`, `burn`, `blaz`, `inferno`, `ember`, `scorch`, `ignit`, `magma`, `lava`, `pyro`, `incinerat` or ends `fire`, `flame`, `flames`, `burn`, `blaze`, and none that starts `frost`, `ice`, `cold`, `chill`, `freez`, `frozen`, `cryo`, `snow`, `glacial`, `curse`, `shadow`, `dark`, `void`. Words split at capitals, digits and underscores. Run on sample names with the compiled method: BrimstoneFlames, HolyFlames, Dragonfire, GodSlayerInferno, BanishingFire, Hellfire, Sunburn yes; Frostburn2, FrostFlames, IceBurn, CursedFlames, Shadowflame, DarkFlames, Nightwither, Remembered, Searing no. The ones found are listed in `client.log`. |
+| Said | `PisAndDag.Call`, `FireAffinity.Call` | `Mod.Call("FireProjectile", type)`, `("FireItem", type)`, `("FireDebuff", type)`; true when taken. For a mod whose fire does not burn, or burns with a debuff the names miss. |
+
+**Verified for this** (tML 1.4.4 IL): `CombinedHooks.ModifyHitNPCWithProj` calls
+`ProjectileLoader.ModifyHitNPC`, `NPCLoader.ModifyHitByProjectile`, then
+`PlayerLoader.ModifyHitNPCWithProj`; `OnHitNPCWithProj` calls `ProjectileLoader.OnHitNPC`,
+`NPCLoader.OnHitByProjectile`, then `PlayerLoader.OnHitNPCWithProj`. The item hooks are in the
+same order (`ItemLoader`, `NPCLoader`, `PlayerLoader`). So a player's hooks see the hit last, both
+before and after it, after the projectile's or item's own. `BuffLoader.BuffCount`,
+`BuffLoader.GetBuff`, `Main.debuff`, `NPC.maxBuffs`, `Lang.GetProjectileName`,
+`Lang.GetItemNameValue`, `Mod.Call(params object[])`.
+
+**Not yet confirmed in game:** learning against a real mod's weapon (Calamity's, say), and the
+names the heuristic picks in a big modpack (read `client.log` for the list).
+
+
+
+---
+
+## 16.18 Later in session 7: Dona Quinn and Triunfo
+
+A boss asked for in one long message (kept in the chat): a girl knight on a donkey who stops the
+player on the Cleared Ground, charges with a lance, is thrown at one life, begs, and is spared or
+finished. Her and the donkey are two NPCs, by request. The user's answers to the questions asked:
+a hit on the donkey is a hit on her (shared life); after the fall the donkey bolts and comes back
+near her; the lance is a flat 30 in every world, varied as vanilla varies any hit; the user's typo
+line reads *"...kind of knightsome and admirable overall."* Mid-build the user added: the donkey
+turns with a plain flip (no squeeze); the lying head exactly as `DonnLyingdownRef.png`, raised at
+most 15 degrees to beg; the player walked very close (3 to 5 blocks), turned to face her, and
+the two facing each other; a fade to black out of play into the scene (a new `Cinematic.Fade`);
+and the hair, a layer of its own for this, sways.
+
+| What | Where | How |
+|---|---|---|
+| The rig | `Content/NPCs/DonaQuinn/DonaRig.cs` (new) | Every number measured off the art. Triunfo: 126x1640, 20 frames of 126x82 (0 stand, 1 to 7 run, 9 to 14 gallop, 15 air, 16 to 19 reared). The saddle found in every frame: seat (58, 40), up 2 on 3, 4, 7, 8, 12, 13, up 6 on 15, and on the rear frames the same saddle turned 27 degrees nose up and moved (-1, -6). Her canvas 42x60; riding seat (21, 46), shoulder (17, 34), fist (30, 41), nape (20, 32); standing middle (23, 43), shoulder (18, 30), nape (20, 30). Lance 22x76, grip (11, 65). `Pose` holds every piece's place and turn; `Piece` draws a piece mirrored about its own pivot (XNA's origin is in the flipped picture's pixels); `Band` draws rows of a piece, for the hair. |
+| Lying | `DonaRig.LieNape`, `LieShoulder`, `LieHeight` | Fitted to `DonnLyingdownRef.png` by trying every turn and place of each part: body a quarter over, middle (17, 23.5); head upright, nape (33, 27); arm 64 degrees out from hanging, shoulder (26.5, 24); the parts rebuild the picture to within 19 of 852 pixels. On the body's canvas the lying nape is (26.5, 27) and shoulder (23.5, 33.5); `OnFoot` slides from the standing ones by sin squared of the turn. Her middle lies 10.5 over the ground (the hand under her chin touches it); part way up, never lower than her boot's corner reaches (`BodyHalfWidth` 9, `BodyHalfHeight` 17). |
+| Triunfo | `TriunfoTheDonkey.cs` (new) | 64x48 body, `realLife` = her while she rides (kept every tick on every machine), so the one bar counts both; never dies (`CheckDead` false). 37 mph top (7.24 px/tick: the stopwatch's 216000 / 42240 the other way), reached in 1.5 s; `Collision.StepUp` for single steps, a 7.5 hop when blocked. Run and gallop step by ground covered (7 px, 26 px a picture), so the legs never skate. Turning is a flip. Modes: Carry (her `Reins`), Bolt (150 ticks away), Wait, Return (a walk back, 56 px off her), Stand; gone when unwatched and alone. Drawn by her while she is in the saddle (`InSaddle`), so the two never come apart. |
+| Her | `DonaQuinn.cs`, `.Fight.cs`, `.Fall.cs`, `.Scene.cs`, `.Draw.cs` (new) | 1500 life flat in every world (`ApplyDifficultyAndPlayerScaling`), defence 10, no touch damage, `Music` Boss1, boss head from her own face (`DonaQuinn_Head_Boss.png`). Phases: Intro, Challenge, Charge, Brake, Rear, Turn, Ready, Buck, Thrown, Lying, Plead, GetUp, Talk, Free, Finish, Leave. `NPC.boss` only while she fights, so the bar goes at the fall. A blow that would kill her leaves her on 1 (`CheckDead`) and Triunfo bucks her; only the finishing cut lets her die (then `SyncNPC` by hand: `checkDead` sends nothing). |
+| The lance | `.Fight.cs` `LanceStrike` | Each machine for its own player, couched (within 0.3 rad of a quarter turn and a touch down) and at 2 px/tick or more; the shaft from 14 px past the fist to the point, 10 thick (`Collision.CheckAABBvLineCollision`). `Main.DamageVar(30, -luck)`, `Player.Hurt` with knockback 7.5 and the death line *"{0} was run through by a knight who was never knighted."* |
+| One blow | `OnHitByItem`, `OnHitByProjectile`, `ShareSwing`, `ShareShot` | A swing or a shot that lands on one of the two makes the other immune to it as if it had been hit too, the way `Projectile.Damage` does (by id, by projectile, or the owner's 10 ticks for a shot that goes through); otherwise a piercing shot through both took her life twice. |
+| The fall | `.Fall.cs` | A body thrown: (3, -5.4) plus 0.3 of his speed, pitched to come down 0.35 past face down (the arc run forward to find the landing), a bounce at a third, a skid, the turn settling flat on a spring; head and arm on loose springs. The landing is read the way vanilla leaves it: `collideY` and `oldVelocity`, never `velocity.Y == 0`. Blood now and then, a little pool while she lies, a shake now and then. Getting up, the arm and head are eased against the world, not her body. A machine that only hears of the throw late (joined late) finds her down already (`Down`). |
+| The lance after | `DonaLanceGore.cs` (new) | A `ModGore` with its own flight (`Update` returns false): thrown up and back the way she came, end over end, bounces off the floor at a third, lies flat, fades. |
+| The scenes | `.Scene.cs` | On the stopped player's machine. Road: *"Fear me, you simpleton!"* with her face black and "???" on the tab; *"For it is I, Dona Quinn! Challenge me if you dare!"* (her name in it names her: the face comes up, the tab says *Dona Quinn, the Horseback Fool*), the camera pans to her; Decline / Accept, both *"Coward! Here comes my lance!"*; her name rises (`BossIntro.PlayNameOnly`). If nobody answers in 60 s she says it anyway. The player faces her through every scene (`DonaScenePlayer.FaceToward`). |
+| The walk up | `DonaScenePlayer` (in `DonaQuinnEncounter.cs`) | A beat on her (40 ticks), fade to black (24), black (14: at its third tick the player is put on her head's side 11 blocks off, on their feet, facing her, off any mount, hook or rope, and the shot snaps in close: lean 1.4, bars, camera between them), fade in (30), then a slow walk (vanilla's run held to 1.6 px/tick in `PostUpdateRunSpeeds`) to 4 blocks off her middle. Then the server is told (`Choice.Arrived`) and she begs; 12 s is the server's limit if the word never comes. |
+| Plead, spare, finish | `.Scene.cs`, `.Fall.cs` | Her head up 15 degrees; *"Please! I surrender! White flag! Me rindo!"*; Spare and Finish in the box's two corners (`Dialogue.OfferCorners`). Spare: up, still bleeding and shaking, turns to them, talks (the user's six lines, sir/madam and Mr/Mrs by `Player.Male`, the answers *...*, *...*, *Why did you do this*, *Why the knight stuff?*, *I am in a hurry*), then stands about looking at them or the ground and turning round now and then, until nobody sees her, and is gone. Finish: a `SlashStreak` cut (reach 30, width 14), blood both ways, her head drops, she fades and dies, and drops the Locket of a Book-Crazed Girl. Either way, never again in that world. A box that goes down mid-plead or mid-talk is put back; another speaker cannot be opened over a scene. |
+| Her voice | `Content/UI/Bark.cs` (new) | Barks: a line over a speaker's head, warm cream with a faint breathing gold halo and a dark rim, rising in, holding by its length, fading out. Hers, now and then: *The grrreat Dona Quinn shall be victorious!* / *Take that you simpleton!* / *How do you like that? Also your hair is atrocious!* |
+| The hair | `.Draw.cs` `DrawHair`, `HairShift` | Drawn in bands of two rows, top still, each lower band pushed sideways in whole pixels: a slow wave always (1 px), the wind out of doors (`Main.WindForVisuals`, up to 1.8 its way and a flutter), and the ends trailing when she moves (up to 2). |
+| The encounter | `DonaQuinnEncounter.cs` (new) | Grand world, before hardmode, after the Eye's finale (`PugreamPresence.Stage` 1 or more), a player on the Cleared Ground (30 tiles in from its ends), on their feet, at the surface, dry, no boss up. Night or rain: the world is run on to 8 AM (`ModifyTimeRate`, about 150 ticks however far) and the rain stopped, the player held with the bars in. She comes 1150 px off on the Mile's side (950, 1350, 800, either side, if there is no ground). Stage saved and sent: 0 never met, 1 met, 2 spared, 3 finished. Packet `PADPacket.DonaQuinn` carries the player's answers. Nothing spawns round them from the road to "Coward!" and from the fall on (`DonaQuinnQuiet`). |
+| Dialogue | `Dialogue.cs`, `DialoguePortrait.cs`, `TalkOptions.cs` | The panel's name tab: "???" until named, then name and title (`DialoguePortrait.Name`); `KnownAs` for a word in place of "???" (Mors: *The Tall Elder*). Faces of several layers (`Register(type, string[], frame)`). `Converse` (a speaker starts the talk, locked), `Line`, `Offer`, `OfferCorners`, `LineDone`, `Speaking`. |
+| The fade | `Cinematic.Fade(amount)` | Asked every tick with how black, 0 to 1; the asker does the timing. Drawn over the cover, under the shade, roar, bars and interface. |
+| The locket | `Content/Items/LoreItem/LocketOfABookCrazedGirl.cs`, `.png` (new) | Accessory, 1 defence, lore item. *A rusted gold locket, with paper folded small inside.* / *"Dear lovely daughter, I know you will be a knight one day."* / *Read until the folds went soft. It was never signed.* Flavour: *'It was opened more often than it was closed.'* Sprite a placeholder. |
+
+**Verified for this** (tML 1.4.4 IL):
+
+- `NPC.UpdateCollision`: `oldVelocity = velocity`, `collideX`/`collideY` cleared, then set by
+  `Collision_MoveWhileDry` where the collided velocity differs. `Collision.TileCollision` leaves
+  `velocity.Y` as the gap closed on a landing, not 0. An NPC with `noTileCollide` skips all of it
+  (`position += velocity`), so its `collideX`/`collideY` keep whatever they last were.
+- `NPC.checkDead` sends nothing (`NPCLoader.CheckDead`, the sound, `NPCLoot`, `active = false`);
+  vanilla's despawn tells clients with `life = 0` and `SendData(23)` (`NPC.CheckActive`).
+- `Projectile.Damage`'s immunity (above); `perIDStaticNPCImmunity` is `uint[][]`,
+  `localNPCImmunity` `int[]`, `appliesImmunityTimeOnSingleHits` exists; then
+  `CombinedHooks.OnHitNPCWithProj`.
+- `Collision.StepUp` checks no velocity. `PlayerLoader.PostUpdateRunSpeeds` runs right before
+  `Player.HorizontalMovement`. `Main.WindForVisuals` (= `windSpeedCurrent`, about -0.85 to
+  0.85). `MessageID.PlayerControls`, `Player.RemoveAllGrapplingHooks`, `Mount.Dismount`,
+  `Player.fallStart2`, `Player.pulley`.
+- `ModNPC.BossLoot(ref int)` (the `(ref string, ref int)` one is obsolete, CS0672).
+
+**Errors hit and fixed:** the landing read as `velocity.Y == 0` after a fall measured the gap,
+not the fall, and could miss the first landing (cry, blood, pool) altogether; the finish's death
+never reached clients; a piercing shot through both took her life twice; nobody answering on the
+road left Decline / Accept up through the charge; a client could see her half stand and drop
+before getting up; for one frame on the throw she stood on his back (`InSaddle`).
+
+**Previews:** `work/dona/sim5.py` + `sim_run5.py` (the fight, the throw, the fall, lying, the
+plead, getting up, with the C#'s numbers), `work/dona/fitref3.py` (the lying fit).
+
+**Not yet confirmed in game:** all of it. The encounter's trigger on a real Grand world, the time
+skip, the charge's reach and the lance's hit, the fall on uneven ground, the fade and the walk
+up, the hair at the game's scale, multiplayer.
+
+**Open:** her title, *the Horseback Fool*, was mine (the user asked for a title, not which); the
+locket's sprite and the boss head are stand-ins.
+
+**Testing** (added after delivery): `/dona` says where she stands in the world; `/dona summon`
+starts her road for whoever typed it, anywhere, with none of the trigger's checks (night or rain
+still runs on to the morning first); `/dona reset` ends any road, removes her and Triunfo, and
+puts her back to never met with her name unheard. `DonaQuinnCommand.cs` (a `CommandType.World`
+command: the server runs it in multiplayer), calling `DonaQuinnEncounter.Summon`, `Reset` and
+`Describe`. Listed for removal in `RELEASE_TODO.md`. Her name heard is each machine's own in
+multiplayer, so a reset there forgets it only on the server.
+
+**Fixed after the user's first test:**
+
+- *She died without her fall, sometimes, when killed fast.* The killing blow had landed on
+  Triunfo. `NPC.StrikeNPC` on an NPC with `realLife` takes the damage off the real one, then
+  copies the real one's life into the struck one's own (IL 0x04d9), then calls the real one's
+  `checkDead` (0x086b), which put hers back to one; his stayed at nothing, and
+  `NPC.UpdateNPC_Inner` deactivates anything on nothing at its next update, before AI, without a
+  word (0x036f). He vanished, and she with him (her AI ends her when he is gone from under her).
+  Now his `HitEffect`, which `StrikeNPC` calls after the copy, keeps him on one or more; and if
+  he is ever gone from under her as she is bucked, she is thrown anyway. Damage over time does
+  not do this: `UpdateNPC_BuffApplyDOTs` takes it off the real one only, and strikes the real one.
+- *She turned her head round over her shoulder with her body facing away* (the Mors way). Not
+  wanted for her: her head now always faces the way she does, and to look at someone behind
+  her the whole of her turns round (`Turn`): in the talk, toward the one who spared her; left
+  alone, toward whoever is nearest while she looks at them, and of her own accord now and then
+  while she looks at the ground. Her mood (`lookingDown`) is the server's and is sent with her.
+
+## 16.19 Later in session 7: 'Dame' Quilt's moves, Triunfo's sense of the ground, the Queen Slime's death shot
+
+**Her name in game is now 'Dame' Quilt** (the quotes are hers): the hjson `DisplayName`
+(`"'Dame' Quilt"`, double-quoted so Hjson keeps the single quotes), `BossName`, the dialogue tab,
+`/dona`'s replies. In her own lines she says it straight: "For it is I, Dame Quilt! ..." and
+"The grrreat Dame Quilt shall be victorious!". The tab still waits for her to say it: new
+`DialoguePortrait.SpokenAs(type, "Dame Quilt")`, which `Hear` matches instead of `TypeName`. The
+files, classes and the saved stage key keep the name Dona Quinn.
+
+**Her moves** (`DonaQuinn.Fight.cs`, all damage off the lance through armour: `Player.Hurt` with
+`scalingArmorPenetration` 1; all varied by `Main.DamageVar`; none grown by the world):
+
+| Move | What it is |
+|---|---|
+| Charge | Lance aimed at the player's middle as she comes (clamped from 0.1 over level to 0.45 under), struck from 10 px past her fist to 10 past the point, 24 thick (was 14 to the point, 10 thick, couched over a standing player's head). 30 at 2 px/tick, 67 flat out (7.24), by Triunfo's speed. Rides on until 300 px past where the player is now, not where they were. |
+| Throw | Phase `Wind`: stops, lance drawn back, let go at tick 32 of 56 on an arc (`DonaLanceThrown.Aim`, gravity 0.35, flight 24 to 64 ticks by distance, half the player's run allowed for). 52 off its head in the air, once. It goes into the ground point first, 12 px, and stands there (drawn behind tiles). Only from 160 to 640 px, and 360 up or down. |
+| Ram | Straight after the throw, lanceless: Triunfo runs them down, 15 to 40 by speed, ordinary damage, knockback 8, once. Careful: pulls up at walls. |
+| Fetch | Back to the lance (`lanceX`, sent), slowing, and out of the ground as she passes within 24 px; then the rear, the lance waved. If she cannot get to it: back in her hand after 8 s of fetching, 15 s without it, or stuck. |
+| Close, Swing | In close (4.6 px/tick, slowing to stop with them 16 to 70 px in front of her and not 70 over or under her fist), then the swing, 84 ticks, as the Visus chop is written (`Easing`): lowered to the ground in front, up hard (to -35 degrees), a hang, down harder, back. 40 through armour, once a swing, checked every 4 degrees of the sweep. Up: thrown (4.62, -13.86) spinning: 15 tiles up and 20 along on the player's 0.4 gravity. Down: (3.5, 5) rolling, flat. A second down once they stop (`RagdollPlayer.Throw`, lie 60). The CC tell (`CCBypass`: star, note, yellow outline of her, the lance and Triunfo through `ICCBypassOutline`) from the first tick of Close to the last tick the downswing can land. |
+| Crash | A charge into something Triunfo cannot jump (`Crashed`: stopped dead over 3 px/tick, dry, and the column he met probes as a wall): `StrikeNPC` 100 flat on the server, sent with `SendStrikeNPC`; Triunfo knocked back off it and rearing, her head thrown back, dirt, "Ouchh!". Only a charge crashes. |
+| What next | The server's (`NextAttack`): without the lance, Fetch. If Triunfo cannot get to them (`DonkeyNav.Reachable`, which also wants the ground he reaches within 3 tiles of their feet): the throw if in range, else ride to 320 px off (`Range`), else (too far above or below to throw) rear and wait. Otherwise nothing but a charge twice running: after a charge, 35% the swing (if they are level with the lance), 30% the throw. |
+
+**Triunfo's sense of the ground** (`DonkeyNav.cs`, new, pure; the user's two screenshots: nose
+against a three-tile bank doing nothing, and sunk on a lake bed). Every tick he is on the ground
+and going somewhere he reads the columns from under his back to 56 out, walking his eye along
+the ground a step at a time, into a row of tops (nothing to stand on is +infinity, a wall and
+everything past it -infinity), and finds the first rise of two tiles or more, wall or pit within
+16 columns. A rise he can jump (10 tiles) he jumps when the least jump that lands him on it or past
+it (flown ahead over the row of tops in vanilla's order, gravity 0.3 after the AI, sideways into a
+column whose top his feet are not 3 px over is into its side, gently he only stops) would be more
+a tick later; with room to go on 3 ticks after he lands. Stood against one with no speed, the
+server has him back off up to 6 tiles of level ground, still facing it, and come again (sent: the
+run-up is in his `SendExtraAI`); without room, he leaps from where he stands. A pit he leaps if 14
+tiles or less and the far side is in reach at the speed he will have, otherwise he pulls up on the
+brink (0.25 px/tick of braking, 6 px short), as for lava and deep water he is not to swim. A wall
+he pulls up for if careful; a charge is not careful. In deep water (3 tiles or more) he swims: feet
+held 30 px under the surface, 3.2 px/tick (halved by the water), out with a leap at a bank. Gaps
+narrower than he is long he walks across. A hop of a tile if something his eye did not make out
+stops him. His legs go backward backing off, and paddle swimming.
+
+Tested in a harness (`work/nav/Harness.cs`, `build.sh`) that runs `DonkeyNav.cs` itself
+(`-define:PREVIEW`, tiles from a grid) against vanilla-like movement (`StepUp` of one tile,
+X-then-Y tile collision, gravity and water as vanilla): steps of 2 to 10 charging and careful
+(over, no contact), 11 and 14 (crash; careful stops), pillars, pressed against 3, 6, 9 (back off
+and over), cornered with no room (straight up and over), gaps 3 to 12 (over), 18 to 40 (stops),
+drops of 5 (off) and 14 (stops), stairs, terraces (over, with bumps), a lake charging (stops) and
+swimming (across and out), sunk on a lake bed (up and out), off a cliff into a lake, a platform
+bridge, a low roof, lava. Trajectories drawn in `work/nav/sheet1.png`, `sheet2.png`.
+
+**Reviewed** (an independent pass over the diff, harness runs of its own): five real faults found
+and fixed: a throw at a player behind a wall sent the ram into that wall and she crashed herself
+to death in about 90 s (the ram is careful now and only a charge crashes); an unreachable player
+she could not throw at had her loop Close and Ready with the CC tell going off twice a second
+(`Range`, `Rear`, and Close only when they are level with the lance); a swing that killed the
+player threw them on respawn (`RagdollPlayer` now ignores the dead and clears itself on `Kill`
+and `OnRespawn`, which helps the Abomanation's whip too); the lance and the ram struck while
+Triunfo backed off for a run-up (forward speed only, never while backing); the tell ended a tick
+before the downswing's last hit.
+
+**The Queen Slime's death shot** (`LegendsQueenSlime.Death.cs`; reported as the King's, it was
+hers): her last three seconds asked only for the bars and a lean, so the lean zoomed on wherever
+the camera was, the player. Now the camera goes over to her over the first 60 ticks of the
+shudder (`PisPlayer.BlendCamera`), holds on her through the burst, and walks home over 60 ticks as
+she goes (`PanHome`, once, for a player who was in the shot); the lean is on her because the
+camera is.
+
+**Verified for this** (tML 1.4.4 IL): `NPC.UpdateNPC_UpdateGravity` (0.3, max 10; in water 0.2,
+max 7; honey 0.1 and 4; shimmer 0.15 and 5.5; less high up), set before AI, added after it;
+`NPC.UpdateCollision` moves a wet NPC by `velocity * waterMovementSpeed` (0.5) after colliding the
+whole velocity; `NPC.StrikeNPC(HitInfo)` takes `hit.Damage` as it is (no defence, no
+`dontTakeDamage` check), then checkDead.
+
+**Not yet confirmed in game:** all of it. In particular vanilla's own collision against the flown
+arcs (slopes, half tiles), the swim leap out of water, the throw's arc at long range, and
+multiplayer.
+
+**Open:** the numbers that were mine: 10-tile jump, 14-tile leap, the fetch's give-up times,
+the move odds (35% swing, 30% throw), and what she does at a player she can neither reach nor
+throw at (rears and waits).
+
+---
+
+## 16.20 Later in session 7: the Guide's first words
+
+The user's request: in a freshly created world, ten seconds after the player first walks, an
+unescapable talk with the Guide, with the world still meanwhile (nothing spawns); the screen
+fades to him walking up to the player; his lines (the user's, below); a new lore item, the Piece
+of Paper; his question with four answers in the four pillars' colours; a kit for each answer;
+out of the cinematic.
+
+| Work | Where | Notes |
+|---|---|---|
+| The scene | `Content/NPCs/GuideIntro.cs`: `GuideIntro` (the world's side, a `ModSystem`), `GuideIntroPlayer` (the screen), `GuideIntroGuide` (him), `GuideIntroQuiet` (spawns, chat) | See below. |
+| Piece of Paper | `Content/Items/LoreItem/PieceOfPaper.cs`, `.png` (placeholder, 24x28) | Lore item (LoreLock keeps it). |
+| Coloured answers | `TalkOption.Colour` (`Content/UI/TalkOptions.cs`) | A colour in the gold's place, on the gold's pulse (`Main.mouseTextColor`), grey once heard like any other. Null is gold, so nothing else changed. |
+| Packet | `PADPacket.GuideIntro` (appended, after `DonaQuinn`) | Client to server: `Dark`, `Done`, `Abort`. |
+| Test command | `/guideintro [reset]`, `GuideIntroCommand.cs` | In `RELEASE_TODO.md`. |
+
+**Which worlds.** `GuideIntro.Pending`, saved as the key `PADGuideIntro` (present means owed), set
+in `PostWorldGen`: only a world generated from now on has it, and a world loses it when the scene
+is through to the end. A scene broken off (the player left, died, or the Guide went) leaves it
+owed, and it starts again from the count the next time somebody walks. Every world size.
+
+**How it runs.** The server (or single player) decides, in `PostUpdateWorld`:
+
+| Beat | What |
+|---|---|
+| `None` | Owed. The first player on their feet moving over 0.5 px/tick is it (`Target`). |
+| `Counting` | 600 ticks. Stillness round them: the buff on their machine (and with it Dialogue's lean in), and `GuideIntroQuiet.EditSpawnRate` on the server. |
+| `Ready` | Their machine waits for them to stand (on the ground, dry, no hook or rope: never forced, since held in water they would drown and taken off a hook they would fall), shuts any chat, then holds them (`Cinematic.Hold`, the bars, every control off, the inventory key too) and fades to black over 30 ticks. On the second tick of the black it takes them off any mount, hook or rope and tells the server (`Dark`). The server gives up on a `Ready` after 1200 ticks, and it is owed again from the next walk. |
+| `Coming` | Under the black the server puts the Guide down (`Bring`): on the side he was on, 15 tiles off (then 13, 17, 11, 19, 9, 7, then the other side), where `DonaQuinnEncounter.Ground` finds him a place and `Walkable` finds a walk to the stop (each column a step up of one tile or a drop of up to four, room for him, no liquid); failing a walk, anywhere at those distances with ground; failing that, beside them; failing that, where they stand. A world with no Guide gets one (`NPC.NewNPC`, which names him). His `ai[]` zeroed (he stands; vanilla's frames go by his speed with `ai[0]` 0). SyncNPC, then the news. Their camera goes to halfway between them, 24 px up (`PisPlayer.BlendCamera`), and settles there for 18 ticks under the black; the picture comes back over 30. He walks (`GuideIntroGuide.PreAI`, every machine; no AI of his own; `dontTakeDamage`; nobody can chat to him): 1.4 px/tick, 0.08 to get going, slowing at 0.06 of what is left (never under 0.3), `StepUp` for single steps, a hop of 6.5 after 6 ticks pressed against something. |
+| `Arrived` | Stopped 3.5 blocks off their middle (56 px, within 4) and still, or 10 s of walking. 20 ticks later their machine opens the talk (`Dialogue.Converse`, locked). |
+
+The player faces him from the cut on. The talk: each line moved on by "..." (`Dialogue.Scene`); the
+paper comes with its line (`QuickSpawnItem`, not if they already carry one or have it on the codex
+shelf); the last line has the four answers. An answer gives its kit, closes the box, tells the
+server (`Done`) and lets everything go: the bars ease out, the camera walks home, Stillness ends
+and the lean with it. While the scene holds them they chat to nobody (`GuideIntroQuiet.CanChat`).
+
+**His lines** (the user's; punctuation only: a comma after the name, "don't", a period, "But
+first, take this."):
+
+1. "Oh {player}, you finally woke up."
+2. "I actually don't know where you came from but, welcome!"
+3. "My name is {his name} and I shall help you throughout the journey."
+4. The hut hint, word for word (`Hints.GuideHut`): the user's own "wall of text" on the scouting
+   and the little hut (the user called it the little temple this time).
+5. "But first, take this." (the Piece of Paper)
+6. "What do you specialize in?"
+
+**The answers and kits:**
+
+| Answer | Pillar colour | Kit |
+|---|---|---|
+| Close Combat | Solar (254, 158, 35) | Wooden Yoyo, Blade of Grass, Bacon x5 |
+| Range Management | Vortex (0, 242, 170) | Flintlock Pistol, Gold Bow, Wooden Arrow x100, Musket Ball x100 |
+| Witchcraft | Nebula (190, 30, 209) | Clothier's Chatelaine (`SealOfAClothier`, the only seal), Diamond Staff, Mana Crystal x3 |
+| Behavioral Conditioning | Stardust (0, 174, 238) | Slime Staff, Leather Whip (`BlandWhip`), Dog Tail, Hermes Boots |
+
+**The Piece of Paper's lore**, the user's, split at its commas into five verses: "To the west is
+the sea, / where you can find heroes, burials and sand, / to the east is the vast jungle and
+iceland, / shielding a colossal kingdom prosperous, / or at least what I remember." West and east
+swap with the world (`GuideIntro.SeaEast`, set where the world is decided, in `PostWorldGen` and
+`PostWorldLoad`, and sent): in a Grand world the plan's ocean end (`WorldMirror`); in any other the
+Dungeon's end, since vanilla always puts the Jungle across the world from the Dungeon. Set in its
+own `ModifyTooltips`, which runs before `PADGlobalItem`'s, so the text is right in whatever world
+it is read.
+
+**Verified for this** (tML 1.4.4 IL): `WorldFile.LoadWorld` runs `OnWorldLoad`, then `WorldIO.Load`
+(every `LoadWorldData`), then `PostWorldLoad`, so a mod's saved flag (`WorldMirror.Flipped`) is
+only there from `PostWorldLoad` on (vanilla's header, `Main.dungeonX`, is there before both);
+`Player.QuickSpawnItem(IEntitySource, int, int)` spawns at
+the player and, from a client, sends `SyncItem` itself (vanilla's own way for a client to give
+itself something); `Entity.GetSource_GiftOrReward(string)`; `ItemLoader.ModifyTooltips` calls the
+ModItem before the GlobalItems; `Main.HoverOverNPCs` opens a townsperson's chat on a right click
+within the player's tile range unless `NPCLoader.CanChat` is false (any GlobalNPC's false wins),
+and its only other caller is the smart interact; `NPC.VanillaFindFrame`, town branch on the
+ground: no state at `ai[0]` 0, so standing at `velocity.X` 0 and walking otherwise,
+`spriteDirection` from `direction`; `NPC.UpdateNPC_Inner` adds gravity after the AI whether or not
+PreAI let it run; `NPC.NewNPC` names a townsperson (`GiveTownUniqueDataToNPCsThatNeedIt`);
+`Player.GrabItems` is not behind `noItems`, so a held player picks the gifts up; WorldGen's Reset
+pass puts `jungleOriginX` on the far side from `dungeonSide` (normal and remix); every `ItemID`
+used exists (`GoldBow`, not `GoldBowOld`).
+
+**Reviewed** (an independent pass, against the IL): four faults found and fixed. The paper's sea
+was read in `OnWorldLoad`, before `WorldMirror`'s side had loaded, so half of all Grand worlds would
+have had it the wrong way (now `PostWorldLoad`). `/guideintro reset` in the middle of the talk left
+the locked panel up (the world had forgotten the Guide, so the panel was not shut) and the last
+answer could then give a second kit (the panel is now shut by the NPC it was opened on, and an
+answer gives nothing unless the scene is still the player's). A player not on their feet within ten
+seconds of the count was held anyway, which in water could drown them (never forced now). A death
+mid-talk in multiplayer had the panel put back every tick until the news came (given up at once).
+
+**Not yet confirmed in game:** all of it, and multiplayer in particular.
+
+**Open:** the numbers that were mine (15 tiles off, 3.5 blocks, the walk's pace, 20 ticks before
+he speaks, "..." to move on). And the hut hint says "On the trail seawards", but the Blood Shrine
+(the orb's) is built at the nearer end of the spawn's forest, which in a Grand world is the snow
+side, east of the spawn with the sea west; the paper now says the sea is west. The line or the
+shrine should move (`RELEASE_TODO.md`).

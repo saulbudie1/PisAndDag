@@ -11,6 +11,8 @@ Things in the tree that are for testing, or unfinished, or should not ship. Tick
 - [ ] **`/legends`** — `LegendsCommand.cs`. Legends is switched on by the Orb.
 - [ ] **`/struct`** — `StructCommand.cs`. Worldgen structures place themselves.
 - [ ] **`/magicarsenal`** — `MagicArsenalCommand.cs`, plus `MagicArsenal.Maxed`, `Max()`, `Normal()` and the `"maxed"` save key. Slots should only open by being earned.
+- [ ] **`/dona`** — `DonaQuinnCommand.cs`, plus `DonaQuinnEncounter.Summon`, `Reset` and `Describe`. She comes by herself, once a world, on the Cleared Ground.
+- [ ] **`/guideintro`** — `GuideIntroCommand.cs`, plus `GuideIntro.Again` and `Describe`. The Guide's first words play by themselves, once, in a world made with them.
 - [ ] `Description` strings on any command that survives should not say "for testing".
 
 ## Should not be packed — `build.txt`
@@ -45,6 +47,9 @@ Then check the built size dropped.
 - [ ] **Reliquary Key** — no source.
 - [ ] **Arsenal slots** — nothing raises them past 3 (the memory consumable, Item Plan §4.6 step 6, is not built).
 - [ ] **Incantations before Skeletron** — the only seal comes after him, but Meagre Flame drops earlier.
+- [ ] **'Dame' Quilt's numbers** — Triunfo jumps 10 tiles and leaps 14; a fetch gives up after 8 s (15 s without the lance at all) and the lance is in her hand regardless; 35% swing, 30% throw after a charge. Mine, not asked for: confirm in play.
+- [ ] **The Guide's hut line** — `Hints.GuideHut`, said in his first words too, sends the player "seawards", but the Blood Shrine is built at the nearer end of the spawn's forest: in a Grand world the snow side, with the sea the other way (and the Piece of Paper says so). Change the line or the shrine.
+- [ ] **The Guide's first words: numbers** — put down 15 tiles off, stops 3.5 blocks away, walks at 1.4 px/tick, "..." to move each line on. Mine, not asked for: confirm in play.
 
 ## Known rough edges
 

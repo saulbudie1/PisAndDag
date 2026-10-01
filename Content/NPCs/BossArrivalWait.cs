@@ -219,6 +219,9 @@ namespace PisAndDag.Content.NPCs
         /// <summary>The leader type a part belongs to; a leader is its own.</summary>
         internal static int LeaderOf(int type) => Family.TryGetValue(type, out int leader) ? leader : type;
 
+        /// <summary>Part of a boss's fight without being flagged a boss: its parts, its minions, a worm's head and segments (the lists above).</summary>
+        internal static bool OfAFight(int type) => Parts.Contains(type) || Heads.Contains(type) || WormParts.Contains(type);
+
         public override bool PreAI(NPC npc)
         {
             if (Parts.Contains(npc.type))

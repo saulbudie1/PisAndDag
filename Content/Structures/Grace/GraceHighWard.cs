@@ -11,8 +11,11 @@ namespace PisAndDag.Content.Structures.Grace
     /// </summary>
     public sealed partial class GraceBuilder
     {
-        /// <summary>The Ward's floor: the courtyard, the Court, everything on the terrace.</summary>
-        private const int WardFloor = -36;
+        /// <summary>
+        /// The Ward's floor: the courtyard, the Court, everything on the terrace. GraceBiome
+        /// reads it to find the plain's level again in a built world, under the Court's mark.
+        /// </summary>
+        internal const int WardFloor = -36;
 
         /// <summary>The Ward's wall walk, and the gallery that runs from it over the courtyard.</summary>
         private const int WardWalk = -64;

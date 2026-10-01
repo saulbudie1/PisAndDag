@@ -28,6 +28,12 @@ namespace PisAndDag
 
         /// <summary>Server to clients: something behind the Wall was eaten. See LegendsWall.</summary>
         WallAte,
+
+        /// <summary>Client to server: the player she stopped has answered Dona Quinn. See DonaQuinnEncounter.</summary>
+        DonaQuinn,
+
+        /// <summary>Client to server: from the player the Guide's first words are for. See GuideIntro.</summary>
+        GuideIntro,
     }
 
     // Please read https://github.com/tModLoader/tModLoader/wiki/Basic-tModLoader-Modding-Guide#mod-skeleton-contents for more information about the various files in a mod.
@@ -41,9 +47,17 @@ namespace PisAndDag
                 return;
 
             LoadWastedMileFilter();
+            LoadGraceFilter();
+            LoadGraceDeepFilter();
             LoadMorsCloak();
             LoadManaNauseaFilter();
         }
+
+        /// <summary>
+        /// Other mods' way in. ("FireProjectile", type), ("FireItem", type) or ("FireDebuff", type):
+        /// that counts as fire for Rage! Sweet Fire (Content.Combat.FireAffinity). Returns true when taken.
+        /// </summary>
+        public override object Call(params object[] args) => Content.Combat.FireAffinity.Call(args);
 
         public override void HandlePacket(BinaryReader reader, int whoAmI)
         {
@@ -65,6 +79,14 @@ namespace PisAndDag
 
                 case PADPacket.WallAte:
                     Content.NPCs.Legends.LegendsWall.HandleAte(reader);
+                    break;
+
+                case PADPacket.DonaQuinn:
+                    Content.NPCs.DonaQuinn.DonaQuinnEncounter.HandlePacket(reader, whoAmI);
+                    break;
+
+                case PADPacket.GuideIntro:
+                    Content.NPCs.GuideIntro.HandlePacket(reader, whoAmI);
                     break;
 
                 default:
@@ -108,6 +130,62 @@ namespace PisAndDag
             Filters.Scene[Content.Biomes.WastedMileBiome.FilterKey].Load();
 
             Content.Biomes.WastedMileBiome.FilterReady = true;
+        }
+
+        /// <summary>
+        /// The light over the Kingdom of Grace. The biome switches it on and off through
+        /// Player.ManageSpecialBiomeVisuals, as the Mile's; GraceLight feeds it the sun every
+        /// frame it is in use. GraceBiome.FilterReady is what tells both that the key is there.
+        /// </summary>
+        private void LoadGraceFilter()
+        {
+            if (!RequestAssetIfExists("Effects/Grace", out Asset<Effect> grace))
+            {
+                Logger.Warn(
+                    "Kingdom of Grace screen filter disabled: Effects/Grace.xnb is missing. " +
+                    "Compile Effects/Grace.fx with fxcompiler or EasyXnb and place " +
+                    "the .xnb beside it.");
+                return;
+            }
+
+            // "GracePass" must match the pass name in the .fx technique block.
+            Filters.Scene[Content.Biomes.GraceBiome.FilterKey] = new Filter(
+                new ScreenShaderData(grace, "GracePass").UseIntensity(1f),
+                EffectPriority.High);
+
+            Filters.Scene[Content.Biomes.GraceBiome.FilterKey].Load();
+
+            Content.Biomes.GraceBiome.FilterReady = true;
+        }
+
+        /// <summary>
+        /// The grade Beneath Grace. The biome switches it on and off through
+        /// Player.ManageSpecialBiomeVisuals, as the plain's; its colours are fixed here, the
+        /// gold of the light and the blue of the dark. GraceDeepBiome.FilterReady is what tells
+        /// the biome the key is there.
+        /// </summary>
+        private void LoadGraceDeepFilter()
+        {
+            if (!RequestAssetIfExists("Effects/GraceDeep", out Asset<Effect> deep))
+            {
+                Logger.Warn(
+                    "Beneath Grace screen filter disabled: Effects/GraceDeep.xnb is missing. " +
+                    "Compile Effects/GraceDeep.fx with fxcompiler or EasyXnb and place " +
+                    "the .xnb beside it.");
+                return;
+            }
+
+            // "GraceDeepPass" must match the pass name in the .fx technique block.
+            Filters.Scene[Content.Biomes.GraceDeepBiome.FilterKey] = new Filter(
+                new ScreenShaderData(deep, "GraceDeepPass")
+                    .UseIntensity(1f)
+                    .UseColor(1f, 0.8f, 0.48f)
+                    .UseSecondaryColor(0.22f, 0.42f, 0.8f),
+                EffectPriority.High);
+
+            Filters.Scene[Content.Biomes.GraceDeepBiome.FilterKey].Load();
+
+            Content.Biomes.GraceDeepBiome.FilterReady = true;
         }
 
         /// <summary>

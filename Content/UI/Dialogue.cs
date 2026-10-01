@@ -47,6 +47,16 @@ namespace PisAndDag.Content.UI
     /// picked. Use it where the exchange is the content and wandering out halfway
     /// would leave the world in a half-state. Any Say with no follow-ups lets go
     /// again, so a locked branch cannot dead-end.
+    ///
+    /// A speaker can also start the talking (Converse): the panel comes up on them
+    /// without a click, shut like a scene, for someone who stops the player in the
+    /// road. Line(text) then has them say the next thing with nothing to answer (their
+    /// own code moves them on, and it must); Offer(answers) puts answers under the line
+    /// already up, and OfferCorners(left, right) puts two in the panel's two bottom
+    /// corners, for a fork rather than a list.
+    ///
+    /// Whoever speaks is named on a tab over the panel's top edge: "???" until they
+    /// have said their name, then their name and title (DialoguePortrait.Name).
     /// </summary>
     public static class Dialogue
     {
@@ -93,6 +103,29 @@ namespace PisAndDag.Content.UI
 
         /// <summary>PADGlobalItem's LoreColour, and the boss plate's title. It is lore.</summary>
         private static readonly Color TextColour = new Color(196, 180, 152);
+
+        // ============================================================
+        // THE NAME TAB
+        // ============================================================
+        //
+        // A small piece of the panel standing up off its top edge, just right of the
+        // face: who is speaking. Drawn before the panel, so the panel's own top edge
+        // runs across the tab's foot and the two read as one piece.
+
+        /// <summary>Gap between the face's frame and the tab.</summary>
+        private const int TabGap = 6;
+
+        /// <summary>The tab's height, and how much of it the panel's edge covers.</summary>
+        private const int TabHeight = 30;
+        private const int TabTuck = 4;
+
+        /// <summary>Text inset either side of the tab.</summary>
+        private const int TabPadX = 12;
+
+        private const float TabScale = 0.85f;
+
+        /// <summary>The title, after the name: the same lore colour, quieter.</summary>
+        private static readonly Color TitleColour = new Color(150, 138, 118);
 
         // ============================================================
         // THE APPROACH
@@ -210,6 +243,9 @@ namespace PisAndDag.Content.UI
         /// <summary>A scene is running: one way through it, and the player stands still.</summary>
         private static bool locked;
 
+        /// <summary>The two answers up sit in the panel's two bottom corners, on one row.</summary>
+        private static bool corners;
+
         /// <summary>Answers an opener asked to be shown instead of the registered ones.</summary>
         private static List<TalkOption> pendingScene;
 
@@ -301,6 +337,7 @@ namespace PisAndDag.Content.UI
             faceType = npc.type;
             replaced = null;
             locked = false;
+            corners = false;
             pendingScene = null;
             hovered = -1;
             letters = speaker.LettersPerTick;
@@ -338,6 +375,7 @@ namespace PisAndDag.Content.UI
             if (followUps.Length == 0)
                 locked = false;
 
+            corners = false;
             replaced = new List<TalkOption>(followUps);
             SetLine(text);
         }
@@ -356,9 +394,91 @@ namespace PisAndDag.Content.UI
             }
 
             locked = true;
+            corners = false;
             replaced = new List<TalkOption>(answers);
             SetLine(text);
         }
+
+        /// <summary>
+        /// This speaker starts talking, with no click from the player: the panel comes up on
+        /// them, shut like a scene, with these answers (none is allowed: the speaker's own code
+        /// then moves the talk on with Line, Offer or OfferCorners, and must, or the player
+        /// stays held).
+        /// The speaker need not be registered. Talks at <paramref name="lettersPerTick"/>.
+        /// </summary>
+        public static void Converse(NPC npc, string text, float lettersPerTick, params TalkOption[] answers)
+        {
+            if (npc == null || !npc.active)
+                return;
+
+            bool already = Open;
+
+            npcIndex = npc.whoAmI;
+            npcType = npc.type;
+            faceIndex = npc.whoAmI;
+            faceType = npc.type;
+            pendingScene = null;
+            hovered = -1;
+            letters = lettersPerTick;
+            locked = true;
+            corners = false;
+            replaced = new List<TalkOption>(answers);
+
+            SetLine(text);
+
+            // As Begin: a panel still fading up would swallow the first words.
+            if (!already)
+            {
+                lineStart += FadeTicks;
+                SoundEngine.PlaySound(SoundID.MenuOpen);
+            }
+        }
+
+        /// <summary>The speaker says this and there is nothing to answer. The player stays held.</summary>
+        public static void Line(string text)
+        {
+            if (!Open)
+                return;
+
+            locked = true;
+            corners = false;
+            replaced = new List<TalkOption>();
+            SetLine(text);
+        }
+
+        /// <summary>
+        /// Answers for the line already up, without saying it again: they come up under it
+        /// once it has all arrived. Held until one is picked.
+        /// </summary>
+        public static void Offer(params TalkOption[] answers)
+        {
+            if (!Open)
+                return;
+
+            locked = true;
+            corners = false;
+            replaced = new List<TalkOption>(answers);
+        }
+
+        /// <summary>
+        /// Two answers for the line already up, in the panel's two bottom corners rather
+        /// than in a list: a fork. Held until one is picked.
+        /// </summary>
+        public static void OfferCorners(TalkOption left, TalkOption right)
+        {
+            if (!Open)
+                return;
+
+            locked = true;
+            corners = true;
+            replaced = new List<TalkOption> { left, right };
+        }
+
+        /// <summary>Whether all of the current line has arrived on the panel.</summary>
+        public static bool LineDone => Open && Arrived() >= wrapped.Length;
+
+        /// <summary>Whether this NPC is the one speaking right now.</summary>
+        public static bool Speaking(NPC npc) => Open && npc != null && npcIndex == npc.whoAmI && npcType == npc.type;
 
         /// <summary>
         /// Called from inside an opener: the line it is about to return is a scene, and
@@ -391,6 +511,7 @@ namespace PisAndDag.Content.UI
 
             replaced = null;
             locked = false;
+            corners = false;
         }
 
         /// <summary>Lets the player go without ending the conversation.</summary>
@@ -406,6 +527,7 @@ namespace PisAndDag.Content.UI
             replaced = null;
             pendingScene = null;
             locked = false;
+            corners = false;
             offered.Clear();
             hovered = -1;
         }
@@ -606,8 +728,11 @@ namespace PisAndDag.Content.UI
                         if (!locked)
                             Close();
                     }
-                    else if (registry.TryGetValue(under.type, out Speaker speaker))
+                    else if (!Locked && registry.TryGetValue(under.type, out Speaker speaker))
+                    {
+                        // Not over a scene: one way through it, and it is not someone else.
                         Begin(under, speaker);
+                    }
                 }
             }
 
@@ -656,8 +781,16 @@ namespace PisAndDag.Content.UI
 
             List<TalkOption> answers = Open && complete ? Current(player, npc) : null;
 
+            // A line with nothing to answer (Line) leaves no room for answers at all.
+            if (answers != null && answers.Count == 0)
+                answers = null;
+
+            bool atCorners = corners && answers != null && answers.Count == 2;
+
             float rowHeight = font.MeasureString("M").Y * TalkOptions.BaseScale + TalkOptions.RowGap;
-            float answersHeight = answers != null ? answers.Count * rowHeight - TalkOptions.RowGap : 0f;
+            float answersHeight = answers == null ? 0f
+                : atCorners ? rowHeight - TalkOptions.RowGap
+                : answers.Count * rowHeight - TalkOptions.RowGap;
 
             int height = PadTop + (int)textSize.Y + (answers != null ? AnswersGap + (int)answersHeight : 0) + PadBottom;
             int x = (Main.screenWidth - PanelWidth) / 2;
@@ -678,13 +811,7 @@ namespace PisAndDag.Content.UI
                 }
             }
 
-            Utils.DrawSplicedPanel(spriteBatch, panel.Value, box.X, box.Y, box.Width, box.Height,
-                SliceEnd, SliceEnd, SliceEnd, SliceEnd, Color.White * fade);
-
             string shown = arrived >= wrapped.Length ? wrapped : wrapped.Substring(0, arrived);
-
-            ChatManager.DrawColorCodedStringWithShadow(spriteBatch, font, shown,
-                new Vector2(box.X + PadX, box.Y + PadTop), TextColour * fade, 0f, Vector2.Zero, Vector2.One);
 
             // The speaker's face on the corner: black until they have said who they are,
             // which may be in this very line.
@@ -696,6 +823,15 @@ namespace PisAndDag.Content.UI
             if (npc != null)
                 DialoguePortrait.Hear(npc, shown);
 
+            // Under the panel, so the panel's edge crosses its foot.
+            DrawNameTab(spriteBatch, face, box);
+
+            Utils.DrawSplicedPanel(spriteBatch, panel.Value, box.X, box.Y, box.Width, box.Height,
+                SliceEnd, SliceEnd, SliceEnd, SliceEnd, Color.White * fade);
+
+            ChatManager.DrawColorCodedStringWithShadow(spriteBatch, font, shown,
+                new Vector2(box.X + PadX, box.Y + PadTop), TextColour * fade, 0f, Vector2.Zero, Vector2.One);
+
             DialoguePortrait.DrawOnPanel(spriteBatch, face, box, panel.Value, fade);
 
             if (answers == null)
@@ -704,8 +840,54 @@ namespace PisAndDag.Content.UI
                 return;
             }
 
-            hovered = TalkOptions.DrawOptionLines(spriteBatch, answers, npc,
-                box.Right - PadX, box.Y + PadTop + textSize.Y + AnswersGap, hovered, TalkMemory.Heard);
+            float answersTop = box.Y + PadTop + textSize.Y + AnswersGap;
+
+            hovered = atCorners
+                ? TalkOptions.DrawOptionCorners(spriteBatch, answers, npc, box.X + PadX, box.Right - PadX,
+                    answersTop, hovered, TalkMemory.Heard)
+                : TalkOptions.DrawOptionLines(spriteBatch, answers, npc, box.Right - PadX,
+                    answersTop, hovered, TalkMemory.Heard);
+        }
+
+        /// <summary>
+        /// Who is speaking, on a tab standing up off the panel's top edge beside the face:
+        /// "???" until they have said their name, then their name, and their title after it
+        /// in a quieter colour (DialoguePortrait.LabelName, LabelTitle). Nobody to name, no tab.
+        /// </summary>
+        private static void DrawNameTab(SpriteBatch spriteBatch, NPC speaker, Rectangle box)
+        {
+            if (speaker == null)
+                return;
+
+            DynamicSpriteFont font = FontAssets.MouseText.Value;
+
+            string name = DialoguePortrait.LabelName(speaker);
+            string title = DialoguePortrait.LabelTitle(speaker);
+            string joint = string.IsNullOrEmpty(title) ? null : ", " + title;
+
+            float nameWidth = font.MeasureString(name).X * TabScale;
+            float titleWidth = joint == null ? 0f : font.MeasureString(joint).X * TabScale;
+
+            int x = DialoguePortrait.PanelFrameRight(box) + TabGap;
+            int width = (int)Math.Ceiling(nameWidth + titleWidth) + TabPadX * 2;
+            Rectangle tab = new Rectangle(x, box.Y - TabHeight + TabTuck, width, TabHeight);
+
+            Utils.DrawSplicedPanel(spriteBatch, panel.Value, tab.X, tab.Y, tab.Width, tab.Height,
+                SliceEnd, SliceEnd, SliceEnd, SliceEnd, Color.White * fade);
+
+            // Centred in the part of the tab the panel does not cover.
+            float lineHeight = font.MeasureString("M").Y * TabScale;
+            Vector2 at = new Vector2(tab.X + TabPadX, tab.Y + (TabHeight - TabTuck - lineHeight) * 0.5f + 2f);
+            at = new Vector2((float)Math.Floor(at.X), (float)Math.Floor(at.Y));
+
+            ChatManager.DrawColorCodedStringWithShadow(spriteBatch, font, name, at, TextColour * fade, 0f,
+                Vector2.Zero, new Vector2(TabScale));
+
+            if (joint != null)
+            {
+                ChatManager.DrawColorCodedStringWithShadow(spriteBatch, font, joint, at + new Vector2(nameWidth, 0f),
+                    TitleColour * fade, 0f, Vector2.Zero, new Vector2(TabScale));
+            }
         }
 
         /// <summary>

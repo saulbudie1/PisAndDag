@@ -405,8 +405,9 @@ The only seal comes after Skeletron, so no incantation can be cast before him.
 | Everhunger | `Incantation/EverHunger` | Incantation | Conjuration | Blood | 51 | 18 | 30 | Green | Altar: 29 Essence of the Fouled, Book |
 | Forest, Nurture Me | `Incantation/ForestNurtureMe` | Incantation | Abjuration | Flora and Fauna | 0 | 25 | 30 | Blue | Dryad's shop |
 | Chlorophyte, Arm Me | `Incantation/ChlorophyteArmMe` | Incantation | Transmutation | Flora and Fauna | 0 | 30 | 30 | Lime | Witch Doctor's shop, after Plantera |
+| Rage! Sweet Fire | `Incantation/RageSweetFire` | Incantation | Enchantment | Flame | 0 | 40 | 30 | Pink | Altar: Lava Bucket, 15 Soul of Fright, 50 Living Fire Block, Book |
 
-All under `Content/Items/Mage/`. Seven casts against ten slots: §4.2 wants twenty to thirty.
+All under `Content/Items/Mage/`. Eight casts against ten slots: §4.2 wants twenty to thirty.
 
 ### Element colours (`MagicColours`)
 
@@ -476,6 +477,36 @@ chlorophyte dust and jungle leaves).
   104, 242, 279, 283, 284, 285, 286, 287, 981).
 - **Why "defines":** LuiAFK Reborn's Unlimited ammo clones every vanilla bullet at rarity
   10. Letting all ammo vote made every kind rarer than chlorophyte and nothing turned.
+
+### Rage! Sweet Fire
+
+Puts on **Sweet Fire** (`Content/Buffs/SweetFire.cs`) for 30 s; will not recast while more than
+5 s are left. While it lasts, the caster's fire hits deal 25% more (`SourceDamage += 0.25`, in
+`SweetFirePlayer.ModifyHitNPCWithProj` and `ModifyHitNPCWithItem`). `SweetFireCall` is the cast
+effect only (embers drawn in, then a burst of flame).
+
+- **What is fire** is `FireAffinity` (`Content/Combat/FireAffinity.cs`), read out of the 1.4.4
+  IL: everything vanilla lets set On Fire!, Hellfire or Daybreak (`Projectile.StatusNPC` by
+  projectile type, `Player.StatusToNPC` by item type for a swing), the Magma Stone's and the
+  Flask of Fire's melee exactly as vanilla gives them, the rest of the solar weapons and tools,
+  the Hellfire Arrow, and Meagre Flame's ball. Both flamethrowers, the Elf Melter's cold flame
+  included. **Not** Cursed Inferno or Shadowflame (the user: dark), nor Frostburn. Never an
+  NPC's or a trap's projectile.
+- **Other mods** are learned as they are used (`FireAffinityPlayer`): the first time one of
+  their projectiles, or a swing of one of their items, sets what the player hits on fire, that
+  type counts from then on, for the session (the first hit itself is not raised). "On fire" is
+  On Fire!, Hellfire, Daybreak, or any other mod's debuff whose internal name says fire
+  (`FireAffinity.NamedFire`: a word starting Fire, Flame, Burn, Blaz, Inferno, Ember, Scorch,
+  Ignit, Magma, Lava, Pyro, Incinerat, or ending fire, flame(s), burn, blaze; none starting
+  frost, ice, cold, chill, freez, frozen, cryo, snow, glacial, curse, shadow, dark, void),
+  found at load and listed in `client.log`. Not learned while a Magma Stone or Flask of Fire
+  could be the burn, and never a vanilla type. A mod can also say so:
+  `Mod.Call("FireProjectile" | "FireItem" | "FireDebuff", type)`.
+- **The ring** (`Content/Particles/SweetFireAura.cs`, one per player on every client): three
+  flames going round at the waist on a flattened circle, 30 by 10, once in about 1.5 s, each
+  with a 12-dot tail that cools white to yellow to orange to red and rises 10 px, the far side
+  dimmer; embers now and then; light by design. A premultiplied soft dot in the alpha pass
+  (adds its light, covers a little), so it keeps its colour on a bright sky.
 
 ---
 
