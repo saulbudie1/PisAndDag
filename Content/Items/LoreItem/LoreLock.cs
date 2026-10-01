@@ -33,9 +33,9 @@ namespace PisAndDag.Content.Items.LoreItem
     /// </summary>
     public class LoreLock : ModPlayer
     {
-        private const string Refusal = "It refuses to leave your side.";
+        private const string Refusal = "Lore item can go into Lore Codex to free up inventory space.";
 
-        private const string Duplicate = "There can only be one.";
+        private const string Duplicate = "Lore item already exist in inventory or Lore Codex.";
 
         /// <summary>
         /// Slots swept for duplicates: the main grid, the coin row and the ammo row.

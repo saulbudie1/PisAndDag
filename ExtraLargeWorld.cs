@@ -4,9 +4,11 @@ using log4net;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
+using ReLogic.Graphics;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using Terraria;
+using Terraria.GameContent;
 using Terraria.GameContent.UI.Elements;
 using Terraria.GameContent.UI.States;
 using Terraria.IO;
@@ -112,6 +114,8 @@ namespace PisAndDag
             }
 
             On_UIWorldCreation.AddWorldSizeOptions += AddTheButton;
+            On_UIWorldCreation.ShowOptionDescription += SayWhatTheyLack;
+            On_UIWorldCreation.ClearOptionDescription += OneLineAgain;
             On_UIWorldCreation.SetDefaultOptions += StartOnIt;
             On_UIWorldCreation.FinishCreatingWorld += SetTheSize;
             On_UIWorldCreationPreview.UpdateOption += ShowTheLargePlate;
@@ -164,6 +168,8 @@ namespace PisAndDag
             // cannot be named here. The array's own element type hands it over.
             Type buttonType = slot.FieldType.GetElementType();
             Type sizeType = buttonType.GetGenericArguments()[0];
+
+            PaleTheOthers(buttonType, vanilla);
              
             object mine = Activator.CreateInstance(buttonType,
                 Enum.ToObject(sizeType, SizeOption),
@@ -200,6 +206,149 @@ namespace PisAndDag
 
             container.Append(added);
             slot.SetValue(self, all);
+        }
+
+        // ------------------------------------------------------- the other three, pale
+
+        /// <summary>
+        /// What the three vanilla sizes are not, said under what they are: on a line of its
+        /// own, pale (<see cref="PaleTag"/>), where the Grand's says "(Recommended)" in gold.
+        /// </summary>
+        private const string NotFullKey = "Mods.PisAndDag.UI.WorldSizeNotFull";
+
+        /// <summary>
+        /// The three vanilla buttons' names, washed this far toward this grey: pale beside the
+        /// Grand's gold, and still their own colours (cyan, the cyan-green, the green) under it.
+        /// </summary>
+        private static readonly Color PaleGrey = new Color(200, 200, 200);
+        private const float PaleBy = 0.7f;
+
+        /// <summary>The line's colour, as a chat tag colour (the Grand's "(Recommended)" is fcbd1c).</summary>
+        private const string PaleTag = "b4b4b4";
+
+        /// <summary>
+        /// vanilla's description panel (UIWorldCreation.AddDescriptionPanel): 40 tall; its text
+        /// at 0.82, one line, not wrapped, the text element set 5 down in it and padded 6 more.
+        /// </summary>
+        private const float DescriptionHeight = 40f;
+        private const float DescriptionScale = 0.82f;
+        private const float DescriptionOffset = 5f;
+        private const float DescriptionTop = 6f;
+
+        /// <summary>Two lines instead: the element at the panel's top, padded this far, and this much kept clear of the foot.</summary>
+        private const float TwoLinesTop = 2f;
+        private const float TwoLinesFoot = 3f;
+
+        private static FieldInfo descriptionText;
+
+        /// <summary>The description is two lines at its own size right now, and wants putting back.</summary>
+        private static bool twoLines;
+
+        /// <summary>
+        /// The names of the three vanilla sizes (the title on each button, cyan to green in
+        /// vanilla) washed pale. The title is the button's own UIText (GroupOptionButton._title),
+        /// coloured once when it is made and never again (DrawSelf does not touch it).
+        /// </summary>
+        private static void PaleTheOthers(Type buttonType, Array vanilla)
+        {
+            FieldInfo title = buttonType.GetField("_title", Hidden);
+
+            if (title == null)
+            {
+                log?.Warn("Extra Large world size: the size buttons no longer keep their name in _title, so the vanilla sizes are not paled.");
+                return;
+            }
+
+            foreach (object button in vanilla)
+            {
+                if (title.GetValue(button) is UIText name)
+                    name.TextColor = Color.Lerp(name.TextColor, PaleGrey, PaleBy);
+            }
+        }
+
+        /// <summary>
+        /// Hovering a vanilla size: vanilla says what it is (UI.WorldDescriptionSize...), and under
+        /// it, pale, what it is not. Vanilla's panel holds one line at 0.82; two are fitted into
+        /// it by the font's own line height and the widest line, never over 0.82.
+        /// </summary>
+        private static void SayWhatTheyLack(On_UIWorldCreation.orig_ShowOptionDescription orig, UIWorldCreation self,
+            UIMouseEvent evt, UIElement listeningElement)
+        {
+            UIText text = Description(self);
+
+            OneLine(text);
+            orig(self, evt, listeningElement);
+
+            LocalizedText said = VanillaSize(listeningElement);
+
+            if (text == null || said == null)
+                return;
+
+            string first = said.Value;
+            string second = Language.GetTextValue(NotFullKey);
+
+            // The panel's width, not the text's own: a line wider than its element widens it
+            // (UIText's MinWidth), and the last one vanilla wrote may have been.
+            DynamicSpriteFont font = FontAssets.MouseText.Value;
+            float width = (text.Parent?.GetInnerDimensions().Width ?? 0f) - text.PaddingLeft - text.PaddingRight;
+            float widest = Math.Max(font.MeasureString(first).X, font.MeasureString(second).X);
+
+            float scale = Math.Min(DescriptionScale, (DescriptionHeight - TwoLinesTop - TwoLinesFoot) / (2f * font.LineSpacing));
+
+            if (width > 0f && widest > 0f)
+                scale = Math.Min(scale, width / widest);
+
+            text.Top = StyleDimension.FromPixels(0f);
+            text.PaddingTop = TwoLinesTop;
+            text.SetText(first + "\n[c/" + PaleTag + ":" + second + "]", scale, false);
+            text.Recalculate();
+            twoLines = true;
+        }
+
+        /// <summary>Off a button: back to vanilla's one line before vanilla puts its default in.</summary>
+        private static void OneLineAgain(On_UIWorldCreation.orig_ClearOptionDescription orig, UIWorldCreation self,
+            UIMouseEvent evt, UIElement listeningElement)
+        {
+            OneLine(Description(self));
+            orig(self, evt, listeningElement);
+        }
+
+        /// <summary>vanilla's size and place again, so the next line vanilla writes is drawn as vanilla draws it.</summary>
+        private static void OneLine(UIText text)
+        {
+            if (text == null || !twoLines)
+                return;
+
+            twoLines = false;
+            text.Top = StyleDimension.FromPixels(DescriptionOffset);
+            text.PaddingTop = DescriptionTop;
+            text.SetText(string.Empty, DescriptionScale, false);
+            text.Recalculate();
+        }
+
+        private static UIText Description(UIWorldCreation self)
+        {
+            descriptionText ??= typeof(UIWorldCreation).GetField("_descriptionText", Hidden);
+            return descriptionText?.GetValue(self) as UIText;
+        }
+
+        /// <summary>
+        /// The description of a vanilla size button (Small, Medium, Large), or null for anything
+        /// else, the Grand included: theirs are the descriptions under UI.WorldDescriptionSize.
+        /// </summary>
+        private static LocalizedText VanillaSize(UIElement element)
+        {
+            if (element == null)
+                return null;
+
+            Type type = element.GetType();
+
+            if (!type.IsGenericType || type.GetGenericTypeDefinition() != typeof(GroupOptionButton<>))
+                return null;
+
+            LocalizedText said = type.GetField("Description")?.GetValue(element) as LocalizedText;
+
+            return said != null && said.Key.StartsWith("UI.WorldDescriptionSize", StringComparison.Ordinal) ? said : null;
         }
 
         /// <summary>

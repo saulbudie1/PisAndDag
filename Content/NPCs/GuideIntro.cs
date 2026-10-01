@@ -186,9 +186,10 @@ namespace PisAndDag.Content.NPCs
         /// Which end the sea is at. In a Grand world the plan's own (WorldMirror: the ocean end).
         /// In any other, the Dungeon's end: vanilla puts the Jungle across the world from the
         /// Dungeon every time (WorldGen's Reset pass sets jungleOriginX by dungeonSide), and both
-        /// ends of such a world are sea.
+        /// ends of such a world are sea. Good during generation from the Dungeon pass on (the
+        /// Blood Shrine is built on this side: BloodShrinePass), and in play.
         /// </summary>
-        private static bool FindSeaEast()
+        internal static bool FindSeaEast()
         {
             if (ExtraLargeWorld.Active)
                 return WorldMirror.Flipped;

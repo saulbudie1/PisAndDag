@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using PisAndDag.Content.NPCs;
 using Terraria;
 using Terraria.ID;
 using Terraria.IO;
@@ -11,17 +12,24 @@ namespace PisAndDag.Content.Structures
 {
     /// <summary>
     /// Places one Blood Shrine near the spawn: at the end of the forest the player wakes up
-    /// in, on the side where that end is nearer, a few tiles in from where the next ground
-    /// begins. Whoever walks out that way passes it. In the planned world that is the snow
-    /// side, some five hundred tiles east of the spawn.
+    /// in, on the sea's side, a few tiles in from where the next ground begins. Whoever walks
+    /// out toward the sea passes it. The Guide sends them that way ("On the trail seawards",
+    /// Hints.GuideHut, in his first words too), and his Piece of Paper says which way the sea
+    /// is: the side is his (GuideIntro.FindSeaEast), so the two cannot disagree. In the planned
+    /// world that is the desert's edge, some sixteen hundred tiles from the spawn toward the
+    /// ocean; in any other world, the Dungeon's side.
+    ///
+    /// (It used to take whichever end of the forest was nearer, which in the planned world is
+    /// the snow side, away from the sea, and the hint sent the player the wrong way.)
     ///
     /// The forest is read off the ground rather than off the plan, so this holds in a world
     /// of any size and either way round. Going out from the spawn, the forest ends where the
     /// surface turns to another biome's ground (snow, sand, jungle, the evils, the Hallow,
     /// ash) and stays that way for EndRun columns: a sand patch or a pond does not end it.
     /// From there the shrine goes on the first dry spot that is flat enough, mostly forest
-    /// ground and not claimed by anything else, searching back toward the spawn. If that
-    /// side has none, the other side is tried the same way.
+    /// ground and not claimed by anything else, searching back toward the spawn. If the sea's
+    /// side has none, even on ground twice as rough, the other side is tried the same way,
+    /// rather than a world with no Orb in it.
     /// </summary>
     public class BloodShrinePass : GenPass
     {
@@ -94,28 +102,33 @@ namespace PisAndDag.Content.Structures
 
             int spawnX = Main.spawnTileX;
 
-            // Each side's stretch of forest, the side whose end is nearer the spawn first.
+            // The sea's side first, the side the Guide's paper calls the sea; the other only
+            // as a last resort.
+            int seaward = GuideIntro.FindSeaEast() ? 1 : -1;
+
             var sides = new List<(int dir, int start, int end)>();
-            foreach (int dir in new[] { 1, -1 })
+            foreach (int dir in new[] { seaward, -seaward })
             {
                 if (Forest(spawnX, dir, out int start, out int end))
                     sides.Add((dir, start, end));
             }
 
-            sides.Sort((a, b) => Math.Abs(a.end - spawnX).CompareTo(Math.Abs(b.end - spawnX)));
-
-            // Both sides on ground as level as the shrine likes; then, rather than a world
-            // with no Orb in it, both sides again on ground twice as rough.
+            // Each side on ground as level as the shrine likes, then on ground twice as rough,
+            // before the next side is looked at at all.
             int[] slopes = { MaxSlope, MaxSlope * 2 };
-            for (int pass = 0; pass < slopes.Length; pass++)
+            for (int i = 0; i < sides.Count; i++)
             {
-                for (int i = 0; i < sides.Count; i++)
+                for (int pass = 0; pass < slopes.Length; pass++)
                 {
-                    progress.Set((pass * sides.Count + i) / (float)Math.Max(slopes.Length * sides.Count, 1));
+                    progress.Set((i * slopes.Length + pass) / (float)Math.Max(slopes.Length * sides.Count, 1));
 
                     var (dir, start, end) = sides[i];
                     if (PlaceAlong(shrine, spawnX, dir, start, end, slopes[pass]))
                     {
+                        if (dir != seaward)
+                            ModContent.GetInstance<PisAndDag>()?.Logger
+                                .Warn($"Blood Shrine found no place toward the sea and went on the other side of the spawn ({spawnX}). The Guide's hint points the other way in this world.");
+
                         progress.Set(1f);
                         return;
                     }

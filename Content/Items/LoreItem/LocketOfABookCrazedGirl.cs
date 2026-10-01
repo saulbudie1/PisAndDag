@@ -24,9 +24,9 @@ namespace PisAndDag.Content.Items.LoreItem
 
             Item.PAD().Lore = true;
             Item.PAD().LoreText =
-                "A rusted gold locket, with paper folded small inside.\n" +
-                "\"Dear lovely daughter, I know you will be a knight one day.\"\n" +
-                "Read until the folds went soft. It was never signed.";
+                "A rusted gold plated locket, with paper folded small inside.\n" +
+                "\"Dear my lovely daughter, I know you will be a shining knight one day.\"\n" +
+                "It was read until the creases went soft.";
         }
     }
 }

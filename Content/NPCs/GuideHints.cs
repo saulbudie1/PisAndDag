@@ -14,8 +14,9 @@ namespace PisAndDag.Content.NPCs
     /// (PADWorld.GuideSpokeOfLegends); after that it is one of his lines. Otherwise, one
     /// chat in <see cref="PilgrimChance"/> is the man with the bow, and one in
     /// <see cref="HintChance"/> of the rest is a hint: how incantations and spells are kept
-    /// and cast, how they are written, in a world that has one, the kingdom out east, and,
-    /// before the orb is broken, the hut on the trail toward the sea.
+    /// and cast, how they are written, in a world that has one, the kingdom (east or west,
+    /// across the world from the sea), and, before the orb is broken, the hut on the trail
+    /// toward the sea.
     /// The lines are under Mods.PisAndDag.Hints.
     /// </summary>
     public class GuideHints : GlobalNPC
@@ -59,7 +60,12 @@ namespace PisAndDag.Content.NPCs
             else
                 lines.Add("GuideHut");
 
-            chat = Language.GetTextValue(Key + lines[Main.rand.Next(lines.Count)]);
+            string line = lines[Main.rand.Next(lines.Count)];
+
+            // The kingdom is at the far end from the sea, whichever end that is (WorldMirror).
+            chat = line == "GuideKingdom"
+                ? Language.GetTextValue(Key + line, GuideIntro.SeaEast ? "west" : "east")
+                : Language.GetTextValue(Key + line);
         }
 
         /// <summary>He has said it: here, and on the server, which tells everyone else.</summary>

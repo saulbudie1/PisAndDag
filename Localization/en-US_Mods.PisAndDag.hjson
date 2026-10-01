@@ -31,7 +31,11 @@ Items: {
 
 	PieceOfPaper: {
 		DisplayName: Piece of Paper
-		Tooltip: ""
+		Tooltip: 
+			'''
+			Torn in corners and folded in four.
+			There is something written on it.
+			'''
 	}
 
 	GameChangingOrb: {
@@ -391,7 +395,7 @@ Hints: {
 	GuideLegends: I feel like the balance of the world is disturbed, I can feel the intangible ominous presence everywhere. Did you do something?
 	GuideArsenal: An incantation does nothing sitting in your pack. You have to learn it by heart first, and I've only ever seen that done near a house someone lives in. Then you say it through a seal. Spells want a staff instead.
 	GuideAltar: Incantations were written, not taught. A book, an altar you could knock together from bones and wood, and something foul to write with. Nobody I've asked knows what.
-	GuideKingdom: Far east, past the field where every tree is a stump, there's a wall taller than any tree ever grew. A kingdom's, my books say. Its gates are still shut. The books don't say who shut them.
+	GuideKingdom: Far {0}, past the field where every tree is a stump, there's a wall taller than any tree ever grew. A kingdom's, my books say. Its gates are still shut. The books don't say who shut them.
 	GuidePilgrim: A man came through here leaning on a bow taller than he was, with a sword on his back too long for him. He told me his name twice, as if the first time might not have taken.
 	GuideHut: I scouted the area before your awakening. On the trail seawards, there is a little hut, tethered yet foreboding. I'm too much of a coward and dared not enter. Do me a favour and tell me what is inside.
 }
@@ -418,8 +422,8 @@ Magic: {
 	Count: "{0} of {1} held"
 	InArsenal: In the Magic Arsenal
 	PlaceInArsenal: Goes in the Magic Arsenal, near a house someone lives in
-	NoHouse: Only near a house someone lives in.
-	NoHouseShort: Only near a lived-in house
+	NoHouse: Only near an adequate house with resident.
+	NoHouseShort: Go near dwelled abode.
 	NotACast: Only a spell or an incantation goes there.
 	AlreadyHeld: It is already in there.
 	Locked: Locked
@@ -430,5 +434,6 @@ Magic: {
 
 UI: {
 	WorldSizeExtraLarge: Grand
-	WorldDescriptionSizeExtraLarge: 1.5x the size of a large. New Lore bosses and structures [c/fcbd1c:(Recommended)]
+	WorldDescriptionSizeExtraLarge: 1.5x the size of a large. New bosses and lore heaping structures [c/fcbd1c:(Recommended)]
+	WorldSizeNotFull: (does not include the Pistols and Daggers' full experience)
 }

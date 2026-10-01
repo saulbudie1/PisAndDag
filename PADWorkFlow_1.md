@@ -3054,4 +3054,67 @@ mid-talk in multiplayer had the panel put back every tick until the news came (g
 he speaks, "..." to move on). And the hut hint says "On the trail seawards", but the Blood Shrine
 (the orb's) is built at the nearer end of the spawn's forest, which in a Grand world is the snow
 side, east of the spawn with the sea west; the paper now says the sea is west. The line or the
-shrine should move (`RELEASE_TODO.md`).
+shrine should move (`RELEASE_TODO.md`). *(Settled: the user had the shrine moved, §16.21.)*
+
+---
+
+## 16.21 Later in session 7: the shrine to the sea, the paper's Grand map, the other world sizes
+
+The user, on the Guide's hut line sending the player "seawards" while the Blood Shrine stood on the
+snow side: "move the shrine, also make the grand world text very convincing (state the additions
+and lore structures)". Then: "Color the other world options pale also, append to the string of the
+other world details: (does not include the Pistol And Dagger's full experience)".
+
+| Work | Where | Notes |
+|---|---|---|
+| The shrine, toward the sea | `Content/Structures/BloodShrinePass.cs` | Still at the end of the spawn's forest, but on the sea's side, the side the Guide's paper calls the sea (`GuideIntro.FindSeaEast`, now `internal` so generation can ask it): in a Grand world the desert's edge, about 1600 tiles from the spawn toward the ocean (it was the snow side, about 525 the other way); in any other world the Dungeon's side. That side is tried on level ground and then on ground twice as rough before the other side is looked at, and a shrine that has to go the other way says so in the log. `/struct update` runs the same pass. |
+| The paper, in a Grand world | `Content/Items/LoreItem/PieceOfPaper.cs` | Thirteen verses, his map of the planned country in the order it is walked from the spawn, the user's words carrying it (below). Any other world keeps the user's five verses as written. |
+| The kingdom hint's direction | hjson `Hints.GuideKingdom` ("Far {0}, ..."), `GuideHints.GetChat` | Was "Far east" in every world; in a world built the other way round the kingdom is west. Now east or west, across the world from the sea. |
+| The other world sizes, pale | `ExtraLargeWorld.cs` (`PaleTheOthers`, `SayWhatTheyLack`, `OneLineAgain`), hjson `UI.WorldSizeNotFull` | Small, Medium and Large: their names (vanilla's cyan to green) washed 70% toward (200, 200, 200), beside the Grand's gold. Their descriptions get a second line under vanilla's, in pale grey (`[c/b4b4b4:...]`, as the Grand's "(Recommended)" is gold): "(does not include the Pistols and Daggers' full experience)". Vanilla's panel holds one line at 0.82, so the two lines are fitted into its 40 px by the font's own `LineSpacing` and the wider line's width, never over 0.82, 2 px from the top; anything else hovered gets vanilla's one line back first. |
+
+**The Grand map** (sea west; east and west swap with the world):
+
+> To the west is the sea, where you can find heroes,
+> burials and sand. On the way there:
+> a little hut, where the trees round here give out,
+> the desert, then a stretch of ground gone sick,
+> an old keep with an old man at its door,
+> and graves on a hill above the beach, one of them open.
+> To the east is the vast jungle and iceland:
+> the ice first, not far at all, then the jungle,
+> a field where every tree is a stump,
+> a mile of ash where nothing calls,
+> and a white wall taller than any tree ever grew,
+> shielding a colossal kingdom prosperous,
+> or at least what I remember.
+
+Each line is a thing on the ground, checked against the code: the Blood Shrine at the end of the
+spawn's forest (moved, above); the desert band, then the world's evil (`Layout`, held to their
+bands by `BiomeBands`); the Dungeon at the seaward end with vanilla's Old Man at its door; the
+graveyard hill behind the ocean's beach, which in a Grand world always takes the ocean side, and
+its open grave (`GraveyardPass`); the snow 525 tiles from the spawn, then the jungle; the Cleared
+Ground, cleared but for the stumps (`GraceCleanupPass` keeps rooted trunks); the Wasted Mile's ash
+(`WastedMilePass`, "where nothing calls" is the Clothier's word for it); the Curtain, 160 tiles of
+white marble banded in gold (`GraceBuilder.Curtain`; "taller than any tree ever grew" is his own
+kingdom hint). What he could not have seen is not in it: the Ball under the beach (the plan wants no
+hint of it on that walk), the Sealed Pocket, the blade under the spawn, the Dry Shore past the
+kingdom. "Heroes" is left the user's word. Names the player cannot have yet stay out: no Grace, no
+Curtain, no Mile.
+
+**The mod's name** in the new line is written as `build.txt` has it, "Pistols and Daggers'"; the
+user typed "Pistol And Dagger's".
+
+**Verified for this** (tML 1.4.4 IL and the embedded en-US localization): vanilla's three size
+buttons are `GroupOptionButton<WorldSizeId>` built with Cyan, Cyan-LimeGreen and LimeGreen, and the
+colour goes only to `_title.TextColor` (`DrawSelf` never touches it); `Description` is a public
+field; `UIWorldCreation.ShowOptionDescription` sets `_descriptionText` from the hovered element's
+`Description` only when there is one, `ClearOptionDescription` to `UI.WorldDescriptionDefault`;
+`UIText.SetText(LocalizedText)` keeps the last scale, so the scale is put back before vanilla
+writes; the description panel is 40 px, text 0.82, padded 20 each side and 6 from the top, not
+wrapped; `ChatManager.DrawColorCodedString` breaks lines at `\n` by `font.LineSpacing * scale`.
+Vanilla's descriptions: "Ideal for a quick, single player experience.", "Bigger and better for
+prolonged exploration, or bringing a friend.", "Super-sized for long term progression and multiple
+players."
+
+**Not yet confirmed in game:** the two lines in the panel (the fit is computed from the font, but
+not seen), the shrine's new place in a fresh Grand world, the paper's lines in the tooltip.
