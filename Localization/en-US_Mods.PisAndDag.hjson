@@ -40,7 +40,8 @@ Items: {
 			'''
 			Can only be set upon an anvil
 			Once placed, it cannot be taken back
-			Break it, and the world is asked a question it cannot refuse
+			Break it, and the all evil will bat their eyes
+			The world permanently enter Afflictio Mode, changing AIs but also new rewards
 			'''
 	}
 
@@ -90,7 +91,7 @@ Items: {
 			'''
 			Throws a ball of fire that bursts on what it meets
 			Hold 2 seconds to gather it: twice the size, three times the damage, 40 mana
-			'Enough to set a thing alight. Not much more.'
+			'Enough to set a thing alight. And that's alright.'
 			'''
 	}
 
@@ -116,7 +117,7 @@ Items: {
 			Lets a mouth out of your chest that runs level, toward the cursor's side
 			Comes back for the first thing it bites, dies after 5 bites
 			Anything else in its way takes two thirds the damage
-			'It is never full. It only runs out.'
+			'Even in soul they keep biting.'
 			'''
 	}
 
@@ -148,7 +149,6 @@ Items: {
 		Tooltip:
 			'''
 			Used to write incantations and spells
-			'Nobody blessed it. It works anyway.'
 			'''
 	}
 
@@ -179,7 +179,7 @@ Items: {
 			Asks the forest to keep you a while
 			Faster life and mana regeneration, more defense, more speed
 			Can only be asked again as it fades
-			'The forest cannot say no. That is the trouble.'
+			'Rustle the leaves.'
 			'''
 	}
 
@@ -190,7 +190,7 @@ Items: {
 			Calls a Minishark, a Megashark and an S.D.M.G. above you
 			Held, they fire musket balls where you point, needing no ammo
 			After a few seconds, holding it drains mana
-			'All three answer to one finger.'
+			'All three sea monsters answer to one finger.'
 			'''
 	}
 
@@ -202,7 +202,7 @@ Items: {
 			Bullets you fire of lower rarity than chlorophyte become chlorophyte
 			They home, but hit as hard as they would have
 			Can only be asked again as it fades
-			'It was grown to stop one thing. It stops anything.'
+			'To me my jungle.'
 			'''
 	}
 
@@ -212,7 +212,7 @@ Items: {
 			'''
 			Each thrust carries you a step forward
 			Right click brings it down from overhead for triple damage
-			'It watched you long before you held it.'
+			'Is the eye blinking?'
 			'''
 	}
 
@@ -234,7 +234,7 @@ Items: {
 			Kills bees and hornets in one hit
 			Hits everything its swing touches
 			Deals 70 base damage to the Queen Bee
-			'Meant for flies. Nobody told the bees.'
+			'You like jazz?'
 			'''
 	}
 
