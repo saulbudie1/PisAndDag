@@ -256,9 +256,10 @@ namespace PisAndDag.Content.Particles
         /// <summary>
         /// The colour of the dust a blow knocks out of the ground here: the ground as the map
         /// shows it, dulled toward the colour of dust. Turf gives up the earth it grows on,
-        /// not its green.
+        /// not its green. Public: anything else that throws the ground's dust up (the ground
+        /// over Amalgaermis) wants the same colour.
         /// </summary>
-        private static Color FogColour(int x, int y) => FogColour(new Point(x, y), new Point(0, 1));
+        public static Color FogColour(int x, int y) => FogColour(new Point(x, y), new Point(0, 1));
 
         /// <summary>The same for a tile in any face: turf gives up the earth behind it, <paramref name="into"/> the face.</summary>
         private static Color FogColour(Point cell, Point into)

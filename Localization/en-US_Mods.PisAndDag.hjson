@@ -315,6 +315,7 @@ DeathText: {
 	DonaLanceThrown: "{0} met a lance on its way into the ground."
 	DonaTrampled: "{0} was run down by a donkey with somewhere to be."
 	DonaSwept: "{0} was swept off their feet by a lance."
+	AmalgaermisSteam: "{0} was standing over it when the hundred breathed out."
 }
 
 Tiles: {
@@ -352,6 +353,10 @@ Projectiles: {
 	QueenSlimeCore.DisplayName: Crystal Core
 	SweetFireCall.DisplayName: Rage! Sweet Fire
 	DonaLanceThrown.DisplayName: Lance
+	AbomanationBone.DisplayName: Somebody's Bone
+	AbomanationSkull.DisplayName: Somebody's Skull
+	AbomanationHand.DisplayName: Somebody's Hand
+	AbomanationAsh.DisplayName: A Handful of Ash
 }
 
 NPCs: {

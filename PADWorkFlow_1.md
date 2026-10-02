@@ -13,6 +13,8 @@
 >
 > **Sessions: 0–10 = session 1, §11 = session 2, §12 = session 3, §13 = session 4,
 > §14 = session 5, §15 = session 6.** Later wins. The newest open TODO is §15.8.
+> *[And §16 = session 7. Its open TODO is §16.11; the sections after it (§16.13 on) each end
+> with what they left open.]*
 
 ---
 
@@ -1056,6 +1058,9 @@ A fifteen-segment worm boss. Summoned on the Mile by releasing critters, not by 
 | `AbomanationCommand.cs` | `/abomanation` debug spawn. |
 | `BossLogSupport.cs` (mod root) | Boss Checklist entry with a custom portrait. |
 
+*[Later, session 7: the head is three files (`AbomanationHead.cs`, `.Moves.cs`, `.Show.cs`) and
+what it throws is in `AbomanationSpew.cs`. See §16.23.]*
+
 **Chain links live in `ai[]`, not in fields**, because `ai[]` rides the NPC sync packet:
 `ai[0]` = sprite mirrored, `ai[1]` = index ahead + 1, `ai[2]` = head index + 1, `ai[3]` =
 place in chain. `localAI[0..2]` hold the whip's per-link angle, spin and serial — local
@@ -1063,9 +1068,14 @@ only, never synced, which is fine because the swing is deterministic from synced
 
 **Phases** (`phase` field, synced): −1 arrive, 0 chase, 1 dive, 2 rush, 3 fall, 4 whip
 run-in, 5 loop, 6 crack.
+*[Added to since: 7 the end; and in session 7, 8 the puke's approach and rise, 9 its choke, 10
+its heaves, 11 getting to where it lies down, 12 the crawl, 13 lying there, 14 going back under.
+See §16.23.]*
 
 **Second wind** at `RagePoint = 0.4` of max life: speed ×1.2, whip every rush with a 4 s gap
 instead of 1-in-3 with a 20 s gap, one low roar.
+*[Session 7: the whip follows any finished move, not only a rush; the moves come quicker; it
+bleeds and glows; and it has the vent. See §16.23.]*
 
 **Segments carry `NPC.PAD().OwnIntro = true`.** Without it `BossArrivalWait` holds every
 boss-flagged segment still for the universal arrival and the head swims off alone, leaving
@@ -2492,6 +2502,8 @@ give nothing (`QueenSlimeMinions.Expire`), as they now do by themselves at ten s
 - vanilla's shader for her body through slices (the preview could only approximate the shader);
 - the death's frenzy on rough ground.
 
+*[Later in session 7: add all of Amalgaermis's new moves, its voice included. See §16.23.]*
+
 **Unfinished:** placeholder art for everything new (`PlaceholderTextures.md`).
 
 ---
@@ -2815,7 +2827,7 @@ and the hair, a layer of its own for this, sways.
 | The encounter | `DonaQuinnEncounter.cs` (new) | Grand world, before hardmode, after the Eye's finale (`PugreamPresence.Stage` 1 or more), a player on the Cleared Ground (30 tiles in from its ends), on their feet, at the surface, dry, no boss up. Night or rain: the world is run on to 8 AM (`ModifyTimeRate`, about 150 ticks however far) and the rain stopped, the player held with the bars in. She comes 1150 px off on the Mile's side (950, 1350, 800, either side, if there is no ground). Stage saved and sent: 0 never met, 1 met, 2 spared, 3 finished. Packet `PADPacket.DonaQuinn` carries the player's answers. Nothing spawns round them from the road to "Coward!" and from the fall on (`DonaQuinnQuiet`). |
 | Dialogue | `Dialogue.cs`, `DialoguePortrait.cs`, `TalkOptions.cs` | The panel's name tab: "???" until named, then name and title (`DialoguePortrait.Name`); `KnownAs` for a word in place of "???" (Mors: *The Tall Elder*). Faces of several layers (`Register(type, string[], frame)`). `Converse` (a speaker starts the talk, locked), `Line`, `Offer`, `OfferCorners`, `LineDone`, `Speaking`. |
 | The fade | `Cinematic.Fade(amount)` | Asked every tick with how black, 0 to 1; the asker does the timing. Drawn over the cover, under the shade, roar, bars and interface. |
-| The locket | `Content/Items/LoreItem/LocketOfABookCrazedGirl.cs`, `.png` (new) | Accessory, 1 defence, lore item. *A rusted gold locket, with paper folded small inside.* / *"Dear lovely daughter, I know you will be a knight one day."* / *Read until the folds went soft. It was never signed.* Flavour: *'It was opened more often than it was closed.'* Sprite a placeholder. |
+| The locket | `Content/Items/LoreItem/LocketOfABookCrazedGirl.cs`, `.png` (new) | Accessory, 1 defence, lore item. *A rusted gold locket, with paper folded small inside.* / *"Dear lovely daughter, I know you will be a knight one day."* / *Read until the folds went soft. It was never signed.* Flavour: *'It was opened more often than it was closed.'* Sprite a placeholder. *[The user has since rewritten the three verses by hand. As they are: §16.23.]* |
 
 **Verified for this** (tML 1.4.4 IL):
 
@@ -3088,6 +3100,9 @@ other world details: (does not include the Pistol And Dagger's full experience)"
 > shielding a colossal kingdom prosperous,
 > or at least what I remember.
 
+*[Superseded: the user has since rewritten these lines by hand, eleven verses now. As they are:
+§16.23.]*
+
 Each line is a thing on the ground, checked against the code: the Blood Shrine at the end of the
 spawn's forest (moved, above); the desert band, then the world's evil (`Layout`, held to their
 bands by `BiomeBands`); the Dungeon at the seaward end with vanilla's Old Man at its door; the
@@ -3198,3 +3213,248 @@ essence writes the Court and not Everhunger; "Doña"; and the two below.
   back for the locket.
 - Amalgaermis's body sprites carry eyes of several colours (blue, green, magenta, one or two a
   segment). *How it looks* says of the head "There are no eyes" and does not mention these.
+
+---
+
+## 16.23 Later in session 7: Amalgaermis: four things to break the chase, and something wrong with it
+
+The user: "For Amalgaermis, its moveset is too simple, and repetitive, even for legends: Check
+fables and add this. When its underground, there is an indicator for where it(the head) is on the
+ash sand(dust thrown up). Whenever it transition from frame 2 and frame 3, it creates some sparks
+and blood outward, like a quick bite. Need more SFX(again i love the initial screech when u summon
+him), like the short screetches variations and maybe a loud cry with rythm when they about to do
+whip. some not so frequent whimpering after be hit can do too. Phase 1 and 2 move and behaviours:
+1, Puke out projectiles with textures of bones x 5-8, skull x2 (split into 3 bone each), hands x2
+(splatter on impact) 2, It lays tangential on the hill and use its hands to throw ash balls(like
+sandbal) up ward(dust on impact dont create block, will collide with tiles and platforms) 3,
+Frequent slow down and shakes of the segments and bleed out. can be signified by a short
+screetch(create) 4, The Rush to the center of the player is more frequent than above them. Phase 2
+specific move and behavior: 1, it blows steams out of each connection of its segment and bleed out
+and heal for like 500 HP on expert legends(scale this back) If you can do anything to improve the
+visuals of the other, please do. Make it beautiful, in pain and blood thursty(mix of jurassic world
+raptor and shin godzilla) take yo time". Then: "If u have to add any shader, effects or particles
+please add"; "the texturues can js reuse from vanilla or from already existing sprites( dont need
+to create any new)"; on Item_154, Gore_42, Projectile_21, 471 and 532: "these bones are good alr";
+"the puke should be like how it choke on something and splat splat splat! Should have indicator
+for this like slow dawn and curve up from the ground I think / interval like 0.7ss then 0.3s"; and
+"some", over a note that a screech frightens most when it is rough (30 to 150 Hz), sits at 2 to
+5 kHz around 3 kHz, and breaks.
+
+Fables was read for the idea of the ground showing where a burrowed head is (its Desert Scourge)
+and nothing was taken from it.
+
+| Work | Where | Notes |
+|---|---|---|
+| The head, in three files | `AbomanationHead.cs`, `AbomanationHead.Moves.cs` (new), `AbomanationHead.Show.cs` (new) | `partial`. The chase, the rush, the whip, the arrival and the end stay in the first. `Moves` is what breaks the chase and what decides between them. `Show` is everything only seen or heard: it decides nothing, is never sent, and a server runs none of it. |
+| What decides | `Moves`: `RollMove`, `TryMove`, `AfterMove`, `Clocks` | `RushGate` (ten seconds flat) is gone. Each time the chase begins a move and a gate are rolled: 270 to 390 ticks (180 to 270 in the second half; Legends 0.85 of either); rush 5, puke 3, ash 3, and whatever it did last at 0.3 of its weight. The vent is on a clock of its own (below). A rush starts once the head is below you; the puke and lying down once the head is under the ground and staying there (`Buried`); 240 ticks late, any of them starts anyway. The whip follows any finished move, by the rules it had when it only followed a rush. |
+| The rush through you | `Moves`: `StartRush`, `ThroughStart`, `Through`; `AbomanationHead.Pace` | 68% of rushes (78% in the second half; always, for Legends' far rush). Below. |
+| The spasm | `Moves.Clocks`; `Show.SpasmBegins`, `Shiver`, `ShowPart` | Its own clock, in the chase only, never within 45 ticks of a move. Below. |
+| The puke | `Moves`: `StartPuke` to `Spew`, `HeaveSpit`, `Spit` | Below. |
+| Lying down: the ash, the vent | `Moves`: `LaySite`, `StartLay`, `LaySeeks`, `Lies`, `ThrowAsh`, `Vents`, `VentHeals` | Below. |
+| Back under | `Moves`: `Sink`, `Sinks` | A driven turn to straight down, only ever the one way, 3.2 times `TurnSpeed`, half as fast again once it points down. Under at 32 px below the surface, then the chase, and the whip if it is due. |
+| The ground over it | `Show`: `Tremor`, `Surface`, `Break`, `Kick` | Below. |
+| The jaws | `Show`: `Snapped` (called from `FindFrame` with the frame that is drawn), `Snap` | Wide to shut on consecutive frames is a bite whatever shut it: 8 `SparkShard`, 12 `BloodDroplet`, a `BloomGeneric`, the snap sound, 32 px ahead of the head's centre. It happens at the top of a rush, at the end of the spasm's cry, as the whip lets go, on every heave, and when the vent ends. (Eating an animal goes from parted to shut, and throws its own blood.) |
+| Its voice | `Abomanation.cs` (nine `SoundStyle`s), `Content/Sounds/Abomanation*.ogg` (20 files) | Below. |
+| The body | `Show`: `Shiver`, `Swell`, `Glow`, `ArmsOf`; `AbomanationArms.ArmPose`, `Hand`, `ArmNumber`; `AbomanationChain.Follow`; `AbomanationBody`/`Tail.DrawWhole` | Every part asks the head each frame. Drawn off its place by a few pixels when it shakes (nothing moves); drawn bigger where a lump is on its way up the neck, and all over as the vent's pressure builds; an added red pass in the second half (an ember that travels down it) and when it vents; arms thrashing (`Frenzy`), and raised and flinging on the upper side of a body that is lying down. |
+| What it throws | `AbomanationSpew.cs` (new): `AbomanationBone`, `Skull`, `Hand`, `Ash` | No art of their own, by the user's word: vanilla's Bone (21), Skeleton's bone (471), Bone Glove's (532) and the Bone item (154); Gore 42 for the skull; two of the animal's own arm sprites for the hand; vanilla's falling ash ball. They stop on platforms as on ground (`TileCollideStyle`, `fallThrough = false`) and leave no block. |
+| Steam | `Content/Particles/SteamPuff.cs` (new) | Wears `FlameSmoke.png`'s four puffs, which are stored premultiplied as the pass wants. No new texture. |
+| The ground's colour | `Content/Particles/GroundWave.cs` | `FogColour(int, int)` made public for the dust over the head. |
+| Testing | `AbomanationCommand.cs`, `Moves.Force` | `/abomanation rush`, `lunge`, `puke`, `ash`, `vent`, `spasm`, `whip`: its next move, started the way a fight would start it. |
+| Words | hjson | `DeathText.AmalgaermisSteam`; `Projectiles.AbomanationBone/Skull/Hand/Ash.DisplayName` (Somebody's Bone, Somebody's Skull, Somebody's Hand, A Handful of Ash). |
+
+**Two rules hold it together.** *Who decides:* everything rolled, and every move's beginning, is
+the server's (or the one player's), and is sent (`SendMoves`: the kind of rush, whether its line
+is set, the side, the way, the stage, ash or vent, the ground line, how far it has crawled, where
+it faces, the way it sinks, where you stood, the spasm). A client never starts a move. *Who
+steers:* the head steers wherever the long way round is fine, and is driven where the shape
+matters (the curve up, the crawl, the turn back under). Turns tighter than an attack's ordinary
+one are only made under the ground, and only once the whole body is under it.
+
+**The rush through you.** The old rush climbs to a point over your head and reaches it by a wide
+turn: measured, it passes a standing player about nine tiles to one side. It is still there. The
+new one dives 520 px to the side it is on and 620 below you, at 1.25 of its pace, turns hard down
+there (3 times `TurnSpeed`, until it points within 0.15 rad of where you were a third of a second
+ago), and comes up at that. Its line is set when it is within 150 px, or when it has pointed at
+you and is now getting further off, or after 150 ticks; it then carries on 260 px past and falls.
+In the simulator it passes within 1 to 7 px of a player standing still and 70 to 140 px behind
+one who runs steadily. Its tell is its own bark (vanilla's `Roar` is no longer played there).
+
+**The spasm.** Every 300 to 480 ticks of chase (210 to 360 in the second half; the first 150 to
+300 in): 70 to 110 ticks. It yelps with its mouth wide and bites on the end of it; speed and turn
+both fall to 0.4, eased over 14 ticks, so it slows on the circle it was on; every part is drawn
+shaken up to 3 px; every joint that has air beside it bleeds; the arms thrash.
+
+**The puke.** To one side of you, ahead of you if you are running. Stages 0 and 1: to a run-up
+point and along it to where the curve starts, both 44 px under the surface. Stage 2: 18 ticks
+slowing along that line, mouth open, the ground heaving over it: the tell. Stage 3: a driven curve
+of radius 100 px up out of the ground, at 0.68 of its pace, until the head stands 176 px over the
+ground on its own neck. Then the choke, 46 ticks (Legends 38): three catches at ticks 2, 16 and
+30, each jerking the head back, a lump going up the neck, the throat sound timed to them. Then
+three heaves at ticks 1, 43 and 61: seven tenths of a second, then three. Each throws the head
+back, mouth wide 7 ticks and shut 9 (which is a bite, with its sparks). Bones in all three, 5 to 8
+in all (Legends 6 to 8); a hand in the first and the last; a skull in the second and the last. The
+first two are aimed at you, the last at where you are going (half of the way there; Legends 0.8).
+One bone of each heave is dead on, the rest within 96 px. A skull breaks into three bones where it
+lands; a hand bursts, and for 3 ticks hits anything within 52 px. 22 ticks after the last heave it
+goes over forward and under.
+
+**Lying down.** Only where there is ground for it (`LaySiteOn`: from 6 tiles out to 41, no step
+over 3 tiles, within 22 of your feet, 8 tiles of air over it). It goes to a point 393 px under the
+ground and 51.5 tiles out from where you stood; up from there to 40 px under the surface at 39
+tiles; runs in under the surface to 26 tiles, the ash heaving over it; and from there crawls on
+the surface at you (5.5 px a tick), barking as it comes out, until it is 12 tiles off. The body is
+laid on the ground behind it (`AbomanationChain.Follow`: each part within 90 px of its own ground
+sinks 0.3 of the way onto it a tick). In the simulator, 9 to 16 of its 16 parts are out when it
+stops, 12 in the middle case.
+
+- *The ash.* The arms on the upper side of every part that is out fling in turn from the neck to
+  the tail, 3 ticks apart, each winding back 14 ticks. Two waves (three in the second half; one
+  more in Legends), 66 ticks apart. A ball leaves upward at 10.5 to 13.5 px a tick and comes down
+  somewhere within 26 tiles of you; one arm in six throws at where you are going.
+- *The vent,* second half only: first owed 480 to 720 ticks into it, then 1500 to 2100 after
+  each (Legends 0.85); owed, it goes ahead of whatever was rolled; with nowhere to lie, or given
+  up part way, it is owed again 600 later. 50 ticks swelling and glowing, 100 of steam from every
+  joint that has air beside it (150 px long, 34 wide), 20 settling. It gets back a sixty-fifth of
+  its full life in five parts, never past the line the second half began at: 246, 400, 553
+  (classic, expert, master) and 307, 500, 692 in Legends, which is the 500 asked for.
+
+**The ground over it.** While the head is under the ground and within 60 tiles of the surface,
+the top tiles over it throw their own dust (`WorldGen.KillTile_MakeTileDust`: ash where it is ash)
+in a band 5 columns either side: more the shallower and faster it is and the more the move means
+it, with now and then a puff of `DustFog` in the ground's colour. Shallower than 84 px the tiles
+themselves heave as it passes (`LiftedTile`), each column once. Coming up under this machine's own
+player, the screen takes it. Where the head goes through the surface the ground bursts; on an
+attack (the rush, the fall, the puke's rise, going back under, coming out to crawl) a
+`GroundWave.Slam` goes out from the place with a low boom. Each part kicks a little up as it
+goes through, and as it rises out of the ash to lie.
+
+**Its voice.** Twenty files, made here from the throat the arrival's screech was made from
+(kept with the mod in `Claude outputs/amalgaermis_sounds/`, with a README: `synth.py` and
+`presets.py`, the throat; `voices.py`, `fx.py`, `build.py`; seeded, so it makes the same files
+again; `ffmpeg -c:a libvorbis -q:a 8`, mono, 44.1 kHz). After the user's note the short ones were
+made rougher (beating 34 to 148 times a second) and brighter: the share of their energy between 2
+and 5 kHz is 4% in the screech, about 19% in the barks, 28% in the yelps, 32% in the whip's cry.
+Levelled against the screech (active RMS -13 dB). **They were measured, not heard:** nothing here
+can play a sound.
+
+| Sound | Files | When |
+|---|---|---|
+| Bark | 3, 0.5 to 0.8 s | A rush turning upward (played at the player it is after); coming out to crawl. |
+| Yelp | 3, 0.7 to 0.9 s | A spasm beginning. |
+| Whimper | 3, 0.7 to 0.9 s | On being hit: 3 in 10, never within 300 to 540 ticks of the last. |
+| WhipCry | 1, 2.55 s | The whip's loop beginning: four barks closing up (0, 0.40, 0.74, 1.02 s), then the long one from 1.26 s, which breaks as the tail lets go at 2.17 s. |
+| Choke | 1, 0.86 s | The choke: catches at 0.02, 0.26 and 0.50 s. |
+| Heave | 3, 0.5 s | Each heave. |
+| Splat | 2 | A hand bursting. |
+| Snap | 3, 0.16 s | Every bite. |
+| Vent | 1, 3.14 s | The vent: 0.83 s of pressure, then the steam with a wail over it. |
+
+**What the thrown things carry.** A hostile projectile's number is doubled by the game, then
+doubled again in expert and trebled in master (`Projectile.Damage`,
+`CombinedHooks.ModifyHitByProjectile`). So they carry (classic, expert) 13 and 11, 16 and 14, 11
+and 9, 15 and 13, 11 and 10, through `NPC.GetAttackDamage_ForProjectiles`, and land, before armour,
+for: a bone
+26, 44, 66; a skull 32, 56, 84; a bone out of a skull 22, 36, 54; a hand and its burst 30, 52, 78;
+an ash ball 22, 40, 60. Legends 1.3 times those. The steam is each machine's own
+(`Player.Hurt` on its own player, dodgeable, general immunity): 26, 46, 68, Legends 1.3 times.
+
+**Checked in a simulator before it was written,** kept with the mod this time, in
+`Claude outputs/amalgaermis_sim/` (a README; `worm.py`, the head's steering, the chain and a height
+map; `moves.py`, the moves with the code's own constants; `run.py`, film strips; `stats_lay3.py`,
+`stats_puke2.py`, `guard_stats.py`; `preview.py`, which draws
+`Claude outputs/amalgaermis_moves_preview.gif`, a motion sketch of the four moves in circles, not
+sprites). Not the game: no caves, no platforms, a height map for ground. It found three things the
+first version of this had wrong, none of which a compile shows:
+
+- *Lying down came out anywhere.* The first approach ran out under the ground, turned up and
+  over, and settled onto the ground line. Over 180 starts it surfaced anywhere from on top of the
+  player to 78 tiles off (36 in the middle case), gave 25 up, and in 29 the head went more than
+  150 px into the air and looped before it lay down. Its settling test also measured "level"
+  against the horizon, so on a slope it never passed. Replaced by the two points and the run in.
+  Now, over 160 starts on four kinds of ground with the player standing: out at 25.6 to 26.0
+  tiles every time, 82 to 202 ticks after the move began (169 in the middle case; 138 in Legends'
+  second half), no part of it in the air when it stops, none given up. With the player running,
+  24 of 360 are given up because the player has gone more than 80 tiles ahead of it.
+- *A tight turn folds the chain.* A part only follows the part ahead, at its distance. Round a
+  turn tighter than about two links the chain folds like a rope pulled back along itself: the
+  fold travels at half the head's pace and everything behind it stops where it is. Under the
+  ground that is not seen. If the body was still coming down out of a leap when the move began,
+  it was a length of tail hanging in the sky: in 59% of pukes against a standing player, four
+  parts in the middle case, through the whole of the choke. Three things, together: a move
+  begins from under the ground (`Buried`); on its way it turns no tighter than 1.5 times
+  `TurnSpeed` while any part is in the open air, and takes a long way round by way of down
+  (`bodyOut`, `MoveSwing`; given up on after 200 ticks, for places with no ground to get under);
+  and once the head has stopped, a part left in the air above the part it follows comes down
+  (`Abomanation.Sag`, 6 px a tick, in `Follow`). After: 3 of 160, one part each.
+- *What it costs.* The puke takes longer to arrive: 149 ticks in the middle case from the move
+  beginning to the slowing, where it was 73. Most of that is the body following the head into
+  the ground. A move rolled while the head is in the air waits 13 ticks in the middle case, 217
+  at most. Shorten `MoveGateLeast`/`Most` if the fight feels slower for it.
+
+**Verified for this** (tML 1.4.4 IL): `Projectile.Damage` doubles a hostile projectile's damage
+after `Main.DamageVar`; `CombinedHooks.ModifyHitByProjectile` multiplies by
+`GameModeInfo.EnemyDamageMultiplier`; `NPC.GetAttackDamage_ForProjectiles(normal, expert)`;
+`ModProjectile.TileCollideStyle(ref int, ref int, ref bool fallThrough, ref Vector2)`, where
+`fallThrough` defaults true; `SoundStyle(path, numVariants)` loads `path + "1"` to `path + "N"`;
+`Player.Hurt(PlayerDeathReason, int, int, bool pvp, bool quiet, int cooldownCounter, bool
+dodgeable, float, float, float knockback)`; `Main.instance.LoadProjectile`/`LoadItem` are public;
+`NPC.IsABestiaryIconDummy` is a public field; `Projectile.Resize` keeps the centre;
+`DustID.Blood` 5, `Bone` 26, `Ash` 36; `ImmunityCooldownID.General` -1. `ImageIO.ToRaw` copies
+straight RGBA and does not premultiply.
+
+**Reviewed.** An independent pass over the first version found no fault in the two rules and
+seven smaller things, all fixed before delivery: the first heave played twice on a client; a vent
+given up stayed owed and was tried again at once; the crawl's "near" was measured from the head
+whichever side of it you were; a skull's bones carried the classic share in expert; the vent's
+five parts lost 1 to 3 life to rounding; a hand's burst could happen twice or not at all on a
+client; a spasm kept shaking an animal that was leaving. The second version (the approach, the
+air rule, the sag) was checked by me alone, against the simulator and by reading the diff.
+
+**Mine, not asked for** (all in `RELEASE_TODO.md`): the steam scalds (`Abomanation.VentScalds`
+turns it off); the hand's burst has a reach; the whip may follow any move, not only a rush; the
+rush's tell is a bark, not vanilla's roar; a move waits for the head to be under the ground; every
+number above that the user did not give.
+
+**Found on the way, not fixed:**
+
+- `Content/Particles/DustFog.png` is stored straight (white, with the shape only in the alpha)
+  and drawn in the particle handler's premultiplied pass, so its colour does not fall away with
+  its alpha and the puffs come out flatter than they were drawn. King Slime's slam, the Queen
+  Slime and Cold Call use it as it is, so it was left: premultiplying the file changes all of
+  them.
+- `PassAim` rolls its overshoot on every machine (older than this work).
+- `PieceOfPaper.cs`: the user has rewritten the Grand map since §16.21 (below); the comment
+  over the class still describes the earlier lines (the graveyard, "the vast jungle and
+  iceland").
+
+**The Piece of Paper, as the user now has it** (Grand world, sea west):
+
+> To the west is the sea, where you can find heroes,
+> burials and sand. On the way there is
+> a little hut, where the trees round here give out,
+> the desert, then a stretch of ground gone sick,
+> an old keep with an old man at its door,
+> To the east is the vast iceland and a restless jungle
+> then a field where every tree is a stump,
+> then a mile of ash where you can hear atrocities,
+> and a white wall taller than any tree ever grew,
+> shielding a colossal kingdom prosperous,
+> or at least that's what I remember lol.
+
+**The locket, as the user now has it** (`LocketOfABookCrazedGirl.cs`):
+
+> A rusted gold plated locket, with paper folded small inside.
+> "Dear my lovely daughter, I know you will be a shining knight one day."
+> It was read until the creases went soft.
+
+**The Lore Bible** (this delivery). §XXI *Amalgaermis*: *How it fights* brought up to the build
+(the ground, the rush through you, the spasm, what it brings up, lying down, the mouth, its
+voice, the steam; Legends; the whip after anything), as [LOCKED — built], with two readings marked
+PROPOSAL and a line added to the [OPEN] about the hands. §XIX: the locket's verses as above in
+the four places they are quoted, and the two sentences that leaned on "It was never signed"
+reworded to what the item still says, which is that it names nobody.
+
+**Not yet confirmed in game:** all of it. Riskiest: the sounds (never heard); lying down on real
+ground with caves under it or buildings on it (the simulator's ground is a height map); the
+moves in multiplayer (the rules are kept, but nothing has run); the arms' fling against the
+balls leaving the hands; how the steam and the red pass read against the Mile's grey.

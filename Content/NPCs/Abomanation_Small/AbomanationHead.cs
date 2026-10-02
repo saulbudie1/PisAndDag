@@ -36,17 +36,21 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
     ///   fifteen body segments follow it and carry the arms,
     ///   the tail closes the chain.
     ///
-    /// The fight is a chase with one interruption. It goes for you, slightly off centre
-    /// (<see cref="Abomanation.Stray"/>) so a straight line never quite works; every ten
-    /// seconds spent under you or off to one side it dives, turns around a long way down,
-    /// and comes straight back up through the ground you are standing on.
+    /// The fight is a chase, broken every few seconds by one of four things. It goes for
+    /// you, slightly off centre (<see cref="Abomanation.Stray"/>) so a straight line never
+    /// quite works; then it rushes (dives, turns around a long way down, and comes back up
+    /// over you or through you), or brings up what is in it, or lies down on the hill and
+    /// throws ash, or, hurt, lies down and vents. A whip may follow any of them. In
+    /// between, it hurts. The chase, the rush and the whip are in this file; the rest is
+    /// in AbomanationHead.Moves.cs, and everything that is only seen or heard in
+    /// AbomanationHead.Show.cs.
     ///
     /// It is called up a long way off (<see cref="Summon"/>) and comes to you through the
     /// surface in a slow wave with the camera on it; the fight starts when the camera is
     /// back on you. Its loot is under ModifyNPCLoot and BossLoot.
     /// </summary>
     [AutoloadBossHead]
-    public class AbomanationHead : ModNPC
+    public partial class AbomanationHead : ModNPC
     {
         public override string Texture => Abomanation.Folder + "Abomanation_Head";
 
@@ -68,7 +72,7 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         // guessed at it would send the body somewhere the server never went. The head's own
         // ai[] is unused; the segments carry theirs, and tML syncs that for free.
 
-        /// <summary>-1 arriving, 0 chasing, 1 diving, 2 rushing up, 3 falling back, 4 whip run in, 5 whip loop, 6 whip crack. The move, not the half of the fight: that is <see cref="Enraged"/>.</summary>
+        /// <summary>-1 arriving, 0 chasing, 1 diving, 2 rushing up, 3 falling back, 4 whip run in, 5 whip loop, 6 whip crack, 7 the end; 8 and up, the moves in AbomanationHead.Moves.cs. The move, not the half of the fight: that is <see cref="Enraged"/>.</summary>
         private int phase;
 
         /// <summary>
@@ -180,7 +184,7 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         /// <summary>The ground line under the head while arriving, in world pixels, smoothed. The wave is centred on it.</summary>
         private float arriveBase;
 
-        /// <summary>Ticks spent in a position worth punishing. Fires the dive at <see cref="Abomanation.RushGate"/>.</summary>
+        /// <summary>Ticks of chase since the last move. The next starts once this reaches the gate rolled for it (moveGate).</summary>
         private int chargeTimer;
 
         /// <summary>Ticks the current attack has taken. A watchdog, nothing else.</summary>
@@ -198,7 +202,7 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         private int prey = -1;
         private int preyLook;
 
-        /// <summary>Rushes finished since the last whip. The second half whips on every second one. Synced.</summary>
+        /// <summary>Moves finished since the last whip (they were all rushes once, hence the name). The second half whips on every second one. Synced.</summary>
         private int rushesSinceWhip;
 
         /// <summary>Set once the player is too far to bother with. Synced.</summary>
@@ -337,6 +341,8 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             writer.Write(headAngle);
             writer.Write(stepFrom);
 
+            SendMoves(writer);
+
             // Not in the vanilla packet, and the arrival depends on it. The segments
             // send theirs the same way.
             writer.Write(NPC.dontTakeDamage);
@@ -376,6 +382,7 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             remain = reader.ReadSingle();
             headAngle = reader.ReadSingle();
             stepFrom = reader.ReadSingle();
+            ReceiveMoves(reader);
             NPC.dontTakeDamage = reader.ReadBoolean();
         }
 
@@ -404,9 +411,13 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             }
 
             // The held face runs out on its own clock, whatever the head is doing: going
-            // too, or it would dig away with its mouth still wide.
-            if (roarFace > 0)
-                roarFace--;
+            // too, or it would dig away with its mouth still wide. Where it was held for
+            // something that ends in a bite (Gape), the mouth shuts as it runs out.
+            if (roarFace > 0 && --roarFace == 0 && snapAfter > 0)
+            {
+                chomp = snapAfter;
+                snapAfter = 0;
+            }
 
             // Nobody left to chase, or nobody close enough to be worth it. Dig, and take
             // the whole body off the board once it is deep enough that nothing is going
@@ -442,6 +453,7 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
 
             if (phase == DyingPhase)
             {
+                Notice();
                 Die();
                 return;
             }
@@ -455,10 +467,12 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             else
             {
                 Hunt();
+                Clocks();
                 Advance(player);
 
                 // The loop and the straight part of the crack drive the head themselves,
-                // in Advance. Steering would fight them.
+                // in Advance, and so do the parts of the new moves whose shape matters.
+                // Steering would fight them.
                 if (!Driving)
                     Steer(Aim(player));
 
@@ -468,8 +482,21 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
                     whipHeading = NPC.velocity.ToRotation();
             }
 
-            if (NPC.velocity.LengthSquared() > 0.01f)
+            // What this machine has not yet shown of where the fight has got to: a phase
+            // begun, a spasm begun. Looked for here, after the tick's own changes and
+            // before the face is read, so it is the same whether this machine made the
+            // change or was sent it, and a mouth shut by a phase ending shuts on the very
+            // tick it was last wide.
+            Notice();
+
+            // Choking, heaving and lying down it faces where it is told to. Everywhere
+            // else, the way it is going.
+            if (HoldsFacing)
+                NPC.rotation = facing + MathHelper.PiOver2;
+            else if (NPC.velocity.LengthSquared() > 0.01f)
                 NPC.rotation = NPC.velocity.ToRotation() + MathHelper.PiOver2;
+
+            Show();
 
             // The one thing worth a packet on its own: a direction change the client's own
             // copy of this AI would not have predicted.
@@ -482,9 +509,14 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         }
 
         /// <summary>
-        /// The state machine. Four states, and every transition is a position it reached
-        /// rather than a timer running out, so the attack cannot fire from the wrong place.
-        /// The timer only decides when it is allowed to start.
+        /// The state machine. Every transition of the rush and the whip is a position it
+        /// reached rather than a timer running out, so an attack cannot fire from the wrong
+        /// place. The timer only decides when a move is allowed to start, and which move
+        /// was rolled (AbomanationHead.Moves.cs).
+        ///
+        /// Everything that is a DECISION (which move, which kind of rush, whether a whip
+        /// follows) is made on the machine that owns the animal and sent. A client plays
+        /// out what it is told and never starts anything itself.
         /// </summary>
         private void Advance(Player player)
         {
@@ -494,18 +526,6 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
                     chargeTimer++;
                     whipGap++;
 
-                    // The timer runs all the time so the cadence is a cadence, and the
-                    // POSITION decides when the attack is allowed to go: from below, which
-                    // is what a dive is. Gating the counter instead, which is what this did
-                    // and what Desert Scourge does, ties how often you are attacked to how
-                    // much of its loop happens to be spent underneath you, and with the
-                    // steering turned into arcs that came out at one rush every twenty five
-                    // seconds instead of ten, unevenly.
-                    //
-                    // The doubled gate is the way out: a player who keeps it above them
-                    // forever still gets attacked, just late.
-                    bool below = NPC.Center.Y > player.Center.Y;
-
                     // Not while there is something small to eat. The player waits.
                     if (Hunting)
                     {
@@ -513,45 +533,47 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
                         break;
                     }
 
-                    // Legends, second half: the whip owed for the last rush, once its
-                    // wait is up; and the look after a whip, which is a rush at once,
-                    // the fast one, if you have got far away.
+                    if (Main.netMode == NetmodeID.MultiplayerClient)
+                        break;
+
+                    // Legends, second half: the whip owed for the last move, once its
+                    // wait is up, and nothing else starts while one is owed; and the look
+                    // after a whip, which is a rush at once, the fast one, if you have got
+                    // far away.
                     if (PADWorld.Legends)
                     {
-                        if (whipOwed > 0 && --whipOwed == 0)
+                        if (whipOwed > 0)
                         {
-                            StartWhip();
+                            if (--whipOwed == 0)
+                                StartWhip();
+
                             break;
                         }
 
                         if (lookAfterWhip > 0 && --lookAfterWhip == 0
                             && Enraged && NPC.Distance(player.Center) > Abomanation.LegendsFarRush)
                         {
-                            farRush = true;
-                            phase = 1;
-                            chargeTimer = 0;
-                            attackTimer = 0;
-                            passTimer = 0;
-                            NPC.netUpdate = true;
+                            StartRush(player, true);
                             break;
                         }
                     }
 
-                    if (chargeTimer >= Abomanation.RushGate
-                        && (below || chargeTimer >= Abomanation.RushGate * 2))
-                    {
-                        phase = 1;
-                        chargeTimer = 0;
-                        attackTimer = 0;
-                        passTimer = 0;
-                        NPC.netUpdate = true;
-                    }
+                    // The chase has run as long as was rolled for it: the move that was
+                    // rolled with it starts, if it can from where the head is. A rush still
+                    // waits for the head to be below you, which is what a dive is, and
+                    // past RushGrace goes anyway: a player who keeps it above them forever
+                    // still gets attacked, just late.
+                    if (chargeTimer >= moveGate)
+                        TryMove(player);
+
                     break;
 
                 case 1:
                     attackTimer++;
 
-                    if (NPC.Center.Y >= DiveTarget(player) - 16f)
+                    float turnAt = rushKind == 1 ? ThroughStart(player).Y : DiveTarget(player);
+
+                    if (NPC.Center.Y >= turnAt - 16f)
                     {
                         // Measured from where it actually turned around, not from the
                         // player, so Distance means what it says: this far up, from here.
@@ -565,16 +587,25 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
                         // in one tick is exactly the thing this boss was doing wrong.
                         phase = 2;
                         attackTimer = 0;
-                        SoundEngine.PlaySound(SoundID.Roar, player.Center);
+                        rushLocked = false;
+                        aligned = false;
+                        slipping = false;
+                        closest = float.MaxValue;
                         NPC.netUpdate = true;
+
+                        // Its tell is its voice, played where this machine sees the phase
+                        // begin (Entered).
                     }
                     break;
 
                 case 2:
                     attackTimer++;
-                    Breach();
 
-                    if (NPC.Center.Y <= rushTop)
+                    if (rushKind == 1)
+                    {
+                        Through();
+                    }
+                    else if (NPC.Center.Y <= rushTop)
                     {
                         phase = 3;
                         attackTimer = 0;
@@ -582,7 +613,7 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
                     }
                     break;
 
-                default:
+                case 3:
                     attackTimer++;
 
                     // Spent once it is back under the ground, or once it is a long way
@@ -594,28 +625,8 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
                     {
                         Reset();
 
-                        // A finished rush is the only place the whip comes from. In the
-                        // first half it is a roll; in the second it is every second rush,
-                        // counted, so it is a rhythm you can learn rather than a coin.
-                        //
-                        // Legends: in the first half no coin, just the gap; in the second
-                        // every rush owes a whip, paid four to six seconds later.
-                        if (PADWorld.Legends && Enraged)
-                        {
-                            whipOwed = Main.rand.Next(Abomanation.LegendsRageWhipWaitLeast, Abomanation.LegendsRageWhipWaitMost + 1);
-                        }
-                        else if (WhipReady(player))
-                        {
-                            if (Enraged)
-                            {
-                                if (++rushesSinceWhip >= Abomanation.RageWhipEvery)
-                                    StartWhip();
-                            }
-                            else if (PADWorld.Legends || Main.rand.NextBool(Abomanation.WhipChance))
-                            {
-                                StartWhip();
-                            }
-                        }
+                        // A finished move is the only place the whip comes from.
+                        AfterMove(player);
                     }
                     break;
 
@@ -682,17 +693,48 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
                     {
                         Reset();
                         whipGap = 0;
-                        whipGapNeed = Main.rand.Next(Abomanation.LegendsWhipGapLeast, Abomanation.LegendsWhipGapMost + 1);
 
-                        if (PADWorld.Legends && Enraged)
-                            lookAfterWhip = Abomanation.LegendsAfterWhip;
+                        if (Main.netMode != NetmodeID.MultiplayerClient)
+                        {
+                            whipGapNeed = Main.rand.Next(Abomanation.LegendsWhipGapLeast, Abomanation.LegendsWhipGapMost + 1);
+
+                            if (PADWorld.Legends && Enraged)
+                                lookAfterWhip = Abomanation.LegendsAfterWhip;
+                        }
                     }
+                    break;
+
+                case PukeSeek:
+                    PukeRise(player);
+                    break;
+
+                case PukeChoke:
+                    Choke(player);
+                    break;
+
+                case PukeSpew:
+                    Spew(player);
+                    break;
+
+                case LayOut:
+                    LaySeeks();
+                    break;
+
+                case LayCrawl:
+                case LayAct:
+                    Lies(player);
+                    break;
+
+                case Sinking:
+                    Sinks(player);
                     break;
             }
 
             // Anything that has taken this long has got itself stuck on geometry. Drop it
             // and go back to chasing rather than leaving the fight hanging on a corner.
-            int timeout = phase >= 4 ? Abomanation.WhipTimeout : Abomanation.RushTimeout;
+            int timeout = phase >= PukeSeek ? Abomanation.MoveTimeout
+                : phase >= 4 ? Abomanation.WhipTimeout
+                : Abomanation.RushTimeout;
 
             if (phase != 0 && attackTimer > timeout)
                 Reset();
@@ -844,8 +886,8 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             }
         }
 
-        /// <summary>True while the head's motion is scripted: the loop, and the straight part of the run.</summary>
-        private bool Driving => phase == 5 || (phase == 6 && attackTimer <= Abomanation.WhipRunStraight);
+        /// <summary>True while the head's motion is scripted: the loop, the straight part of the run, and the driven parts of the newer moves.</summary>
+        private bool Driving => phase == 5 || (phase == 6 && attackTimer <= Abomanation.WhipRunStraight) || MoveDrives;
 
         /// <summary>Which crack this is. The segments set their swing up afresh when it changes.</summary>
         public int WhipSerial => whipSerial;
@@ -917,9 +959,9 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             attackTimer = 0;
             NPC.netUpdate = true;
 
-            // The tell: the star and the note, here, half a second of coil before the
-            // body turns yellow. The segments are quiet; this is the animal's one.
-            CCBypass.Warn(NPC);
+            // The tell (the star, the note, and its call) is given where this machine
+            // sees the loop begin: AbomanationHead.Show.cs, Entered. A client that is
+            // told about the loop rather than reaching it gets the tell all the same.
         }
 
         /// <summary>Lets it go. From here the body is a chain with momentum and the head just runs.</summary>
@@ -929,19 +971,23 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             phase = 6;
             attackTimer = 0;
 
-            // The throw. The crack itself comes later, from the tail.
-            SoundEngine.PlaySound(SoundID.Item152, NPC.Center);
+            // The throw's sound is played where this machine sees it begin (Entered).
+            // The crack itself comes later, from the tail.
             NPC.netUpdate = true;
         }
 
+        /// <summary>Back to the chase, from anything. On the deciding machine the next move, and how long before it, are rolled here.</summary>
         private void Reset()
         {
             phase = 0;
+            stage = 0;
             chargeTimer = 0;
             attackTimer = 0;
             rushTop = 0f;
             farRush = false;
+            rushLocked = false;
             NPC.dontTakeDamage = false;
+            RollMove();
             NPC.netUpdate = true;
         }
 
@@ -1041,6 +1087,13 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
                 attackTimer = 0;
                 passTimer = 0;
                 NPC.dontTakeDamage = false;
+
+                // The fight starts: what it will do first, and when it will first hurt.
+                RollMove();
+
+                if (Main.netMode != NetmodeID.MultiplayerClient)
+                    spasmWait = Main.rand.Next(Abomanation.SpasmFirstLeast, Abomanation.SpasmFirstMost + 1);
+
                 NPC.netUpdate = true;
             }
         }
@@ -1237,11 +1290,17 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             switch (phase)
             {
                 case 1:
-                    return new Vector2(player.Center.X, DiveTarget(player));
+                    // Under you, for the rush over you; off to one side and not so deep,
+                    // for the one through you.
+                    return rushKind == 1 ? ThroughStart(player) : new Vector2(player.Center.X, DiveTarget(player));
 
                 case 2:
                     // Where you were a third of a second ago, not where you are. Stand
-                    // still and it is the same thing.
+                    // still and it is the same thing. Over you: a point above that. Through
+                    // you: that, and once the line is set, the far end of the line.
+                    if (rushKind == 1)
+                        return rushLocked ? passTarget : Lagged;
+
                     return new Vector2(Lagged.X, rushTop);
 
                 case 3:
@@ -1253,6 +1312,12 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
                     // Straight at you, and nothing else. No stray, no pass by: this is
                     // the one time it is actually coming for you.
                     return player.Center;
+
+                case PukeSeek:
+                    return PukeAim(player);
+
+                case LayOut:
+                    return LayAim();
 
                 default:
                     // Straight through the animal, no pass by: it is a mouthful, not a fight.
@@ -1418,6 +1483,88 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         }
 
         /// <summary>
+        /// What the move it is in does to its pace, before the mode and the half are
+        /// applied: top speed, and how hard it may turn.
+        ///
+        /// Turn rates above the ordinary are only ever given under the ground. A worm
+        /// that corners like that in the open is a homing missile; under the ash nobody
+        /// sees the corner, only where it comes up.
+        /// </summary>
+        private void Pace(ref float top, ref float turn, bool inTiles, Vector2 aim)
+        {
+            switch (phase)
+            {
+                case 0:
+                    // The spasm: both together, so it slows on the circle it was already on.
+                    if (InSpasm)
+                    {
+                        float hold = MathHelper.Lerp(1f, Abomanation.SpasmSlow, SpasmGrip);
+
+                        top *= hold;
+                        turn *= hold;
+                    }
+                    break;
+
+                case 1:
+                    if (rushKind == 1)
+                    {
+                        top *= Abomanation.ThroughDive;
+                        turn *= Abomanation.ThroughDive;
+                    }
+                    break;
+
+                case 2:
+                    // The rush through you: hard round, down there, until it is pointing
+                    // at where you were. Then it corners like any rush.
+                    if (rushKind == 1 && !rushLocked && inTiles && NPC.velocity.LengthSquared() > 0.01f)
+                    {
+                        float off = Math.Abs(MathHelper.WrapAngle((aim - NPC.Center).ToRotation() - NPC.velocity.ToRotation()));
+
+                        if (off > 0.15f)
+                            turn = Abomanation.TurnSpeed * Abomanation.ThroughTurn;
+                    }
+                    break;
+
+                case PukeSeek:
+                    if (stage < 2)
+                    {
+                        // Getting there, quicker the longer it takes: a player who runs
+                        // is overtaken, not followed. Hard round under the ground, but
+                        // not while any of it is still in the air (Abomanation.LaySeekTurn).
+                        float chase = Math.Min(Abomanation.PukeChaseMax, Abomanation.PukeChase + attackTimer * Abomanation.PukeChaseGain);
+
+                        top *= chase;
+                        turn = Abomanation.TurnSpeed * chase
+                            * (bodyOut ? Abomanation.LayWide : inTiles ? Abomanation.PukeSeekTurn : 1f);
+                    }
+                    else
+                    {
+                        // There: slowing, along the same shallow line. The tell begins.
+                        top *= Abomanation.PukeRiseSpeed;
+                        turn = Abomanation.TurnSpeed * Abomanation.PukeSeekTurn;
+                    }
+                    break;
+
+                case LayOut:
+                    if (stage < 2)
+                    {
+                        // The same way the puke gets where it is going.
+                        float chase = Math.Min(Abomanation.LayChaseMax, Abomanation.LayChase + attackTimer * Abomanation.LayChaseGain);
+
+                        top *= chase;
+                        turn = Abomanation.TurnSpeed * chase
+                            * (inTiles && !bodyOut ? Abomanation.LaySeekTurn : Abomanation.LayWide);
+                    }
+                    else
+                    {
+                        // The run in, at the chase's own pace: the ash heaves over it.
+                        turn = Abomanation.TurnSpeed * (inTiles ? Abomanation.LaySeekTurn : Abomanation.LayWide);
+                    }
+                    break;
+            }
+        }
+
+        /// <summary>
         /// The steering. One rule, and it is an angular one: swing the heading toward where
         /// it wants to go at a capped rate, and change the speed only along that heading.
         ///
@@ -1453,7 +1600,16 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             // down the swing is small, the open air rule below takes over, and the rest of
             // the descent is an ordinary fall.
 
+            bool inTiles = Collision.SolidCollision(NPC.position, NPC.width, NPC.height);
+
             float top = phase == 2 ? Abomanation.RushSpeed : Abomanation.Speed;
+
+            // The whip's run in is ordinary chasing, so it corners like ordinary chasing.
+            float turn = phase == 0 || phase == 4 ? Abomanation.TurnSpeed : Abomanation.TurnSpeed * 1.5f;
+
+            // What the move it is in does to both: the spasm's slowing, and the newer
+            // moves' own paces. Nothing, for the chase, the rush over you and the whip.
+            Pace(ref top, ref turn, inTiles, aim);
 
             if (PADWorld.Legends)
             {
@@ -1463,12 +1619,9 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
                     top *= Abomanation.LegendsFarRushBoost;
             }
 
-            // The whip's run in is ordinary chasing, so it corners like ordinary chasing.
-            float turn = phase == 0 || phase == 4 ? Abomanation.TurnSpeed : Abomanation.TurnSpeed * 1.5f;
-
-            // ...that gets faster the longer it goes on, both numbers together so the
-            // turning circle holds. Keeping away from the whip only makes it arrive
-            // harder.
+            // The whip's run in gets faster the longer it goes on, both numbers together
+            // so the turning circle holds. Keeping away from the whip only makes it
+            // arrive harder.
             if (phase == 4)
             {
                 float chase = Math.Min(Abomanation.WhipChaseMax, 1f + attackTimer * Abomanation.WhipChaseGain);
@@ -1501,7 +1654,8 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             // stops a target dead astern from being read as no turn at all.
             float swing = MathHelper.WrapAngle(want.ToRotation() - heading);
 
-            bool inTiles = Collision.SolidCollision(NPC.position, NPC.width, NPC.height);
+            // Which way round, where a move has a say in it. Nothing, almost always.
+            swing = MoveSwing(swing, heading);
 
             // It only steers where it can dig. Out in open air it is a thrown thing: it
             // keeps the momentum it left the ground with, gravity takes it, and it goes
@@ -1553,21 +1707,6 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             NPC.velocity = (heading + MathHelper.Clamp(swing, -turn, turn)).ToRotationVector2() * speed;
         }
 
-        /// <summary>Sand off the head while it is coming up, so the rush has a tell above ground.</summary>
-        private void Breach()
-        {
-            if (Main.dedServ || NPC.alpha > 0)
-                return;
-
-            for (int i = 0; i < 2; i++)
-            {
-                int dust = Dust.NewDust(NPC.position, NPC.width, NPC.height, DustID.Sand,
-                    NPC.velocity.X * 0.2f, NPC.velocity.Y * 0.2f, 100, default, 1.6f);
-
-                Main.dust[dust].noGravity = true;
-            }
-        }
-
         /// <summary>
         /// Digs down and, once it is far enough under, takes the whole worm off the board.
         /// Removing the head alone would leave sixteen segments to die one per tick down
@@ -1575,6 +1714,13 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         /// </summary>
         private void Leave()
         {
+            // Whatever it was in the middle of, it is not doing it any more: nothing goes
+            // on steaming, throwing or lying on the hill behind a head that has gone.
+            if (phase >= PukeSeek)
+                phase = 0;
+
+            spasm = 0;
+
             NPC.velocity.Y += 0.4f;
 
             if (NPC.velocity.Y > 24f)
@@ -2239,6 +2385,8 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
                 for (int i = 0; i < 20; i++)
                     Dust.NewDust(NPC.position, NPC.width, NPC.height, DustID.Blood, hit.HitDirection, -1f);
             }
+
+            Flinch(NPC.Center);
         }
 
         /// <summary>
@@ -2309,6 +2457,32 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             if (phase == 2 || (Arriving && NPC.Center.Y < arriveBase))
                 return Abomanation.MouthWide;
 
+            // The newer moves. Wide and shut are the heave's and the snap's (roarFace and
+            // chomp, above); these are what the mouth does between them.
+            switch (phase)
+            {
+                case PukeSeek:
+                    // Coming up with something in its throat.
+                    return stage >= 2 ? Abomanation.MouthOpen : Abomanation.MouthNeutral;
+
+                case PukeChoke:
+                {
+                    // Working at it: open on each catch, and worrying at it between.
+                    foreach (int gag in Abomanation.ChokeGag)
+                    {
+                        if (attackTimer >= gag && attackTimer < gag + 7)
+                            return Abomanation.MouthOpen;
+                    }
+
+                    return Abomanation.MouthNeutral;
+                }
+
+                case PukeSpew:
+                case LayCrawl:
+                case LayAct:
+                    return Abomanation.MouthOpen;
+            }
+
             float near = Abomanation.MouthNear + NPC.width * 0.5f;
 
             if (Hunting && NPC.Distance(Main.npc[prey].Center) < near)
@@ -2322,7 +2496,15 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
 
         public override void FindFrame(int frameHeight)
         {
-            NPC.frame.Y = Mouth() * frameHeight;
+            int face = Mouth();
+
+            NPC.frame.Y = face * frameHeight;
+
+            // Wide to shut is a bite, and a bite throws sparks and blood. Read off the
+            // frame itself, here, so whatever shuts the mouth, it shows. Not for the
+            // bestiary's copy of it.
+            if (!NPC.IsABestiaryIconDummy)
+                Snapped(face);
         }
 
         public override bool PreDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
@@ -2333,8 +2515,21 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             if (frame.Height <= 0)
                 frame = texture.Frame(1, Abomanation.HeadFrames, 0, 0);
 
-            spriteBatch.Draw(texture, NPC.Center - screenPos, frame, NPC.GetAlpha(drawColor),
-                NPC.rotation, frame.Size() * 0.5f, NPC.scale, SpriteEffects.None, 0f);
+            // Shaken with the rest of it, and swollen as what it brings up reaches it.
+            Vector2 at = NPC.Center - screenPos + Shiver(NPC);
+            float scale = NPC.scale * Swell(-1);
+
+            spriteBatch.Draw(texture, at, frame, NPC.GetAlpha(drawColor),
+                NPC.rotation, frame.Size() * 0.5f, scale, SpriteEffects.None, 0f);
+
+            // What is hot in it, added over its own flesh.
+            Color glow = Glow(-1);
+
+            if (glow != Color.Transparent && NPC.alpha <= 0 && !NPC.IsABestiaryIconDummy)
+            {
+                spriteBatch.Draw(texture, at, frame, glow,
+                    NPC.rotation, frame.Size() * 0.5f, scale, SpriteEffects.None, 0f);
+            }
 
             return false;
         }

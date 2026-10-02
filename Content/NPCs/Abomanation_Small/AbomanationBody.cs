@@ -121,6 +121,16 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
 
             AbomanationChain.Flag(NPC);
 
+            Move(leader);
+
+            // What this part shows of what the animal is doing: the ground it goes
+            // through, the blood, the steam. Each machine's own; the head knows what.
+            AbomanationChain.Boss(NPC)?.ShowPart(NPC, leader);
+        }
+
+        /// <summary>Where the part goes this tick: placed by the head at the end, thrown in the whip, following otherwise.</summary>
+        private void Move(NPC leader)
+        {
             // The end. The body follows the head while it stops; from the rise on the
             // head places every part itself, along its own path and then on the loop.
             // See AbomanationHead.Die.
@@ -207,6 +217,8 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         {
             for (int i = 0; i < 3; i++)
                 Dust.NewDust(NPC.position, NPC.width, NPC.height, DustID.Blood, hit.HitDirection, -1f);
+
+            AbomanationChain.Boss(NPC)?.Flinch(NPC.Center);
         }
 
         /// <summary>This segment's place in the chain. 0 is the one behind the head.</summary>
@@ -258,7 +270,7 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         /// </summary>
         public override bool PreDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
         {
-            DrawWhole(spriteBatch, screenPos, NPC.GetAlpha(drawColor));
+            DrawWhole(spriteBatch, screenPos, NPC.GetAlpha(drawColor), lit: true);
             return false;
         }
 
@@ -266,8 +278,13 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         /// The segment, complete, in one colour at one screen position. The ordinary
         /// draw and the outline both come through here, so the outline is of exactly
         /// what is drawn.
+        ///
+        /// The head says how it is held this frame: shaken off its place (a spasm, the
+        /// choke, the vent), swollen (what it brings up passing through, the vent), its
+        /// arms thrashing or raised to throw, and, when <paramref name="lit"/>, what is
+        /// hot in it added over its flesh. The outline is never lit.
         /// </summary>
-        public void DrawWhole(SpriteBatch spriteBatch, Vector2 screenPos, Color colour)
+        public void DrawWhole(SpriteBatch spriteBatch, Vector2 screenPos, Color colour, bool lit = false)
         {
             int place = Place;
 
@@ -277,10 +294,23 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
                 ? SpriteEffects.FlipHorizontally
                 : SpriteEffects.None;
 
+            AbomanationHead boss = AbomanationChain.Boss(NPC);
+
+            float scale = NPC.scale;
+            AbomanationArms.ArmPose pose = default;
+
+            if (boss != null)
+            {
+                // Moving the screen the other way moves everything drawn here, arms and all.
+                screenPos -= boss.Shiver(NPC);
+                scale *= boss.Swell(place);
+                pose = boss.ArmsOf(NPC);
+            }
+
             AbomanationArms.Bottom(spriteBatch, NPC, screenPos, colour, place,
                 leftCount: AbomanationArms.BottomCount(place, 0),
                 rightCount: AbomanationArms.BottomCount(place, 1),
-                span: AbomanationArms.BottomSpan, swing: true, armSeed: ArmSeed);
+                span: AbomanationArms.BottomSpan, swing: true, armSeed: ArmSeed, pose: pose);
 
             // Mirrored or not, rolled once at spawn and carried in ai[0] so it survives to
             // every client and holds for the whole fight. Five sprites over fifteen
@@ -291,9 +321,20 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             // The arms are drawn outside this call and are NOT mirrored with it. They have
             // their own handedness and a left arm has to stay a left arm.
             spriteBatch.Draw(texture, NPC.Center - screenPos, null, colour,
-                NPC.rotation, texture.Size() * 0.5f, NPC.scale, flip, 0f);
+                NPC.rotation, texture.Size() * 0.5f, scale, flip, 0f);
 
             AbomanationArms.TopScattered(spriteBatch, NPC, screenPos, colour, seed: place);
+
+            if (!lit || boss == null || NPC.alpha > 0)
+                return;
+
+            Color glow = boss.Glow(place);
+
+            if (glow != Color.Transparent)
+            {
+                spriteBatch.Draw(texture, NPC.Center - screenPos, null, glow,
+                    NPC.rotation, texture.Size() * 0.5f, scale, flip, 0f);
+            }
         }
 
         /// <summary>

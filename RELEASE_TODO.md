@@ -13,6 +13,7 @@ Things in the tree that are for testing, or unfinished, or should not ship. Tick
 - [ ] **`/magicarsenal`** — `MagicArsenalCommand.cs`, plus `MagicArsenal.Maxed`, `Max()`, `Normal()` and the `"maxed"` save key. Slots should only open by being earned.
 - [ ] **`/dona`** — `DonaQuinnCommand.cs`, plus `DonaQuinnEncounter.Summon`, `Reset` and `Describe`. She comes by herself, once a world, on the Cleared Ground.
 - [ ] **`/guideintro`** — `GuideIntroCommand.cs`, plus `GuideIntro.Again` and `Describe`. The Guide's first words play by themselves, once, in a world made with them.
+- [ ] **`/abomanation`** — `AbomanationCommand.cs` (the call, and the words that make it do one move next: rush, lunge, puke, ash, vent, spasm, whip), plus `AbomanationHead.Force`, `forcedMove` and `forcedRush`. It is called by letting ten animals go on the Mile.
 - [ ] `Description` strings on any command that survives should not say "for testing".
 
 ## Should not be packed — `build.txt`
@@ -50,6 +51,9 @@ Then check the built size dropped.
 - [ ] **'Dame' Quilt's numbers** — Triunfo jumps 10 tiles and leaps 14; a fetch gives up after 8 s (15 s without the lance at all) and the lance is in her hand regardless; 35% swing, 30% throw after a charge. Mine, not asked for: confirm in play.
 - [x] **The Guide's hut line** — `Hints.GuideHut`, said in his first words too, sends the player "seawards", but the Blood Shrine was built at the nearer end of the spawn's forest: in a Grand world the snow side, with the sea the other way (and the Piece of Paper says so). The shrine now goes on the sea's side (PADWorkFlow §16.21). Worlds made before keep it where it was.
 - [ ] **The Guide's first words: numbers** — put down 15 tiles off, stops 3.5 blocks away, walks at 1.4 px/tick, "..." to move each line on. Mine, not asked for: confirm in play.
+- [ ] **Amalgaermis's moves: numbers** — all mine but the ones asked for (5 to 8 bones, 2 skulls of 3 bones, 2 hands, 0.7 s then 0.3 s between heaves, 500 back on expert Legends). A move every 4.5 to 6.5 s of chase (3 to 4.5 in the second half); rush 5, puke 3, ash 3 by weight; 68% of rushes through you; a spasm every 5 to 8 s, 1.2 to 1.8 s long; it lies down 26 tiles off and stops 12 short; what things hit for (bone 26/44/66, skull 32/56/84, hand 30/52/78, ash 22/40/60, steam 26/46/68). All in `Abomanation.cs`, each with what it does. Confirm in play (PADWorkFlow §16.23).
+- [ ] **Amalgaermis: added without being asked** — the vent's steam scalds (`Abomanation.VentScalds = false` turns it off); a hand's burst hits within 52 px; the whip may follow any move, not only a rush; the rush's tell is its bark, not vanilla's roar; the puke and lying down wait for the head to be under the ground, so they come up to 4 s late. Keep or cut each.
+- [ ] **Amalgaermis: the puke is slower to arrive than it could be** — about 2.5 s from the move beginning to the tell, most of it the body following the head under the ground (so no tail is left hanging in the air). If the fight drags, shorten `MoveGateLeast`/`Most`, not that.
 
 ## Known rough edges
 
@@ -62,8 +66,13 @@ Then check the built size dropped.
 - [ ] `description.txt` is still the template placeholder. `build.txt` version is `1.0` — set it honestly.
 - [ ] **'Dame' Quilt's bar after her fall** — `DonaQuinn.cs` sets `NPC.boss = fighting`, meaning the bar to go at the fall, but nothing that draws the bar reads that flag: vanilla tracks any active NPC with a boss head, and `BossPlate.Track` holds the bar while she is active with life over 0. Read off the code, not seen in play: check whether an empty bar stays up through the plea and the talk (PADWorkFlow §16.22).
 - [ ] **The Megashark's other drops** — its comment says the kill is worth one gun and nothing else, but it is a boss with no `BossLoot` override, so vanilla adds 5 to 15 Lesser Healing Potions and 5 to 9 hearts. Keep them or cut them (PADWorkFlow §16.22).
+- [ ] **Amalgaermis's voice has not been heard** — `Content/Sounds/Abomanation*.ogg`, 20 files besides the screech, made by synthesis and only measured (level, where their energy sits). Listen to each; any that is wrong can be remade.
+- [ ] **Amalgaermis's old rush misses** — the rush that climbs over you passes a player standing still about nine tiles to one side (measured in the simulator; it always did). Kept as the rarer of the two. Fix it, keep it as a feint, or cut it (`Abomanation.ThroughChance`).
+- [ ] **`Content/Particles/DustFog.png` is not premultiplied** — white with the shape only in its alpha, drawn in the premultiplied pass, so the colour does not fall away with the alpha. King Slime's slam, the Queen Slime, Cold Call and now Amalgaermis's ground all use it as it is. Premultiplying the file changes all of them at once: look before and after.
+- [ ] `PieceOfPaper.cs`: the comment over the class describes the Grand map as it was before you rewrote its lines (it still names the graveyard, and quotes "the vast jungle and iceland").
 
 ## Last
 
 - [ ] Recompile every `.fx` after any shader edit; a stale `.xnb` throws on `Parameters[...]` at draw time, not at load.
 - [ ] Fresh world, fresh character, no commands: die once, walk to the graveyard, talk to him.
+- [ ] Amalgaermis: `/abomanation`, then each of `rush`, `lunge`, `puke`, `ash`, `vent`, `spasm`, `whip` (the vent gives it nothing back until it is under 40%). Then a whole fight with no commands, and one with a second player.

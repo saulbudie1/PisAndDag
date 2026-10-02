@@ -1497,7 +1497,7 @@ for her and this book's working one. Nothing the game says uses it.
 
 **[PROPOSAL]** Dona Quinn is the girl and Dame Quilt is the knight she named, the way the
 man she is drawn from renamed himself before he rode out (*Her Inspiration*, below). The
-letter she carries uses neither: *Dear lovely daughter.*
+letter she carries uses neither: *Dear my lovely daughter.*
 
 **Where and when.** [LOCKED — built] Only in a world large enough to have the Cleared
 Ground, and only until it has been settled with her once. After the Pilgrim's arrow has
@@ -1573,9 +1573,9 @@ her.
 *Locket of a Book-Crazed Girl*. Its one line is *'It was opened more often than it was
 closed.'* Looked at closely, it reads:
 
-> A rusted gold locket, with paper folded small inside.
-> "Dear lovely daughter, I know you will be a knight one day."
-> Read until the folds went soft. It was never signed.
+> A rusted gold plated locket, with paper folded small inside.
+> "Dear my lovely daughter, I know you will be a shining knight one day."
+> It was read until the creases went soft.
 
 Triunfo walks back and stands by where she was.
 
@@ -1616,11 +1616,12 @@ her feet. The windmill is the only thing she gets wrong. The rest is not delusio
 practice.
 
 **Inside the world: paper.** Two things made her and the locket holds both. Its name says
-books. The paper in it says a parent: *"Dear lovely daughter, I know you will be a knight
-one day."* It was read until the folds went soft, and it was never signed.
+books. The paper in it says a parent: *"Dear my lovely daughter, I know you will be a
+shining knight one day."* It was read until the creases went soft. Whose hand it is in, the
+locket does not say.
 
 So she is not riding on a story about knights. She is riding on one sentence about
-herself, written by somebody who did not put a name to it, and she has read it more times
+herself, written by somebody the locket does not name, and she has read it more times
 than the paper could stand.
 
 **[PROPOSAL — the reading.]** *One day* is the hinge. The letter does not say she is a
@@ -2001,9 +2002,69 @@ with less each time, and lies where they stop for a moment before they can get u
 book's rule for that is above the fight, not inside it: anything that goes through
 immunity wears one yellow, and this is the first thing in the world to wear it.
 
+**[LOCKED — built] What else it does.** The chase is broken every few seconds, and not by
+the rush alone.
+
+*The ground says where it is.* While it is under, the ash over its head is thrown up in a
+line that follows it, more of it the nearer the surface it runs, and when it is nearly out
+the ground itself lifts as it goes by. Nobody standing on the Mile has to guess where it
+is. They have only to look down.
+
+*The rush comes at the player, not over them.* Most times it goes down to one side, turns
+where it cannot be seen, and comes up on a slant through the place the player stood a
+third of a second before, and on past. The rush that climbs over the player's head is in
+it too, and is the rarer. Before either, it barks.
+
+*Something in it hurts.* Every few seconds of the chase it cries out, short and high, and
+bites on the end of the cry. It slows to less than half its pace and shakes down its whole
+length. Wherever it is out of the ground it bleeds from between its segments, and every
+hand on it thrashes. Then it comes on. Nothing in the fight causes this and nothing the
+player does stops it.
+
+*It brings something up.* It runs in under the ash to one side of the player, slows, and
+curves up out of the ground until it is standing on its own neck. It chokes: three
+catches, each a lump going up the neck. Then it heaves, three times, the second a long
+moment after the first and the third right on it. What comes up is bones, five to eight
+of them; two skulls, which break where they land into three bones each; and two hands
+with the arm still on, which burst. Then it goes over forward and back under. The game's
+names for them are *Somebody's Bone*, *Somebody's Skull* and *Somebody's Hand*.
+
+*It lies down.* Where the ground lets it, it comes out twenty-six paces off, crawling at
+the player along the surface with its length laid on the hill behind it, half sunk in the
+ash, and stops a dozen paces short. Then the hands on its upper side scoop the ash and
+throw it, one after another from the neck to the tail, in waves, high, and it comes down
+over wherever the player is standing. *A Handful of Ash.* It breaks on ground and on
+platforms alike and leaves nothing.
+
+*Its mouth.* Whenever the mouth goes from wide to shut the two rows of bone meet: sparks
+off the bone, and blood out from between. At the top of a rush, when it has cried out in
+pain, on every heave, as the whip lets go.
+
+*Its voice.* [LOCKED — built, and not yet heard by anyone] One throat, the one that
+screeches when it arrives. It barks when it comes for the player. It yelps when it hurts.
+Hit, it makes a small sound, and not often. Before the whip it calls: four barks closing
+up on each other and then a long one, which breaks as the tail lets go. Choking and
+heaving sound like what they are.
+
+**[PROPOSAL — the reading.]** What it brings up is not from the Mile. Nothing it has been
+fed since it was left there has hands. *Somebody's* is the game's word and the right one:
+the hundred went in, they are still in there, and now and then some of them come back up.
+
+**[PROPOSAL — the reading.]** The cry, the small sound and the steam (below) are one thing
+said three ways. It was made to be hungry. Nobody made it to be in pain; that is what was
+left over.
+
 When it has taken more than half of what it can take it stops being slow. It roars,
 once, low and long, and after that the rush is faster and the whip is not occasional
 any more.
+
+[LOCKED — built] From the roar on it is never not bleeding, a slow red goes down it from
+the head, over and over, and it has one more thing it does lying on the hill. It swells.
+The red in it comes up bright at every joint. Then it lets go: steam, straight out of
+every joint of it that is not under the ash, and blood with the steam, and a wail. It
+comes away from that with a little of itself back, never past the line the roar was at.
+A player standing in the steam is scalded. The game's line for one who dies in it: *was
+standing over it when the hundred breathed out.*
 
 [LOCKED — built] The rest of how it behaves, as it now stands:
 
@@ -2023,12 +2084,20 @@ any more.
   enough.
 - **It will not follow far.** A player who gets far enough away is not worth the animal's
   time. It turns down into the ground and is gone.
+- **Anything may end in the whip.** It follows whatever the animal has just finished: a
+  rush, what it brought up, the ash, the steam.
+- **It begins from under the ground.** What it brings up and its lying down both start
+  with the head under the ash. One that comes due while it is in the air waits until it
+  is not.
 
 **[LOCKED — built] Legends.** More of it, and it hits harder. It is a little over a tenth
-quicker. In the first half it whips every fourteen to seventeen seconds, without the coin.
-In the second half every rush is followed by a whip four to six seconds later, and a
+quicker, and what breaks the chase comes sooner. In the first half it whips every fourteen
+to seventeen seconds, without the coin. In the second half everything it does is followed
+by a whip four to six seconds later, with nothing else begun while one is owed, and a
 second after every whip it looks for the player. If they have got far off, it comes up
-under where they were at once, half as fast again as anything else it does.
+through where they were at once, half as fast again as anything else it does. It chokes
+for less time before it heaves, brings up six bones at the least, and throws one more
+wave of ash.
 
 **What it drops** falls where the nearest piece of it was, not where the head was,
 because the head is usually under the ground when it dies.
@@ -2086,7 +2155,8 @@ nothing before that is a reason for it to.
 
 **[OPEN]** Whether the second one was finished, or only got further.
 
-**[OPEN]** Whether the hands remember anything. The whip suggests they do not.
+**[OPEN]** Whether the hands remember anything. The whip suggests they do not. The ash
+suggests otherwise: they throw in order, from the neck down.
 
 #### What It Leaves
 

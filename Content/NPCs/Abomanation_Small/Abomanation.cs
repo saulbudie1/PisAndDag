@@ -172,8 +172,8 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         /// <summary>How far below the player it digs before turning around, in world pixels.</summary>
         public const float DiveDepth = 800f;
 
-        /// <summary>Ticks of chasing before the rush. Only counts while it is below you or well off to the side.</summary>
-        public const int RushGate = 600;
+        // (RushGate, ten seconds of chase before every rush, was here. How long the chase
+        // runs before the next move is rolled now: see MoveGateLeast, further down.)
 
         /// <summary>
         /// Ticks an attack is allowed to take before it is abandoned and the chase resumes.
@@ -789,6 +789,527 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
 
         /// <summary>That rush, and its dive, are this much faster again.</summary>
         public const float LegendsFarRushBoost = 1.5f;
+
+        // ------------------------------------------------------------------ the moves --
+        //
+        // The chase used to be broken by one thing, the rush. It is broken by four now,
+        // and which comes next is rolled: the rush (two kinds: over you, and through you),
+        // the puke, the ash, and in the second half the vent. Between them it hurts: the
+        // spasm. The whip still only ever follows one of them.
+        //
+        // The moves are in AbomanationHead.Moves.cs. What is only seen and heard (the
+        // ground over it, the jaws, the blood, the steam, its voice) is in
+        // AbomanationHead.Show.cs. What it throws is in AbomanationSpew.cs.
+
+        /// <summary>What it does next: a rush, the puke, lying down to throw ash, lying down to vent.</summary>
+        public const int MoveRush = 0, MovePuke = 1, MoveAsh = 2, MoveVent = 3;
+
+        /// <summary>
+        /// Ticks of chase before the next move, rolled each time: four and a half to six
+        /// and a half seconds in the first half, three to four and a half in the second.
+        /// Legends takes <see cref="LegendsMoveGate"/> of it. It was ten seconds flat
+        /// when the rush was all there was.
+        /// </summary>
+        public const int MoveGateLeast = 270, MoveGateMost = 390;
+        public const int RageMoveGateLeast = 180, RageMoveGateMost = 270;
+        public const float LegendsMoveGate = 0.85f;
+
+        /// <summary>How likely each move is against the others, and how much less likely the one it did last is.</summary>
+        public const float MoveWeightRush = 5f, MoveWeightPuke = 3f, MoveWeightAsh = 3f;
+        public const float MoveRepeat = 0.3f;
+
+        /// <summary>A rush waits for the head to be below you. Past this many ticks of waiting it goes anyway.</summary>
+        public const int RushGrace = 240;
+
+        /// <summary>Ticks any one part of a move may take before the whole move is dropped. Each part has its own shorter limit; this is the last one.</summary>
+        public const int MoveTimeout = 720;
+
+        // ---- the rush through you ---------------------------------------------------
+        //
+        // The old rush climbs to a point over your head, which at its speed it reaches by
+        // a wide turn that brings it up beside you: measured, nine tiles off a player
+        // standing still. That one is still here. The new one is aimed at you: it dives
+        // off to one side, turns hard down there where nobody sees how, and comes up at
+        // where you were a third of a second ago, on a slant, through you, and on past.
+
+        /// <summary>How often a rush is the one through you: first half, second half.</summary>
+        public const float ThroughChance = 0.68f;
+        public const float RageThroughChance = 0.78f;
+
+        /// <summary>Where it turns round for it: this far to one side of you and this far below, in pixels.</summary>
+        public const float ThroughSide = 520f;
+        public const float ThroughDepth = 620f;
+
+        /// <summary>Its dive there is this much faster than the chase, speed and turn together.</summary>
+        public const float ThroughDive = 1.25f;
+
+        /// <summary>Under the ground, until it is pointing at you, it turns at this many times TurnSpeed. A turn that tight is only allowed where it cannot be seen.</summary>
+        public const float ThroughTurn = 3f;
+
+        /// <summary>Nearer than this to where you were, in pixels, it stops steering: the line is set.</summary>
+        public const float ThroughLock = 150f;
+
+        /// <summary>And carries on this far past you along it, in pixels, before it turns over and falls.</summary>
+        public const float ThroughCarry = 260f;
+
+        /// <summary>Ticks it may spend aiming before the line is set wherever it is pointing.</summary>
+        public const int ThroughAimMost = 150;
+
+        // ---- the spasm ---------------------------------------------------------------
+        //
+        // Something in it hurts. Every few seconds of the chase it cries out, slows to
+        // well under half its pace, shakes down its whole length and bleeds from wherever
+        // it is out of the ground. Then it comes on again.
+
+        /// <summary>Ticks one lasts, rolled.</summary>
+        public const int SpasmLeast = 70, SpasmMost = 110;
+
+        /// <summary>Ticks of chase between one ending and the next, rolled: first half, second half.</summary>
+        public const int SpasmGapLeast = 300, SpasmGapMost = 480;
+        public const int RageSpasmGapLeast = 210, RageSpasmGapMost = 360;
+
+        /// <summary>The first of the fight comes this long after the fight starts, rolled.</summary>
+        public const int SpasmFirstLeast = 150, SpasmFirstMost = 300;
+
+        /// <summary>Its pace in one, as a share of the chase. Speed and turn together, so the circle holds.</summary>
+        public const float SpasmSlow = 0.4f;
+
+        /// <summary>Ticks it takes to slow, and to pick up again.</summary>
+        public const int SpasmEase = 14;
+
+        /// <summary>How far each part is thrown about, in pixels. Drawn only: nothing moves.</summary>
+        public const float SpasmShake = 3f;
+
+        /// <summary>The cry: the mouth held wide this long, then shut on it this long.</summary>
+        public const int SpasmFace = 26, SpasmSnap = 10;
+
+        // ---- the puke ----------------------------------------------------------------
+        //
+        // It has something caught in it. It runs along just under the surface to one side
+        // of you, slows, curves up out of the ground and stands there on its own neck,
+        // choking: three catches. Then it comes up: three heaves, the second seven tenths
+        // of a second after the first, the third three tenths after that. Bones, two
+        // skulls, two hands. Then it goes over forward and back into the ground.
+
+        /// <summary>It comes up this far to one side of you, in pixels, and further ahead of a player who is running: their speed times this many ticks.</summary>
+        public const float PukeOff = 240f;
+        public const float PukeLead = 26f;
+
+        /// <summary>The run-up is this far under the surface, in pixels: shallow, so the ground heaves over it.</summary>
+        public const float PukeUnder = 44f;
+
+        /// <summary>The curve up out of the ground: its radius, in pixels.</summary>
+        public const float PukeCurve = 100f;
+
+        /// <summary>The run-up starts this far short of where the curve does, and each point counts as reached within this, in pixels.</summary>
+        public const float PukeRun = 170f;
+        public const float PukeReach = 90f;
+
+        /// <summary>Getting there: turn rate under the ground, as a multiple of TurnSpeed; and pace, from this many times the chase, gaining this much a tick, to this at most. A player who runs is overtaken.</summary>
+        public const float PukeSeekTurn = 3f;
+        public const float PukeChase = 1.25f;
+        public const float PukeChaseGain = 0.004f;
+        public const float PukeChaseMax = 1.8f;
+
+        /// <summary>Ticks it may take to get there before it gives the puke up.</summary>
+        public const int PukeSeekMost = 300;
+
+        /// <summary>
+        /// While any of it is still in the air it turns no tighter than <see cref="LayWide"/>
+        /// (why: <see cref="LaySeekTurn"/>). A turn that wide cannot be made round a point
+        /// this near the surface without coming out of the ground, so nearer the run-up
+        /// than PukeDiveNear it holds off: it steers at a point PukeDive under the run-up,
+        /// where the turn has room, until the last of it is under. In pixels.
+        /// </summary>
+        public const float PukeDiveNear = 420f;
+        public static float PukeDive => 2f * LayRadius * LegendsSpeed;
+
+        /// <summary>The slowing: this many ticks along the run-up at the rise's pace before it turns up. The tell begins here.</summary>
+        public const int PukeCreep = 18;
+
+        /// <summary>The rise's pace, as a share of the chase, and how high the head stands over the ground, in pixels.</summary>
+        public const float PukeRiseSpeed = 0.68f;
+        public const float PukeHeight = 176f;
+
+        /// <summary>Ticks the rise may take before it chokes wherever it has got to.</summary>
+        public const int PukeRiseMost = 200;
+
+        /// <summary>The choke, in ticks. Legends gives less of it.</summary>
+        public const int ChokeTicks = 46;
+        public const int LegendsChokeTicks = 38;
+
+        /// <summary>The three catches: the ticks of the choke they come on (as its voice has them), and how hard each jerks the head back.</summary>
+        public static readonly int[] ChokeGag = { 2, 16, 30 };
+        public const float ChokeKick = 3f;
+
+        /// <summary>Choking, it creeps forward at this, in pixels a tick, and turns its face on you at this, radians a tick.</summary>
+        public const float ChokeCreep = 0.9f;
+        public const float ChokeTurn = 0.06f;
+
+        /// <summary>It holds its face this far above the straight line to you, in radians: what comes out is lobbed.</summary>
+        public const float PukeLob = 0.45f;
+
+        /// <summary>The three heaves: the ticks they come on. 42 ticks, then 18: seven tenths of a second, then three.</summary>
+        public static readonly int[] HeaveAt = { 1, 43, 61 };
+
+        /// <summary>Each throws the head back this fast, with the mouth wide this long and then shut this long. It turns its face on you at this, radians a tick, between them.</summary>
+        public const float HeaveKick = 6.5f;
+        public const int HeaveGape = 7, HeaveShut = 9;
+        public const float HeaveTurn = 0.03f;
+
+        /// <summary>Ticks after the last before it goes back under.</summary>
+        public const int PukeAfter = 22;
+
+        /// <summary>Bones in one puke, rolled. Legends rolls from six. The skulls and the hands are always two each.</summary>
+        public const int PukeBonesLeast = 5, PukeBonesMost = 8;
+        public const int LegendsPukeBonesLeast = 6;
+
+        /// <summary>Each heave lands in a clump this wide either side of where it is aimed, in pixels. One bone of every heave is aimed dead on.</summary>
+        public const float SpitScatter = 96f;
+
+        /// <summary>The last heave is aimed ahead of a player who is moving: this share of where they would get to. Legends leads more.</summary>
+        public const float SpitLead = 0.5f;
+        public const float LegendsSpitLead = 0.8f;
+
+        /// <summary>What it throws falls at this, in pixels a tick a tick, no faster than this.</summary>
+        public const float SpitGravity = 0.22f;
+        public const float SpitFall = 16f;
+
+        /// <summary>How long a thrown thing is in the air: its distance at this pace, kept between these, in ticks.</summary>
+        public const float SpitPace = 7.5f;
+        public const int SpitFlightLeast = 46, SpitFlightMost = 80;
+
+        /// <summary>
+        /// Damage, as hostile projectiles carry it: classic and expert. The game doubles a
+        /// hostile projectile's number, then doubles it again in expert and trebles it in
+        /// master (Projectile.Damage, CombinedHooks.ModifyHitByProjectile), so a bone lands
+        /// for 26, 44 and 66; a skull 32, 56, 84; one of its three bones 22, 36, 54; a hand
+        /// and its splash 30, 52, 78; an ash ball 22, 40, 60. Legends: times LegendsDamage.
+        /// </summary>
+        public const float BoneHit = 13f, BoneHitExpert = 11f;
+        public const float SkullHit = 16f, SkullHitExpert = 14f;
+        public const float ShardHit = 11f, ShardHitExpert = 9f;
+        public const float HandHit = 15f, HandHitExpert = 13f;
+        public const float AshHit = 11f, AshHitExpert = 10f;
+
+        /// <summary>A skull breaks into this many bones where it lands.</summary>
+        public const int SkullShards = 3;
+
+        /// <summary>A hand bursts where it lands, and for this many ticks anything within this of it, in pixels, is hit.</summary>
+        public const float HandSplash = 52f;
+        public const int HandSplashTicks = 3;
+
+        // ---- going back under ---------------------------------------------------------
+
+        /// <summary>The turn back into the ground after a move, as a multiple of TurnSpeed, always the one way; and how much faster it goes once it is pointing down.</summary>
+        public const float SinkTurn = 3.2f;
+        public const float SinkDive = 1.5f;
+
+        /// <summary>It is under once it is in the ground and this far below the surface, in pixels; or after this many ticks whatever.</summary>
+        public const float SinkDeep = 32f;
+        public const int SinkMost = 240;
+
+        // ---- lying down ---------------------------------------------------------------
+        //
+        // The ash and the vent both start the same way. It goes to a point deep under the
+        // ground, out to one side of you; comes up from there to just under the surface;
+        // runs in along it at you, with the ash heaving over it; and comes out crawling,
+        // its whole length laid on the hill behind it, half sunk in the ash. A dozen tiles
+        // short of you it stops and does the one or the other. Then it noses down and is
+        // gone.
+
+        /// <summary>The crawl begins this far out from where you were, in pixels: that is where it comes out.</summary>
+        public const float LayStart = 26f * 16f;
+
+        /// <summary>Before that it runs in just under the surface for this far, in pixels, at this depth: the body behind it is under the ash it is about to lie on.</summary>
+        public const float LayRun = 13f * 16f;
+        public const float LayUnder = 40f;
+
+        /// <summary>And before that it is at a point this much further out again, in pixels, and <see cref="LayDeep"/> under the ground. Wherever it was, it comes at the run from the far end of it, and from below.</summary>
+        public const float LayBack = 200f;
+
+        /// <summary>The turn it makes while any of it is still in the air, as a multiple of TurnSpeed, and that turn's radius at the chase's pace, in pixels. See <see cref="LaySeekTurn"/>.</summary>
+        public const float LayWide = 1.5f;
+        public static float LayRadius => Speed / (TurnSpeed * LayWide);
+
+        /// <summary>How deep that point is, in pixels: a whole circle of that turn fits over it under the ground, at Legends' pace.</summary>
+        public static float LayDeep => 2f * LayRadius * LegendsSpeed + LayUnder;
+
+        /// <summary>Each of the two points counts as reached within this, in pixels. Not less than the tight turn's radius, or it could circle one for ever.</summary>
+        public const float LayReach = 100f;
+
+        /// <summary>
+        /// Getting there: the turn under the ground, as a multiple of TurnSpeed, and the
+        /// pace, from this many times the chase, gaining this much a tick, to this at most.
+        ///
+        /// The tight turn is only made once the whole animal is under the ground. A turn
+        /// that tight folds the chain: what is behind the fold stops being pulled and
+        /// stays where it was. Under the ground nobody sees that. In the air it is a
+        /// length of tail hanging in the sky. Until the last of it is under it turns at
+        /// <see cref="LayWide"/>, and a long way round goes by way of down.
+        /// </summary>
+        public const float LaySeekTurn = 3f;
+        public const float LayChase = 1.25f;
+        public const float LayChaseGain = 0.004f;
+        public const float LayChaseMax = 1.8f;
+
+        /// <summary>Ticks it may take to reach the run before it gives the move up, and how many more the run may take.</summary>
+        public const int LaySeekMost = 300;
+        public const int LayRunMost = 120;
+
+        /// <summary>
+        /// How long an approach (this one's, or the puke's) holds its tight turns back for
+        /// a body that is still in the air, in ticks. On open ground the last of it is
+        /// under in a second and a bit. Where there is no ground to get under it would
+        /// wait for ever, and the move would never come.
+        /// </summary>
+        public const int OutMost = 200;
+
+        /// <summary>
+        /// The puke and the lying down both begin from under the ground: the head in it,
+        /// and either this far under, in pixels, or not on its way up. One rolled while it
+        /// is in the air waits for that. Past <see cref="RushGrace"/> it goes anyway.
+        /// </summary>
+        public const float MoveStartDepth = 80f;
+
+        /// <summary>The crawl: pixels a tick, the ticks it may last, and how near you it stops, in pixels.</summary>
+        public const float CrawlSpeed = 5.5f;
+        public const int CrawlMost = 150;
+        public const float LayStop = 12f * 16f;
+
+        /// <summary>If you get this far ahead of it while it crawls, in pixels, it gives the move up and goes under. The ash carries about this far.</summary>
+        public const float LayLost = 80f * 16f;
+
+        /// <summary>If you are behind it instead, it crawls at least this far, in pixels, before it stops: about half of it out.</summary>
+        public const float CrawlLeast = 320f;
+
+        /// <summary>Lying, its middle rides this far above the ground line, in pixels: half out of the ash.</summary>
+        public const float LayLift = 6f;
+
+        /// <summary>Stopped, it still creeps at this, in pixels a tick, so it never sits dead still.</summary>
+        public const float LayCreep = 0.25f;
+
+        /// <summary>How fast the head takes up the ground line under it, and how hard it is pulled onto it, each as a share a tick.</summary>
+        public const float LayTrack = 0.2f;
+        public const float LayPull = 0.25f;
+
+        /// <summary>The body does the same: each part within this of its own ground, in pixels, sinks this share of the way onto it a tick. Without it the body bridges every dip the head crossed.</summary>
+        public const float LaySettle = 0.3f;
+        public const float LaySettleReach = 90f;
+
+        /// <summary>
+        /// While the head is holding still (choking, heaving, lying there), a part left in
+        /// the open air above the part it follows comes down at this, in pixels a tick.
+        /// Nothing is pulling it along any more and there is nothing under it.
+        /// </summary>
+        public const float Sag = 6f;
+
+        /// <summary>
+        /// Where it can lie: from this many tiles out to where its run under the surface
+        /// begins, sampled every other tile, there has to be ground, no step taller than
+        /// this many tiles between samples, none of it further above or below your feet
+        /// than this many, and this many tiles of open air over every one. And there has
+        /// to be ground over the deep point. Anywhere else the ash and the vent are not
+        /// chosen.
+        /// </summary>
+        public const int LaySiteNear = 6;
+        public const int LaySiteStep = 3;
+        public const int LaySiteDrop = 22;
+        public const int LaySiteAir = 8;
+
+        // ---- the ash ------------------------------------------------------------------
+        //
+        // Lying there, the arms on its upper side scoop the ash and fling it up, one arm
+        // after another from the neck to the tail, in waves. The balls go up twenty tiles
+        // and come down over the whole of where you are standing. They break on ground
+        // and on platforms alike and leave nothing behind.
+
+        /// <summary>Ticks into the act before the first wave, and from the start of one wave to the start of the next.</summary>
+        public const int AshFirst = 10;
+        public const int AshWave = 66;
+
+        /// <summary>Within a wave: ticks from one arm to the next; ticks an arm winds back before it lets go; ticks it follows through.</summary>
+        public const int AshStep = 3;
+        public const int AshWind = 14;
+        public const int AshFollow = 6;
+
+        /// <summary>Waves: first half, second half. Legends one more of either.</summary>
+        public const int AshWaves = 2;
+        public const int RageAshWaves = 3;
+
+        /// <summary>Ticks after the last ball before it goes under.</summary>
+        public const int AshAfter = 30;
+
+        /// <summary>How fast a ball leaves, upward, in pixels a tick, rolled; and how wide they come down either side of you, in pixels.</summary>
+        public const float AshRiseLeast = 10.5f, AshRiseMost = 13.5f;
+        public const float AshSpread = 26f * 16f;
+
+        /// <summary>One ball in this many is thrown at where you are going, not near it.</summary>
+        public const int AshAimed = 6;
+
+        /// <summary>A ball's hand is this far from the body's centre line, in pixels, when it lets go.</summary>
+        public const float AshHand = 46f;
+
+        // ---- the vent -----------------------------------------------------------------
+        //
+        // Second half only. Lying there, it swells, glows at every joint, and lets go:
+        // steam straight up out of every joint of it, and blood with it, and a wail. It
+        // comes away from that with a little of its life back.
+
+        /// <summary>The swelling, the venting, and the settling after, in ticks.</summary>
+        public const int VentTell = 50;
+        public const int VentBlast = 100;
+        public const int VentAfter = 20;
+
+        /// <summary>
+        /// What it gets back: this share of its full life, in this many equal parts
+        /// through the venting, and never past RagePoint. A sixty-fifth is 500 on expert
+        /// Legends (32500), which is the number asked for, and the same share everywhere
+        /// else: 246 classic, 400 expert, 553 master; Legends 307, 500, 692.
+        /// </summary>
+        public const float VentHeal = 1f / 65f;
+        public const int VentPulses = 5;
+
+        /// <summary>Each jet stands this tall off its joint and is this wide, in pixels.</summary>
+        public const float VentReach = 150f;
+        public const float VentWidth = 34f;
+
+        /// <summary>Whether standing in a jet scalds, and for how much: classic, expert, master, before armour. Legends: times LegendsDamage.</summary>
+        public static bool VentScalds = true;
+        public const int VentHit = 26, VentHitExpert = 46, VentHitMaster = 68;
+
+        /// <summary>Its clock: the first comes this long into the second half, the next this long after each, in ticks, rolled. Legends takes LegendsMoveGate of the gap. Nowhere to lie down, or the lie-down given up part way, and it is owed again this much later.</summary>
+        public const int VentFirstLeast = 480, VentFirstMost = 720;
+        public const int VentGapLeast = 1500, VentGapMost = 2100;
+        public const int VentRetry = 600;
+
+        // ---- the ground over it ---------------------------------------------------------
+        //
+        // While the head is under the ground, the ground over it shows where: its own
+        // dust thrown up in a band over the head, more of it and higher the shallower and
+        // the faster it is, and when it is nearly out the tiles themselves heave as it
+        // passes. Where it breaks the surface, going out or coming in, the ground bursts.
+
+        /// <summary>How far down it can be and still show, in tiles; and how many columns either side of the head the dust comes up in.</summary>
+        public const int TremorDepth = 60;
+        public const int TremorHalf = 5;
+
+        /// <summary>The chance of dust from the middle column each tick, at the surface. Falls off to the sides and with depth; attacks raise it.</summary>
+        public const float TremorChance = 0.1f;
+
+        /// <summary>Shallower than this, in pixels, the tiles over it heave.</summary>
+        public const float TremorBulge = 84f;
+
+        // ---- the jaws -----------------------------------------------------------------
+
+        /// <summary>Whenever the mouth goes from wide to shut: this many sparks and this much blood, out from between the mandibles.</summary>
+        public const int SnapSparks = 8;
+        public const int SnapBlood = 12;
+
+        /// <summary>The mandibles meet this far ahead of the head's centre, in pixels; the throat is this far.</summary>
+        public const float JawReach = 32f;
+        public const float ThroatReach = 22f;
+
+        // ---- its voice ----------------------------------------------------------------
+        //
+        // All made for it, the way the arrival's screech was and from the same throat
+        // (Content/Sounds/Abomanation*.ogg). The short ones are sharper than the long one:
+        // rougher (beating 30 to 150 times a second) and with more of them between 2 and
+        // 5 kHz, where a scream does its work.
+
+        private const string Sounds = "PisAndDag/Content/Sounds/Abomanation";
+
+        /// <summary>Three barks: what it says when it comes for you. The rush's tell.</summary>
+        public static readonly SoundStyle BarkSound = new SoundStyle(Sounds + "Bark", 3)
+        {
+            Volume = 0.9f,
+            PitchVariance = 0.08f,
+            MaxInstances = 2,
+        };
+
+        /// <summary>Three yelps: what the pain sounds like. The spasm's.</summary>
+        public static readonly SoundStyle YelpSound = new SoundStyle(Sounds + "Yelp", 3)
+        {
+            Volume = 0.85f,
+            PitchVariance = 0.08f,
+            MaxInstances = 1,
+        };
+
+        /// <summary>Three whimpers: small, after it is hit, and not often.</summary>
+        public static readonly SoundStyle WhimperSound = new SoundStyle(Sounds + "Whimper", 3)
+        {
+            Volume = 1f,
+            PitchVariance = 0.1f,
+            MaxInstances = 1,
+        };
+
+        /// <summary>The call before the lash: four barks closing up on each other, then the long one, which breaks as the tail lets go, two and a sixth seconds in: the loop and the hold. The rest of the file is it dying away.</summary>
+        public static readonly SoundStyle WhipCrySound = new SoundStyle(Sounds + "WhipCry")
+        {
+            Volume = 1f,
+            MaxInstances = 1,
+        };
+
+        /// <summary>The choke: three catches, and the throat working.</summary>
+        public static readonly SoundStyle ChokeSound = new SoundStyle(Sounds + "Choke")
+        {
+            Volume = 1f,
+            MaxInstances = 1,
+        };
+
+        /// <summary>Three heaves: the retch and what comes with it.</summary>
+        public static readonly SoundStyle HeaveSound = new SoundStyle(Sounds + "Heave", 3)
+        {
+            Volume = 1f,
+            PitchVariance = 0.06f,
+            MaxInstances = 3,
+        };
+
+        /// <summary>Two splats: something soft landing.</summary>
+        public static readonly SoundStyle SplatSound = new SoundStyle(Sounds + "Splat", 2)
+        {
+            Volume = 0.8f,
+            PitchVariance = 0.15f,
+            MaxInstances = 4,
+        };
+
+        /// <summary>Three snaps: the mandibles meeting.</summary>
+        public static readonly SoundStyle SnapSound = new SoundStyle(Sounds + "Snap", 3)
+        {
+            Volume = 0.8f,
+            PitchVariance = 0.12f,
+            MaxInstances = 3,
+        };
+
+        /// <summary>The vent: the pressure building for VentTell, then the steam, with the wail over it.</summary>
+        public static readonly SoundStyle VentSound = new SoundStyle(Sounds + "Vent")
+        {
+            Volume = 0.9f,
+            MaxInstances = 1,
+        };
+
+        /// <summary>A whimper is this likely on a hit, once this many ticks have passed since the last, rolled.</summary>
+        public const float WhimperChance = 0.3f;
+        public const int WhimperGapLeast = 300, WhimperGapMost = 540;
+
+        // ---- how it looks when it is hurt ------------------------------------------------
+
+        /// <summary>Second half: every part that is out of the ground lets a drop go about this often, in ticks.</summary>
+        public const int RageDrip = 26;
+
+        /// <summary>The colours of what glows in it: the joints in the second half, and all of it when it vents.</summary>
+        public static readonly Color Ember = new Color(255, 70, 24);
+        public static readonly Color Scald = new Color(255, 196, 140);
+
+        /// <summary>The steam's own colour, before the light it hangs in.</summary>
+        public static readonly Color Steam = new Color(236, 222, 216);
+
+        /// <summary>Bone, for the sparks off the jaws.</summary>
+        public static readonly Color Bone = new Color(244, 243, 237);
+
+        /// <summary>The whip's crack throws this much blood off the tail, and this many sparks.</summary>
+        public const int CrackBlood = 26;
+        public const int CrackSparks = 10;
     }
 
     /// <summary>
@@ -807,6 +1328,28 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
     /// </summary>
     public static class AbomanationArms
     {
+        /// <summary>
+        /// How a segment's legs are held this frame, when it is not just walking. The head
+        /// works it out (AbomanationHead.ArmsOf); the default is the walk.
+        /// </summary>
+        public struct ArmPose
+        {
+            /// <summary>The body is lying on the ground and one side of it is up.</summary>
+            public bool Lying;
+
+            /// <summary>Which side that is: 0 the left of the segment, 1 the right.</summary>
+            public int Up;
+
+            /// <summary>0 to 1: how far the upper arms are raised off their rake.</summary>
+            public float Lift;
+
+            /// <summary>Ticks into the wave of ash being thrown, or -1.</summary>
+            public int Clock;
+
+            /// <summary>0 and up: how hard every arm thrashes, on top of the walk.</summary>
+            public float Frenzy;
+        }
+
         // ------------------------------------------------------------ bottom arms -----
 
         /// <summary>
@@ -1289,7 +1832,7 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         /// reaches the swing phase.
         /// </summary>
         public static void Bottom(SpriteBatch spriteBatch, NPC npc, Vector2 screenPos, Color colour,
-            int place, int leftCount, int rightCount, float span, bool swing, int armSeed)
+            int place, int leftCount, int rightCount, float span, bool swing, int armSeed, ArmPose pose = default)
         {
             for (int side = 0; side < 2; side++)
             {
@@ -1298,42 +1841,39 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
                 if (count <= 0)
                     continue;
 
-                // Where this segment's arms start in the run dealt for this whole side.
-                int[] deck = Deck(armSeed, side);
-                int first = FirstArm(place, side);
-
                 // -1 is the left of the segment, +1 the right. A quarter turn times this
                 // points the arm out that way: rotating "up" by +PiOver2 gives right, by
                 // -PiOver2 gives left.
                 float sign = side == 0 ? -1f : 1f;
 
+                // The upper side of a body that is lying down: those arms are up off
+                // their rake, and thrown when their turn in the wave comes.
+                bool raised = pose.Lying && side == pose.Up;
+
                 for (int row = 0; row < count; row++)
                 {
-                    // Where this arm sits in the run dealt for this whole side. Everything
-                    // crooked about it is keyed on this, so it is the same arm every frame
-                    // and on every machine, and a different arm the next time it spawns.
-                    int at = first + row;
-                    int which = deck.Length > 0 ? deck[at % deck.Length] : 0;
-                    int salt = 1000 + side * 64 + at;
+                    Socket(place, side, row, count, span, armSeed,
+                        out int at, out int which, out int salt, out Vector2 local, out float crook);
 
-                    float y = count == 1 ? 0f : MathHelper.Lerp(-span, span, row / (float)(count - 1));
+                    float rake = BottomRake;
 
-                    // Off the grid, up or down the body.
-                    y += (Hash01(armSeed, salt) - 0.5f) * BottomScatter;
+                    if (raised)
+                    {
+                        rake = MathHelper.Lerp(BottomRake, RaisedRake, pose.Lift);
 
-                    // In or out of the flank, so the roots are not all on one line either.
-                    float inset = BottomInset + (Hash01(armSeed, salt + 1) - 0.5f) * BottomInsetScatter;
+                        if (pose.Clock >= 0)
+                            rake += Fling(pose.Clock - at * Abomanation.AshStep);
+                    }
 
                     // Its own resting angle, not the shared rake.
-                    float angle = sign * (MathHelper.PiOver2 + BottomRake
-                        + (Hash01(armSeed, salt + 2) - 0.5f) * BottomAngleScatter);
+                    float angle = sign * (MathHelper.PiOver2 + rake + crook);
 
                     if (swing)
                     {
                         // Distance down the whole worm, in segment lengths, so a leg near
                         // the back of one segment is very nearly in phase with a leg near
                         // the front of the next.
-                        float along = place + y / Abomanation.BodySpacing;
+                        float along = place + local.Y / Abomanation.BodySpacing;
 
                         float phase = Main.GlobalTimeWrappedHourly * SwingSpeed
                             + along * SwingWave
@@ -1341,16 +1881,113 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
                             + side * MathHelper.Pi;
 
                         angle += sign * (float)Math.Sin(phase) * Swing;
+
+                        // Thrashing: a second, faster beat on top of the walk, each arm on
+                        // its own count, so it is a shudder and not a wave.
+                        if (pose.Frenzy > 0f)
+                        {
+                            float fit = Main.GlobalTimeWrappedHourly * FrenzySpeed
+                                + along * 2.1f + Hash01(armSeed, salt + 4) * MathHelper.TwoPi;
+
+                            angle += sign * (float)Math.Sin(fit) * FrenzySwing * pose.Frenzy;
+                        }
                     }
 
                     One(spriteBatch,
                         BottomArt(which),
                         BottomOrigins[which],
                         npc, screenPos, colour,
-                        new Vector2(sign * inset, y), angle);
+                        local, angle);
                 }
             }
         }
+
+        /// <summary>Radians a raised arm is raked: a little forward of straight out.</summary>
+        public const float RaisedRake = -0.05f;
+
+        /// <summary>The throw: how far back it winds, toward the tail, and how far forward it goes through, in radians.</summary>
+        public const float FlingBack = 1.05f;
+        public const float FlingThrough = 0.95f;
+
+        /// <summary>The thrash: radians a second, and radians either way at full frenzy.</summary>
+        public const float FrenzySpeed = 23f;
+        public const float FrenzySwing = 0.34f;
+
+        /// <summary>
+        /// Where one arm of a side sits and which sprite it wears: everything about it that
+        /// is the same every frame and on every machine. The draw and the throw both read
+        /// it from here, so the ball leaves the hand that is drawn.
+        /// </summary>
+        private static void Socket(int place, int side, int row, int count, float span, int armSeed,
+            out int at, out int which, out int salt, out Vector2 local, out float crook)
+        {
+            // Where this segment's arms start in the run dealt for this whole side.
+            int[] deck = Deck(armSeed, side);
+            int first = FirstArm(place, side);
+
+            float sign = side == 0 ? -1f : 1f;
+
+            // Where this arm sits in the run dealt for this whole side. Everything
+            // crooked about it is keyed on this, so it is the same arm every frame
+            // and on every machine, and a different arm the next time it spawns.
+            at = first + row;
+            which = deck.Length > 0 ? deck[at % deck.Length] : 0;
+            salt = 1000 + side * 64 + at;
+
+            float y = count == 1 ? 0f : MathHelper.Lerp(-span, span, row / (float)(count - 1));
+
+            // Off the grid, up or down the body.
+            y += (Hash01(armSeed, salt) - 0.5f) * BottomScatter;
+
+            // In or out of the flank, so the roots are not all on one line either.
+            float inset = BottomInset + (Hash01(armSeed, salt + 1) - 0.5f) * BottomInsetScatter;
+
+            local = new Vector2(sign * inset, y);
+            crook = (Hash01(armSeed, salt + 2) - 0.5f) * BottomAngleScatter;
+        }
+
+        /// <summary>
+        /// How far off its raised rake an arm is, this many ticks into its own throw:
+        /// wound back toward the tail over AshWind, then through forward in a third of
+        /// AshFollow, which is when the ball leaves it, then back to where it was. Nothing
+        /// before its turn or after it.
+        /// </summary>
+        private static float Fling(int tick)
+        {
+            if (tick < 0 || tick > Abomanation.AshWind + Abomanation.AshFollow)
+                return 0f;
+
+            if (tick <= Abomanation.AshWind)
+                return FlingBack * MathHelper.SmoothStep(0f, 1f, tick / (float)Abomanation.AshWind);
+
+            float after = (tick - Abomanation.AshWind) / (float)Abomanation.AshFollow;
+
+            if (after < 0.34f)
+                return MathHelper.Lerp(FlingBack, -FlingThrough, after / 0.34f);
+
+            return -FlingThrough * (1f - MathHelper.SmoothStep(0f, 1f, (after - 0.34f) / 0.66f));
+        }
+
+        /// <summary>
+        /// Where the hand of one arm is, in the world, with the arm at this rake: the far
+        /// end of its sprite. For the throw, which runs where nothing is drawn.
+        /// </summary>
+        public static Vector2 Hand(NPC npc, int place, int side, int row, int count, float span, int armSeed, float rake)
+        {
+            Socket(place, side, row, count, span, armSeed,
+                out _, out int which, out _, out Vector2 local, out float crook);
+
+            float sign = side == 0 ? -1f : 1f;
+            float angle = npc.rotation + sign * (MathHelper.PiOver2 + rake + crook);
+
+            Vector2 root = npc.Center + local.RotatedBy(npc.rotation) * npc.scale;
+
+            // An arm with no turn on it points along its own -Y.
+            return root + (angle - MathHelper.PiOver2).ToRotationVector2() * (BottomOrigins[which].Y * npc.scale);
+        }
+
+        /// <summary>Which arm along its whole side this one is: its turn in a wave.</summary>
+        public static int ArmNumber(int place, int side, int row) => FirstArm(place, side) + row;
 
         /// <summary>
         /// The growths on the back. One or two per segment, scattered, and dead still
@@ -1464,6 +2101,56 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         /// speed the head can reach.
         /// </summary>
         public static void Follow(NPC npc, NPC leader, float spacing)
+        {
+            Close(npc, leader, spacing);
+
+            AbomanationHead boss = Boss(npc);
+
+            if (boss == null)
+                return;
+
+            // The head has stopped, or all but: nothing is pulling the body through
+            // where the head went any more. A part that was left in the open air, higher
+            // than the one it follows, comes down, swinging on it. Without this a length
+            // of tail that was over the ground when the head stopped hangs there. Parts
+            // below the one they follow (the neck, under a head that is standing up) hang
+            // from it and are left alone.
+            if (boss.Slack && npc.Center.Y < leader.Center.Y - 2f
+                && !Collision.SolidCollision(npc.position, npc.width, npc.height))
+            {
+                npc.position.Y += Abomanation.Sag;
+                Close(npc, leader, spacing);
+            }
+
+            // Lying down (the ash, the vent), a part also sinks onto its own ground and is
+            // then put back at its distance. Following alone cuts every corner the head
+            // took, so the body would hang over each dip the head crawled through; this
+            // lays it on the hill.
+            if (!boss.Lying)
+                return;
+
+            // Only once it is trailing its leader along the ground. A part still coming up
+            // from underneath its leader has no side to be pushed to, and is as likely to
+            // be put down ahead of it as behind: the body folded.
+            if ((leader.Center.X - npc.Center.X) * boss.LayDir < 16f)
+                return;
+
+            float ground = AbomanationHead.GroundLine((int)(npc.Center.X / 16f), (int)(npc.Center.Y / 16f));
+
+            if (ground <= 0f)
+                return;
+
+            float off = ground - Abomanation.LayLift - npc.Center.Y;
+
+            if (Math.Abs(off) >= Abomanation.LaySettleReach)
+                return;
+
+            npc.position.Y += off * Abomanation.LaySettle;
+            Close(npc, leader, spacing);
+        }
+
+        /// <summary>The follow itself: onto the line to its leader, at its distance, facing it.</summary>
+        private static void Close(NPC npc, NPC leader, float spacing)
         {
             Vector2 delta = leader.Center - npc.Center;
             float distance = delta.Length();

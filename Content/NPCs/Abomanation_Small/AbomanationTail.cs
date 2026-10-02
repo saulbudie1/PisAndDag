@@ -99,6 +99,15 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
 
             AbomanationChain.Flag(NPC);
 
+            Move(leader);
+
+            // What this part shows of what the animal is doing. See AbomanationBody.
+            AbomanationChain.Boss(NPC)?.ShowPart(NPC, leader);
+        }
+
+        /// <summary>Where the tail goes this tick: placed by the head at the end, thrown in the whip, following otherwise.</summary>
+        private void Move(NPC leader)
+        {
             // The end. The body follows the head while it stops; from the rise on the
             // head places every part itself, along its own path and then on the loop.
             // See AbomanationHead.Die.
@@ -175,21 +184,47 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         {
             for (int i = 0; i < 3; i++)
                 Dust.NewDust(NPC.position, NPC.width, NPC.height, DustID.Blood, hit.HitDirection, -1f);
+
+            AbomanationChain.Boss(NPC)?.Flinch(NPC.Center);
         }
 
         public override bool PreDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
         {
-            DrawWhole(spriteBatch, screenPos, NPC.GetAlpha(drawColor));
+            DrawWhole(spriteBatch, screenPos, NPC.GetAlpha(drawColor), lit: true);
             return false;
         }
 
-        /// <summary>The sprite and nothing else. No arms above it, none under it, so there is no pass before this one and none after it.</summary>
-        public void DrawWhole(SpriteBatch spriteBatch, Vector2 screenPos, Color colour)
+        /// <summary>
+        /// The sprite and nothing else. No arms above it, none under it, so there is no pass
+        /// before this one and none after it. Shaken, swollen and lit as the body is
+        /// (AbomanationBody.DrawWhole); the outline is never lit.
+        /// </summary>
+        public void DrawWhole(SpriteBatch spriteBatch, Vector2 screenPos, Color colour, bool lit = false)
         {
             Texture2D texture = TextureAssets.Npc[Type].Value;
+            AbomanationHead boss = AbomanationChain.Boss(NPC);
+
+            float scale = NPC.scale;
+
+            if (boss != null)
+            {
+                screenPos -= boss.Shiver(NPC);
+                scale *= boss.Swell(Abomanation.BodySegments);
+            }
 
             spriteBatch.Draw(texture, NPC.Center - screenPos, null, colour,
-                NPC.rotation, texture.Size() * 0.5f, NPC.scale, SpriteEffects.None, 0f);
+                NPC.rotation, texture.Size() * 0.5f, scale, SpriteEffects.None, 0f);
+
+            if (!lit || boss == null || NPC.alpha > 0)
+                return;
+
+            Color glow = boss.Glow(Abomanation.BodySegments);
+
+            if (glow != Color.Transparent)
+            {
+                spriteBatch.Draw(texture, NPC.Center - screenPos, null, glow,
+                    NPC.rotation, texture.Size() * 0.5f, scale, SpriteEffects.None, 0f);
+            }
         }
 
         /// <summary>One outline round the whole animal, from whichever part is drawn first. See AbomanationChain.Silhouette.</summary>
