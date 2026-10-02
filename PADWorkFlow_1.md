@@ -3118,3 +3118,83 @@ players."
 
 **Not yet confirmed in game:** the two lines in the panel (the fit is computed from the font, but
 not seen), the shrine's new place in a fresh Grand world, the paper's lines in the tooltip.
+
+---
+
+## 16.22 Later in session 7: the Lore Bible: the Horseback Fool, the Megashark's looks, Amalgaermis's name and tail
+
+The user: "update lore on the horseback fool, her insperation and a detailed description of her
+and her horse and lance, same as mors", then "and megashark looks also", then "also amalgaermis
+has a name now, and add the butt hole detail not too graphic tho". Lore only: the one file with
+content changed is `Terraria_Mod_Lore_Bible_ver_1.1.md`. No code, no hjson.
+
+| Where in the Bible | What |
+|---|---|
+| §XIX, after the Cupbearer | New `#### The Horseback Fool`. Built facts first, each [LOCKED — built] and read off the code and the hjson, her lines as the user wrote them: her names, where and when, the road, the fight, the fall, spared, finished, what each ending hands over. Then `##### Her Inspiration`, `##### How She Looks`, `##### Triunfo`, `##### The Lance` (the last three "[LOCKED — the read. The sprite is built.]", as Mors's is), `##### Her Place in the Book` (readings, PROPOSAL), a "Deliberately unresolved" list, and one [OPEN] that wants deciding (below). No section was renumbered. |
+| §XXII Megashark | New `### How It Looks`: the sprite (the animal, the machine, nothing joining them), what happens to the picture (the rise, heat, red, the spin, the sight, the damage it carries, the two hand-overs), how it dies, what it leaves. |
+| §XXI, `#### The Abomanation` | Now `#### Amalgaermis`, and the picture's alt text: the book uses the name, and "The Abomanation" is kept as the code's word. The line under the name quoted as the game has it. [OPEN] who named it. In *How it looks*, the tail: bare, with the opening at the end of it, five sentences and one PROPOSAL reading. *How it dies*: "The bare end goes first." |
+| §XXI, `#### What It Leaves` | Brought up to the build. How the incantations are got is no longer a proposal: Essence of the Fouled, 20 to 25 a kill to each player, 20 and 29 with a Book at the Makeshift Altar. Everhunger's flavour line is the hjson's, the user's: *'Even in soul they keep biting.'* New entry: Joint Arms of the Defiled, whose tip is that tail end. |
+
+**Her inspiration is my reading, not the user's word.** The brief that asked for her is not in what
+I can read any more. Taken as Don Quixote from what is built: Dona for Don (Doña), the *Qui* of
+both her names, the Locket of a *Book-Crazed* Girl, *a knight who was never knighted*, a donkey
+with a grand name (Triunfo, triumph; in Cervantes the donkey is the squire's), the player taken for
+a monster as the windmills were for giants, and *Me rindo*. The Bible marks it as a read to be
+corrected. The in-world half (what made her) is the locket's paper.
+
+**Measured for the looks** (the PNGs, art at 2x, 16 px a block):
+
+- Her: canvas 42x60; standing 22x48 (three blocks), hair 22x20 (the top two fifths of her), face
+  18x16, one face picture for standing, riding and lying. Black hair with a violet cast, tan skin,
+  one eye, pink on the cheek row, blue tunic with a navy outline, dark brown trousers, tan boots.
+- Riding: `DonaRig.Seat` (58, 40) on a frame whose hooves stand at y 80, `RidingSeat` (21, 46),
+  hair top at y 14: the top of her hair is 72 px over the ground, Triunfo's ear tip 64.
+- Triunfo, frame 0: 76x64. One ear, mane near black streaked brown, eye (15, 87, 39) with a white
+  glint, white above the two near hooves only, saddle red-brown with tan and gold (the only gold
+  hues in any of the three sprites), no bridle or rein pixels, two rust red marks (by the root of
+  the tail, low on the breast; missing from frames 3 to 5, 8 and 16 to 19). Frame 8 is drawn and
+  used by no gait.
+- Lance: 22x76, as long as Triunfo's frame 0 and 1.58 of her height; needle point, cone to a
+  guard at rows 54 to 61, brown grip at rows 62 to 67 (`DonaRig` calls it leather), steel cap.
+- Megashark: 70x28, one frame. Hide (68, 34, 37) to (167, 123, 127), cream belly, olive under it,
+  barrel from x 48 (about 22 px of 70), grey top line, alternating vents, black underside, one
+  eye pixel at (40, 16).
+- Amalgaermis's tail: 60x80, five colours, none of them bone. Two dark marks inside the flesh in
+  the outline's colour: (46 to 49, 48 to 49) on the flank, and (30 to 31, 66 to 67) with (28 to
+  31, 68 to 69) dead centre at the tip. The Bible says "at the end of it" and "a few dark pixels",
+  which is true of either; the whip's sheet has its opening at the far end.
+
+**Reviewed** (an independent pass over the new text against the code, the hjson and the pixels;
+everything it found was corrected before delivery). What it caught, for the record: the title is
+never drawn on the bar, only under the name while the name goes up, and on the dialogue tab
+(`BossPlate`: "The title exists only in flight"); the locket's flavour line and its verses are
+never on screen together (the verses are the Shift view); the red wash cannot show in phase 3
+(`heatGlow` is pinned at 1 and red needs `rageGlow > heatGlow`); the sight follows the player for
+45 of its 90 ticks and then stops; the Spin attack turns the whole sprite; the white is on the
+near hooves only; the whip throws its own blood, it does not make the target bleed; one kill's
+essence writes the Court and not Everhunger; "Doña"; and the two below.
+
+**Found on the way, not fixed (code, and not asked for):**
+
+- *Her bar after the fall.* `DonaQuinn.cs` sets `NPC.boss = fighting` with the comment "gone from
+  the fall", and §16.18 says the same. Nothing that draws the bar reads that flag: vanilla tracks
+  any active NPC with a boss head (`CommonBossBigProgressBar.ValidateAndCollectNecessaryInfo`:
+  `active` and `GetBossHeadTextureIndex() != -1`; `BigProgressBarSystem.TryFindingNPCToTrack`
+  asks nothing more), and `BossPlate.Track` holds the bar while she is active with life over 0.
+  Read off the IL and the source, not seen in play: an empty bar probably stays up through the
+  plea and the talk. The Bible does not say the bar goes. In `RELEASE_TODO.md`.
+- *The Megashark's other drops.* The comment says the kill is worth one gun and nothing else, and
+  `NPC.value` is 0, but it is a boss with no `BossLoot` override, so vanilla adds 5 to 15 Lesser
+  Healing Potions and 5 to 9 hearts (`NPC.DoDeathEvents`: `if (boss)` then
+  `DoDeathEvents_DropBossPotionsAndHearts`). The Bible says only that it pays no coin. In
+  `RELEASE_TODO.md`.
+
+**Open, for the user:**
+
+- Whether Don Quixote is what she was drawn from.
+- §XIV has nothing stay dead before the restoration, and no exception for a player who kills on
+  purpose. She is finished before hardmode and never met again. The Bible flags it and offers the
+  reading that costs nothing to build: she gets up somewhere the player is not and does not come
+  back for the locket.
+- Amalgaermis's body sprites carry eyes of several colours (blue, green, magenta, one or two a
+  segment). *How it looks* says of the head "There are no eyes" and does not mention these.

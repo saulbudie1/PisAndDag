@@ -60,6 +60,8 @@ Then check the built size dropped.
 - [ ] `AquaticFirearmsBattery.cs` doc comments still say damage ×2/3; the code is gun + ball.
 - [ ] Placeholder art — every row in `PlaceholderTextures.md`.
 - [ ] `description.txt` is still the template placeholder. `build.txt` version is `1.0` — set it honestly.
+- [ ] **'Dame' Quilt's bar after her fall** — `DonaQuinn.cs` sets `NPC.boss = fighting`, meaning the bar to go at the fall, but nothing that draws the bar reads that flag: vanilla tracks any active NPC with a boss head, and `BossPlate.Track` holds the bar while she is active with life over 0. Read off the code, not seen in play: check whether an empty bar stays up through the plea and the talk (PADWorkFlow §16.22).
+- [ ] **The Megashark's other drops** — its comment says the kill is worth one gun and nothing else, but it is a boss with no `BossLoot` override, so vanilla adds 5 to 15 Lesser Healing Potions and 5 to 9 hearts. Keep them or cut them (PADWorkFlow §16.22).
 
 ## Last
 

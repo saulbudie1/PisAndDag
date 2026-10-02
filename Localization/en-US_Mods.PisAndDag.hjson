@@ -390,13 +390,13 @@ BossLog: {
 }
 
 Hints: {
-	ClothierMile: Far through the lands, opposite the sea, there is a mile where nothing calls. I would not let a bunny go there. One goes quiet. Ten will go quiet. Then something answers. Hee hee. Not that I have been, yknow?
+	ClothierMile: Landwards, opposite the sea, there is a mile where nothing calls. I would not let a bunny go there. One goes quiet. Ten will go quiet. Then something answers. Hee hee. Not that I have been, yknow?
 	Offering: These may satiate one and many.
 	GuideLegends: I feel like the balance of the world is disturbed, I can feel the intangible ominous presence everywhere. Did you do something?
-	GuideArsenal: An incantation does nothing sitting in your pack. You have to learn it by heart first, and I've only ever seen that done near a house someone lives in. Then you say it through a seal. Spells want a staff instead.
-	GuideAltar: Incantations were written, not taught. A book, an altar you could knock together from bones and wood, and something foul to write with. Nobody I've asked knows what.
+	GuideArsenal: An incantation does nothing sitting in your pack. You have to learn it by heart first, and I've only ever seen that done near a house with residential life. Then you say it through a seal. Spells want a staff instead.
+	GuideAltar: Incantations were written, not taught. A book and an altar and you could knock together from bones and wood, and something foul to write with. Nobody I've asked knows what.
 	GuideKingdom: Far {0}, past the field where every tree is a stump, there's a wall taller than any tree ever grew. A kingdom's, my books say. Its gates are still shut. The books don't say who shut them.
-	GuidePilgrim: A man came through here leaning on a bow taller than he was, with a sword on his back too long for him. He told me his name twice, as if the first time might not have taken.
+	GuidePilgrim: A man came through here leaning on a bow taller than he was, with a huge sword on his back too. He told me his name twice and laugh loudly, as if the first time might not have taken.
 	GuideHut: I scouted the area before your awakening. On the trail seawards, there is a little hut, tethered yet foreboding. I'm too much of a coward and dared not enter. Do me a favour and tell me what is inside.
 }
 

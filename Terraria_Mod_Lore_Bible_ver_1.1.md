@@ -1480,6 +1480,320 @@ Deliberately unresolved:
 
 ---
 
+#### The Horseback Fool
+
+**[LOCKED — built: that she comes, what she says, the fight, the fall and the two ways it
+ends. The sprites are built. The readings are PROPOSAL and marked where they stand.]**
+
+A girl on a donkey with a lance, on the field in front of the kingdom, who has decided she
+is a knight. Nobody else has.
+
+**Her names.** [LOCKED — built] On the bar she is **'Dame' Quilt**. When the name first
+goes up it has a title under it, *The Horseback Fool*, and the tab of the box she speaks
+from carries the same. The marks round *Dame* are the game's and never in her mouth: she
+says it straight, *"For it is I, Dame Quilt!"* The first time, the box shows a black face
+and *???* until she has said it, and then it has both. **Dona Quinn** is the files' name
+for her and this book's working one. Nothing the game says uses it.
+
+**[PROPOSAL]** Dona Quinn is the girl and Dame Quilt is the knight she named, the way the
+man she is drawn from renamed himself before he rode out (*Her Inspiration*, below). The
+letter she carries uses neither: *Dear lovely daughter.*
+
+**Where and when.** [LOCKED — built] Only in a world large enough to have the Cleared
+Ground, and only until it has been settled with her once. After the Pilgrim's arrow has
+finished the Eye (§XXXI) and before the Seal is broken (§XXVII), a player standing on the
+stump field is stopped. She comes from the Mile's side, if there is ground there to come
+from. She does not come at night or in the rain: if it is either, the world runs on to a
+clear eight in the morning first, and then she is there. A fight broken off, the player
+dead or gone, settles nothing, and she comes again.
+
+**The road.** [LOCKED — built] The player is held where they stand. *"Fear me, you
+simpleton!"*, from the black face. Then *"For it is I, Dame Quilt! Challenge me if you
+dare!"* and two answers, *Decline* and *Accept*. Both get the same reply: *"Coward! Here
+comes my lance!"* Answer neither for a minute and she says it anyway.
+
+**The fight.** [LOCKED — built] She is the same in every world. Nothing a world is set to
+makes her stronger. She does nothing by touch. What she does, she does with the lance, and
+the lance goes through armour.
+
+- **The charge.** At the player flat out with the lance couched and aimed, on past them,
+  and pull up. Triunfo rears with his forelegs going round, turns, and she comes again. It
+  hits harder the faster he is going.
+- **The throw.** She stops, draws back and throws it. It is heavy: it comes down in an arc,
+  goes into the ground point first and stands there. Triunfo runs the player down without
+  it, and then she rides back and pulls it out of the ground as she passes.
+- **The swing.** In close, up and then down. The upswing throws the player a long way into
+  the air and the downswing flattens them, and no shield in the world turns either off, so
+  it wears the yellow that the whip on the Mile wears (§XXI).
+- **The crash.** A charge that ends in something Triunfo cannot jump ends in it. She is the
+  one it hurts, and she says *"Ouchh!"*
+
+She shouts as she rides, over her own head and not in the box: *"The grrreat Dame Quilt
+shall be victorious!"*, *"Take that you simpleton!"*, *"How do you like that? Also your
+hair is atrocious!"*
+
+A player she kills is spoken of in the game's own voice, and it is exact about both of
+them: *run through by a knight who was never knighted*; *run down by a donkey with
+somewhere to be*.
+
+**The fall.** [LOCKED — built] No blow can kill her. The one that would leaves her with one
+life, and it is Triunfo who ends the fight: he rears and shakes her off. The lance goes up
+end over end and comes down somewhere. She goes over his head and lands in a heap that
+settles face down. He bolts. She bleeds a little, and shakes now and then.
+
+The picture goes to black and comes back on the player walking up to her, slowly, close
+in. She lifts her head. *"Please! I surrender! White flag! Me rindo!"* Two answers, one in
+each corner of the box: *Spare*, *Finish*.
+
+**Spared.** [LOCKED — built] She gets up, still bleeding, turns to the player, and talks,
+fast:
+
+> *"Thank you, kind sir!"*
+
+> *"I am but a lonesome knight... that I'm trying to be."*
+
+> *"I'm so sorry... for the startle. I sure have caused you some damage."*
+
+> *"I thought you were a big bad bully monster!... Honestly you are kind of knightsome and
+> admirable overall."*
+
+> *"Oh I love knighthood but I can never join the kingdom's army..."*
+
+> *"Oh sorry again. I hope to see you soon, Mr Warrior."*
+
+(*madam* and *Mrs* to a woman.) The player's side of it is two silences, then *Why did you
+do this*, *Why the knight stuff?*, and *I am in a hurry*. The last thing the player says
+to her is that they have somewhere to be.
+
+Then she stays where she is, looking at the player or at the ground, turning round now and
+then, until nobody is looking. Then she is not there. Triunfo walks back and stands by
+her.
+
+**Finished.** [LOCKED — built] One cut. Her head drops, she fades, and what is left is the
+*Locket of a Book-Crazed Girl*. Its one line is *'It was opened more often than it was
+closed.'* Looked at closely, it reads:
+
+> A rusted gold locket, with paper folded small inside.
+> "Dear lovely daughter, I know you will be a knight one day."
+> Read until the folds went soft. It was never signed.
+
+Triunfo walks back and stands by where she was.
+
+Either way she is not met again in that world.
+
+**What each ending hands over.** [LOCKED — built] Spared, the player hears what she is
+from her: a knight she is trying to be, an army she can never join, an apology, twice.
+Finished, the player reads what somebody else believed about her, on paper she wore out.
+Nobody gets both in one world. Mercy pays in nothing that can be worn, and the locket is
+worth one point of defence. The game does not say which of the two was the kind one.
+
+##### Her Inspiration
+
+**[The read, taken off what is built. If she was drawn from somewhere else, correct it
+here.]**
+
+**Outside the world: Don Quixote.** The build says so in six places.
+
+- **The name.** *Dona* is the woman's *Don* (the Spanish write it *Doña*), and Quinn and
+  Quilt both begin as Quixote does. *Dame* is what a woman is called where a man is called
+  *Sir*. Nobody gave it to her.
+- **The books.** He read romances of chivalry until he took them for history, and rode out
+  to live in one. What she leaves behind is called the locket of a *book-crazed* girl.
+- **Never knighted.** He had himself dubbed by an innkeeper, in an inn he took for a
+  castle. She has not had even that, and the game says so itself.
+- **The animal.** His horse was a worn-out nag with a grand name. Hers is a donkey called
+  Triunfo, *triumph*. In his book the donkey is the squire's mount, not the knight's. She
+  has no squire, so she rides his animal herself.
+- **The giant.** He took windmills for giants and went at them with a lance. She took the
+  player for *"a big bad bully monster"* and did the same.
+- **The tongue.** When she breaks, she breaks into his: *"Me rindo!"*
+
+**What was changed, which is the part that matters.** He was an ageing gentleman who went
+mad, and his book cures him on his deathbed and lets him die sane and sorry. She is a
+girl, she is not mad, and nobody cures her of anything. She knows what she is, *"a
+lonesome knight... that I'm trying to be"*, and says so as soon as she is spared and on
+her feet. The windmill is the only thing she gets wrong. The rest is not delusion. It is
+practice.
+
+**Inside the world: paper.** Two things made her and the locket holds both. Its name says
+books. The paper in it says a parent: *"Dear lovely daughter, I know you will be a knight
+one day."* It was read until the folds went soft, and it was never signed.
+
+So she is not riding on a story about knights. She is riding on one sentence about
+herself, written by somebody who did not put a name to it, and she has read it more times
+than the paper could stand.
+
+**[PROPOSAL — the reading.]** *One day* is the hinge. The letter does not say she is a
+knight. It says she will be, and she has taken that for a date.
+
+##### How She Looks
+
+**[LOCKED — the read. The sprites are built.]**
+
+Drawn as a rig and not a sheet: pieces on one canvas, put together every frame. In the
+saddle, the body with its near leg, the arm, the head, the hair. On her own feet, the
+torso and legs, the hand, the face, the hair. The lance is a piece of its own, and Triunfo
+is another animal altogether, drawn under her while she rides so the two never come apart.
+
+She is the player's height, three blocks, and no broader than her own hair.
+
+**Nothing on her is a knight's.** No plate, no mail, no helm, no shield, no device, no
+cape, no spurs. A plain blue tunic with long sleeves, dark at its edges. Dark brown
+trousers. Tan boots. It is what a girl would put on to walk to the next village. Every
+knightly thing in the picture is something she is holding or sitting on.
+
+**The hair is most of her head.** A heavy bob, black with a violet cast in it, cut level
+at the jaw. It covers the crown and the back of her head and comes down in a fringe to the
+eye, and it is the top two fifths of her. It is drawn in bands two rows deep: the crown
+does not move, and each band below it slides a little further than the one above, a slow
+wave always, the wind's way out of doors, and trailing behind her when she is going along.
+This is the girl who tells the player their hair is atrocious.
+
+**The face is small, and it is seen from the side, always.** One large pale eye under the
+fringe, pink across the cheek, tan skin. It does not change. She has one face, and
+everything she feels goes into what she says and how fast she says it.
+
+**Her head faces the way she does.** It tips a little toward whoever she is looking at and
+never over her shoulder; to look at somebody behind her, all of her turns round. That is
+the opposite of Mors on purpose: only his head turns (§XV). Nothing about how she is put
+together is wrong. What is wrong with her is what she has decided.
+
+**In the saddle.** Upright and a little forward, one leg down the near side, the arm out
+in front and down with the fist closed on the grip. From the ground to the top of her hair
+is four and a half blocks, and she clears his ears by half a block.
+
+**On the ground.** Face down, legs straight out behind, chin on her hand, and the eye
+open: she is not unconscious, and the picture does not let the player think so. A little
+dark pool under her chest. To beg she lifts her head, a little.
+
+**On her feet.** The arm hangs and the hands are empty. Without the lance and the donkey
+there is nothing left in the picture to say what she thought she was.
+
+The effect wanted is a girl dressed for an errand, sitting on a good saddle, holding the
+one real thing in the picture. The player should find her funny for exactly as long as she
+is mounted.
+
+Refuse: armour of any kind, a helm, a shield, colours or a device, a sword, a cape. The
+moment she looks equipped the joke is gone, and so is what is under it.
+
+##### Triunfo
+
+**[LOCKED — the read. The sprite is built.]**
+
+A donkey, and drawn to leave no doubt of it: one long ear standing straight up, and a thin
+bare tail with a dark tuft at the end. Her title says *horseback*. The one time the game
+says what kind of animal he is, it says donkey.
+
+He is pale: a lilac grey that is nearly white along the back and flank and goes to a soft
+purple grey in the shadow and down the legs. The mane is dark, near black, streaked with
+brown, thick from between the ears down to the withers. His eye is green with one white
+glint in it. There is white above the two near hooves, and the hooves are dark.
+
+He is bigger than she is: four blocks to the tip of the ear, and close on five from nose
+to tail.
+
+**The saddle is better than she is.** Dark red-brown leather, raised behind and in front,
+with tan panels under it and an edge of gold, which is the only gold in the picture. One
+stirrup hangs under his belly on its strap. There is no bridle on him and no reins are
+drawn.
+
+**Two small raw places**, rust red, on most of his pictures: one by the root of his tail
+and one low on his breast. Nothing in the game mentions them.
+
+**How he moves.** [LOCKED — built] His pictures: one standing, a run, a gallop with the
+tail straight out behind him, one off the ground, and four reared up with the forelegs
+going round. He turns with a plain flip. His legs step by the ground he covers, so they
+never skate. Flat out he does thirty-seven miles an hour by the stopwatch, and gets there
+in a second and a half.
+
+**He is the one with sense.** [LOCKED — built] He jumps what can be jumped, and times it.
+Against a bank with no run at it he backs off and takes one. He leaps a gap he can clear
+and pulls up at one he cannot, and at lava, and at deep water unless he is let swim, and
+then he swims. All of that is his. The one thing he does against his own judgement is a
+charge, because a charge is hers, and when it ends in a wall she is the one who pays.
+
+He shares her life while she rides: to hit him is to hit her, and the one bar counts both.
+He cannot die of it.
+
+**He ends the fight.** [LOCKED — built] See the fall, above. Then he bolts, the other way,
+a long way, and stands. When it is over he comes back at a walk and stands by her, or by
+where she was. Left alone and unwatched, he is gone too.
+
+**[PROPOSAL — the readings.]** The raw places are where straps rub an animal that is
+worked: he was in harness before he was a warhorse. In the book she is drawn from, the
+sense belongs to the squire, who rides the donkey; she has no squire, and the sense went
+into the donkey. And nothing steers him. He goes where she points because he agrees to,
+up to the moment he does not.
+
+##### The Lance
+
+**[LOCKED — the read. The sprite is built.]**
+
+The one real thing. A tournament lance in steel: a needle point, a long plain cone
+widening all the way down to a broad round guard, a short brown grip under the guard, and
+a small steel cap on the end. The steel is a dull mauve grey with one pale stripe of light
+down its length. No pennon, no paint, no device.
+
+It is longer than she is tall by more than half, and as long as the donkey from nose to
+tail. Nearly all of it is in front of her hand: she holds it by the end.
+
+It is one picture whatever is happening to it: couched under her arm, in the air after
+she throws it, standing in the ground where it came down, going end over end when Triunfo
+throws her. It does not break and it does not bend.
+
+**[LOCKED — built]** Everything she does that hurts, she does with it, and it goes through
+armour. The one other hurt in the fight is Triunfo running the player down while she has
+not got it.
+
+**[OPEN]** Where a girl with no armour got a tournament lance and a saddle with gold on
+it. They are the two things in the picture that were made for a knight.
+
+##### Her Place in the Book
+
+**[PROPOSAL — the readings. None of this is said in the game.]**
+
+**She asks.** §III: nobody in this world asks the player to do anything; they arrange for
+it to be the obvious next step. She asks, out loud, *challenge me if you dare*, and the
+answer does not matter: *Decline* and *Accept* are the same button, and so is saying
+nothing. It is everybody else's method done badly, in daylight, by somebody with no gift
+for it. Who benefits is her, because a knight needs something to ride at and the player
+was what was on the field. And the player knows, because she shouted it.
+
+**The windmill.** She comes from the Mile's side, over a field with four signs on it that
+say what is at the end of it (§XXI), and takes the first person she meets for a monster.
+There is a monster. It is behind her.
+
+**Nothing in its prime** (§IV). This is what knighthood has come down to in this book: no
+armour, a donkey, a letter with no name on it, and an army she can never join. The kingdom
+she means is the one that bled out (above), behind a wall that held (`PAD_World_Plan.md`
+§3).
+
+**Two left.** Grace has two left who behave as though it stands. One is in its cellar, on
+shift, because nobody came down to tell her (the Cupbearer, above). The other is outside
+its wall, trying to enlist.
+
+**She is not the Pilgrim.** He wants nothing (§XXXI). She wants one thing, says what it
+is, and uses the player to get near it. She must not become a second counterweight.
+
+Deliberately unresolved:
+
+- Who wrote the letter. A mother, a father, or her.
+- Why she can never join. That it would not have her, or that it is not there. She does
+  not say, and the book keeps both.
+- Whether she knows the kingdom is gone.
+- Whether she has read the signs, and whether a monster is what she was out there looking
+  for.
+- Where she goes when nobody is looking, and whether *I hope to see you soon* is kept.
+- Whose lance, whose saddle, and what rubbed the donkey.
+
+**[OPEN — and it wants deciding.]** §XIV: before the restoration nothing stays dead, the
+town included, and no exception is made for a player who kills on purpose. She is finished
+before the Seal breaks and is not met again in that world. Either she is an exception,
+which §XIV refuses, or she gets up somewhere the player is not and does not come back for
+the locket. The second needs nothing built, and it is the worse thing to have done to her.
+
+---
+
 ## §XX. The Princess
 
 The Princess may originate from the royal Kingdom of Grace.
@@ -1580,16 +1894,21 @@ sorry about it. Here it means the opposite thing and they are left to work that 
 
 A second hand appears in the margins of the record, and it is not recording results.
 
-#### The Abomanation
+#### Amalgaermis
 
 **[PROPOSAL]**
 
-![The Abomanation](Content/NPCs/Abomanation_Small/Abomanation_BossChecklist.png)
+![Amalgaermis](Content/NPCs/Abomanation_Small/Abomanation_BossChecklist.png)
 
-**Its name.** [LOCKED — built] On the bar and in the arrival it is **Amalgaermis**, and
-under the name, *the starved hundred who merged into one*. "The Abomanation" stays as the
-book's word and the code's. The player only ever sees the other one. The title gives a
-number and a condition and nothing else: not whose hundred, not who starved them.
+**Its name.** [LOCKED — built] **Amalgaermis**, on the bar and in the arrival. In the
+arrival there is a line under the name: *The starved hundred who merged into one.* It has
+a name now, and the book uses it. "The Abomanation" was the working word before it had
+one; that stays as the code's (the files, the folder, the test command,
+`Abomanation.Offerings`), and nothing the game says in its own voice uses it. The line
+gives a number and a condition and nothing else: not whose hundred, not who starved them.
+
+**[OPEN]** Who named it. A hundred went in and none of their names came out; the one on
+the bar was given afterwards.
 
 One subject of the programme is still where they left it.
 
@@ -1648,6 +1967,15 @@ the player should not be able to count them.
 Along the back, and along the split of the head, the same pale bone comes through the
 meat in small pieces, the way a thing that has been rebuilt too many times will show
 the earlier builds at the joins. Nothing on it is designed. Nothing on it is armour.
+
+The tail is the one piece of it with nothing on it. No hands and no bone: a blunt, rounded
+end of the same red, bare. At the end of it there is a small dark opening. It is what it
+looks like. A thing made to do nothing but eat has to finish somewhere, and this is where.
+The sprite gives it a few dark pixels and the book gives it this paragraph; nothing is
+shown leaving it, and nothing should be.
+
+**[PROPOSAL — the reading.]** It is why feeding it never ends. What goes in at the split
+does not stay, and the hundred are fed and are still starved.
 
 It has no colour identity but the one colour. In the Mile, where everything is ash and
 cold grey, it is the only red thing.
@@ -1708,7 +2036,7 @@ because the head is usually under the ground when it dies.
 **How it dies.** [LOCKED — built] Its life running out does not end it. It stops. The
 camera goes to it and the player is held where they stand. It comes up out of the ground,
 straight up into open air, and turns once in a loop the length of itself until its own
-tail is in front of its mouth. Then it eats itself.
+tail is in front of its mouth. Then it eats itself. The bare end goes first.
 
 Each piece is the same four movements of the mouth: closed, parted, wide, and shut. On
 the shut the piece in its jaws comes apart, and the head moves up one link to the next
@@ -1766,9 +2094,12 @@ Blood is drawn from the Crimson, and from the Mile (§XXIV). Two incantations be
 Amalgaermis, and both come to the player once it is dead. Both are Blood. Both are cast
 from a seal. Neither is explained.
 
-**[PROPOSAL — how they are got.]** They unlock on the kill. Not built yet: the boss has
-no loot table, and at present nothing in the world hands either of them out. Whatever the
-mechanism turns out to be, neither should be reachable before Amalgaermis is dead.
+**How they are got.** [LOCKED — built] It leaves *Essence of the Fouled*, twenty to
+twenty-five of it to every player who fought it (in its bag, in the harder worlds): *'It
+ate itself down to this.'* Each incantation is written with that and a Book at the
+Makeshift Altar, twenty for the Court and twenty-nine for Everhunger. One kill writes the
+Court; Everhunger wants a second. Neither can be reached before Amalgaermis is dead: what
+they are written in is what was left of it.
 
 **The seal that casts them.** [LOCKED — built] *Clothier's Chatelaine.* A small clasp of
 dark iron, near black with a violet cast, hung with a loop of the same chain and one pale
@@ -1819,12 +2150,26 @@ side and the ground shakes a little, and the head is smaller for it. On the fift
 spent, and that bite is the hardest. Anything else in its way it bites in passing, for
 less, without turning. If the one it wanted dies first, the head goes with it.
 
-*The flavour line.* 'It is never full. It only runs out.'
+*The flavour line.* 'Even in soul they keep biting.'
 
 *What it is.* **[PROPOSAL]** The animal ate itself down to its head, and then the head went. This is
 the head, and it is still doing the one thing. The caster's blood is what it is made of
 this time. The book says no more than that. **[OPEN]** Whether anything of the animal
 is in it, or only the shape.
+
+**Joint Arms of the Defiled.** [LOCKED — built. The sprite is a placeholder.] A whip, and
+every player who fought it gets one.
+
+*What it is made of.* The animal. A bone joint behind the hand, a lash of raw meat in
+three thinning lengths with the sinew showing where they pull apart, and at the tip its
+own tail end, opening last.
+
+*What it does.* Where it lands it throws blood off itself, the way the animal bled when it
+was cut. Five cracks in a row that land charge the next one. The charged crack glows red
+its whole length and bursts at the tip, and for eleven seconds after it everything the
+player has called hits half again as hard. The game calls that *Many Hands*.
+
+*The flavour line.* 'The end of it is the worst of it.'
 
 ---
 
@@ -1944,6 +2289,83 @@ It may combine multiple technological traditions:
 - ancient technology
 - biological components
 - supernatural materials
+
+### How It Looks
+
+**[LOCKED — the read. The sprite is built.]**
+
+It is the gun. Not a shark that carries one and not a machine in the shape of a fish: the
+weapon itself, a little over four blocks from tail to muzzle and under two tall, in the air
+over the sea with nobody holding it.
+
+It has one picture and the picture does not move. The tail does not beat, the jaw does not
+open, no fin turns. It is pointed, whole, the way a thing in a hand is pointed, and to face
+the other way it does not swing round: it is one way and then it is the other. The nose is
+always on what it is about to shoot.
+
+**The animal.** A shark from the side. The hide is a dusty rose going to maroon in the
+shadow and along every edge, the colour of meat and not of anything that swims. The belly
+is cream, palest where it meets the hide, with an olive shadow under it. One tall fin
+stands off the back, swept towards the tail, the highest thing on it, and ahead of the fin
+the back runs dead level to the nose, straighter than a fish is. The tail is a small fork
+at the far end. A short forked fin hangs under the belly, where a hand would close.
+
+**The machine.** It has no snout. Where one would be, a barrel comes out of the head: dark
+steel, close on a third of the whole length, with a grey line along the top of it, a row of
+square vents down the side, and black underneath. The cream of the lower jaw runs out
+under the root of it. The eye is one pale dot just behind where the steel begins.
+
+**Nothing joins them.** No collar, no bolt, no seam. The steel begins where the snout
+would, and the hide runs up to it and stops. The list above has biological components in
+it, and the sprite does not show how the two were put together.
+
+**What happens to the picture.** [LOCKED — built]
+
+- **It comes up nose first.** Straight up out of the water under the player and on past
+  them, the barrel pointing at the sky. Then it turns, slowly, until the barrel is on the
+  player. Its name goes up while it turns, and under the name, *Made because it could be.*
+- **Heat.** Before it throws itself at the player the whole of it washes orange, and the
+  orange pulses. It leaves copies of itself behind it as it goes, orange, each smaller
+  than the last. Down to three tenths of its life it stops cooling, and runs orange to the
+  end.
+- **Red.** If the player runs far enough off it comes after them, and nothing but their
+  death calls it off. Until the last three tenths that shows as red in place of the
+  orange. After, it is already running too hot for the red to show.
+- **The spin.** Through the middle of the fight it will plant itself, shake, and turn on
+  the spot at a steady rate, round and round, firing along its own nose.
+- **The sight.** Late on, a thin crimson line runs out from the muzzle, most of a screen
+  long, with bands travelling down it away from the gun. It swings onto the player,
+  brightens, and stops where they were standing, and the nose stays on the line and not on
+  them. The round goes where the line stopped.
+- **It carries its damage.** With a third of its life gone it starts to smoke, the same
+  powder smoke the player's own guns cough, and now and then a small amber arc jumps
+  somewhere on the hull. Down to three tenths the smoke is close to constant, and the arcs
+  are bigger and come many times as often. None of it hurts anyone. It is there so the
+  machine looks like it is losing.
+- **The hand-overs.** Twice the fight stops and it tears. The first time, three failures
+  a second apart: arcs at one point on the hull, and a jet of smoke out through the break.
+  The second time the sky does it: three bolts come down round it, pale blue-white, and
+  the rain starts on the first. Then five small failures along the hull. The fight does
+  not say whether the weather is its doing.
+
+**How it dies.** [LOCKED — built] It stops in the air. Then it fails in four places in the
+body of it, one after another, each sooner than the last, and every one goes the same way:
+first the place bleeds, and then it sparks and vents smoke. The blood comes first, and it
+is how the player learns where the next failure will be. None of the four closes. By the
+end all four are bleeding and smoking at once. A pause. Then the hull lets go: smoke, fire,
+and blood in a full circle.
+
+Hit, it sounds like metal for the whole fight. Nothing before the end says there was blood
+in it.
+
+It pays no coin. What is left of it is the gun, dented, and the gun's one line of lore:
+*Its maker would know where it bends. She may still sell the wires.* (§XXI).
+
+**[PROPOSAL — the reading.]** *Made because it could be* is her sentence with the excuse
+taken out (§XXI, *if it works, it was worth making*). It does not even claim to work.
+
+**[OPEN]** What bleeds. The book has a machine with an animal in it or an animal with a
+machine in it, and does not choose.
 
 ---
 
