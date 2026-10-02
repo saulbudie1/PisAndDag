@@ -31,7 +31,7 @@ Items: {
 
 	PieceOfPaper: {
 		DisplayName: Piece of Paper
-		Tooltip: 
+		Tooltip:
 			'''
 			Torn in corners and folded in four.
 			There is something written on it.
@@ -150,10 +150,7 @@ Items: {
 
 	MakeshiftAltar: {
 		DisplayName: Makeshift Altar
-		Tooltip:
-			'''
-			Used to write incantations and spells
-			'''
+		Tooltip: Used to write incantations and spells
 	}
 
 	TreeBranchStaff: {
