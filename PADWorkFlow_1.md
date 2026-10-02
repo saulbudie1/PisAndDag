@@ -3458,3 +3458,386 @@ reworded to what the item still says, which is that it names nobody.
 ground with caves under it or buildings on it (the simulator's ground is a height map); the
 moves in multiplayer (the rules are kept, but nothing has run); the arms' fling against the
 balls leaving the hands; how the steam and the red pass read against the Mile's grey.
+
+---
+
+## 16.24 Later in session 7: the chopped forest: its floating islands off and its giants cut; and the shrine's chest
+
+The ask, in the user's words, as it came, with map screenshots and a picture of a stump:
+
+> for the chopped forest, try to not make these floating lands too much
+> make it flatter and if there is a giant living tree, make sure its cut and removed the upper
+> half, leaving only the stump of 5 blocks from the nearest ground
+
+> stump like this , keep the under roots tho
+
+> i like this flat part is this generated in every world? if so you did a good job and dona
+> quinn will spawn here
+
+A first make levelled the whole Cleared Ground into one field, lakes and hills and all. It was
+shown as a picture and never delivered. On seeing it:
+
+> ts too flat id like the cracks a bit but leave like half of the surface (in the middle) to
+> meet and fight dame quilt
+
+> re add lumps of dirts and ponds and cracks of earth, just remove the floating islands
+
+> and leaf walls
+
+> on the ground
+
+> Add also 5 life crystal in blood shrine chest and 7 other random stuffs including bone
+> x(20-25)
+
+> why are we selecting the caves of a different biome? im only talking about the chopped forest
+> on the side of the mile
+
+A second make kept the ground as it lay but for the middle half, which it made level for the
+fight. That was shown as a picture too, with the two ponds in the middle marked as filled, and
+never delivered. On seeing it, with the middle of the picture cut out and sent back:
+
+> keep these too
+
+> too flat kills it character
+
+**So nothing is levelled.** The pass that was delivered does two things to the Cleared Ground
+and leaves the rest of it as vanilla made it: it takes the floating islands off, with the leaf
+walls that stood under them, and it cuts a living tree to a stump. There is no made flat for
+'Dame' Quilt: she comes where she always did (`DonaQuinnEncounter`, not changed), 30 tiles onto
+the Cleared Ground from either end.
+*[Superseded later in session 7: there is still no made flat, but she is now put down where the
+ground is flattest and comes when a player is near that, and `DonaQuinnEncounter` is changed for
+it. See §16.25.]*
+
+- *"and leaf walls / on the ground"* was read with "just remove": the leaf walls on the ground
+  go with the islands. The world file says what they are (below): the wall standing under a
+  floating island, and nowhere else.
+- *The question about the other biome's caves* was about tool work, not the mod: other
+  stretches of the world file were being read as samples of what a floating island and a cave's
+  roof look like, and as test ground. The pass touches the Cleared Ground and nothing else.
+
+**What the world file said.** The answers were read out of `Worlds/Far_Tract_of_Potions.wld`
+(the Grand world in the screenshots, made 2026-10-01, sea on the left) rather than off the map:
+a reader written from `WorldFile.LoadFileFormatHeader`, `LoadHeader` and `LoadWorldTiles`
+(version 279), with `Main.tileSolid`, `tileSolidTop` and `tileFrameImportant` taken from the IL
+that fills them.
+
+- *The floating land is vanilla's.* Its **Tunnels** pass: `maxTilesX * 0.0015` of them (18 in a
+  Grand world), anywhere but the middle fifth of the map. Each is ten points 5 to 10 tiles apart,
+  11 to 15 tiles over the first tile of its own column, and at each point two
+  `TileRunner(strength 5-7, steps 6-8, dirt, addTile: true)`, one going each way. The result is a
+  crust of soil a few tiles thick hanging over the ground on nothing, and where two runs cross,
+  a lattice of them. Two are on this world's Cleared Ground: x 9374 to 9465, across its edge at
+  9440, and x 9594 to 9673, with the living tree grown through it.
+- *The leaf walls are the islands'.* Vanilla lays dirt wall in every column from its first tile
+  down, and under a crust the first tile is the crust, so the room under it is walled; its
+  Grass Wall pass later turns wall like that to `GrassUnsafe` and `FlowerUnsafe` where it stands
+  in the open beside grass. In this world there are 2979 cells of those two walls standing in
+  the open above the ground, and every one of them is in a column with a crust over it. So
+  taking the island and what stood under it takes all the leaf wall there is on the ground.
+- *The flat part the user likes is vanilla's too.* x 9465 to 9590, y 654 to 659: a level run of
+  the Terrain pass, and luck. Nothing in the mod made it, no other world was promised one, and
+  none is now.
+- *She does come there.* `DonaQuinnEncounter` begins when a player is 30 tiles onto the Cleared
+  Ground and puts her down 1150 px further toward the Mile: x 9470 and 9542 in this world, both
+  on that stretch.
+- *The living tree* stands at x 9653 to 9659, grown through the second island, its foot some 10
+  tiles over the ground under it.
+- *Three of the four Mile signs are on a sky island.* `MileSignsPass` looked for the ground from
+  `worldSurface * 0.35` down, which is over the islands, and one hangs over the way in (x 10226
+  to 10316, y 380 to 440). The signs are at y 417 to 422; only "god bless their poor souls" is on
+  the ground.
+- *The cleanup was emptying the room under the tree.* `GraceCleanupPass.Strip` takes every framed
+  tile from `worldSurface - 400` to `worldSurface + 40`, which under the Cleared Ground is some
+  150 rows of underground. Every other living tree in this world has its platforms, doors, chest
+  and loom; this one has none of them.
+
+**The pass** (`Content/Structures/ClearedGroundPass.cs`, new; "PAD Cleared Ground", inserted
+after `Gem Caves`, so it runs first of the passes there). After everything that carves and
+before everything that grows: vanilla's grass comes up afterwards on the ground an island leaves
+bare, and the trees it plants are what `GraceCleanupPass` turns into the stumps, as before. Its
+ground is the Cleared Ground and sixty tiles more (`ClearedStart` to `MileStart + 60`), the far
+end of where `WastedMilePass` may roll its edge.
+
+| | |
+|---|---|
+| A crust | In one column: ground 12 thick or less (`SlabMost`) with 3 or more rows that are not ground under it (`SlabGap`) and ground under those. Looked for from `Layout.ScanTop` down. A living tree's wood and leaves are passed over like air: a tree grown through a crust does not make it ground. |
+| A run | Columns with a crust, side by side. Up to 8 columns without one do not end a run (`EdgeBreak`): they are what holds one piece to the next. A living tree standing in it ends nothing, however wide. Runs are looked for from 120 columns before the jungle end to 120 past the far end (`EdgeWalk`); one with any column on this ground is this pass's, all of it, so no half of one is left at the edge. |
+| Floating land, or a cave's roof | Both are thin with room under them. The difference is where the top is. The ground either side of a run is the middle height of 6 columns of plain ground, looked for from 2 to 40 columns past each end; a straight line from the one to the other is the ground the run stands on. A run is floating land when the middle one of its columns has its top 5 or more rows over that line (`IslandRise`). A cave's roof lies level with the ground beside it, and is left: the cracks and the pits stay. |
+| Taking it off | Every column of crust is cut down to what is under its room: the water if there is any, else the ground. Under the first crust anything else thin goes too while it stands 5 rows over the line, however small the room under it, which is what takes a lattice whole. A thick column standing in a run was holding it up, and is cut to the higher of the two floors beside it. Everything over the cut goes: soil, the walls that stood under the island, liquid, anything standing on it, a chest's entry with its tiles; a living tree's wood and heartwood stay for the saw. The ground under it and any water lying on that are not touched. Then the look is taken again, four times at the most: what one piece hid is seen once it is gone. |
+| A living tree | Every tree with wood in this ground's columns is gathered whole, through its wood, its leaves and its heartwood wall (`LivingWoodUnsafe`; the wall is what joins a trunk to its foot across the room vanilla leaves at the bottom of it). The ground under it is found by walking under the crown from beside the tree, once from each side: each column's is looked for within 6 rows of the last one's, a row more for every column that had none, which is what keeps a crown, a branch or a root from being taken for it. Under the trunk each walk only knows its own side, and the higher of the two is taken. Where the trunk or its hollow stands at that height is a foot. A foot on this ground: the tree is cut, every trunk of a clump. All its feet past the ends: left alone, crown and all. No foot (it stood on an island that has gone): everything of it over the ground goes. |
+| The cut | 5 blocks over the ground beside the foot (`Stump`), or on the tree's own top if it has one within 2 rows of that: wood lying across its hollow, the way vanilla closes the room at the foot of a trunk. Over the cut, wood is left only as splinters (one of 3 or 4, perhaps a second of 2 or 3, stubs of 1) on the columns with heartwood behind or beside them, and heartwood up to 6 rows, highest at one column and falling away from it. All leaves go. Off the trunk nothing is left above the ground. At and under the cut everything is kept: the foot, the roots, the hollow, the room, and what stands in them. |
+| The foot | Within 3 columns of its hollow the stump is one piece: soil in it becomes living wood, and there is bark either side of the hollow the whole height of the stump (vanilla leaves that room open at the sides on some trunks, and the top would hang on wall alone). Further out the roots are left as roots. |
+
+**Also changed.**
+
+- `Layout.ScanTop`: the row `Layout.Ground` starts from, for searches that want more of the column
+  than its first tile.
+- `MileSignsPass`: the signs stand on `Layout.Ground`, which starts under the sky islands. Its own
+  search is gone.
+- `GraceCleanupPass.Strip`: a framed tile with heartwood wall behind it is left. That is the
+  inside of a living tree and nothing else.
+
+**The shrine's chest** (`PADStructureSystem.FillShrineChest`). The Orb first, as before; then 5
+Life Crystals; then seven other things in no order: 20 to 25 bones, and six picked from eighteen
+(`ShrineSpare`), no two the same, each with its own least and most. The user gave the Life
+Crystals, the seven and the bones; the eighteen and their stacks are mine: torches 15 to 40, rope
+30 to 70, glowsticks 10 to 25, Lesser Healing Potions 3 to 6, Recall Potions 1 to 3, Ironskin,
+Regeneration and Swiftness Potions 1 to 2 each, musket balls and wooden arrows 40 to 90, throwing
+knives and shuriken 20 to 50, bombs 3 to 8, iron bars and lead bars 5 to 12, silver coins 20 to
+70, cobweb 10 to 30, candles 1 to 3. `/struct` fills it the same way. A shrine already standing
+in a world keeps the chest it has.
+
+**How it was checked.** There is no game here, so the pass was run on the user's own world.
+
+- A Python port of the pass, written first and worked on against the world file until the result
+  was right to look at.
+- Then the mod's own `ClearedGroundPass.cs`, unchanged, compiled against stand-ins for the dozen
+  game types it touches (`Main.tile`, `Tile`, `WorldGen`, `GenVars`, `Layout`) and run on windows
+  of the world file, with a small generator the port has too in place of `UnifiedRandom`, so the
+  two make the same rolls.
+- **134 cases, every tile compared** (there, type, wall, liquid, half block): no difference in
+  any, and no floating land left in any when the look is taken once more. They are the Cleared
+  Ground as it is; 131 other stretches of the same world in both directions, as test ground and
+  nothing more (forest with the four other living trees at every position against both ends,
+  the two deep trees by the sea, jungle, snow, desert, the evil); and two made up: the tree with
+  everything of it under its island taken away, so it stands on the island alone (all 1866 of
+  its tiles go), and a chest and a door on one island and a chest under the other (gone). Across
+  them 380 pieces of floating land were taken and 139 living trees cut.
+- Then the Cleared Ground mirrored with the real constants, 7 rolls, and 12 more rolls on it as
+  it is: the same.
+- On Far Tract of Potions: both islands off, the first out to x 9374, 66 columns past the jungle
+  end. 3806 cells changed, every one in the columns of the two islands and the tree (x 9374 to
+  9465 and 9594 to 9675), none lower than y 661. What a walker stands on is the same in every
+  other column from 9300 to 10520; the water is the same 8174 cells, the pool under the first
+  island among them; no wall is left standing in the open over the ground (1059 cells before,
+  553 of them leaf). The tree a stump: cut at y 652, five over the ground at 657; across 40
+  rolls its wood stands 8 or 9 rows over the ground and its heartwood 9 to 11, the hollow open
+  at the top; all 818 cells of its wood and heartwood at and under the cut are as they were.
+
+A fault found by counting what had changed under the ground, and mended before delivery: under
+a trunk the first ground in the column is the soil over the tree's room, some fifty rows down,
+and it was being taken for a crust with room under it, so the cut ran down the side of the shaft
+and took the room's wall with it.
+A crust is now only looked for where no wood or heartwood is met first, the inside of a tree is
+not room, nothing is cut deeper than a crust can reach under the ground beside, and what holds an
+island up is not cut under that ground at all.
+
+**Verified for this** (tML 1.4.4 IL): `Tile.ClearTile()` clears slope, half block, active and
+actuated, and leaves wall and liquid; the Tunnels and Floating Islands passes as above;
+`Grass Wall`, at a grass tile that has dirt or grass wall and an open cell with no wall beside
+it, calls `Spread.Wall2(…, 63)` on a cell beside it that has dirt or mud wall and no solid tile,
+and afterwards makes one wall 63 in ten a 65; `Spreading Grass` goes down every column and calls
+`SpreadGrass` on a dirt tile when the open cell over it has no wall, which is what grasses the
+bare ground an island leaves; `Wood Tree Walls` gives a tile `LivingWoodUnsafe` wall (244) when
+each of the eight round it is living wood or has that wall already, down to `Main.worldSurface`;
+`Main.tileSolid[LeafBlock]` is set false in Living Trees, true in Remove Water From Sand, false
+again in Smooth World and true again only in Piles, so through this pass a leaf is not solid and
+living wood is; no pass turns soil's solidity off; `WorldGen.genRand` makes itself when it is not
+there, so the chest can be filled from `/struct` in a running world; `Chest.item` is an `Item[]`,
+`Item.maxStack` and `stack` are fields; `WallID.LivingWoodUnsafe` 244, `LivingWood` 78,
+`GrassUnsafe` 63, `FlowerUnsafe` 65; `ItemID.LifeCrystal`, `Bone` and the eighteen. This world's
+Living Mahogany trees are all underground (y 2148 to 2369), and nothing after Living Trees was
+found putting a giant on the surface.
+
+**Mine, not asked for** (all in `RELEASE_TODO.md`): the cut moves up to 2 rows to sit on the
+tree's own top; the stump is measured from the higher of the ground on its two sides; the signs'
+ground; the cleanup leaving the inside of a tree; the six other things in the chest; every number
+the user did not give (they gave the 5 blocks, the 5 crystals, the 7 and the 20 to 25).
+
+**Found on the way, not fixed:**
+
+- `GraceCleanupPass.Strip` reaches `worldSurface + 40`. Under the Cleared Ground, the Mile and
+  the plain that is about 150 rows of underground with nothing framed left in it: in this world
+  no pot, chest, heart or stalactite between y 700 and 845 under the Cleared Ground, and 590
+  pots, 4 hearts and 699 stalactites in the 150 rows below that.
+- The surface snow in this world runs x 6332 to 7306, 29 tiles from spawn (6303).
+  `Layout.SnowStart` and `SnowEnd` say 6825 to 7475. Not looked into.
+- `Layout.Ground`, and so `WastedMilePass`, takes a living tree's branch for the ground (wood is
+  solid). With the trees on the Cleared Ground cut it no longer has one to find there.
+- The built `.tmod` is 77.8 MB, and 71.9 MB of it is `Claude outputs` (91 files, 15 of them
+  `.py`): `build.txt`'s `buildIgnore` does not name the folder. Adding `Claude outputs\*, *.py`
+  was offered and not answered; `build.txt` is as it was.
+- A crust whose underside is higher than `Layout.ScanTop` is not seen: one standing on the very
+  highest ground in the world. On this world's Cleared Ground the crusts top out at y 638, and
+  the highest ground in the world is at 485.
+- Something standing on the ground under an island goes with the island: a surface chest
+  vanilla happened to put in that room. Not seen in this world.
+
+**Not yet confirmed in game:** all of it. It changes new worlds only: Far Tract of Potions keeps
+its islands, its tree, its signs and its shrine's chest. Riskiest: a floating island the test of
+five rows lets through, or a cave's roof it takes (365 pieces across one world's terrain were
+looked at as counts, and some of them as pictures); the stump whose ground came down a long
+way, which is the tree's foot and roots, wide, not a trunk; the hollow open on top of a stump,
+which is a long fall into the room; whether vanilla grasses the ground an island leaves as the
+IL says it does.
+
+**The tools are not in the mod folder.** The world reader, the port, the stand-ins and the
+comparison lived in the session's workspace and went with it. What they were is above; the
+reader is forty lines once the three IL methods are read.
+
+---
+
+## 16.25 Later in session 7: 'Dame' Quilt's box: the flattest place, the walls, Boss Active
+
+The ask, in the user's words:
+
+> Check how calamity creates its boxed arena for calamitas, create an invisible one for Dame
+> Quilt. its width will be the distance between the flat area (the stump also count) (prob
+> half that forest). center at the middle of player and her spawn point.
+>
+> The camera will refuse to move past that and player will not be able to go past that screen
+> edges, also destruction and build is disabled ( prob a buff called Boss Active)
+
+Two things were asked back before anything was written, because the flat ground measured in
+Far Tract of Potions was not half the forest (it was nearer three tenths), and "Boss Active"
+could have meant every boss. The answers:
+
+> Where it is the flattest, spawn her, then measure mid point and always half forest
+
+> Only in her arena (Recommended)
+
+**How these were read.** She is put down where the Cleared Ground is flattest. The box's middle
+is halfway between the player and where she was put down, as they stand at that moment. Its
+width is always half the Cleared Ground: 445 tiles, whatever the flat ground measures. The
+buff is on a player only while they are inside her box.
+
+**How Calamity does it** (read in the user's checkout for how it works; nothing copied):
+
+- `Systems/Mechanic/ArenaWallSystem.cs`: a `ModSystem` with a static list of boxes. A box has a
+  middle, four distances (up, right, down, left), a border to draw, and a condition that says
+  when it is done with; the system takes finished boxes off before the entities update, draws
+  the rest after the tiles, and clears the list when the world unloads. A `ModPlayer` beside it,
+  in `PreUpdateMovement`: for a box the player is inside (or within 300 pixels of), their
+  position is put back inside on each side, then where they will be next tick is looked at and
+  their speed cut so they land exactly on the wall.
+- `NPCs/SupremeCalamitas/SupremeCalamitas.cs`: the box is 2500 pixels square (2000 in death
+  mode), its middle where she is when she appears, sent with her; made in her AI, done with when
+  she is gone. A player outside it enrages her.
+- It does not hold the camera, and it does not stop building. `Buffs/StatBuffs/BossEffects.cs`
+  (their "a boss is near" buff) is only a marker: debuff, not saved, no clock, the nurse cannot
+  take it off.
+
+**What was made.**
+
+| Piece | Where | What it does |
+|---|---|---|
+| `BossArena` (static) | `Content/Combat/BossArena.cs` (new) | The box: two walls, x in the world. `Keep(left, right)` is asked every tick by whoever wants it, on every machine; it stands through the players' next update after the last ask and is down the tick after, so a boss that dies, leaves or unloads cannot leave anyone walled in. No top, no bottom, nothing drawn. One at a time. |
+| `BossArenaPlayer` | same file | A player whose middle is between the walls while the box stands is held: at the end of every tick (`PostUpdate`) they are put back inside and stopped, as vanilla does at the world's edge (`Player.BordersMovement`), and given Boss Active for two ticks. Further than 320 px past a wall they are let go (a mirror, a bed). Somebody outside is left alone; somebody who walks in is held from then. |
+| the camera | same file | A detour on `Main.ClampScreenPositionToWorld`, vanilla's own last word on the camera, run after it: the same sum with the box's walls for the world's edges, so nothing past a wall is ever on screen whatever the zoom and whatever any hook did to the camera before. Eased in and out over 40 ticks, so the picture does not jump when the box goes (she is thrown with the player against a wall) or when somebody walks in. |
+| `BossArenaTiles`, `BossArenaWalls` | same file | `CanExplode` is false for every tile and wall in a standing box. |
+| `BossActive` | `Content/Buffs/BossActive.cs`, `.png` (new) | The buff. Its `Update` sets `Player.noBuilding`. Debuff, not saved, no clock, the nurse cannot take it off. "You cannot build, mine or leave until the fight is over". |
+| her box | `DonaQuinn.cs` | `boxX`, sent with her; asked for in her AI in every phase before `Buck`: from the road to the moment she is thrown. Down for the fall, the plea, the talk, and when she rides off. |
+| the flattest place | `DonaQuinnEncounter.cs` | Below. `BoxHalf` = a quarter of the Cleared Ground in pixels (3560). |
+| the buff's words | `Localization/en-US_Mods.PisAndDag.hjson` | `Buffs.BossActive`: its name and its line. |
+
+**The flattest place.** Looked for once in a session, on the server, the first time it is
+wanted, from where that player stands (not saved). A walk along the ground from under their
+feet, the whole length of the Cleared Ground both ways: up what rises in front of the walker,
+down what drops, under whatever hangs over them. Then every column is asked how far the flat
+ground runs either side of it, and the one with the most on its shorter side is the place.
+
+| Number | Value | Mine or theirs |
+|---|---|---|
+| Flat ground keeps within this many rows of where it is at the column asked | 6 | mine |
+| and steps this many rows at most from one column to the next | 2 | mine |
+| with this many rows of air over it, and no water in them | 3 | mine |
+| A living tree in the way is passed over (its stump counts, as asked), for this many columns | 40 | mine |
+| A tree is in a column when its wood, leaves or heartwood are within this many rows over the ground | 14 | mine |
+| The place is kept this far in from either end of the Cleared Ground | 114 tiles | mine |
+| She comes when a player is within this of it | 1350 px | mine |
+| She is put down on it if the player is this far from it or further; nearer, this far from them on its side, then on their other side | 1150 px | the old number |
+| Within this many tiles of that, the nearest place Triunfo can stand | 6 | mine |
+| The box's width | half the Cleared Ground, 445 tiles | theirs |
+| The box's middle | halfway between the player and her | theirs |
+
+If there is nothing under a player to start the walk from (a platform, a living tree, a ledge's
+edge) it is looked for again the next time, and after twenty times she comes as she did before:
+anywhere on the Cleared Ground. `/dona` now says where the place is, and `/dona reset` forgets
+it so it is looked for again.
+
+**When she comes has changed with it.** She used to come the first time a player stood thirty
+tiles onto the Cleared Ground, from either end. She now comes the first time a player stands on
+it within 1350 pixels of the flattest place, which is what lets her be put down there off their
+screen. A player who never stands that near it never meets her; one who crosses the Cleared
+Ground on foot passes within it.
+
+**In Far Tract of Potions.** The flattest place is x 9567 (x 9566 if the walk starts from the
+Mile's side): 127 tiles of flat ground toward the jungle, which is all there is of the Cleared
+Ground that way, and 128 toward the Mile. The walk goes under the two floating islands this
+world still has, and the living tree at x 9642 to 9668 is passed over. Coming from the jungle
+she comes when the player reaches x 9483 (the check is every half second, so a runner is a few
+tiles past that), and for a player standing there the box runs from x 9303 to x 9748: 137 tiles
+of it lie before the Cleared Ground's start, its left wall is in the lake there (x 9285 to 9347)
+and its right wall in the pond (x 9706 to 9757). Coming from the Mile she comes at x 9651 and
+the box is x 9387 to x 9832.
+
+**Boss Active stops** blocks and walls being placed, the pick, the axe, the hammer, the shovel,
+buckets and the drill (that is what vanilla's flag stops), and the box stops explosions. **It
+does not stop** a tile put down by a projectile (a dirt bomb, the Sandgun), liquid from a bomb
+or a rocket, wire, paint, or a weapon cutting grass and breaking pots: vanilla has no one place
+those go through.
+
+**She is not held by the box.** Nothing in her fight was changed. Everything she does is aimed
+at the player, who is inside, so she is never far outside it; but a charge still rides on 300
+pixels past the player before she pulls up, so with the player's back to a wall she goes off
+their screen for about two seconds and comes back. The other way to do it (she pulls up at the
+wall) would let a player with their back to a wall never be reached by a charge.
+
+**How it was checked.** Nothing was run in the game.
+
+- The mod's own `BossArena.cs`, whole and unchanged, compiled against stand-ins for the game and
+  run through ticks in the game's order: 39 checks, all passing. How long the box stands; a
+  player walking, running and thrown into each wall; one taken far out of it; one outside who
+  walks in; what can and cannot be blown up at the first and last column; the camera at four
+  screen widths and four zooms (never more than half a pixel past a wall, 6 px a frame while
+  following, home in 40 frames when let go); a box narrower than the screen; walking in from
+  outside; being taken out; vanilla's own hold on the camera coming first.
+- The flattest-place code, cut out of `DonaQuinnEncounter.cs` by a script, unchanged, with the
+  `Ground` it calls, compiled against stand-ins (`Collision.SolidCollision` and `WetCollision`
+  written from their IL) and run on the world file beside a Python version written separately.
+  On the Cleared Ground: 28 walks (14 starting places, the world both ways round) and 112
+  placements, the same in every row, kind, place and pixel. On 132 other stretches of this
+  world's terrain put where the Cleared Ground is (test ground only): 261 walks and 3393
+  placements, none different. On the Cleared Ground as a new world has it (the pass of §16.24
+  run first): the same place, the stump passed over. The slowest walk took 16 ms.
+- On those other stretches, of 1430 placements asked for she could be put down by the place in
+  1429 (exactly where meant in 839, on the player's other side in 24). The one that could not
+  had 18 tiles of flat ground either side; she is then put down the old way.
+- The whole mod compiles: 0 errors, the 13 warnings it had.
+
+**Verified in the 1.4.4 IL.** `Main.DoDraw_UpdateCameraPosition` ends: the camera modifiers,
+`PlayerLoader.ModifyScreenPosition`, `SystemLoader.ModifyScreenPosition`, both coordinates cut
+to whole numbers, `Main.ClampScreenPositionToWorld` (private static; nothing else calls it; the
+hook for it is in `TerrariaHooks.dll`). That method: what is on screen runs from
+`screenPosition + GameViewMatrix.Translation` for `screenWidth / Zoom.X`, and
+`SpriteViewMatrix.Rebuild` makes `Translation` half the view less half the view over the zoom.
+`Main.DoDraw` updates the camera before it sets the frame's zoom, so the zoom read there is the
+last frame's, for vanilla as for this. `Player.Update`: buffs, then the Old One's Army's own
+`noBuilding = true; AddBuff(199, 3)`, then `PreUpdateMovement`, the move, `BordersMovement`,
+and `PlayerLoader.PostUpdate` last. `Player.noBuilding` is read by `Mount.UseDrill`,
+`Player.PlaceThing` (before tiles and walls, after the paint tools), `ItemCheck_UseMiningTools`
+and `ItemCheck_UseBuckets`, and by nothing a projectile does. `Projectile.CanExplodeTile` asks
+`TileLoader.CanExplode`, and `ExplodeTiles` asks `WallLoader.CanExplode`; both hooks are
+`GlobalBlockType.CanExplode(int, int, int)`. `TileLoader.CanPlace` is asked only by the
+player's own placing. `Main.DoUpdate` returns before `SystemLoader.PreUpdateEntities` while the
+game is paused; `DoUpdateInWorld` runs players, then NPCs, then `PostUpdateEverything`.
+`Mod.Autoload` loads a mod's types in the order of their full names, and the player hooks run
+in that order: `BossArenaPlayer` before `RagdollPlayer`, so a thrown body comes off the box's
+wall as it comes off a wall of stone. `NPC.NewNPC` sends nothing itself.
+`BuffID.Sets.NurseCannotRemoveDebuff` is there.
+
+**Mine, not asked for** (all in `RELEASE_TODO.md`): when she comes; every number in the table
+marked mine; the walls having no top and no bottom; the camera easing in and out; the box
+holding any player in it, not only the one she stopped; nothing in it being blown up; a player
+taken more than 320 px past a wall being let go; the buff's line and its icon (a placeholder,
+`PlaceholderTextures.md`); `/dona` saying where the place is.
+
+**Not yet confirmed in game:** all of it. Riskiest: the camera with another mod's camera work
+(it runs after all of it, which is the point, but it has not been seen); her charge leaving the
+screen at a wall; two machines (each makes the box for itself from what her NPC sends; never run
+with two); a world made before §16.24, where the walk starting from a player who stands on a
+floating island finds a different, shorter flat place; the ragdoll against the wall.
+
+**The tools are not in the mod folder.** The stand-ins, the script that cuts the code out, the
+Python version and the comparisons lived in the session's workspace and went with it.

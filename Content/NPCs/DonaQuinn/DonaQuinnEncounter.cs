@@ -20,14 +20,16 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
     /// the world has not gone hard, the Eye has been seen off the way EyeFinale does it
     /// (Pugream is owed his shore: PugreamPresence.Stage), and she has not been spared or
     /// finished in this world. Then the first time a player stands on the Cleared Ground,
-    /// on their feet, with no other fight on, she comes.
+    /// on their feet, with no other fight on, near enough to the flattest of it (THE FLATTEST
+    /// PLACE, below) for her to be put down there off their screen, she comes.
     ///
     /// If it is night or raining, the world first runs on to eight in the morning, quickly,
     /// the sky going through it, and the rain stops: by tModLoader's own time rate
     /// (ModifyTimeRate), the way the Enchanted Sundial does, so everything that happens at
     /// dawn still happens. The player is held through it with the bars in. Then she is put
-    /// down off the screen on the Wasted Mile's side, on Triunfo, facing them, and the rest
-    /// is hers (DonaQuinn).
+    /// down where the ground is flattest, off their screen, on Triunfo, facing them; the
+    /// fight is boxed in round the two of them (<see cref="BoxHalf"/>, BossArena); and the
+    /// rest is hers (DonaQuinn).
     ///
     /// Stage is the world's, saved and sent: 0 never met, 1 met, 2 spared, 3 finished. At 2
     /// or more she never comes again. A fight broken off (the player fell, or went) leaves
@@ -85,11 +87,21 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         /// <summary>The run to the morning takes about this many ticks, however far it is.</summary>
         private const double SkipTicks = 150.0;
 
-        /// <summary>Where she is put down: this far off the player, on the Wasted Mile's side; nearer if there is no ground there.</summary>
+        /// <summary>
+        /// Where she is put down when it cannot be the flattest place (nobody has been near it:
+        /// /dona; or there is no standing there): this far off the player, on the Wasted Mile's
+        /// side; nearer if there is no ground there.
+        /// </summary>
         private static readonly float[] SpawnOut = { 1150f, 950f, 1350f, 800f };
 
         /// <summary>Kept clear of the Cleared Ground's ends this far, in tiles.</summary>
         private const int EdgeMargin = 30;
+
+        /// <summary>
+        /// Half of her box, in pixels: the box is always half the Cleared Ground wide, a quarter
+        /// of it either side of the point halfway between the player and where she was put down.
+        /// </summary>
+        public const float BoxHalf = (Layout.ClearedEnd - Layout.ClearedStart) * 16f / 4f;
 
         /// <summary>After a broken-off fight, this long before she can come again.</summary>
         private const int Cooldown = 3600;
@@ -105,6 +117,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             waited = 0;
             cooldown = 0;
 
+            ForgetSurvey();
             DonaScenePlayer.Forget();
         }
 
@@ -233,7 +246,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
 
             foreach (Player player in Main.ActivePlayers)
             {
-                if (OnTheClearedGround(player))
+                if (OnTheClearedGround(player) && ByTheFlattest(player))
                 {
                     Begin(player);
                     return;
@@ -341,9 +354,15 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             Sync();
         }
 
-        /// <summary>Her and Triunfo, off the screen on the Mile's side, standing, facing the player.</summary>
+        /// <summary>
+        /// Her and Triunfo, off the screen, standing, facing the player: where the ground is
+        /// flattest if the player is by it, and otherwise out on the Mile's side of them.
+        /// </summary>
         private static bool Spawn(Player player)
         {
+            if (FlatSpot(player, out float flatX, out float flatGround))
+                return PutDown(player, flatX, flatGround, Math.Sign(flatX - player.Center.X));
+
             int side = WorldMirror.Dir;
 
             foreach (float far in SpawnOut)
@@ -355,39 +374,50 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
                     if (!Ground(x, player.Bottom.Y, 64, 48, 3, 50, out float ground))
                         continue;
 
-                    IEntitySource source = new EntitySource_WorldEvent();
-
-                    int dona = NPC.NewNPC(source, (int)x, (int)ground, ModContent.NPCType<DonaQuinn>(), 0, 0f, 0f, 0f, player.whoAmI);
-
-                    if (dona < 0 || dona >= Main.maxNPCs)
-                        return false;
-
-                    int donkey = NPC.NewNPC(source, (int)x, (int)ground, ModContent.NPCType<TriunfoTheDonkey>(), dona + 1, dona + 1);
-
-                    if (donkey < 0 || donkey >= Main.maxNPCs)
-                    {
-                        Main.npc[dona].active = false;
-                        return false;
-                    }
-
-                    NPC her = Main.npc[dona];
-                    NPC him = Main.npc[donkey];
-
-                    her.ai[2] = donkey + 1;
-                    her.ai[3] = player.whoAmI;
-                    her.target = player.whoAmI;
-
-                    int toward = Math.Sign(player.Center.X - x);
-                    him.direction = toward == 0 ? -way : toward;
-                    him.spriteDirection = him.direction;
-
-                    her.netUpdate = true;
-                    him.netUpdate = true;
-                    return true;
+                    return PutDown(player, x, ground, way);
                 }
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// The two of them made, here, and her box said: its middle halfway between the player
+        /// and this, as they stand now. False if the world has no room for them.
+        /// </summary>
+        private static bool PutDown(Player player, float x, float ground, int way)
+        {
+            IEntitySource source = new EntitySource_WorldEvent();
+
+            int dona = NPC.NewNPC(source, (int)x, (int)ground, ModContent.NPCType<DonaQuinn>(), 0, 0f, 0f, 0f, player.whoAmI);
+
+            if (dona < 0 || dona >= Main.maxNPCs)
+                return false;
+
+            int donkey = NPC.NewNPC(source, (int)x, (int)ground, ModContent.NPCType<TriunfoTheDonkey>(), dona + 1, dona + 1);
+
+            if (donkey < 0 || donkey >= Main.maxNPCs)
+            {
+                Main.npc[dona].active = false;
+                return false;
+            }
+
+            NPC her = Main.npc[dona];
+            NPC him = Main.npc[donkey];
+
+            her.ai[2] = donkey + 1;
+            her.ai[3] = player.whoAmI;
+            her.target = player.whoAmI;
+
+            (her.ModNPC as DonaQuinn)?.Box((player.Center.X + x) * 0.5f);
+
+            int toward = Math.Sign(player.Center.X - x);
+            him.direction = toward == 0 ? -way : toward;
+            him.spriteDirection = him.direction;
+
+            her.netUpdate = true;
+            him.netUpdate = true;
+            return true;
         }
 
         /// <summary>
@@ -440,13 +470,407 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         }
 
         // ============================================================
+        // THE FLATTEST PLACE
+        // ============================================================
+        //
+        // She is put down where the Cleared Ground is flattest, and comes when a player is near
+        // enough to that for it to be off their screen. Where that is, is looked for once in a
+        // session (not saved; the server's), the first time it is wanted, from where that player
+        // stands: a walk along the ground they are on, the whole length of the Cleared Ground,
+        // up what rises and down what drops, under whatever hangs over it; then every column is
+        // asked how far the flat ground runs either side of it, and the one with the most on its
+        // shorter side is the place.
+        //
+        // Flat ground, from a column: ground with head room over it and no water on it, within
+        // FlatBand rows of where it is at that column, and stepping FlatStep rows at most from
+        // one column to the next. A living tree in the way is passed (a stump counts; so does one
+        // still standing, which a charge then ends in): its columns are not ground and do not
+        // end the run, for TreeMost of them.
+
+        /// <summary>She comes when a player is this near the flattest place, and is put down on it if they are this far from it or further; else this far from them, on its side of them.</summary>
+        private const float MeetFurthest = 1350f;
+        private const float MeetNearest = 1150f;
+
+        /// <summary>A player who was by it when the road began may be this much further off by the time she is put down.</summary>
+        private const float MeetSlack = 160f;
+
+        private const int FlatBand = 6;
+        private const int FlatStep = 2;
+
+        /// <summary>A living tree's wood this far over the ground, or less, is a tree standing on it.</summary>
+        private const int StumpReach = 14;
+        private const int TreeMost = 40;
+
+        /// <summary>Rows of air over ground for it to be somewhere to stand.</summary>
+        private const int HeadRoom = 3;
+
+        /// <summary>The place is kept this many tiles in from either end: the margin, and the distance she is met from, so that a player coming in at an end meets her on it.</summary>
+        private const int FlatEdge = EdgeMargin + (int)(MeetFurthest / 16f);
+
+        /// <summary>The ground a walk starts from is looked for this many rows under a player's feet.</summary>
+        private const int SeedReach = 3;
+
+        /// <summary>This many times a player on the Cleared Ground has had nothing under them to start the walk from (half a second apart), and she comes as she did before there was a place: anywhere on it.</summary>
+        private const int SurveyTries = 20;
+
+        /// <summary>She is put down within this many tiles of where she was meant to be, the nearest of them that Triunfo can stand on.</summary>
+        private const int Nudge = 6;
+
+        private const byte FlatGround = 0;
+        private const byte Water = 1;
+        private const byte Tree = 2;
+        private const byte Low = 3;
+
+        /// <summary>Looked for already: found, or given up on.</summary>
+        private static bool surveyed;
+        private static int surveyTries;
+
+        /// <summary>The place: its column in the world, -1 if there is none. Its row is the walk's (<see cref="groundRow"/>).</summary>
+        private static int flatColumn = -1;
+
+        /// <summary>How far the flat ground runs from it, toward the Cleared Ground's start and toward the Mile, in tiles.</summary>
+        private static int flatBack;
+        private static int flatOn;
+
+        /// <summary>The walk: the ground's row and what it is, for every column of the Cleared Ground, counted from its start.</summary>
+        private static int[] groundRow;
+        private static byte[] groundKind;
+
+        private static int Span => Layout.ClearedEnd - Layout.ClearedStart;
+
+        /// <summary>The world's column this many in from the Cleared Ground's start.</summary>
+        private static int Column(int k) => WorldMirror.X(Layout.ClearedStart) + WorldMirror.Dir * k;
+
+        /// <summary>How many columns in from the Cleared Ground's start this pixel is.</summary>
+        private static int Along(float x) => ((int)(x / 16f) - WorldMirror.X(Layout.ClearedStart)) * WorldMirror.Dir;
+
+        /// <summary>The middle of the flattest place's column, x in the world, in pixels.</summary>
+        private static float FlatX => flatColumn * 16f + 8f;
+
+        private static void ForgetSurvey()
+        {
+            surveyed = false;
+            surveyTries = 0;
+            flatColumn = -1;
+            flatBack = 0;
+            flatOn = 0;
+            groundRow = null;
+            groundKind = null;
+        }
+
+        /// <summary>
+        /// Near enough to the flattest place for her to be put down on it off their screen. Not
+        /// yet, if it has not been looked for and cannot be from where they stand; anywhere, if
+        /// there is no such place.
+        /// </summary>
+        private static bool ByTheFlattest(Player player)
+        {
+            if (!Survey(player))
+            {
+                if (++surveyTries < SurveyTries)
+                    return false;
+
+                // Nowhere under anybody to start the walk from, time after time: she is not
+                // kept waiting on it.
+                ModContent.GetInstance<PisAndDag>().Logger.Info(
+                    "Dona Quinn: nothing to start the walk of the Cleared Ground from; she comes anywhere on it.");
+
+                surveyed = true;
+            }
+
+            return flatColumn < 0 || Math.Abs(player.Center.X - FlatX) <= MeetFurthest;
+        }
+
+        /// <summary>
+        /// Where she is put down for a player who is by the flattest place: on it, if that is off
+        /// their screen. If they are too near it for that, the same distance she is always put
+        /// down at, on its side of them (the Mile's side if they are standing on it), and if
+        /// there is no standing there, on their other side. Within a few tiles of that, the
+        /// nearest place Triunfo can stand. False if they are not by it, or there is no standing
+        /// at any of those.
+        /// </summary>
+        private static bool FlatSpot(Player player, out float x, out float ground)
+        {
+            x = 0f;
+            ground = 0f;
+
+            if (!Survey(player) || flatColumn < 0)
+                return false;
+
+            float to = FlatX - player.Center.X;
+
+            if (Math.Abs(to) > MeetFurthest + MeetSlack)
+                return false;
+
+            int toIt = to != 0f ? Math.Sign(to) : WorldMirror.Dir;
+            float far = MathHelper.Clamp(Math.Abs(to), MeetNearest, MeetFurthest);
+
+            if (Stand(player.Center.X + toIt * far, out x, out ground))
+                return true;
+
+            // Only with the place itself too near them: either side of them is then by it.
+            return Math.Abs(to) < MeetNearest && Stand(player.Center.X - toIt * far, out x, out ground);
+        }
+
+        /// <summary>
+        /// Somewhere for Triunfo within a few tiles of this x, on the walk's ground: with ground
+        /// under three of his four columns, as anywhere else she is put down; and if the ground
+        /// there steps too often for that, under two of them.
+        /// </summary>
+        private static bool Stand(float want, out float x, out float ground)
+        {
+            x = 0f;
+            ground = 0f;
+
+            for (int need = 3; need >= 2; need--)
+            {
+                for (int n = 0; n <= Nudge * 2; n++)
+                {
+                    // 0, 1, -1, 2, -2, ... tiles off it.
+                    float at = want + ((n + 1) / 2) * (n % 2 == 1 ? 16f : -16f);
+                    int k = Along(at);
+
+                    if (k < 0 || k > Span || groundKind[k] != FlatGround)
+                        continue;
+
+                    if (Ground(at, groundRow[k] * 16f, 64, 48, need, FlatStep + 2, out ground))
+                    {
+                        x = at;
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// The flattest place, looked for if it has not been: from the ground under this
+        /// player's feet. True once it has been looked for, whether or not there is one. False
+        /// while it cannot be (they are not on the Cleared Ground, or there is nothing under
+        /// their feet to start the walk from: a platform, a living tree, a ledge's edge), and
+        /// then it is looked for again the next time it is wanted.
+        /// </summary>
+        private static bool Survey(Player player)
+        {
+            if (surveyed)
+                return true;
+
+            if (!ExtraLargeWorld.Active)
+                return false;
+
+            int seed = Along(player.Center.X);
+
+            if (seed < 0 || seed > Span)
+                return false;
+
+            int x = Column(seed);
+            int feet = (int)((player.Bottom.Y - 8f) / 16f);
+            int under = -1;
+
+            for (int y = feet; y <= feet + SeedReach; y++)
+            {
+                if (IsGround(x, y))
+                {
+                    under = y;
+                    break;
+                }
+            }
+
+            if (under < 0 || TreeColumn(x, under))
+                return false;
+
+            int span = Span;
+            int[] row = new int[span + 1];
+            byte[] kind = new byte[span + 1];
+
+            int at = Walk(seed, under, row, kind);
+            int last = at;
+
+            for (int k = seed + 1; k <= span; k++)
+                last = Walk(k, last, row, kind);
+
+            last = at;
+
+            for (int k = seed - 1; k >= 0; k--)
+                last = Walk(k, last, row, kind);
+
+            int best = -1, bestShort = -1, bestBoth = -1, back = 0, on = 0;
+
+            for (int c = FlatEdge; c <= span - FlatEdge; c++)
+            {
+                if (kind[c] != FlatGround)
+                    continue;
+
+                int a = Reach(row, kind, c, -1);
+                int b = Reach(row, kind, c, 1);
+                int least = Math.Min(a, b);
+
+                if (least > bestShort || (least == bestShort && a + b > bestBoth))
+                {
+                    best = c;
+                    bestShort = least;
+                    bestBoth = a + b;
+                    back = a;
+                    on = b;
+                }
+            }
+
+            groundRow = row;
+            groundKind = kind;
+            flatColumn = best < 0 ? -1 : Column(best);
+            flatBack = back;
+            flatOn = on;
+            surveyed = true;
+
+            ModContent.GetInstance<PisAndDag>().Logger.Info(best < 0
+                ? "Dona Quinn: no flat ground on the Cleared Ground; she comes anywhere on it."
+                : $"Dona Quinn: the Cleared Ground is flattest at x {flatColumn} (row {row[best]}): {back} tiles of flat ground toward its start, {on} toward the Mile.");
+
+            return true;
+        }
+
+        /// <summary>One column of the walk, from the row of the one before: a living tree is passed at that row; else the ground there, and what it is.</summary>
+        private static int Walk(int k, int from, int[] row, byte[] kind)
+        {
+            int x = Column(k);
+
+            if (TreeColumn(x, from))
+            {
+                row[k] = from;
+                kind[k] = Tree;
+                return from;
+            }
+
+            int at = Follow(x, from);
+
+            row[k] = at;
+            kind[k] = KindAt(x, at);
+            return at;
+        }
+
+        /// <summary>
+        /// The ground in this column for a walker who stood at row <paramref name="from"/> in the
+        /// one before: the top of what rises in front of their feet, however high, and otherwise
+        /// the first ground at or under their feet, however far down.
+        /// </summary>
+        private static int Follow(int x, int from)
+        {
+            int y = from;
+
+            if (IsGround(x, y - 1))
+            {
+                y--;
+
+                while (y > 10 && IsGround(x, y - 1))
+                    y--;
+
+                return y;
+            }
+
+            int bottom = Main.maxTilesY - 10;
+
+            while (y < bottom && !IsGround(x, y))
+                y++;
+
+            return y;
+        }
+
+        /// <summary>What the ground at this row is to stand on: under something low, under water, or ground.</summary>
+        private static byte KindAt(int x, int row)
+        {
+            for (int y = row - HeadRoom; y < row; y++)
+            {
+                if (IsGround(x, y))
+                    return Low;
+            }
+
+            for (int y = row - HeadRoom; y < row; y++)
+            {
+                if (WorldGen.InWorld(x, y) && Main.tile[x, y].LiquidAmount > 0)
+                    return Water;
+            }
+
+            return FlatGround;
+        }
+
+        /// <summary>
+        /// How many columns the flat ground runs from this one, this way (-1 toward the Cleared
+        /// Ground's start, 1 toward the Mile).
+        /// </summary>
+        private static int Reach(int[] row, byte[] kind, int c, int way)
+        {
+            int span = row.Length - 1;
+            int last = row[c];
+            int trees = 0;
+            int got = 0;
+
+            for (int k = c + way, n = 1; k >= 0 && k <= span; k += way, n++)
+            {
+                if (kind[k] == Tree)
+                {
+                    if (++trees > TreeMost)
+                        break;
+
+                    continue;
+                }
+
+                if (kind[k] != FlatGround || Math.Abs(row[k] - last) > FlatStep || Math.Abs(row[k] - row[c]) > FlatBand)
+                    break;
+
+                trees = 0;
+                last = row[k];
+                got = n;
+            }
+
+            return got;
+        }
+
+        /// <summary>A living tree stands in this column at this row: its wood, its leaves or its heartwood, from a stump's height over the row to a step under it.</summary>
+        private static bool TreeColumn(int x, int row)
+        {
+            for (int y = row - StumpReach; y <= row + FlatStep; y++)
+            {
+                if (!WorldGen.InWorld(x, y))
+                    continue;
+
+                Tile tile = Main.tile[x, y];
+
+                if ((tile.HasTile && LivingTree(tile.TileType)) || tile.WallType == WallID.LivingWoodUnsafe || tile.WallType == WallID.LivingWood)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static bool LivingTree(ushort type)
+        {
+            return type == TileID.LivingWood || type == TileID.LeafBlock
+                || type == TileID.LivingMahogany || type == TileID.LivingMahoganyLeaves;
+        }
+
+        /// <summary>Ground: a solid block that is not a platform, not a made thing (a door is solid too) and not a living tree. As ClearedGroundPass has it.</summary>
+        private static bool IsGround(int x, int y)
+        {
+            if (!WorldGen.InWorld(x, y))
+                return false;
+
+            Tile tile = Main.tile[x, y];
+
+            return tile.HasTile && !tile.IsActuated && Main.tileSolid[tile.TileType] && !Main.tileSolidTop[tile.TileType]
+                && !Main.tileFrameImportant[tile.TileType] && !LivingTree(tile.TileType);
+        }
+
+        // ============================================================
         // BY HAND (/dona, DonaQuinnCommand)
         // ============================================================
 
         /// <summary>
         /// The road, now, for this player, wherever they are: none of the trigger's checks of
         /// place, progress or once only. Night or rain still runs the world on to the morning
-        /// first, as it would. Null when it started; why not when it did not.
+        /// first, as it would. She is put down on the flattest place if they are by it, and off
+        /// on the Mile's side of them if not; boxed in either way. Null when it started; why not
+        /// when it did not.
         /// </summary>
         internal static string Summon(Player player)
         {
@@ -488,6 +912,8 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             waited = 0;
             cooldown = 0;
 
+            ForgetSurvey();
+
             DialogueIntroductions.Known.Remove(DialogueIntroductions.Key(ModContent.NPCType<DonaQuinn>()));
             DonaScenePlayer.Forget();
 
@@ -510,7 +936,11 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             else if (cooldown > 0)
                 stage += $", back in {cooldown / 60 + 1} s at the soonest";
 
-            return "'Dame' Quilt: " + stage + ".";
+            string place = !surveyed ? "not looked for yet"
+                : flatColumn < 0 ? "none found"
+                : $"x {flatColumn}, {flatBack} tiles of flat ground toward the Cleared Ground's start and {flatOn} toward the Mile";
+
+            return "'Dame' Quilt: " + stage + ". The flattest of the Cleared Ground: " + place + ".";
         }
 
         // ============================================================

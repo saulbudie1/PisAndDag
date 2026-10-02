@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using PisAndDag.Content.Items;
 using Terraria;
@@ -20,6 +21,30 @@ namespace PisAndDag.Content.Structures
 
         /// <summary>Palette index of the shrine's chest, so the fill callback can tell it apart.</summary>
         private const int ShrineChest = 6;
+
+        /// <summary>The Life Crystals in the shrine's chest.</summary>
+        private const int ShrineLifeCrystals = 5;
+
+        /// <summary>The bones in it: this many at the least and at the most.</summary>
+        private const int ShrineBonesLeast = 20;
+        private const int ShrineBonesMost = 25;
+
+        /// <summary>How many other things lie in it beside the Orb and the Life Crystals, the bones among them.</summary>
+        private const int ShrineOthers = 7;
+
+        /// <summary>
+        /// What those other things are picked from: the thing, and how many of it at the
+        /// least and at the most. Six of these go in with the bones, no two the same.
+        /// </summary>
+        private static readonly (int item, int least, int most)[] ShrineSpare =
+        {
+            (ItemID.Torch, 15, 40), (ItemID.Rope, 30, 70), (ItemID.Glowstick, 10, 25),
+            (ItemID.LesserHealingPotion, 3, 6), (ItemID.RecallPotion, 1, 3), (ItemID.IronskinPotion, 1, 2),
+            (ItemID.RegenerationPotion, 1, 2), (ItemID.SwiftnessPotion, 1, 2), (ItemID.MusketBall, 40, 90),
+            (ItemID.WoodenArrow, 40, 90), (ItemID.ThrowingKnife, 20, 50), (ItemID.Shuriken, 20, 50),
+            (ItemID.Bomb, 3, 8), (ItemID.IronBar, 5, 12), (ItemID.LeadBar, 5, 12),
+            (ItemID.SilverCoin, 20, 70), (ItemID.Cobweb, 10, 30), (ItemID.Candle, 1, 3),
+        };
 
         public override void Load() => PADStructures.Load();
 
@@ -62,14 +87,50 @@ namespace PisAndDag.Content.Structures
 
         /// <summary>
         /// Loot for anything the shrine places. Kept in code so it can vary per world.
+        ///
+        /// The chest holds the Orb, five Life Crystals, and seven other things: twenty to
+        /// twenty-five bones and six of <see cref="ShrineSpare"/>, no two the same, in no
+        /// order, so past the first two slots it differs from one world to the next.
         /// </summary>
         public static void FillShrineChest(Chest chest, int paletteIndex)
         {
             if (paletteIndex != ShrineChest)
                 return;
 
-            chest.item[0].SetDefaults(ModContent.ItemType<GameChangingOrb>());
-            chest.item[0].stack = 1;
+            int slot = 0;
+
+            Put(chest, slot++, ModContent.ItemType<GameChangingOrb>(), 1);
+            Put(chest, slot++, ItemID.LifeCrystal, ShrineLifeCrystals);
+
+            // WorldGen.genRand makes itself if it is not there, so this is as good from
+            // /struct in a running world as it is from the pass.
+            var rand = WorldGen.genRand;
+            var others = new List<(int item, int stack)>();
+            var spare = new List<(int item, int least, int most)>(ShrineSpare);
+
+            while (others.Count < ShrineOthers - 1 && spare.Count > 0)
+            {
+                int pick = rand.Next(spare.Count);
+
+                others.Add((spare[pick].item, rand.Next(spare[pick].least, spare[pick].most + 1)));
+                spare.RemoveAt(pick);
+            }
+
+            others.Insert(rand.Next(others.Count + 1), (ItemID.Bone, rand.Next(ShrineBonesLeast, ShrineBonesMost + 1)));
+
+            foreach ((int item, int stack) in others)
+                Put(chest, slot++, item, stack);
+        }
+
+        /// <summary>One thing in one slot of a chest, never more of it than a stack holds.</summary>
+        private static void Put(Chest chest, int slot, int type, int stack)
+        {
+            if (slot < 0 || slot >= chest.item.Length)
+                return;
+
+            chest.item[slot] ??= new Item();
+            chest.item[slot].SetDefaults(type);
+            chest.item[slot].stack = Math.Clamp(stack, 1, chest.item[slot].maxStack);
         }
 
         /// <summary>

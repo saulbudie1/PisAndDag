@@ -58,7 +58,11 @@ namespace PisAndDag.Content.Structures
                 // Out from the column both ways: 0, +1, -1, +2, -2...
                 int dx = (tryX + 1) / 2 * (tryX % 2 == 0 ? 1 : -1);
                 int column = x + dx;
-                int ground = Ground(column);
+
+                // The layout's ground, which starts looking under the floating islands. The
+                // search this pass had of its own started over them, and in a world with an
+                // island above the way in it stood the signs on the island.
+                int ground = Layout.Ground(column);
 
                 if (ground < 0)
                     continue;
@@ -74,23 +78,6 @@ namespace PisAndDag.Content.Structures
 
                 return;
             }
-        }
-
-        /// <summary>World Y of the first solid tile in a column, from the sky down.</summary>
-        private static int Ground(int x)
-        {
-            if (!WorldGen.InWorld(x, 10, 10))
-                return -1;
-
-            for (int y = (int)(Main.worldSurface * 0.35); y < Main.worldSurface + 60; y++)
-            {
-                Tile tile = Main.tile[x, y];
-
-                if (tile.HasTile && Main.tileSolid[tile.TileType] && !Main.tileSolidTop[tile.TileType])
-                    return y;
-            }
-
-            return -1;
         }
     }
 }

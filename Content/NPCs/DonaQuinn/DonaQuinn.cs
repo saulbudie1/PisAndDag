@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Microsoft.Xna.Framework;
+using PisAndDag.Content.Combat;
 using PisAndDag.Content.Items.LoreItem;
 using PisAndDag.Content.UI;
 using Terraria;
@@ -45,6 +46,13 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
     /// run at a bank, leaps gaps, pulls up at cliffs and deep water, and swims. Now and then
     /// she shouts something, over her head, not in a box (Bark). Triunfo shares her life:
     /// hitting him hits her.
+    ///
+    /// THE BOX. From the road until she is thrown, the fight is boxed in (BossArena): two
+    /// walls nobody sees, half the Cleared Ground apart, their middle halfway between the
+    /// player and where she was put down. The player cannot walk past one, their camera will
+    /// not show past one, and inside them nothing is built, broken or blown up (Boss Active).
+    /// She and Triunfo are not held by it: a charge still carries her on past a player with
+    /// their back to a wall, off their screen, and she comes back.
     ///
     /// AT ONE. She cannot be killed by a blow. When one would, she is left on one and
     /// Triunfo rears again and shakes her off; the lance goes up end over end and comes
@@ -226,6 +234,12 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         /// <summary>The lance is in her hand (not thrown and still in the ground somewhere), and where it is if not.</summary>
         private bool hasLance = true;
         private float lanceX;
+
+        /// <summary>
+        /// The middle of her box, x in the world: halfway between the player and where she was
+        /// put down, as they stood then. None while it is 0.
+        /// </summary>
+        private float boxX;
 
         /// <summary>What she was doing last tick: a change is the first tick of the new phase, wherever it was decided.</summary>
         private Phase seen = (Phase)(-1);
@@ -447,6 +461,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             writer.Write(lookingDown);
             writer.Write(hasLance);
             writer.Write(lanceX);
+            writer.Write(boxX);
         }
 
         public override void ReceiveExtraAI(BinaryReader reader)
@@ -457,6 +472,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             lookingDown = reader.ReadBoolean();
             hasLance = reader.ReadBoolean();
             lanceX = reader.ReadSingle();
+            boxX = reader.ReadSingle();
         }
 
         // ============================================================
@@ -489,6 +505,16 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
 
         /// <summary>Whether this machine is the one whose player she stopped: the one that sees the scenes.</summary>
         public bool TargetIsHere => !Main.dedServ && TargetIndex == Main.myPlayer;
+
+        /// <summary>
+        /// Her box, its middle here: said once, by whoever put her down (DonaQuinnEncounter),
+        /// and sent with her.
+        /// </summary>
+        internal void Box(float middle)
+        {
+            boxX = middle;
+            NPC.netUpdate = true;
+        }
 
         /// <summary>The server (or single player) moves her on.</summary>
         private void Go(Phase phase)
@@ -535,6 +561,11 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
 
             fresh = seen != State;
             seen = State;
+
+            // Her box, for as long as it is a fight: asked for every tick, on every machine,
+            // and gone by itself the tick after she stops asking (thrown, riding off, gone).
+            if (boxX > 0f && State < Phase.Buck)
+                BossArena.Keep(boxX - DonaQuinnEncounter.BoxHalf, boxX + DonaQuinnEncounter.BoxHalf);
 
             if (Mounted)
                 Ride(donkey);

@@ -302,6 +302,11 @@ Buffs: {
 		DisplayName: Sweet Fire
 		Description: 25% increased damage with fire
 	}
+
+	BossActive: {
+		DisplayName: Boss Active
+		Description: You cannot build, mine or leave until the fight is over
+	}
 }
 
 DeathText: {

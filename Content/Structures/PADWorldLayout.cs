@@ -154,6 +154,24 @@ namespace PisAndDag.Content.Structures
         }
 
         /// <summary>
+        /// The row <see cref="Ground"/> starts looking from, for a search that wants more
+        /// of the column than its first tile: just over the highest ground in the world,
+        /// which is under every floating island.
+        /// </summary>
+        public static int ScanTop
+        {
+            get
+            {
+                int from = (int)GenVars.worldSurfaceLow - 6;
+
+                if (from < 1 || from > Main.worldSurface)
+                    from = (int)(Main.worldSurface * 0.35);
+
+                return Math.Max(1, from);
+            }
+        }
+
+        /// <summary>
         /// The lowest a floating island is allowed to hang.
         ///
         /// Vanilla rolls an island's height and then takes Math.Min of it and
@@ -689,6 +707,9 @@ namespace PisAndDag.Content.Structures
         /// A living tree is a hundred tiles of trunk and root and it does not ask what
         /// was planned for the ground it lands on. Two spans are spoken for: the pitch
         /// Grace stands on, and the field in front of it that was cleared on purpose.
+        ///
+        /// Those are the Grace plain and the Wasted Mile (NothingGrowsHere). On the
+        /// Cleared Ground a giant may still grow, and ClearedGroundPass cuts it to a stump.
         /// </summary>
         public static bool NoGiantsHere(On_WorldGen.orig_GrowLivingTree orig, int i, int j, bool patchwork)
             => !Layout.NothingGrowsHere(i) && orig(i, j, patchwork);
@@ -1375,6 +1396,14 @@ namespace PisAndDag.Content.Structures
                     if (!t.HasTile || !(Growth(t.TileType) || Layout.Clutter(t.TileType)))
                         continue;
 
+                    // What stands inside a living tree is the tree's: the platforms over its
+                    // hollow, and the chest, the loom and the doors in the room at the bottom
+                    // of it. This pass reaches a long way under the ground, and it was
+                    // emptying that room. The stump on the Cleared Ground keeps what is under
+                    // it (ClearedGroundPass).
+                    if (t.WallType == WallID.LivingWoodUnsafe || t.WallType == WallID.LivingWood)
+                        continue;
+
                     bool keepAsStump = stumps && t.TileType == TileID.Trees && Rooted(x, y);
 
                     if (keepAsStump)
@@ -1460,6 +1489,12 @@ namespace PisAndDag.Content.Structures
             Insert(tasks, "Gem Caves", new SealedPocketPass("PAD Sealed Pocket", 40f));
             Insert(tasks, "Gem Caves", new GracePlainPass("PAD Grace Plain", 120f));
             Insert(tasks, "Gem Caves", new TheBallPass("PAD The Ball", 220f));
+
+            // The chopped forest in front of the Mile: its floating land taken off and the
+            // giants on it cut down, the ground itself left as vanilla made it. Here for the
+            // reason the plain is: after everything that carves and before everything that
+            // grows, so the grass comes up on the ground the floating land leaves bare.
+            Insert(tasks, "Gem Caves", new ClearedGroundPass("PAD Cleared Ground", 80f));
 
             Insert(tasks, "Micro Biomes", new WastedMilePass("PAD Wasted Mile", 90f));
 

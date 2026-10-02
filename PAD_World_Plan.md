@@ -320,15 +320,19 @@ Everything horizontal in vanilla is decided inside the **Reset** pass — `dunge
 | 4 | *after* `Gem Caves` | **PAD The Ball** | the shell, its bank, the chasms, the ring and the shaft |
 | 5 | *after* `Gem Caves` | **PAD Grace Plain** | raises the pitch over the country at x ≥ 10800 |
 | 6 | *after* `Gem Caves` | **PAD Sealed Pocket** | repaints a cave under the Cleared Ground |
+| 6a | *after* `Gem Caves` | **PAD Cleared Ground** | takes the floating islands off the Cleared Ground, with the leaf walls under them, and cuts any living tree on it to a stump; levels nothing; see §5c |
 | 7 | *after* `Shimmer` | **The Rootworks** | *[not written]* reads `GenVars.shimmerPosition`, dresses the pool's cavern |
 | 8 | *after* `Micro Biomes` | **PAD Wasted Mile** | goblin siege works |
 | 9 | *after* `Micro Biomes` | **Grace** | *[not written]* the capital, and the shaft down to whatever the Shimmer roll gave |
-| 10 | *before* `Final Cleanup` | **PAD Grace Cleanup** | strips the growth off the plain and off the Cleared Ground, leaving the stumps |
+| 10 | *before* `Final Cleanup` | **PAD Grace Cleanup** | strips the growth off the plain and off the Cleared Ground, leaving the stumps, and leaving what stands inside a living tree |
 
 All three set pieces run **after `Gem Caves`**, which is the last pass that carves caverns
 at scale, and every one of them registers itself with `GenVars.structures` on the way out.
 §5a says why neither of those is sufficient on its own. They run Ball → Plain → Pocket, so
-the Pocket knows where the Ball went and can refuse to sit on it.
+the Pocket knows where the Ball went and can refuse to sit on it. The Cleared Ground's pass
+runs ahead of the three of them, in the same place for a different reason: it has to come
+after everything that carves and before everything that grows. It builds nothing, and
+registers nothing.
 
 ### Killing the ocean — and the trap in it
 
@@ -586,10 +590,47 @@ for the ground it lands on. `On_WorldGen.GrowLivingTree` (the Living Trees pass)
 Wasted Mile. The cleanup pass at the end still strips ordinary growth; this is for the
 ones too big to strip cleanly.
 
+On the Cleared Ground a giant may still grow. It is cut down there (§5c).
+
 The graveyard is the same problem in a different pass. It picks a beach at random and
 searches inland from it — and the Grace end has a sixty-tile sliver of beach with the
 capital's ground behind it. In a Grand world it now takes the ocean side, always, and
 never falls back to the other one.
+
+---
+
+## 5c. The Cleared Ground keeps its ground and loses its islands
+
+§3 says the Cleared Ground is empty. Vanilla does not leave it empty, and most of what it
+leaves is wanted: the lumps of dirt, the ponds and the cracks are the character of the
+place, and a first make that levelled them away was turned down for it. **PAD Cleared
+Ground** (`ClearedGroundPass`) levels nothing. It does two things.
+
+- **The floating islands go.** Vanilla's Tunnels pass hangs a crust of soil a dozen tiles
+  over the ground on nothing, and the room under it comes out hung with leaf wall. A crust
+  is floating land when its top stands five rows or more over the ground either side of it;
+  a cave's roof lies level with that ground and is left. An island is taken off down to the
+  ground under it, with the walls that stood under it, and one that starts on the Cleared
+  Ground is followed off either end of it. The ground it stood over, and any water lying
+  there, is not touched.
+- **A living tree on it is a stump**, five blocks over the ground beside it, broken at the
+  top, with its foot, its roots, its hollow and the room under it kept. One standing past
+  either end is left whole.
+
+There is no made flat for 'Dame' Quilt: nothing is levelled for her. She is put down where
+the ground vanilla left is flattest (`DonaQuinnEncounter`: the column with the most flat ground
+on its shorter side, flat being ground that keeps within six rows and steps two at most, with a
+living tree's stump passed over), and she comes the first time a player stands on the Cleared
+Ground within 1350 pixels of that, which is off their screen.
+
+Her fight is boxed in (`BossArena`): two walls nobody sees, always half the Cleared Ground
+apart (445 tiles), their middle halfway between the player and where she was put down. The
+player cannot walk past one, their camera does not show past one, and inside them nothing is
+built, broken or blown up (the Boss Active buff). The box stands from the road until she is
+thrown; she herself is not held by it.
+
+Numbers and how it was checked: `PADWorkFlow_1.md` §16.24 for the pass, §16.25 for the flattest
+place and the box.
 
 ---
 
