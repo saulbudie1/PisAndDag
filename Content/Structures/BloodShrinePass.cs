@@ -30,6 +30,13 @@ namespace PisAndDag.Content.Structures
     /// ground and not claimed by anything else, searching back toward the spawn. If the sea's
     /// side has none, even on ground twice as rough, the other side is tried the same way,
     /// rather than a world with no Orb in it.
+    ///
+    /// The ground is the ground under the sky islands, not the top of one. An island is
+    /// some thirty tiles of dirt on cloud, and cloud is as solid as stone: what gives it
+    /// away is the open air under it (<see cref="Grounded"/>). It used to be told only by
+    /// how much was solid under its grass, which a thin crust fails and an island passes;
+    /// with one over the forest's end its level, grassy, dry top was the first place that
+    /// fitted, and the shrine was built up there, over four hundred tiles above the ground.
     /// </summary>
     public class BloodShrinePass : GenPass
     {
@@ -57,13 +64,25 @@ namespace PisAndDag.Content.Structures
         /// <summary>Columns this near the world's edge are never read.</summary>
         private const int Edge = 50;
 
-        /// <summary>How far under a solid tile to look for more, to tell ground from a floating island.</summary>
+        /// <summary>How far under a solid tile to count what is solid, to tell ground from a thin crust: a ledge, an island's rim.</summary>
         private const int GroundProbe = 40;
 
         /// <summary>Solid tiles, out of GroundProbe, that make it ground.</summary>
         private const int GroundSolidMin = 18;
 
-        /// <summary>How far to drop past an island's crust before reading on.</summary>
+        /// <summary>
+        /// Open tiles in a row, under a solid tile, that make what it is part of a floating
+        /// island. Vanilla puts an island 100 tiles or more over the first tile under its
+        /// middle, and its cloud hangs at most some 30 under that, so there are 70 at the
+        /// least (WorldGen's Floating Islands pass, CloudIsland). A cave this tall, this
+        /// near the surface, is rare, and ground over one is no place for the shrine.
+        /// </summary>
+        private const int IslandGap = 40;
+
+        /// <summary>How far under a solid tile that open stretch may begin: more than the thickest island, its house and all, is thick.</summary>
+        private const int IslandThick = 100;
+
+        /// <summary>How far to drop past something floating before reading on.</summary>
         private const int IslandSkip = 20;
 
         /// <summary>The forest floor.</summary>
@@ -232,6 +251,12 @@ namespace PisAndDag.Content.Structures
 
                 // Reserve the ground so later passes do not carve through it.
                 GenVars.structures?.AddProtectedStructure(area, 6);
+
+                // Where it is, for whoever has to find it: a world made without a word
+                // about its shrine cannot be told from one that has none.
+                ModContent.GetInstance<PisAndDag>()?.Logger
+                    .Info($"Blood Shrine: x {left}-{right}, ground y {groundY}, {Math.Abs(centerX - spawnX)} tiles {(dir > 0 ? "east" : "west")} of the spawn (x {spawnX}).");
+
                 return true;
             }
         }
@@ -303,9 +328,10 @@ namespace PisAndDag.Content.Structures
         }
 
         /// <summary>
-        /// The ground in this column: the first solid tile from the sky down that has more
-        /// solid under it. A floating island is a slab with air beneath, and is passed over.
-        /// False if the column has no ground above the rock layer.
+        /// The ground in this column: the first solid tile from the sky down that is not
+        /// part of something floating (<see cref="Grounded"/>). A sky island is passed
+        /// through, however thick, and so is a ledge with nothing under it. False if the
+        /// column has no ground above the rock layer.
         /// </summary>
         private static bool Surface(int x, out int y)
         {
@@ -331,17 +357,35 @@ namespace PisAndDag.Content.Structures
             return false;
         }
 
-        /// <summary>Whether the solid tile at (x, y) has real ground under it rather than being an island's crust.</summary>
+        /// <summary>
+        /// Whether the solid tile at (x, y) is ground rather than part of something that
+        /// floats. Two things say it floats: too little solid in the GroundProbe tiles from
+        /// it down (a crust), or a stretch of IslandGap open tiles or more that begins
+        /// within IslandThick under it (an island: the sky under it). Counting what is
+        /// solid is not enough alone: an island is dirt and cloud, all of it solid.
+        /// </summary>
         private static bool Grounded(int x, int y)
         {
             int solid = 0;
-            int limit = Math.Min(Main.maxTilesY - 2, y + GroundProbe);
+            int open = 0;
+            int crust = y + GroundProbe;
+            int limit = Math.Min(Main.maxTilesY - 2, y + IslandThick + IslandGap);
 
             for (int probe = y; probe < limit; probe++)
             {
                 Tile t = Main.tile[x, probe];
+
                 if (t.HasTile && Main.tileSolid[t.TileType])
-                    solid++;
+                {
+                    open = 0;
+
+                    if (probe < crust)
+                        solid++;
+                }
+                else if (++open >= IslandGap)
+                {
+                    return false;
+                }
             }
 
             return solid >= GroundSolidMin;

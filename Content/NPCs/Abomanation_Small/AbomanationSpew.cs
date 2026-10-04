@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PisAndDag.Content.Combat;
 using PisAndDag.Content.Particles;
 using ReLogic.Content;
 using Terraria;
@@ -23,6 +24,10 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
     /// Made by the server (or the one player); every machine flies its own copy, and each
     /// player's own machine decides whether its player was hit, as with any hostile
     /// projectile. The numbers they carry are explained at Abomanation.BoneHit.
+    ///
+    /// The bones and the skulls are solid things thrown, and a parry breaks them (Parry): a
+    /// skull broken that way spills its bones where it was met, as it does wherever it
+    /// breaks. The hands and the ash are not, and go through one.
     /// </summary>
     public abstract class AbomanationThrown : ModProjectile
     {
@@ -88,6 +93,12 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         public const int Looks = 4;
 
         public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.Bone;
+
+        /// <summary>A bone is a solid thing thrown: a parry breaks it.</summary>
+        public override void SetStaticDefaults()
+        {
+            Parry.AddProjectile(Type);
+        }
 
         public override void AI()
         {
@@ -158,6 +169,12 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         public override string Texture => "Terraria/Images/Gore_42";
 
         protected override float Spin => 0.14f;
+
+        /// <summary>Solid, as a bone is: a parry breaks it, and its bones come out of it where it was met.</summary>
+        public override void SetStaticDefaults()
+        {
+            Parry.AddProjectile(Type);
+        }
 
         public override void SetDefaults()
         {

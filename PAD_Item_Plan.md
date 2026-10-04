@@ -21,6 +21,7 @@
 | Chlorophyte Rifle | Ranged | built |
 | Handswitch | Ranged | built |
 | **Greatbow of a Pilgrim** | Ranged | **textures in, code to write** |
+| Iron Flow | Melee | built; never run in game (below) |
 
 ---
 
@@ -188,6 +189,117 @@ damage has broken it.
   after ~15 s — or stay flat and this bow is the answer to every boss.
 - Bleed: vanilla debuff or a PAD one.
 - Where Great Arrows come from.
+
+---
+
+## Iron Flow
+
+A hooked sword with a crescent for a guard. 12 Iron or Lead Bars at an anvil. 25 damage. Your
+art (`Content/Items/Melee/IronFlow.png`, 64 by 64, the point up and to the right). The whole
+record is PADWorkFlow §16.26, and §16.30, §16.31, §16.33 and §16.34 for the parry as it is now.
+
+### Files
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Melee/IronFlow.cs` | `IronFlow` | The item. Hits nothing itself; tells the sword in the hand what to do |
+| `Content/Projectiles/Melee/IronFlowHoldout.cs` | `IronFlowHoldout`, `IronFlowPose`, `IronFlowLayer` | The sword in the hand while it is the item held: the weapon |
+| `Content/Projectiles/Melee/IronFlowMoves.cs` | `IronFlowMoves`, `IronFlowState` | Every pose of every move, as curves; nothing of the game in it |
+| `Content/Combat/Parry.cs`, `ParryTiming.cs` | `Parry`, `ParryPlayer`, `ParrySystem`, `ParryTiming` | The parry: not this weapon's, any weapon's |
+| `Content/Combat/ParryRules.cs` | `ParryRules`, `ParryClass`, `ParryWhy` | What can be parried, read off the thing itself |
+| `Content/NPCs/PADStaggerNPC.cs` | `PADStaggerNPC` | The stagger a parry gives, the push, the riposte (and the Greatbow's stagger, as it was) |
+| `Content/NPCs/GolemFistParry.cs` | `GolemFistParry` | The Golem's fists parried: sent back into the Golem |
+| `Content/NPCs/GolemPace.cs` | `GolemPace` | While its head is on, the Golem and its fists keep a full-life Golem's pace |
+| `Content/Combat/ParryEffects.cs`, `Content/Particles/ParryRing.cs` | `ParryEffects`, `ParryRing` | What it looks and sounds like |
+| `Content/Combat/ParryConfig.cs`, `ParryCommand.cs` | `ParryConfig`, `ParryCommand` | Five lists for whoever runs the world; `/parry` |
+
+### In the hand
+
+Held and not in use, it hangs: the hand at the hip, the blade pointing down and ahead, the hook
+by the feet.
+
+**Left click**, for as long as it is held: three cuts in turn, each from where the last left the
+blade, each carrying you forward.
+
+| Cut | Ticks | Carries you |
+|---|---|---|
+| Down: raised over the shoulder, brought down | 24 | 1 block |
+| Up: from where it hangs, up and over the shoulder | 24 | half a block |
+| Round: a turn and a half, down through the front, under, over, and down again | 36 | 1.5 blocks |
+
+Left more than 40 ticks, or parried between, they start over.
+
+**Right click** parries. A fresh press every time. 42 ticks whatever your speed: 6 before it does
+anything, 8 in which it does, 28 open (Elden Ring's Parry on a curved sword: 3, 4 and 14 frames
+at 30 a second). The blade goes once round the other way, up through the front.
+
+### The parry
+
+For the 8 ticks there is an arc in front of you that nothing draws: 48 pixels from your middle,
+from just behind overhead, round the front, to just behind straight below. What can be parried
+and is inside it, or comes inside it, in those ticks is turned aside; so is anything that
+reaches you from the front in them. Nothing from behind. An enemy has to be attacking: able to
+hit you, and coming at you.
+
+**Shots.** Solid things shot or thrown, when they are an enemy's: arrows, javelins, bones,
+knives, stingers, spikes, seeds, darts. Bullets: vanilla's enemies' three; any other only if it
+stops at the first thing it hits (`penetrate` 1). Not light, fire, magic or spit. A parried
+shot breaks.
+
+**Enemies**, by what they are at that moment (`ParryRules`):
+
+| Class | Which | A parry |
+|---|---|---|
+| Light | the game lets it be knocked back | turns it aside, strikes it, pushes it back; staggers it every second parry if it flies, every third if not |
+| Heavy | the game does not | the same; only the riposte's knockback differs, which is the game's |
+| Giant | wider than 60 px or taller than 84 | its hit lands; the parry's blow lands on it too, once |
+| Never | a boss or a part of one, a shot in an enemy's place, a bomb, a ghost, beyond being hurt, under the yellow star | nothing |
+
+In vanilla: 353 light, 61 heavy (35 of them worms and 2 the Golem's fists, never staggered), 25 giants, 75 never.
+
+- **The blow** is the damage of the weapon that parried, as you have it: no critical hit, no
+  variation, no knockback of its own.
+- **The push** is 96 pixels, for every enemy turned aside, whether or not the game lets it be
+  knocked back; tiles stop it.
+- **The stagger** is 2 seconds, on every second parry of an enemy that flies (no weight at that
+  parry) and every third of any other; the count never runs down and starts over at each
+  stagger. Its AI is stopped and goes on after from where it was; it can hit nobody; a parry
+  does nothing more to it.
+- **The riposte** is the first hit on a staggered enemy: 3 times its damage, 4 times its
+  knockback, never a critical hit, and it wakes at once.
+- A flying weapon (the Enchanted Sword, the Cursed Hammer, the Crimson Axe) is staggered its
+  own way, on every second parry: thrown back spinning for 2 seconds, open to the riposte
+  while it spins.
+
+**'Dame' Quilt** can be parried in three of her four attacks: the charge, the thrown lance,
+Triunfo running you down. Not the swing. Every parry strikes her and throws
+Triunfo back six tiles; every third one staggers her for 2 seconds (she counts as on the ground). The thrown lance is
+knocked away and comes down somewhere else.
+
+**Amalgaermis**: its bones and skulls break on a parry. Its hands and its ash do not.
+
+**The Golem's fists** can be parried in the punch, though they are parts of a boss. A parried
+fist takes the blow, turns about and flies back into the Golem; when it gets there it loses
+a seventh of its full life and the Golem a twenty-first of its own, head on or off. Never
+staggered, never pushed. Seven parries break a fist. While the head is on, the life that
+costs the Golem does not make it or its fists any faster; once the head is off it does.
+
+**For other mods and other worlds**: the config (five lists), `Mod.Call` with `"ParryNPC"`,
+`"ParryNoNPC"`, `"ParryNoStagger"`, `"ParryProjectile"` or `"ParryNoProjectile"` and a type,
+`/parry` and `/parry list`. In code: `Parry.AddNPC(type, when, thrown, flies, reels, told)`,
+`Parry.AddProjectile(type, when, turned)`, and for a hit the mod works out itself,
+`ParryPlayer.Spares`, `MeetsLine`, `MeetsBox` and `Takes`.
+
+Pressed 6 to 17 ticks before an arrow at 11 pixels a tick would land, it is parried: a fifth of
+a second. Later and it lands first; earlier and it lands after.
+
+### Open
+
+- Any weapon or shield can parry, each with its own ticks (buckler 6, 12, 24; dagger 6, 10, 26;
+  small shield 8, 12, 22: Elden Ring's, doubled), and a key for the ones whose right click is
+  taken. `ParryPlayer.Begin(timing, facing, weapon)` is there for it; nothing but the Iron Flow
+  calls it.
+- The numbers that are mine, and the readings to confirm: RELEASE_TODO.
 
 ---
 

@@ -354,6 +354,7 @@ Building through a living tree removed the middle and left the canopy and lower 
 - **Unreadable columns are bridged, not fatal.** One column over a cavern used to reject the whole 64-column plot; Large coastlines have plenty, which is why Large failed disproportionately. Fails only below `MinReadableColumns`.
 - **`Force(left)`** builds at a fixed inland offset if both shores somehow find nothing. **The pass cannot silently produce nothing.**
 - **`Grounded(x, y)`** rejects floating islands: ≥`GroundSolidMin` of `GroundProbe` tiles below must be solid, else skip `IslandSkip` rows.
+  *[Found wanting later in session 7: this passes a sky island, which is dirt on cloud and solid all the way through. The Blood Shrine used the same test and was built on one. The shrine's test is changed; this one is not. See §16.27.]*
 - **`ResolvePalette`** picks fill/cap from the dominant surface tile: sand→sand, snow→snow, mud→jungle grass, ash→ash, stone/marble/granite→stone; infections keep dirt under corrupt/crimson/hallowed grass (how vanilla spreads them). Default dirt/grass.
 - **Holes packed, not bridged** — fills unconditionally to `level + Foundation`.
 
@@ -3508,6 +3509,11 @@ the Cleared Ground from either end.
 *[Superseded later in session 7: there is still no made flat, but she is now put down where the
 ground is flattest and comes when a player is near that, and `DonaQuinnEncounter` is changed for
 it. See §16.25.]*
+*[Superseded again later in session 7: the middle of the Cleared Ground is now made calm for
+her when a world is made, and she is met at the middle of it. Nothing is made level even so.
+See §16.28.]*
+*[And once more: of those 560 tiles only the middle 280 are made flat now, and the edges of
+her ground are vanilla's. See §16.29.]*
 
 - *"and leaf walls / on the ground"* was read with "just remove": the leaf walls on the ground
   go with the islands. The world file says what they are (below): the wall standing under a
@@ -3701,6 +3707,8 @@ could have meant every boss. The answers:
 is halfway between the player and where she was put down, as they stand at that moment. Its
 width is always half the Cleared Ground: 445 tiles, whatever the flat ground measures. The
 buff is on a player only while they are inside her box.
+*[Superseded later in session 7: in a world made with her ground she is put down at the middle
+of it. The flattest place is looked for only in a world made before. See §16.28.]*
 
 **How Calamity does it** (read in the user's checkout for how it works; nothing copied):
 
@@ -3751,6 +3759,10 @@ ground runs either side of it, and the one with the most on its shorter side is 
 | The box's width | half the Cleared Ground, 445 tiles | theirs |
 | The box's middle | halfway between the player and her | theirs |
 
+*[Superseded later in session 7: flat ground now steps over a small hole, 8 wide and 5 deep at
+the most and 4 of them at the most; and in a world with her ground the place is the middle of
+it, and the 6 rows are not asked there. See §16.28.]*
+
 If there is nothing under a player to start the walk from (a platform, a living tree, a ledge's
 edge) it is looked for again the next time, and after twenty times she comes as she did before:
 anywhere on the Cleared Ground. `/dona` now says where the place is, and `/dona reset` forgets
@@ -3761,6 +3773,8 @@ tiles onto the Cleared Ground, from either end. She now comes the first time a p
 it within 1350 pixels of the flattest place, which is what lets her be put down there off their
 screen. A player who never stands that near it never meets her; one who crosses the Cleared
 Ground on foot passes within it.
+*[Superseded later in session 7: within 1350 pixels of her place, which in a world with her
+ground is the middle of it. See §16.28.]*
 
 **In Far Tract of Potions.** The flattest place is x 9567 (x 9566 if the walk starts from the
 Mile's side): 127 tiles of flat ground toward the jungle, which is all there is of the Cleared
@@ -3841,3 +3855,1610 @@ floating island finds a different, shorter flat place; the ragdoll against the w
 
 **The tools are not in the mod folder.** The stand-ins, the script that cuts the code out, the
 Python version and the comparisons lived in the session's workspace and went with it.
+
+---
+
+## 16.26 Later in session 7: the Iron Flow: three cuts, a parry, and the parry's own machinery
+
+The ask, in the user's words:
+
+> create IronFlow(texture ready), a melee weapon with the ability to right click to parry :
+> currently parriable projectiles are: arrows and npcs like enchanted sword, crimson axe and
+> cursed hammer. Parry mechanic will be like elden ring with timing.(i think create a very
+> faint hitbox for very short time idk how from soft did it).
+> It also must have the holdout and parry animation like curved sword(spin and flick the wrist
+> like Shamshir parry).
+> Successful texture creates spark at the position of parry
+> If you have any proposal on how to make parrying universal, please do.
+
+Three things were asked back before anything was written. The answers: a parried arrow is
+destroyed and a parried NPC is thrown back and stunned; left click is the held sword's own
+slashes; iron tier, crafted. Then, while it was being written, four more messages, two of them
+with a sketch:
+
+> when it is during hold out(not using), its placed downward, like this
+
+(the sword on its own, point up and to the right as its sprite is, and beside it a figure
+holding it turned to point down and ahead: the handle at the hip, the hook by the feet.)
+
+> with the hitbox parry somewhat like this
+
+(the same figure, with a blue arc in front of it: from a little behind the top of the head,
+over and round the front, down to the ground ahead.)
+
+> with small window of chance so you have to time it
+
+> left click still attacking tho, with 25 damage (create unique swing pattern (down, up, swing
+> \full circle), each swing propel the player forward by 1 block, 0.5block then 1.5 blocks)
+
+> no the blue is the parry box invisible
+
+**How these were read.** The sword hangs from the hand, pointing down and ahead, whenever it is
+the item held and not in use. Left click: three cuts in turn, down, up, then all the way round,
+25 damage each, carrying the player forward 16, 8 and 24 pixels. Right click: a parry with
+Elden Ring's own curved-sword timing, whose hitbox is the arc in the sketch, never drawn. The
+25 replaces the "about 15" of the first answer; the anvil and the bars of that answer stayed.
+
+**How Calamity does it** (the Fractured Ark, read in the user's checkout for how it works;
+nothing copied): right click makes a second holdout projectile that lives 340 ticks and
+parries for the first 15 of them; its hitbox is a line along the blade (`Colliding`); a parry
+is that line touching an NPC in those ticks, which gives the player a moment of immunity if
+the NPC does contact damage, a sparkle at the NPC and a charge for the weapon. The item cannot
+be used while a blade is out. It parries nothing that is not an NPC.
+
+**Elden Ring's numbers** (eldenring.wiki.gg, Parrying; frames at 30 a second): Parry on any
+curved sword is 3 frames before it is active, 4 active, 14 after. In ticks: 6, 8, 28. The
+other rows of that table, for when another weapon wants one: buckler 3/6/12, dagger 3/5/13,
+small shield 4/6/11, medium shield 4/6/13, Golden Parry 4/3/16.
+
+**What was made.**
+
+| Piece | Where | What it does |
+|---|---|---|
+| `ParryTiming` | `Content/Combat/ParryTiming.cs` (new) | Three numbers of ticks: before, active, after. `CurvedSword` is 6, 8, 28. |
+| `Parry` (static) | `Content/Combat/Parry.cs` (new) | What can be parried, what being parried does, the packet, the spark. |
+| `ParryPlayer` | same file | A player's side: the count of the ticks, the arc while it is active, vanilla's two questions (`CanBeHitByProjectile`, `CanBeHitByNPC`) answered while it is. |
+| `ParrySystem` | same file | Empties the two lists when the mod unloads. |
+| `PADPacket.Parry` | `PisAndDag.cs` | The seventh kind of packet, and its `case`. |
+| `IronFlow` | `Content/Items/Melee/IronFlow.cs` (new; the `.png` beside it is the user's) | The item: 25 damage, 24 ticks, knockback 5, 12 Iron or Lead Bars at an anvil. It hits nothing itself: it tells the sword in the hand what to do. |
+| `IronFlowHoldout` | `Content/Projectiles/Melee/IronFlowHoldout.cs` (new) | The sword in the hand (an idle holdout, as the Greatbow's): the weapon itself. What it cuts, the step forward, the sounds, the trail. |
+| `IronFlowPose`, `IronFlowLayer` | same file | The pose for the tick, and the layer that draws the sword in the hand from it (Visus's way). |
+| `IronFlowMoves`, `IronFlowState`, `FlowMove` | `Content/Projectiles/Melee/IronFlowMoves.cs` (new) | Every pose of every move as curves, and the sword's state from tick to tick. Nothing of the game in the file, so it runs outside it. |
+| the words | `Localization/en-US_Mods.PisAndDag.hjson` | `Items.IronFlow` (name, five lines, a flavour line), `Projectiles.IronFlowHoldout`. |
+*[Superseded later in session 7: `Parry.cs` is rewritten and five files are added; `ParrySystem`
+also finds what ammunition shoots, reads a config and writes a line of counts to the log; the
+Iron Flow has seven lines about the parry. See §16.30.]*
+*[Superseded again later in session 7: the user has since rewritten the Iron Flow's tooltip by
+hand. It is one line now: "Right click to parry". See §16.31.]*
+
+**The parry.** `ParryPlayer.Begin(timing, facing)` starts one, on the player's own machine. Its
+ticks are counted at the start of each of that player's updates. With `CurvedSword`: pressed on
+tick 0, it is active on ticks 6 to 13, and over on tick 42.
+*[Superseded later in session 7: `ParryPlayer.Begin(timing, facing, weapon)`: the weapon that
+parries is given too, and an enemy it turns aside takes that weapon's damage. See §16.30.]*
+
+While it is active there is an arc in front of the player: the part of a circle 48 pixels from
+their middle that is ahead of a line 8 pixels behind it. That is from 99.6 degrees above
+straight ahead (10 past overhead), round the front, to 99.6 below. Nothing draws it. Once a
+tick, after the player has moved, everything that can be parried, whose middle is ahead of that
+line, and which is within the arc or will have come within it by the end of the tick (the
+nearest its middle comes to the player's, along its step, less half its own size) is turned
+aside; the spark is on the arc if that is where it was met, and where the thing is if it was
+already inside. Behind that, vanilla's own two questions: a thing that can be parried, reaches
+the player's body in those ticks, and came from ahead of the line is turned aside in place of
+the hit. Ahead is judged by where the thing was before the step that brought it, so something
+fast from behind cannot step over the player's back and be found at their front. What comes
+from behind hits, as with vanilla's own shield parry.
+*[Superseded later in session 7: an enemy must also be attacking to be turned aside: able to
+hit this player now, and coming at them (at the arc) or moving at all (on their body). Shots
+are as here. See §16.30.]*
+
+**What can be parried, and what it does.**
+
+- Projectiles: hostile, with damage, and one of: `ProjectileID.WoodenArrowHostile` (81),
+  `FlamingArrow` (82), anything with `Projectile.arrow` set, a type added with
+  `Parry.AddProjectile`. Vanilla's two hostile arrows do not have the `arrow` flag, hence
+  their numbers. A parried projectile is ended (`Kill`): the wooden one breaks with its own
+  dust and sound.
+  *[Superseded later in session 7: every solid shot, by rule: vanilla's are named (29 hostile
+  kinds), and another mod's is told by what it is. See §16.30.]*
+- NPCs: not friendly, with damage, and one of: flown by vanilla's flying-weapon AI
+  (`NPCAIStyleID.EnchantedSword`, 23: the Enchanted Sword, the Cursed Hammer, the Crimson Axe),
+  a type added with `Parry.AddNPC(type, when, thrown)`. A parried flying weapon is put in its
+  AI's own third state (`ai[0] = 2`, `ai[1] = 0`: 120 ticks of spinning as it slows, what a hit
+  does to it in flight) and sent away from the player at 8 pixels a tick, which carries it 191
+  pixels. An NPC added with its own answer gets that; one added without is staggered 120 ticks
+  (`PADStaggerNPC`) and slid back 96 pixels.
+  *[Superseded later in session 7: most enemies, by rule, and a parried enemy is struck,
+  pushed back and staggered; `thrown` is given more. The flying weapon is as here, and open
+  to the riposte while it spins. See §16.30.]*
+- A parried NPC cannot touch the player who parried it for 45 ticks.
+- Where it happened: a star (`CrownGlint`), a bloom, nine shards that fall, in white and
+  steel (not the warning yellow, which is kept for one thing), `SoundID.Item37` and
+  `NPCHit4` pitched up, and the screen shaken a little for the one who did it.
+
+**Who decides.** The machine of the player who parried, as it decides everything else that hits
+them. Alone, that is all. With a server: the thing is ended (or, a flying weapon, turned) on
+that machine at once, and a packet of 13 bytes goes to the server: the kind, whether a
+projectile or an NPC, which (a projectile by its identity and owner, an NPC by its place), and
+where. The server looks at whether the player is alive, whether the point and the thing are
+within 480 pixels of them, and whether the thing can be parried; if so it ends the projectile
+(vanilla tells the others of a projectile of the server's own; for another player's the server
+sends the kill itself) or turns the NPC and sends it. Then it passes the packet on to everyone
+but the sender, who show the spark.
+
+**The moves.** Angles are in the player's own frame (`VisusGrip`): from straight ahead, down
+positive. The hand is `VisusGrip.FrontHand`, vanilla's own sum.
+
+| | Blade | Arm | Ticks |
+|---|---|---|---|
+| Hanging | 40 below level | 60 below level, out | |
+| Cut 1, down | raised through the front to 138 above and behind by a quarter of the way in; hung to 30%; down to 50 below by 62%; back to where it hangs | goes with it | 24 |
+| Cut 2, up | dipped to 65 below by a quarter of the way in; up to 125 above and behind by 60%; left at 135 | goes with it | 24 |
+| Cut 3, round | drawn back to 150 by 14%; then 540 degrees the same way the first cut goes, down through the front, under, up behind, over and down the front again, by 72%; to where it hangs | goes round with it | 36 |
+| Parry | cocked to 60 below over the 6 ticks before; 270 degrees the other way, up through the front and over the back, over the 8 active ticks; 135 more over 6 ticks as it slows, which leaves it 25 above where it hangs; lowered over the 22 that are left | out in front; the wrist turns | 42 |
+
+A move is begun from wherever the blade is (`IronFlowState`): each has its own path from its
+own start, and a blade that is anywhere else joins it over the move's wind, the shorter way
+round, before it is fast. The cut up leaves the blade raised; with nothing following it is held
+there 8 ticks and lowered over 18. The cuts follow each other while the next is begun within 40
+ticks of the last one ending; after that, or after a parry, the next is the first again.
+
+Each cut hits along the blade (a line from 12 to 66 pixels out from the hand, 38 wide), over
+the whole of the blade's sweep since the tick before (a step every 12 degrees or less), each
+NPC once a cut, only what the player can see, knocked away from the player. Cut 1 cuts on ticks
+8 to 14 of its 24, cut 2 on 6 to 14, cut 3 on 6 to 25 of its 36. The step forward is Visus's
+thrust's own: where the player should be along a curve with nothing moving at either end, and
+the speed that gets them there, set only when it is more than they already have.
+
+The item is in use for exactly as long as the move takes. Its two multipliers are the ticks
+meant, and a half, over what vanilla is about to divide by; the use time and the animation come
+out at those ticks at every attack speed.
+
+The sword is drawn by a player layer in vanilla's own slot for a held item, behind the front
+arm. It is placed from where the player is being drawn (`PlayerDrawSet.Position`), not from
+where they are, so it is in the hand in the inventory's picture of them too; and it rides the
+two pixels the body rises on six frames of the walk, with vanilla's own sum for the arm. The
+projectile draws only the trail: three pale shadows of the sword a tick apart, and a band over
+the last three and a half ticks of the blade's way, dark under pink under a paler line.
+
+**The numbers.**
+
+| Number | Value | Mine or theirs |
+|---|---|---|
+| Damage | 25 | theirs |
+| The cuts and their order | down, up, all the way round | theirs |
+| The step forward | 1 block, half a block, 1.5 blocks | theirs |
+| How it hangs | pointing down and ahead, by the sketch | theirs (the angles, 40 and 60, are mine) |
+| What can be parried, and what becomes of it | arrows, destroyed; flying weapons, thrown back and stunned 2 seconds | theirs |
+| The parry's hitbox | an arc in front, by the sketch, not drawn | theirs (48 px, and 8 behind the middle, are mine) |
+| The parry's ticks | 6 before, 8 active, 28 after | Elden Ring's, for a curved sword |
+| Use time | 24 ticks; the third cut 36 | mine |
+| Knockback, rarity, price | 5, Blue, 20 silver | mine |
+| Recipe | 12 Iron or Lead Bars at an anvil | the anvil and the bars theirs, the 12 mine |
+| A flying weapon is sent off at | 8 px a tick | mine |
+| A parried NPC cannot touch its parrier for | 45 ticks | mine |
+| The cuts follow each other within | 40 ticks | mine |
+| Raised after the cut up: held, then lowered over | 8, 18 ticks | mine |
+| What a cut hits with | a line 12 to 66 px out from the hand, 38 wide | mine |
+*[Superseded later in session 7: what can be parried, and what becomes of it, is §16.30's.]*
+
+**How it was checked.** Nothing was run in the game.
+
+- `Parry.cs`, `ParryTiming.cs`, `IronFlowMoves.cs` and `Easing.cs`, whole and unchanged,
+  compiled against stand-ins for the game and run through ticks in the game's own order
+  (the player's update with its questions about NPCs, the item, the player's last hook; then
+  the NPCs, with vanilla's flying weapon written out from its IL; then the projectiles, moved
+  and then asked about the player): 23,213 checks, all passing.
+- When to press. An arrow at 11 pixels a tick is parried when the button is pressed 6 to 17
+  ticks before it would have landed (a fifth of a second); at 6 a tick, 6 to 20; at 16, 6 to
+  16; at 30, 6 to 14; at 80, 6 to 13, so nothing fast steps over the arc. A flying weapon
+  launched from 300 pixels: 6 to 20 ticks before it would have touched. Later than 6 and the
+  hit lands first; earlier and it lands after.
+- From behind, never. An arrow falling on the head is parried when its middle is no more than
+  8 pixels behind the player's. Two arrows two ticks apart, one press: both. A hostile
+  projectile that is no arrow, a friendly arrow, a zombie: not parried.
+  *[Superseded later in session 7: a zombie is parried now, and so is any hostile shot that
+  is solid. See §16.30.]*
+- A flying weapon parried 9 ticks before it would touch: turned on tick 33 with its middle 46
+  pixels off, sent off at 8, 237 pixels from the player at its furthest, and it comes again 120
+  ticks after the parry. One parry of it, not one a tick. Held on the player: it cannot touch
+  them for exactly 45 ticks, and something else in its place can.
+- The packet: 13 bytes, read whole at both ends; the server ends its own arrow, sends the kill
+  itself for another player's, turns a flying weapon and sends it, and will not act on a point
+  far from the player, a point that is no number, a thing that is far, a thing that is not
+  there, a thing that cannot be parried, or a dead player.
+- The moves: each starts where it says and has no jump in it; the cut up ends where the circle
+  starts; the circle and the parry end where it hangs; the three cuts with the button held,
+  the parry, and the lowering never turn the blade more than 44.5 degrees in a tick; any move
+  begun at any tick from 0 to 45 after the cut up ends hanging. The item's use time and
+  animation come out at the ticks meant at all 2,601 attack speeds from 0.4 to 3.0, for a cut,
+  the circle and the parry.
+- Pictures of every tick of every move, drawn from the state the mod's own code ran and placed
+  with the same sums as the layer, facing both ways and under reversed gravity; an animation of
+  the three cuts and a parried arrow, shown in chat. Kept in the session, not in the mod.
+- The whole mod compiles against the real 1.4.4 assemblies: 0 errors, 10 warnings. **The
+  baseline is 10 from here, not 13.** Three of the 13 were
+  `Content/Items/LoreItem/MeleeDecider.cs`'s, and that file is no longer in the mod folder: the
+  session's copy of the source still had it, and it was found by listing the folder's `Content`
+  against that copy before delivering (every other `.cs` there is the same size in both, and
+  the thirteen this code leans on are the same byte for byte). The copy has it no more.
+
+**Read in the 1.4.4 assembly's IL for this.** `Projectile.Damage`, for a hostile projectile and
+this machine's player: `Colliding` first, then `CombinedHooks.CanBeHitByProjectile`
+(`ProjectileLoader.CanHitPlayer`, then `PlayerLoader.CanBeHitByProjectile`), then vanilla's own
+`Player.CanParryAgainst`, then the hurt; an arrow is not ended by hitting a player.
+`Player.Update_NPCCollision` runs for this machine's player only, and asks
+`CombinedHooks.CanNPCHitPlayer` (`NPCLoader.CanHitPlayer`, then `PlayerLoader.CanBeHitByNPC`) of
+every hostile NPC before it has compared the two rectangles (the NPC's with its `netOffset`
+added, then `NPC.GetMeleeCollisionData`). `Player.CanParryAgainst`: the shield's ticks running,
+the sign of the enemy's middle less the player's the same as the player's direction, the enemy
+moving, the player not immune. The flying weapon (`aiStyle` 23, in `NPC.VanillaAI_Inner`): at
+`ai[0]` 0 it launches at its target at 9; at 1 it flies, slowing by a hundredth a tick, and a
+hit or 100 ticks puts it at 2; at 2 it slows by 4 hundredths a tick and spins, and at 120 ticks
+goes back to 0. `Projectile.Kill` sends the kill (29, identity, owner) only on the owner's
+machine. `Projectile.Update`: the damage stats, the AI, the move, then `Damage`.
+`Player.ItemCheck_Inner`: the use is started, then the animation is counted down (so a use's
+first tick is one of its ticks), then the item time, then `ItemCheck_OwnerOnlyCode`, which
+calls `ItemCheck_Shoot` while the animation runs and the item time is none; the composite arms
+are switched off there every tick. `ItemCheck_Shoot`: `CanShoot`, the item time applied, the
+player turned to the cursor, then `Shoot`. `CombinedHooks.TotalUseTimeMultiplier` is the two
+hooks over the use speed; `TotalUseAnimationMultiplier` is the two hooks times the use time cut
+to whole ticks at that speed, over the animation. `Item.attackSpeedOnlyAffectsWeaponAnimation`
+is only ever set for vanilla's own items. `Player.SetCompositeArmFront` and `Back` turn the
+rotation over themselves under reversed gravity, and vanilla's own callers pass it the right
+way up. `PlayerDrawLayers.DrawPlayer_28_ArmOverItemComposite` adds
+`Main.OffsetsPlayerHeadgear[bodyFrame.Y / bodyFrame.Height]`, less 2 down, to where the arm is
+drawn. `ModType.NewInstance` makes a new instance unless told to clone.
+
+**Found on the way, and left alone** (all three in `RELEASE_TODO.md`).
+
+- `MeleeDecider.cs` is gone from the folder, and `Items.MeleeDecider` is still in the `.hjson`.
+- `VisusGrip.ArmRotation` and `ColdCallHold.ArmRotation` multiply the arm's rotation by
+  `gravDir`, and `Player.SetCompositeArmFront` then turns it over again. Under reversed gravity
+  the arm points the wrong way unless it is straight up or down. The Iron Flow passes the
+  rotation the right way up, as vanilla's own callers do. The fix is to take `* player.gravDir`
+  out of both.
+- An idle holdout is ended every tick its owner is frozen, stoned or webbed
+  (`BaseIdleHoldoutProjectile.AI`), and made again the same tick (`PADHoldoutPlayer`). The
+  Greatbow's does it too.
+
+**Making the parry universal: what is there, and what is proposed.** There already: the two
+lists (`Parry.AddProjectile(type)`, `Parry.AddNPC(type, when, thrown)`), and
+`ParryPlayer.Begin(timing, facing)`, which any item can call with its own `ParryTiming`. Proposed,
+none of it built:
+
+1. More of vanilla by rule, as arrows are: things thrown or shot that are solid (javelins,
+   knives, darts, spears, bones). Not light, fire or magic.
+2. A boss says which of its moves can be parried: `AddNPC(type, when: in that move, thrown:
+   what it does to it)`. The lance at the end of 'Dame' Quilt's charge is the obvious first.
+3. One parry is not enough for a boss: a count on the NPC, and it is staggered on the second or
+   third, as Elden Ring's are.
+4. Any weapon or shield can parry: each gives its own `ParryTiming` (the table above), and a
+   key of its own for the ones whose right click is taken.
+5. Something for a parry landed: the next hit on what was parried within a second is a
+   critical one.
+6. The yellow star already means "no shield turns this off". The same rule for the parry:
+   what wears it cannot be parried.
+7. A `Mod.Call` so another mod can add its own things to the two lists.
+*[Superseded later in session 7: 1, 2, 3, 6 and 7 are built, and 5 as the riposte: the first
+hit on a staggered enemy does three times its damage and is never a critical one. 4 is not
+built. See §16.30.]*
+
+**Mine, not asked for** (all in `RELEASE_TODO.md`): every number in the table marked mine; what
+is already inside the arc when it comes up is turned aside too, and so is what reaches the body
+from the front in those ticks; a parried NPC cannot touch its parrier for 45 ticks; the shake;
+the cuts' knockback being away from the player; the cuts starting over after 40 ticks or a
+parry; the blade being held raised after the cut up; any hostile projectile with the `arrow`
+flag and any NPC flown by the flying-weapon AI counting; the two lists; the tooltip's lines.
+
+**Not yet confirmed in game:** all of it. Riskiest: how it looks in the hand (it is 64 pixels
+of sprite on a player 42 tall, so hanging down it lies over the ground by about 30 pixels); the
+sounds, which have not been heard; the step forward on slopes and at ledges; two machines (the
+packet, and another player's sword, which each machine runs for itself from three numbers);
+reversed gravity.
+
+**The tools are not in the mod folder.** The stand-ins, the runs, the pictures and the animation
+lived in the session's workspace and went with it.
+
+---
+
+## 16.27 Later in session 7: the Blood Shrine that was built on a sky island
+
+The ask, in the user's words:
+
+> could you inspect why my world doesnt have blood shrine generated?
+
+**It has one.** The world is The Run of Bladders (Grand, 12600 by 3000, seed 1903193645, made
+on 2 October, sea to the east, spawn at x 6302, y 596). Its Blood Shrine stands at x 7973 to
+7991, y 200 to 212: on a sky island, 1,680 tiles east of the spawn and 436 tiles over the
+ground. Its chest, at (7980, 205), holds the world's one Game Changing Orb (the `.twld` has no
+other), the 5 Life Crystals, 20 bones and the six other things. Nothing on the ground says it
+is up there, and the Guide's hut line sends the player along the ground.
+
+**Why.** `BloodShrinePass` walks back from the end of the spawn's forest (x 8044 in this world)
+and takes the first footprint that is level, dry and forest. The ground there, from x 7849 to
+x 8043, is a lake, and is rightly refused as wet. Over the lake hangs an island, x 7888 to
+8018, y 186 to 240, and its top is level, grassy and dry but for a pond at x 7992 to 7995.
+`Surface` takes the first solid tile from y 50 down that `Grounded` passes, and `Grounded`
+asked one thing: are 18 or more of the 40 tiles from it down solid. That fails a ledge. An
+island passes it: this one is 28 to 40 tiles thick, a row of grass, 7 or 8 of dirt and 19 to 22
+of cloud, all of it solid. So the island's top was read as ground, and it was the first place
+that fitted.
+
+The log of the session the world was made in (`tModLoader-Logs/Old/2026-09-04-80.zip`) has no
+line about the shrine, because the pass said nothing when it built: a world with its shrine in
+the sky and a world with none looked the same from the log.
+
+**The fix.** `Grounded` now fails a tile for a second thing: a stretch of 40 open tiles or
+more that begins within 100 tiles under it. That is the sky under an island. The pass also
+says where it built, in the log: `Blood Shrine: x 7826-7844, ground y 629, 1533 tiles east of
+the spawn (x 6302).`
+
+| Number | Value | Mine or theirs |
+|---|---|---|
+| Open tiles in a row, under a solid tile, that make it part of something floating (`IslandGap`) | 40 | mine |
+| How far under the tile that stretch may begin (`IslandThick`) | 100 | mine |
+| Solid tiles wanted in the 40 from it down, as before (`GroundSolidMin` of `GroundProbe`) | 18 of 40 | as it was |
+
+Where the two numbers come from, read in the 1.4.4 IL. The Floating Islands pass
+(`<>c.<AddGenPasses>b__288_19`) rolls an island's x in the middle eight tenths of the world,
+finds the first tile there from y 200 down, and puts the island's middle at `Next(90, that -
+100)`, then at `Min` of that and `worldSurfaceLow - 50`: a hundred tiles or more over the
+first tile under its middle. `CloudIsland` lays cloud where `sqrt(dx² + (3·dy)²) < 0.4 ×` its
+strength, which is 30 tiles under the middle at the most with its drift. So there are 70 open
+tiles under an island's middle at the least, and the ground rising under its rim can take
+some of that: 40. The thickest island in the three worlds measured, house and all, is 66 to
+70 tiles: 100. Cloud is solid when this pass runs: vanilla turns `tileSolid` off for cloud and
+on again inside one pass, Piles (`b__288_76`), and nowhere else.
+
+**How it was checked.** Nothing was run in the game.
+
+- The mod's own `BloodShrinePass.cs`, whole and unchanged, compiled against stand-ins for the
+  game and run on three Grand worlds read from their `.wld` files, the copy on the device and
+  the fixed one side by side. The device's copy builds at x 7973 to 7991, y 200 to 212 in The
+  Run of Bladders: on the island, tile for tile where the world has it. The fixed one builds
+  at x 7826 to 7844, y 618 to 630, floor on y 629, 1,533 tiles east of the spawn: on the bank
+  of the lake. In Far Tract of Potions (x 4582 to 4600, y 626 to 638) and Life (x 4566 to
+  4584, y 559 to 571) the two build in the same place.
+- The two readings of the ground, column by column over the three whole worlds: they differ
+  on 1,062 of 12,500 columns in The Run of Bladders, 946 in Far Tract of Potions and 1,127 in
+  Life. The sky islands are 871, 774 and 961 of those. The rest are narrow stretches, mostly
+  one to nine columns, of ground with forty open tiles close under it: the roof of a tall
+  cave. In The Run of Bladders' spawn forest there are two of them, x 6938 to 6943 and x 7124
+  to 7129, and neither is where a shrine was or would be. The forest's ends are read the same.
+- The whole mod compiles: 0 errors, the 10 warnings it had.
+
+**Left as it is.**
+
+- **The Run of Bladders itself.** Its shrine is where it is. `/struct update` calls it present
+  (it looks for the Orb in a chest, and finds it), so it builds no second one. `/struct` at
+  the cursor would stamp another, and with it a second Orb.
+- **The graveyard's ground test.** `GraveyardPass.Grounded` is the same 18 of 40, and line 356
+  of this file says it "rejects floating islands". It does not, for the same reason. It was
+  not changed: nobody asked, and in this world the graveyard is on the ground (x 11494 to
+  11644, level 662). It is in `RELEASE_TODO.md`.
+
+**Seen in the same log, not looked into.** `The Sealed Pocket found nowhere in the cavern
+under the Cleared Ground that was not already spoken for. It is not in this world.` The Run
+of Bladders has no Sealed Pocket.
+
+**Mine, not asked for** (all in `RELEASE_TODO.md`): the two numbers, and the line in the log.
+
+**Not yet confirmed in game:** that a new world's shrine is on the ground. The log line says
+where to look.
+
+**The tools are not in the mod folder.** The world reader, the stand-ins, the comparison of
+the two readings and the picture of where the shrine is lived in the session's workspace and
+went with it.
+
+---
+
+## 16.28 Later in session 7: 'Dame' Quilt's ground: the middle of the chopped forest made calm
+
+The ask, in the user's words, with a screenshot of the player standing at the lip of a pit on
+the Cleared Ground and `/dona`'s line over it ("The flattest of the Cleared Ground: x 2670, 28
+tiles of flat ground toward the Cleared Ground's start and 29 toward the Mile"):
+
+> this is supposedly the flat ground for dona quilt but its not flat at all, as a mater of
+> fact, theres a giant hole that hinder her jousting, fix this, flat ground must be flat
+> undisturbed, can have a few hole but 5  tile deep max  in this area specifically
+
+And while it was being worked on:
+
+> yeah hthis is too ruggedy, i like natural highs and lows but this part needs to be calmer
+
+**What was there.** The world is The Run of Bladders (§16.27), sea to the east, so its Cleared
+Ground is x 2210 to 3160 with the Mile at the low end. `/dona` was right about what it found
+and what it found was no good: the flattest place on that ground is 57 tiles (28 and 29) and
+it ends at a pit 17 wide and 18 deep, x 2699 to 2715. Over the middle 560 tiles the ground
+rises and falls 90 rows (y 522 to 612), with 74 steps of more than a row, the biggest of them
+40, and 75 columns under water. §16.24 left the ground as vanilla made it and §16.25 looked
+for the best of that. In this world there was no best to find.
+*[Superseded later in session 7: 58 steps of more than a row, the biggest of them 24. The 74
+and the 40 counted the shaft left in the test's input by taking a living tree's wood out of
+it. See §16.29.]*
+
+**How it was read.** §16.24 has two makes that were turned down: one that levelled the whole
+Cleared Ground and one that levelled its middle half ("too flat kills it character", and of
+the two ponds in the middle, "keep these too"). This ask is for the part she is met on, and it
+says what flat is: undisturbed, a few holes of 5 at the deepest; natural highs and lows, but
+calmer. So it is not made level. It is put on a line that follows the lie of the land, with
+its highs still high and its lows still low, and the small roughness of the ground that is
+already near that line is left on it. The rest of the Cleared Ground is left as it was.
+
+**Three things changed.** `ClearedGroundPass` calms the middle of the Cleared Ground when a
+world is made. The world remembers that it has such ground (`PADWorld.CalmGround`). And
+`DonaQuinnEncounter` meets her at the middle of it, where it used to look for the flattest
+place.
+*[Superseded later in session 7: only the middle 280 tiles of her ground are made flat now,
+and its edges are left to vanilla. The world remembers how much is flat as well
+(`PADWorld.CalmFlat`). See §16.29.]*
+
+### What the pass does
+
+Between taking the floating land off and cutting the giants, `Calm`:
+
+1. **Reads the ground as it lies**, the water on it looked through, over her ground and 70
+   columns past either end.
+2. **Finds its level**: the middle height of her ground.
+3. **Draws the line.** The lie of the land is the ground's height averaged over 30 columns
+   either way, and that averaged the same way again. The line is the level plus whatever part
+   of the lie's rise and fall keeps it within 6 rows of the level.
+4. **Says where each column is to stand.** Ground within a row of the line stays where it
+   lies. Ground standing higher is cut to a row over the line; ground lying lower is filled to
+   a row under it.
+5. **Keeps a few small holes.** A run of columns lying more than a row under the line is a
+   hole. It is kept, as it lay, when it was open before anything was cut, has a column of her
+   ground either side of it, is 8 columns wide at the most and 5 rows deep at the most, and is
+   60 columns from the last one kept; 4 at the most. Every other is filled.
+6. **Walks it.** No column may stand more than a row from the next (`Layout.Level`: the low
+   side comes up). A kept hole is stepped across lip to lip, as if it were not there. The lips
+   come up with the rest, so each hole is measured again from the higher of its two lips:
+   deeper than 5, it is filled after all; no deeper than a row, it is no hole. Then the ground
+   is walked again.
+7. **Eases the ends.** Past either end each column is put part of the way from where it lies
+   to the height her ground has at that end: all of the way beside her ground, none of it
+   where the easing stops, over 30 to 70 columns (1.6 columns for each row the two differ by).
+8. **Lays it.** What stands over a column's row is taken off (`CutAbove`, which leaves a
+   living tree). Soil is laid from the row down to the ground under it, and in whatever is
+   hollow in the first 4 rows under it, a kept hole's bottom included: dirt, or mud where the
+   column stands on mud. Water over her ground goes. The first rows of a made column are whole
+   blocks, its first two rows are soil where they were stone or clay, and its wall starts at
+   the third row.
+9. **Takes the water that would run onto it.** Vanilla settles its liquids again after this
+   pass. Water goes sideways and down and never up, so every way it could come is walked the
+   other way, from the air over each column of her ground: sideways and up and never down,
+   through whatever is not solid, out to 300 columns past either end. Water met on that walk
+   goes. Water the ground still holds back is not met, and stays.
+10. **Sods it and pours its steps.** Soil that shows gets grass, grass that no longer shows
+    goes back to soil, and a made column standing a row proud of a neighbour is poured to a
+    half block (`Layout.Hammer`'s rule; `WorldGen.SolidTile` is false of a half block, so none
+    is turned back).
+11. **Claims it** in the structure map, 40 rows over its level and 30 under, so the passes
+    that ask the map before they dig leave it alone, and sets `PADWorld.CalmGround`.
+
+*[Superseded later in session 7: steps 1 to 6 and 9 to 11 are done to the flat now, the middle
+280 tiles of her ground, and not to all 560. Step 7's easing is 70 columns past either end of
+the flat, inside her ground, by a share that falls smoothly, and a pond in it keeps its
+water. Step 8 packs what is hollow under the flat only, and squares off the old top a fill
+buries. The claim of step 11 is the flat's. See §16.29.]*
+
+And the log's line for the pass says it: `'Dame' Quilt's ground: x 2435-2995, level at y 571,
+327 columns cut down, 281 filled, small holes left: 2.`
+*[Superseded later in session 7: the line gives the flat's x as well, the easing's columns
+with water on them and the water taken. See §16.29.]*
+
+**No living tree takes root on it.** `On_WorldGen.GrowLivingTree` now refuses on her ground and
+115 tiles past either end of it (`Layout.NoGiantHere`: the 70 of the easing, and 45 for a
+crown and roots). A giant there would stand, cut to a stump, at whatever height it grew at.
+Vanilla's Living Trees pass tries another place when a tree is refused (read in its IL:
+`b__288_41` rolls a new x until one grows). A giant can still root in the first and last 50
+tiles of the Cleared Ground, and is still cut to a stump there.
+*[Superseded later in session 7: refused within 255 tiles of the middle, which is the flat, its
+easing and 45 tiles more. A giant can root in the first and last 190 tiles of the Cleared
+Ground. See §16.29.]*
+
+### The numbers
+
+| Number | Value | Mine or theirs |
+|---|---|---|
+| A hole is no deeper than | 5 rows | theirs |
+| A few holes: this many at the most, this far apart, no wider than | 4, 60 columns, 8 columns | mine |
+| Her ground: the middle of the Cleared Ground, this far either side (`Layout.CalmHalf`) | 280 tiles: x 9605 to 10165, 560 of the 890 | mine |
+| The line keeps within this of its level (`CalmRise`) | 6 rows | mine |
+| The lie of the land: averaged this far either way, twice (`CalmReach`) | 30 columns | mine |
+| Ground this near the line is left as it lies (`CalmRough`) | 1 row | mine |
+| A step from one column to the next | 1 row at the most | the Grace plain's rule |
+| Nothing hollow in its first (`Firm`) | 4 rows | mine |
+| Easing past either end (`EaseLeast`, `Layout.CalmEase`, `EaseRun`) | 30 to 70 columns, 1.6 for each row | mine |
+| Nothing is filled deeper than (`FillMost`) | 120 rows | mine |
+| Top rows that are soil and have no wall (`WallFrom`) | 2 | mine |
+| Water is looked for this far past either end (`ShedLook`) | 300 columns | mine |
+| Claimed in the structure map (`ClaimOver`, `ClaimUnder`) | 40 rows over its level, 30 under | mine |
+| No living tree within this of it (`CalmEase` + `Layout.GiantReach`) | 115 tiles | mine |
+
+*[Superseded later in session 7: `EaseLeast`, `EaseRun` and `Layout.CalmEase` are gone, and the
+easing is `Layout.FlatEase`, 70 columns. `Layout.CalmHalf` is still 280 and is still her
+ground, but what is made flat is `Layout.FlatHalf`, 140. Nothing hollow in the first 4 rows
+is asked of the flat only. No living tree within 255 tiles of the middle. See §16.29.]*
+
+**Why 560 tiles and not the middle half.** Her box is half the Cleared Ground, 222 and a half
+tiles either side of its own middle, and its middle is halfway between the player and where
+she is put down (both theirs, §16.25). She comes when a player is within 1350 pixels of her
+place, or 1510 by the time she is put down, and she is put down on the place or 1150 pixels
+from the player. Worked through, the box's middle is within 55.2 tiles of her place, so the
+box can reach 277.7 tiles from it: 280. A calm stretch of exactly half the Cleared Ground
+would have the box hanging off one end of it by up to 55 tiles.
+*[Superseded later in session 7: her ground is still these 560 tiles, for this reason, but only
+the middle 280 of them are flat, so the box does hang off the flat now: by 82 tiles at each
+end with the fight begun at her place, by 138 at one end at the most. The user asked for
+hills, ponds and cracks there. See §16.29.]*
+
+### `DonaQuinnEncounter`
+
+- **Her place.** In a world with `PADWorld.CalmGround` it is the column nearest the middle of
+  the Cleared Ground that is flat ground and has 8 columns of flat ground either side of it,
+  which is to say not the bottom of a hole. In a world without, it is the flattest place, as
+  before. Everything that used the flattest place uses her place.
+- **Flat ground steps over a small hole**, in both kinds of world: a drop of more than a step
+  that is back within a step of the lip it was stepped from inside 8 columns, and nowhere
+  deeper than 5 under that lip (`FarLip`); and the same hole met from its gentle side, where
+  the walk goes down by steps and meets a rise it cannot take (`OutOfHole`, which looks back
+  for the lip). 4 holes at the most in one reach. The three numbers are the pass's
+  (`ClearedGroundPass.HoleWide`, `HoleDeep`, `HolesMost`).
+- **The band is not asked of her ground.** Flat ground used to have to keep within 6 rows of
+  where it is at the column asked. Her ground rolls 12 rows by design, so on it only the steps
+  are asked.
+- **`/dona`** says, in a world with her ground: `Her ground: x 2435-2995, made calm. Her
+  place, the middle of it: x 2715, 340 tiles of flat ground toward the Cleared Ground's start
+  and 309 toward the Mile.` In a world made before, it says what it said, and then: `No
+  ground was made calm for her in this world: it was made before there was any.`
+
+*[Superseded later in session 7: `/dona` says `Her ground: x 2435-2995, made flat from x 2575
+to 2855.` and, in a world made before, `No ground was made for her in this world: it was made
+before there was any.` See §16.29.]*
+
+`PADWorld.CalmGround` is the world's: cleared with the world, saved as a key that is only
+written when it is set, sent to a joining client.
+
+### In the three worlds
+
+The pass was run on the Cleared Ground of three Grand worlds as a new world would have it
+(below). Her ground is 561 columns in each.
+
+| | The Run of Bladders | Far Tract of Potions | Life |
+|---|---|---|---|
+| Her ground | x 2435 to 2995 | x 9605 to 10165 | x 9605 to 10165 |
+| Rise and fall before | 90 rows (y 522 to 612) | 87 (y 639 to 726) | 77 (y 647 to 724) |
+| Steps of more than a row before; the biggest | 74; 40 | 64; 61 | 39; 24 |
+| Columns under water before | 75 | 179 | 5 |
+| Its level | y 571 | y 658 | y 668 |
+| Rise and fall after | 12 rows (y 564 to 576) | 10 (y 655 to 665) | 12 (y 663 to 675) |
+| Steps of more than a row after, outside a hole | 0 | 0 | 0 |
+| Holes left with a step into them | 2: one column 2 deep at x 2884, five columns 5 deep at x 2774 to 2778 | 0 | 0 |
+| Columns under water after | 0 | 0 | 0 |
+| Columns cut down; filled | 327; 281 | 284; 316 | 306; 275 |
+| Tiles taken off; put down | 5,189; 3,459 | 1,217; 3,746 | 3,864; 5,928 |
+| Deepest cut; deepest fill | 43; 36 rows | 16; 64 | 18; 49 |
+| Her place, and the flat ground either side of it | x 2715: 340 and 309 tiles | x 9885: 445 and 312 | x 9885: 318 and 313 |
+
+The pass counts one hole kept in Far Tract of Potions and none shows in the table: it is a
+dip with gentle sides, two or three rows down and back by steps of one, which a walker does
+not meet as a hole. The pit in The Run of Bladders is gone: where it was is the middle of her
+ground, and she is met on it.
+*[Superseded later in session 7: these are the figures of 560 calm tiles, and the "before"
+rows of The Run of Bladders and Far Tract of Potions have a living tree's shaft in them. With
+280 flat tiles, and with the figures put right: §16.29.]*
+
+### How it was checked
+
+Nothing was run in the game.
+
+- **The pass.** The mod's own `ClearedGroundPass.cs`, whole and unchanged, compiled against
+  stand-ins for the game and run on the Cleared Ground of the three worlds, read from their
+  `.wld` files as a new world would have them at that point: nothing grown yet, and no living
+  tree where none would now grow. A second build of the same file with the one call to `Calm`
+  left out is what it was laid beside. Read off the tiles it wrote: every column it changed
+  is on her ground or its easing; no step of more than a row outside a hole; no hole wider
+  than 8 or deeper than 5; no water over her ground; nothing standing or hanging over it; no
+  soil showing without grass in a column it changed; four rows of ground or more under every
+  top. Its wall starts two rows down in 545, 545 and 540 of the columns it changed.
+- **Other country.** The same build run on 210 other stretches of the three worlds, put where
+  the Cleared Ground is: every 310 columns, each world both ways round, through snow, jungle,
+  desert, corruption, the dungeon's hill and the beaches. All 210 keep every one of those
+  rules, with 4 holes at the most, no water left that could run onto her ground, and no tile
+  read outside the stretch.
+- **The water, on made-up ground**, each both ways round. A lake past the end whose rim the
+  easing leaves standing keeps all 819 of its tiles. One whose rim the easing cuts loses 549
+  of 1,179: what stood over the rim that is left. A cliff with a cave of water behind its
+  face, low enough that the easing cuts the ground in front of it away: 6 of its 24 tiles go,
+  the row the cut opened; with the step left out, one tile is left with open air beside it.
+  A hole small enough to be kept, full of water, with more under a ledge at its side: with
+  the step, none is left; without it, 3 tiles are left under the ledge and one of them is
+  open to the hole.
+- **The survey.** A Python version of the walk and of `Reach` gives, from The Run of Bladders'
+  world file, the line in the user's screenshot: x 2670, 28 and 29. The mod's own compiled
+  `Reach`, called by reflection out of the built `PisAndDag.dll`, gives what the Python gives
+  in every one of 96,114 reaches on 87 walks: the three worlds as they are and made calm, and
+  60 made-up walks with holes, trees and water in them. The hole rules change 13,088 of those.
+  With them the worlds as they are keep their flattest places (x 2670 and x 2667; Life's three
+  unchanged; Far Tract of Potions' x 9567 becomes x 9572 and one walk's x 9580 becomes x
+  9585).
+- **Her box.** Worked from the numbers in `DonaQuinnEncounter` (above): not run.
+- The whole mod compiles: 0 errors, the 10 warnings it had.
+
+**Verified in the 1.4.4 IL.** The order of vanilla's passes (`WorldGen.AddGenPasses`): Settle
+Liquids is the 49th and Smooth World the 53rd, before Gem Caves, the 64th, which this pass
+follows; Spreading Grass, Surface Ore and Stone, Planting Trees, Settle Liquids Again (the
+97th) and Micro Biomes come after. Of Surface Ore and Stone: `WorldGen.StonePatch` turns solid
+tiles into stone and hangs piles on them, and lays no block. `OrePatch` (15 to 29 of them in a
+Grand world) runs a vein of ore down from the surface, a row or more down for each column it
+strays, and ends it in a pocket under the ground; one step in four it lays a tile of ore up to
+two columns to the side of the vein, so where the ground falls three rows in three columns
+that tile can stand a row or two over it. That is vanilla's own, on her ground as anywhere,
+and nothing here stops it.
+`EnchantedSwordBiome.Place` asks the structure map twice: for its chamber, and for a strip one
+tile wide from the surface down to it, which is its shaft. `WorldGen.PoundTile` during
+generation only turns a half block on or off, after `CanPoundTile`;
+`WorldGen.SolidTile(int, int, bool)` wants a block that is there, solid, no platform, no half
+block, not sloped and not switched off. `b__288_41` (Living Trees) rolls a new x when
+`GrowLivingTree` says no. The three cleanups that come after (Quick Cleanup, Tile Cleanup,
+Final Cleanup) were not read through.
+
+**Mine, not asked for** (all in `RELEASE_TODO.md`): every number in the table marked mine;
+her ground being 560 tiles and not 445; no water left on it, which fills its ponds, and the
+two in the middle were asked to be kept once; no living tree on it or near it; the ground
+being sound four rows down; she is met at the middle of it and not at the flattest place;
+flat ground stepping over small holes in a world made before, too; what `/dona` says.
+*[Superseded later in session 7: what is made flat is 280 tiles; the ponds of her ground's
+edges are kept; a giant may root on the outer 25 tiles of it at either end. See §16.29.]*
+
+**Not in a world already made.** Her ground is made when a world is. The Run of Bladders
+keeps its pit, and `/dona` there now says why. It could be added to `/struct update`; it was
+not, because it would cut and fill 700 tiles of a world somebody may have built on.
+
+**Not yet confirmed in game:** all of it. Riskiest: how the cut and the fill look where they
+are deep (a hill 43 rows high is gone in The Run of Bladders, and Life's west end is 49 rows
+of new soil with no stone in it); what vanilla's later passes put on it (trees, which the
+cleanup turns to stumps, piles, a fallen log, once in a long while a tile of ore); Settle
+Liquids Again, which the water step is reasoned about and not run against; and her fight on
+it.
+*[Superseded later in session 7: with 280 flat tiles the deepest cut and fill are 26 and 32
+rows in The Run of Bladders, 10 and 36 in Far Tract of Potions, 14 and 29 in Life. See
+§16.29.]*
+
+**The tools are not in the mod folder.** The stand-ins, the second build, the made-up ground,
+the Python survey, the program that calls the compiled `Reach`, and the pictures lived in the
+session's workspace and went with it.
+
+---
+
+## 16.29 Later in session 7: 'Dame' Quilt's ground: flat in the middle, vanilla's at its edges
+
+The ask, in the user's words, after the pictures of §16.28's ground:
+
+> id also appreciate some hills , ponds, cracks or terrain generation at the edges of the
+> patch but middle is flat is nice
+
+**How it was read.** The patch is her ground as §16.28 made it: 560 calm tiles in the middle
+of the Cleared Ground. Its middle is to stay flat, and its edges are to be vanilla's again:
+hills, ponds, cracks, whatever vanilla generated there. Nobody was asked how much of it is
+middle and how much is edge. Half and half was taken, and it is one number to change.
+
+**What changed.** Her ground is still the same 560 tiles, because that is how far her box can
+reach (§16.28). What is done to it is not the same:
+
+| Part of her ground | Tiles from her place, the middle | In an unmirrored world | What is done |
+|---|---|---|---|
+| The flat | 0 to 140 either way, 281 columns | x 9745 to 10025 | everything §16.28 did to all 560: the line, the holes, sound 4 rows down, no water |
+| The easing | 141 to 210 | x 9675 to 9744 and x 10026 to 10095 | each column put part of the way from where it lies to the flat's height |
+| The rest of the edge | 211 to 280 | x 9605 to 9674 and x 10096 to 10165 | nothing, but for water that would run onto the flat |
+
+### The easing
+
+§16.28 eased past her ground, over 30 to 70 columns, into ground it had no interest in. This
+one is the edge she rides out onto, and it is what turns the flat back into vanilla's ground.
+
+- **The share.** Each column is put at `lies + (row - lies) × share`, rounded, where `row` is
+  the height the flat has at that end and `share` falls smoothly from all to none over the 70
+  columns: `t × t × (3 - 2t)` with `t = 1 - k / 71`, k columns past the flat. It is 0.99 at 5
+  columns, 0.95 at 10, 0.81 at 20, 0.51 at 35, 0.21 at 50, 0.06 at 60 and nothing at 70. So a
+  hill, a pit or a pond's bed that stands there is still there, lower, shallower and smaller
+  the nearer the flat it is.
+- **A pond keeps its water.** In a column of the easing that had water standing open on it,
+  as many rows of it are left as `share` leaves of its bed's depth, and none of it higher
+  than it stood: a pond whose water was under the height of the flat keeps its level, and
+  its shore moves out. Where neither the bed nor the depth has changed, the water is not
+  touched. Water that lies in the rows it is to be in is left as it lies; it is laid only
+  where the bed went down from under it.
+- **What is hollow under it stays hollow.** Only the flat is packed 4 rows down. §16.28
+  packed its easing as well, and that was wrong for a pit with a lip: the column under the
+  lip was packed down to the pit's floor while the open columns beside it were not, which
+  leaves a pillar of soil one column wide standing down the pit (seen in Life at x 10082 and
+  x 10085, once the pit lay in an easing).
+- **But a cut that goes through into something hollow is followed.** The column lies on the
+  floor of the hollow from then on and is put its part of the way from there, up to 8 times
+  over. Beside the flat that fills an opened cave back in; where the easing stops it leaves
+  it open, as a pit that lay open already is left. Without this the rim of the flat could be
+  a chasm: on other stretches of the three worlds, a cut in the first column past the flat
+  dropped it 72 rows into a cave.
+- **No step rule.** Past the flat a column may stand any number of rows from the next, as
+  vanilla's does. The steps of one row that are left on made columns are still poured to
+  half blocks.
+
+### The rest of what changed
+
+- **The fill squares off what it buries.** The ground a fill comes to rest on was a top until
+  then, and vanilla's Smooth World may have sloped it or poured it to half. `Fill` makes it a
+  whole block again. §16.28's did not, and left a gap under the fill wherever the old top was
+  shaped: 40, 80 and 53 of them in the three worlds as the pass now runs. That was a fault in
+  what was delivered, not something asked for now. A world made with §16.28's build has them.
+- **The world remembers how much is flat.** `PADWorld.CalmFlat`: the tiles either side of the
+  middle that were made flat, set by the pass beside `CalmGround`, saved (only with
+  `CalmGround`), sent to a joining client. A world made with §16.28's build has the first key
+  and not the second, and is read as flat from end to end (`Layout.CalmHalf`). `/dona` says
+  what the world says and not what the mod's number is today, because that number has now
+  changed once.
+- **Giants.** `Layout.NoGiantHere` now covers the flat, the easing and 45 tiles more: 255
+  tiles either side of the middle, where it was 395. A giant can root in the first and last
+  190 tiles of the Cleared Ground, the outer 25 of her ground at each end among them, and is
+  cut to a stump there.
+- **The claim.** The structure map is told of the flat only: 281 columns, 40 rows over its
+  level and 30 under. The edges are vanilla's to dig in.
+- **The water that would run onto the flat** is looked for as before, from the air over each
+  column of the flat, out to 300 columns past either end. That now reaches through the edges
+  and past her ground. A pond there that nothing lowered the rim of is not met.
+- **The log.** `'Dame' Quilt's ground: x 2435-2995, flat from x 2575 to 2855 and level at y
+  575. 241 columns cut down, 159 filled, small holes left on the flat: 0, columns with water
+  on them where the flat eases: 6, tiles of water taken that would have run onto the flat: 2.`
+- **`/dona`.** `Her ground: x 2435-2995, made flat from x 2575 to 2855. Her place, the middle
+  of it: x 2715, 157 tiles of flat ground toward the Cleared Ground's start and 197 toward the
+  Mile.` In a world made before there was any: `No ground was made for her in this world: it
+  was made before there was any.` The two reaches are the encounter's flat ground, which
+  steps 2 rows at the most, and run on past the made flat for as long as vanilla's ground
+  steps no more than that.
+
+Nothing in her fight or in where she is met was changed. She is still met at the middle, which
+is on the flat.
+
+### The numbers
+
+| Number | Value | Mine or theirs |
+|---|---|---|
+| The middle flat, the edges vanilla's | | theirs |
+| The flat: this far either side of the middle (`Layout.FlatHalf`) | 140 tiles, half of her ground | mine |
+| The easing past either end of it (`Layout.FlatEase`) | 70 columns | mine |
+| The rest of each edge, not touched | 70 columns | mine: what the two leave |
+| How the share falls | smoothly, `t²(3 - 2t)` | mine |
+| A pond in the easing keeps | `1 - share` of its depth, and none higher than it stood | mine |
+| A cut is followed into what is hollow (`Falls`) | 8 times at the most | mine |
+| No living tree within this of the middle (`FlatHalf + FlatEase + Layout.GiantReach`) | 255 tiles | mine |
+| Every number of the flat itself | as §16.28 | as §16.28 |
+
+### In the three worlds
+
+The pass run on the Cleared Ground of the three Grand worlds as a new world would have it.
+
+| | The Run of Bladders | Far Tract of Potions | Life |
+|---|---|---|---|
+| Her ground | x 2435 to 2995 | x 9605 to 10165 | x 9605 to 10165 |
+| The flat | x 2575 to 2855 | x 9745 to 10025 | x 9745 to 10025 |
+| Its level | y 575 | y 656 | y 668 |
+| The flat's rise and fall before | 68 rows (y 544 to 612) | 54 (y 645 to 699) | 38 (y 649 to 687) |
+| after | 12 rows (y 568 to 580) | 9 (y 654 to 663) | 13 (y 662 to 675) |
+| Steps of more than a row on it before; the biggest | 33; 24 | 19; 5 | 6; 15 |
+| after | 0 | 0 | 0 |
+| Its columns under water before; after | 0; 0 | 108; 0 | 2; 0 |
+| Holes kept on it | 0 | 0 | 0 |
+| Columns cut down; filled | 241; 159 | 186; 183 | 169; 148 |
+| Tiles taken off; put down | 2,786; 1,858 | 583; 2,302 | 1,188; 1,285 |
+| Deepest cut; deepest fill | 26; 32 rows | 10; 36 | 14; 29 |
+| Columns changed, of the 421 | 396 | 371 | 315 |
+| Water standing in the easings before; after | 9 tiles; 9 | 572; 66 | 5; 4 |
+| Water in the rest of the edges | 679 tiles, all kept | 362, all kept | none |
+| Water taken as about to run onto the flat | 2 tiles | 8 | 0 |
+| Her place, and the flat ground either side of it | x 2715: 157 and 197 tiles | x 9885: 146 and 200 | x 9885: 190 and 150 |
+
+The two reaches depend a little on where the walk is started from, as they always have: from
+four of the eleven places tried in The Run of Bladders the first is 171, and from three in Far
+Tract of Potions the second is 176.
+
+What that is, world by world. **The Run of Bladders:** the hill toward the Mile is back, its
+top at y 522 where the easing stops, 46 rows over the flat and 70 columns from it, with the
+crack of water in its side; toward the start the lake is whole, 56 columns of it and 27 rows
+deep, with the ground rising 11 rows from the flat to its rim. §16.28 had cut the hill off and
+filled the lake in. **Far Tract of Potions:** the pond that lies across the start end of the
+flat is filled where it is on the flat, and is a pool 31 columns wide and 3 deep past it; the
+pond in the rest of the Mile edge is whole, 38 columns and 19 deep. **Life:** the valley
+toward the start is a slope of 48 rows down from the flat; toward the Mile the crack of water
+11 columns past the flat is open to the sky again, narrower, and the pit 56 columns past it
+keeps its shape and its lip.
+
+### How it was checked
+
+Nothing was run in the game.
+
+- **The pass**, as §16.28: the mod's own `ClearedGroundPass.cs`, whole and unchanged, compiled
+  against stand-ins and run on the three worlds' Cleared Grounds, beside a second build with
+  the one call to `Calm` left out. Read off the tiles it wrote. On the flat: every rule of
+  §16.28. In the easing: every one of its 140 columns stands exactly where the rule above
+  puts it, worked a second time in Python from the tiles the pass was given; no water in a
+  tile that was open sky before; no more water in a tile than it held; none higher than any
+  stood in its column. Past the easing: not a tile, a wall or a shape changed, and no water
+  added. No sloped or half block left shut in under the ground. No soil showing without
+  grass in a column it changed.
+- **The water, forward.** The pass looks for water that could reach the flat by walking back
+  from the flat, sideways and up. The check goes the other way: from every tile of water
+  within 300 columns of the flat, sideways and down through whatever is not solid. It reaches
+  the air over no column of the flat, in any run here; nor does it from 410 columns out.
+- **Other country.** 204 other stretches of the three worlds, every 310 columns, each world
+  both ways round, with nothing grown on them. 199 keep every one of those rules. The other 5
+  are all in Life and all lie over its Wasted Mile, where the mod's own bones stand on ash
+  poured to half: a half block with a block on it is no top, the fill beside it shuts it in,
+  and the check counts it (1 to 15 of them). Nothing of the kind is on the Cleared Ground
+  when the pass runs. Over the 204: water was taken as about to run onto the flat in 45, 367
+  tiles at the most; in 13 some of it came from past the easing, 270 tiles at the most; of
+  the 408 easings 143 had water standing on them before and 93 after, 23,275 tiles before and
+  7,407 after; a cut went through into a hollow in 626 columns of 81 stretches, and within 5
+  columns of the flat that left the ground a row low at the most, within 10 columns 3 rows,
+  within 20 columns 7; holes kept on the flat, 38 in all and 2 at the most.
+- **The water, on made-up ground**, 12 grounds, each both ways round, each run without her
+  ground, with it, and with it but without the step that takes water. All 24 keep the rules.
+  A pond in the rest of the edge: all 401 of its tiles kept. A pond in the easing with its
+  water under the height of the flat: 203 of 401 left, its level where it was. The same pond
+  brim-full: 47 tiles taken from its top, 255 of 517 left. A pond across the end of the flat:
+  85 of 1,044 left, all past the flat. A pond on the flat: none of its 739 left, and its bed
+  filled. A lake across a whole edge and on past it: 5,213 of 5,640. A pond on high ground in the easing: 70 of 291. A lake on high ground past the
+  easing, its rim in the easing: all 665. The same lake reaching into the easing: 607 of 951,
+  what stood over the rim that is left. A lake on high ground whose rim was on the flat: 81
+  of 1,150, a row of water on its bed. A small hole on the flat, full, with water under a
+  ledge beside it: kept, and dry. A cave of water behind a cliff's face that the easing cuts
+  open: 12 of 24. Without the step that takes water, water could reach the flat in 7 of the
+  12.
+- **The survey.** The Python walk and `Reach` on the three worlds with her ground made, from
+  11 places a player could stand in each: her place is the middle from every one of them.
+  The mod's compiled `Reach`, called out of the built `PisAndDag.dll`, gives what the Python
+  gives in all 117,612 reaches of the 66 walks.
+- The whole mod compiles: 0 errors, the 10 warnings it had.
+
+**The test worlds are played worlds, and two things in them were wrong for this.** Far Tract
+of Potions has a fishing bridge of the player's over the pond on her ground: platforms, a
+campfire and six bubble blocks. The bubbles are solid, and stood as ground over the water.
+They are taken out of the input now, with everything else that is not there when the pass
+runs.
+
+And two of the worlds have a living tree where a new world now grows none: The Run of
+Bladders at x 2835 to 2842, Far Tract of Potions at x 9652 to 9662 with a room off it. §16.28
+took the wood, the leaves and the heartwood out of the input and left what was dug for the
+tree: the shaft its trunk was sunk in, about 43 rows deep in one world and 56 in the other.
+No new world has that shaft, because no tree is planted. The input now has the ground put
+back as near as can be told: in the columns the hollow runs through, soil from the ground
+line down, the line drawn straight between the ground either side; a root that rests on
+ground is soil, one with air under it is air.
+
+**That shaft was in §16.28's figures.** Its side was "the biggest step" of the table there: 40
+rows in The Run of Bladders and 61 in Far Tract of Potions. With the ground put back, her 561
+columns were, before anything was done to them: The Run of Bladders, 90 rows of rise and fall
+as it said, 58 steps of more than a row and not 74, the biggest 24 and not 40; Far Tract of
+Potions, 60 rows and not 87, 53 steps and not 64, the biggest 22 and not 61, 185 columns
+under water and not 179; Life, as it said. What §16.28 says of those two worlds after the
+pass (columns cut and filled, tiles moved, the deepest fill) has the shaft in it too, and was
+not worked again. The complaint the work answered does not rest on any of that: the pit
+beside `/dona`'s place, 17 wide and 18 deep, is measured in the world as it is.
+
+**Verified in the 1.4.4 IL.** `Liquid.Update`, `SettleWaterAt`, `QuickWater` and
+`UpdateLiquid` ask nothing of a half block or a slope: liquid is stopped by a tile that is
+there, not switched off, solid and no platform, whatever its shape (`tilesIgnoreWater` turns
+`tileSolid` off for three tiles only: 138, 484 and 546). That is the rule the water step
+walks by. `WorldGen.do_worldGenCallBack` calls `clearWorld`, then `GenerateWorld`, then
+`WorldFile.SaveWorld`, and `clearWorld` is what calls `SystemLoader.ClearWorld`: so what a
+pass sets in `PADWorld` is cleared before generation and saved with the new world.
+
+**What it costs.**
+
+- **Her box reaches the edges.** It is 445 tiles and the flat is 281. With the fight begun at
+  her place, 82 tiles at each end of the box are edge: the easing, and 12 tiles of ground
+  nothing touched. With the box as far off her place as it can fall, 138 at one end. Hills,
+  water and pits deeper than 5 can be inside the box again, at its ends. That is the ask; it
+  is also where §16.28's complaint came from. Triunfo jumps 10, leaps 14 and swims.
+- **A pond can lose water.** One whose rim the flat or the easing brings down under it keeps
+  what stands under the rim that is left. One whose rim was on the flat keeps a row.
+
+**Mine, not asked for** (all in `RELEASE_TODO.md`): every number in the table marked mine;
+ponds in the easing keeping their water, scaled; hollows left under the easing, and a cut
+followed into one; giants let back onto the outer 25 tiles of her ground; the claim shrunk to
+the flat; `PADWorld.CalmFlat`; the two counts added to the log's line; what `/dona` says; the
+fill squaring off what it buries.
+
+**Not in a world already made**, as before. A world made with §16.28's build keeps its 560
+calm tiles, and `/dona` there says `made flat from x 2435 to 2995`.
+
+**Not yet confirmed in game:** all of it. Riskiest: how the easing looks where the flat and
+the edge are far apart in height (46 rows in 70 columns on The Run of Bladders' hill); what a
+shallow pool beside the flat looks like once vanilla has settled it; her fight where it
+leaves the flat.
+
+**The tools are not in the mod folder.** The stand-ins, the second and third builds, the
+checks, the made-up grounds, the Python survey and the pictures lived in the session's
+workspace and went with it.
+
+---
+
+## 16.30 Later in session 7: the parry made universal: every enemy classed, the stagger and the riposte, solid shots, 'Dame' Quilt parried
+
+The ask, in the user's words, after the classes of enemy a parry could reach had been put to
+them:
+
+> Alright then its settle, parrying these enemies will deal like base damage to them and if
+> flag staggered, their AI will be changed to staggered(must remember their normal AI tho so
+> they can resume after sometime(check how long can an NPC stagger for in elden ring)), parry
+> wont deal damage anymore but any attack that isnt parry gets triple damage and quad knock
+> back(the attack wont have crit)
+> Also : Solid things shot or thrown (arrows, javelins, knives, bones) (maybe bullets too but
+> only the penetrate 1 type)
+
+Four things were asked back. The answers:
+
+| Asked | Answered |
+|---|---|
+| The riposte: the first hit, or every hit while it is staggered | "First hit onnly and it immediately wakes it" |
+| How long the stagger is | "2 seconds (Recommended)" |
+| Giants | "Cannot be parried but primary hit still do damage" |
+| Bullets | "All bullets for vanilla IG? but other mods penetrate 1" |
+
+Then, while it was being written:
+
+> Also now player can also parry Dame Quilt, all her attacks(joust, thrown lance and horse
+> charge) also all parry has to push NPCs back btw
+
+> make it cool looking tho
+
+**How these were read.**
+
+- *These enemies*: an enemy is classed at the moment of the parry, from its own numbers, as
+  never, giant, heavy or light (below). No list of what can be parried: only short lists of
+  what cannot be told from the numbers.
+- *Deal like base damage*: the parry's blow. The damage of the weapon that parried, as the
+  player has it (`Player.GetWeaponDamage`), less the enemy's defence as any hit is; never a
+  critical hit, none of the game's variation, no knockback of its own.
+- *Their AI will be changed to staggered, must remember their normal AI*: the AI is stopped,
+  not swapped. Nothing of the enemy's is changed (`aiStyle`, `ai`, `localAI`, its own fields),
+  so there is nothing to put back: it goes on from where it stopped.
+- *Parry wont deal damage anymore, but any attack that isnt parry gets triple damage and quad
+  knock back, the attack wont have crit*: a staggered enemy cannot be parried again. The first
+  hit on it that is not a parry does three times its damage and four times its knockback, is
+  never a critical hit, and wakes it at once (the answer above).
+- *Check how long in Elden Ring*: nothing read gives a figure (below). Two seconds, as
+  answered.
+- *Giants cannot be parried but primary hit still do damage*: read as: a giant's hit is not
+  turned aside and lands on the player; it is not pushed and never staggered; the parry's own
+  blow (the primary hit) still lands on it, once a parry. **This reading is mine**: say if it
+  meant something else.
+- *Bullets*: vanilla's enemies have three (the pirate's, the snowman's, the sniper's) and all
+  three are parried. Any other bullet only when its `penetrate` is 1.
+- *All parry has to push NPCs back*: every enemy a parry turns aside is pushed back 96 pixels,
+  whether or not the game lets it be knocked back. A giant is not turned aside, so not pushed.
+- *All her attacks (joust, thrown lance and horse charge)*: the charge with the lance couched,
+  the lance thrown, and Triunfo running them down. Her fourth, the swing, is not among the
+  three and wears the yellow star: it is not parried.
+
+**Elden Ring, as asked.** No wiki or guide that was read gives the length of the stagger.
+eldenring.wiki.gg, Stance: an enemy whose stance is broken is "stunned for a significant
+amount of time", and a riposte knocks it back, "resetting their Poise and taking them out of
+the stun" (so the first hit ends it there too). The same site, Parrying: "bosses often require
+two or even three parries before becoming vulnerable to a Critical Hit (note that there's no
+recovery for this ...)". eldenring.wiki.fextralife.com, Parrying: "For most parriable enemies,
+a single successful parry is enough", and "an enemy's parry counter doesn't decay after a
+period of inaction". darksouls.fandom.com, Parry and Riposte, for the older game: "players
+have about one second to do the Riposte". What was taken from these: one parry for most, two
+for the ones that do not give; a count that does not run down; the first hit ends it.
+
+**What was made.**
+
+| Piece | Where | What it does |
+|---|---|---|
+| `ParryRules`, `ParryClass`, `ParryWhy` | `Content/Combat/ParryRules.cs` (new) | What can be parried, read off the thing itself: an enemy's class and why, and whether a shot is solid. Nothing of the mod's state in it, so it runs outside the game. |
+| `Parry` (static) | `Content/Combat/Parry.cs` (rewritten) | The lists (the mod's, the config's, other mods'), what a parry does to a thing, the packet. |
+| `ParryPlayer` | same file | A player's side: the ticks, the arc, vanilla's two questions, the blow, and the four doors for hits the mod works out itself (`Spares`, `MeetsLine`, `MeetsBox`, `Takes`). |
+| `ParrySystem` | same file | Once everything is loaded: finds what every ammunition shoots, reads the config, writes one line of counts to the log. Lets go of all of it on unload. |
+| `PADStaggerNPC` | `Content/NPCs/PADStaggerNPC.cs` (the Greatbow's stagger kept as it was; the parry's added) | The stagger a parry gives (`Reel`), the push (`Push`), the count toward a stagger (`TakeParry`), the riposte, what is sent. |
+| `ParryEffects` | `Content/Combat/ParryEffects.cs` (new) | Everything the parry shows and sounds. |
+| `ParryRing` | `Content/Particles/ParryRing.cs` (new) | A ring of light: the roar's ring (`Content/Combat/RoarRing.png`, already in the mod), drawn twice a third of a turn apart. No new picture. |
+| `ParryConfig` | `Content/Combat/ParryConfig.cs` (new) | Five lists for whoever runs the world. The mod's first config. |
+| `ParryCommand` | `ParryCommand.cs` (new) | `/parry`: what a parry makes of the enemy nearest the cursor, and why. `/parry list`: every kind, to the log. |
+| `DonaQuinn` | `Content/NPCs/DonaQuinn/DonaQuinn.cs`, `DonaQuinn.Fight.cs` | A new phase, `Reel`; her charge and her ram ask the parry before they land. |
+| `DonaLanceThrown` | `Content/NPCs/DonaQuinn/DonaLanceThrown.cs` | Parried in the air, it is knocked away turning end over end. |
+| `AbomanationBone`, `AbomanationSkull` | `Content/NPCs/Abomanation_Small/AbomanationSpew.cs` | Said to be solid, as the bones they are. |
+| `IronFlowHoldout`, `IronFlow` | their two files | The sword gives itself as what parries: `ParryPlayer.Begin(timing, facing, weapon)`. |
+| `Mod.Call` | `PisAndDag.cs` | Five words for another mod. |
+| the words | `Localization/en-US_Mods.PisAndDag.hjson` | The Iron Flow's lines about the parry, and `Configs.ParryConfig`. |
+
+**An enemy's class** (`ParryRules.Kind`, asked in this order; the first that fits is the answer).
+
+| Class | What it is | A parry |
+|---|---|---|
+| Never | friendly, a town NPC, or no damage by touch; a shot in an enemy's place (`NPCID.Sets.ProjectileNPC`, and the Ancient Light and the Ancient Doom, which lack the flag); a boss (`NPC.boss` or `NPCID.Sets.ShouldBeCountedAsBoss`); a part of a boss (25 named below, or `realLife` pointing at one); beyond being hurt (`dontTakeDamage`, `immortal`); a bomb (8 named); a ghost (`aiStyle` 22 that also goes through tiles) | does nothing |
+| Giant | a hitbox wider than 60 or taller than 84 (three players wide, two tall) | lands its blow, once; the giant's hit lands too |
+| Light | the game lets it be knocked back (`knockBackResist` above 0, as it is at that moment) | turns it aside, strikes it, pushes it back, staggers it |
+| Heavy | the game does not (`knockBackResist` 0) | turns it aside, strikes it, pushes it back; the second parry of it staggers it |
+*[Superseded later in session 7: light and heavy are staggered alike now: every second parry of
+one that flies, every third of one that does not. See §16.31.]*
+
+Over that, in `Parry.Of`: an enemy that is staggered already is never (a parry is no riposte);
+one that wears the yellow star (`PAD().CCBypass`) is never; one on a "never" list is never; one
+on an "always" list, or one the mod speaks for (`Parry.AddNPC`), has its size and its rank set
+aside and is light or heavy by its weight alone.
+
+`knockBackResist` is the line because the game draws it there itself:
+`NPC.GetIncomingStrikeModifiers` switches knockback off for an enemy at exactly 0. It is read
+live because nine of vanilla's AIs move it while the enemy lives (the Creature from the Deep
+is 0 in water and 0.4 on land). Life is not looked at: it does not sort them (a Giant Worm's
+segment has 30 and cannot be pushed, a Nailhead has 4000 and can), and the world's difficulty
+doubles and triples it, where it only takes a tenth or a fifth off `knockBackResist` and
+leaves 0 at 0.
+
+The 25 parts of bosses, by name: the Eater of Worlds' body and tail, Skeletron's hand, The
+Hungry, Prime's four arms, the Destroyer's body and tail, Golem's two fists, Plantera's hook
+and tentacle, the Martian Saucer's turret and cannon, the Moon Lord's free eye, the Flying
+Dutchman's cannon, the Phantasm Dragon's six parts, the Ancient Vision. The 8 bombs: the
+Chattering Teeth Bomb, the Kobold and the Kobold Glider (both tiers), the Etherian Goblin
+Bomber (three tiers).
+*[Superseded later in session 7: the Golem's two fists are parried in their punch. The rules still list them; the mod speaks for them itself, and it is asked first. See §16.33.]*
+
+**Vanilla, by those rules**, run on the compiled mod against the real assembly's own samples,
+all 687 types: 514 are hostile and hurt by touch. 353 light. 59 heavy, of which 24 can be
+staggered (among them the Paladin, the Yeti, the Pirate Captain, the Man Eater, the crawling
+Lihzahrd) and 35 never, being worms or their segments. 25 giants (among them the Ice Golem,
+the Mourning Wood, the Pumpking, the Everscream, the Ice Queen, Santa-NK1, the Ogre, Betsy,
+Mothron, the Dungeon Guardian, the sharks). 77 never: 25 parts of bosses, 19 bosses, 13 shots,
+8 bombs, 7 beyond being hurt, 5 ghosts (the Wraith, the Ghost, the Reaper, the Poltergeist,
+the Floaty Gross).
+*[Superseded later in session 7: in the game the Golem's two fists are heavy and never staggered, so 61 heavy (24 staggered, 35 worms, the 2 fists) and 75 never (23 parts of bosses). The rules' own table is as above. See §16.33.]*
+
+**What a parry does to an enemy.** In this order, on the machine of the player who parried:
+
+1. Its hit is turned aside, and it cannot touch that player for 45 ticks.
+2. The blow: `Player.ApplyDamageToNPC(npc, Player.GetWeaponDamage(weapon), 0, direction,
+   crit: false, weapon.DamageType, damageVariation: false)`. A hit of the player's like any
+   other: the game sends it, and everything that answers a hit answers it. Before the stagger,
+   so it is never taken for a riposte. None with no weapon given, or on something nothing can
+   hurt.
+3. Then, where the enemy is simulated (`Parry.Throw`): it is pushed back and, if it is to be,
+   staggered.
+
+**The push** (`PADStaggerNPC.Push`). 96 pixels, written into its position like the Greatbow's
+slide, so nothing resists it, but as a shove that dies away: 24 ticks, each step nine tenths
+of the last, the first 10.4 pixels. Along the way from the player to the enemy; along the
+ground for anything that stands on it. Stopped by tiles (`Collision.TileCollision`) unless the
+enemy goes through them anyway. What speed it had toward the player is taken off it first:
+left on, a charge would carry it most of the way back through the push.
+
+**The stagger** (`PADStaggerNPC.Reel`). 120 ticks. Light: at the first parry. Heavy: at the
+second (`Parry.HeavyParries`); the count does not run down, and starts over at each stagger.
+Never: a worm or any segment of one (`aiStyle` 6), any part of something many-parted
+(`realLife`), anything on the Greatbow's own list, anything a list says. For those ticks:
+*[Superseded later in session 7: at every second parry of an enemy that flies and every third
+of one that does not, whatever its weight (`Parry.FlyingParries`, `GroundParries`). The rest
+stands. See §16.31.]*
+
+- Its own AI is not run (`PreAI` says no), and in its place it slumps: it loses 14% of its
+  speed across the ground each tick. What has weight falls as the game makes it. What flies
+  falls at the game's own rate and lies where it lands, unless it also goes through tiles,
+  when it hangs. What has weight and goes through tiles is held up (left to the game it would
+  drop out of the world).
+- It can hit nobody (`CanHitPlayer`, `CanHitNPC`).
+- Three glints go round over its head, and its body beats toward steel twice a second.
+- **The first hit on it is the riposte** (`ModifyIncomingHit`): `FinalDamage` times 3, so
+  after its defence; `Knockback` times 4; `DisableCrit()`. Whoever's it is and whatever it is:
+  a swing, a shot, a minion, a trap. A hit on one part of a many-part thing is a hit on the
+  whole. **It wakes at once** (`HitEffect`): its AI runs again on the next tick, with the
+  knockback on it. A burn or a poison is not a hit and does not wake it.
+- On an enemy the game does not let be knocked back, four times nothing is nothing: the
+  riposte's knockback is the game's, and the game gives those none.
+
+A flying weapon is not stopped: it is put in its AI's own state for a hit and thrown back at 8
+pixels a tick, as before, and is open to the riposte while it spins (`Reel` with `hold`
+false).
+*[Superseded later in session 7: on every second parry of it. The first strikes it and pushes
+it back like anything else. See §16.31.]*
+
+**An enemy has to be attacking.** At the arc: able to hit this player now (what vanilla asks:
+not friendly, damage, not one the game leaves this player alone by, a touch that can be dodged,
+its own and every mod's `CanHitPlayer`), and coming at them (its speed toward them). On the
+player's body: moving at all, vanilla's own rule for its shield parry. One walked into is not
+parried. A flying weapon is the exception, as it was.
+
+**Shots** (`ParryRules.Solid`). Hostile, with damage, without the yellow star, and solid.
+
+- Vanilla's are named: 26 of its enemies' own (the two arrows, the three javelins, the
+  skeleton's bone, the Rock Golem's rock, the snowball, the Harpy's feather, the two stingers,
+  the nail, the pine needle, the ornament's shrapnel, the frost shard, the five spikes, the
+  three seeds, the three darts) and 8 of the player's thrown things, for another mod's enemy
+  that throws them. With the three bullets: 29 hostile kinds, of vanilla's 164 that are
+  hostile by default. No light, fire, magic or spit.
+- Anything with vanilla's `arrow` flag. Anything some arrow or dart in the game shoots (found
+  at load from every item that is ammunition, vanilla's and every mod's). A mod's shot that
+  says it flies as one of these (`ModProjectile.AIType`).
+- Any other bullet (what a bullet in the game shoots, or a mod's that flies as one) only when
+  its `penetrate` is 1. So a Musket Ball in an enemy's hands is parried, and a Meteor Shot, a
+  High Velocity Bullet and a Luminite Bullet are not.
+- Vanilla's own enemies' bullets are named instead, because the rule cannot be used on them:
+  their `penetrate` is -1, and the game never looks at it when a hostile shot hits a player.
+
+A parried shot is destroyed, unless the mod says what else becomes of it
+(`Parry.AddProjectile(type, when, turned)`).
+
+**'Dame' Quilt.** She is a boss, and the mod speaks for her (`Parry.AddNPC` with a `when` and
+a `thrown`): she can be turned aside while she charges, while Triunfo runs them down, and
+while she pulls up from either (`CanBeTurned`). Her hits are worked out by the mod, not by the
+game's touch, so each asks the parry before it lands: the lance its line
+(`ParryPlayer.MeetsLine`), Triunfo his body (`MeetsBox`), and both are held off for the 45
+ticks after (`Spares`).
+
+- She is heavy (`knockBackResist` 0). Every parry: the blow on her, and a new phase, `Reel`:
+  Triunfo thrown back the way he came (5.9 pixels a tick and a hop, pulling up at his own
+  rate: about 94 pixels, six tiles), her lance knocked up out of line, 40 ticks, then she
+  faces them and picks again.
+- Every second parry staggers her: `Reel` for 120 ticks, Triunfo up on his hind legs for the
+  first 30, then she slumps over his neck with the lance drooping. She has her own state for
+  it, so her AI is not stopped: only open. The first hit on her or on Triunfo (his life is
+  hers) is the riposte, and she gathers herself at once.
+  *[Superseded later in session 7: every third parry, as for anything on the ground. See
+  §16.31.]*
+- The thrown lance, met in the air: knocked up and back the way it came (5 across, 9.5 up),
+  turning over three times about its own middle in 30 ticks, hurting nobody, throwing sparks
+  for the first 18. It comes down about 270 pixels off and goes into the ground there like any
+  throw; she rides back to wherever that is. No blow on her: she is not there.
+- The swing is not parried.
+
+**Amalgaermis.** Its bones and its skulls are thrown bones, so they are said to be solid
+(`Parry.AddProjectile` in each). A skull broken by a parry spills its three bones where it was
+met, as it does wherever it breaks; they are bones too. Its hands and its ash are not solid.
+
+**The doors, for what the rules get wrong about another mod's things.**
+
+- The config (`ParryConfig`, the server's): enemies never parried; enemies always parried;
+  enemies never staggered; shots a parry breaks; shots never parried. A "never" list wins.
+- `Mod.Call("ParryNPC" | "ParryNoNPC" | "ParryNoStagger" | "ParryProjectile" |
+  "ParryNoProjectile", type)`: the same five, from code. True when taken, false when the type
+  is no number; any other word is passed on to `FireAffinity.Call`.
+- `/parry` says what a parry makes of the enemy nearest the cursor as it is that moment, and
+  why. `/parry list` writes every kind of enemy that hurts by touch, and every solid shot, to
+  the log.
+- At load, one line in the log: `Parry: of N kinds of enemy that hurt by touch, ...`.
+- In code: `Parry.AddNPC(type, when, thrown)` and `Parry.AddProjectile(type, when, turned)`,
+  as before; `thrown` is now given who parried, the way from them to it, and whether this
+  parry staggers it.
+
+**How it looks** (`ParryEffects`; white and steel, never the warning yellow; nothing drawn
+from a picture of its own).
+
+| When | What |
+|---|---|
+| A shot turned aside | as before: a star, a bloom, nine shards that fall, `Item37` and `NPCHit4` pitched up |
+| An enemy turned aside | that, a ring opening from 6 to 62 pixels in 16 ticks, and eight shards thrown the way it is sent |
+| Pushed back | on the ground, the ground's own dust off its feet (`GroundWave.FogColour`, `DustFog`); in the air, pale streaks left behind it |
+| Staggered | a ring off the whole of it, a star over its head, eight shards off the top of it, `NPCHit4` pitched down and `DD2_MonkStaffGroundImpact` |
+| While it is | three glints going round over its head on a flat ring, one lit every 3 ticks; its body beating toward steel |
+| The riposte | a cut of light through it the way it is thrown (`SlashStreak`), two rings, a star, a bloom, fourteen shards that way, `Item71` and `DD2_MonkStaffGroundImpact` |
+| The riposte, for the one who lands it | the camera leans in (1.05 for 7 ticks), a shake of 6, a breath of light |
+| 'Dame' Quilt turned aside | Triunfo's hooves take the dirt with them; her head thrown back |
+| Her lance knocked away | it turns end over end, shedding sparks |
+
+A storyboard of the first five and the riposte was drawn outside the game from the mod's own
+textures and sums, and shown in chat.
+
+**Who decides.** As before: the machine of the player who parried. With a server, that
+machine lands the blow (the game sends it as it sends any hit), shows the clash, and sends the
+same 13 bytes; the server looks at the same things as before, does the push and the stagger,
+and marks the enemy to be sent. The stagger, whether it is held, and the push go with the
+enemy (`SendExtraAI`: four bits, and up to 13 bytes). The riposte is worked out where the hit
+is, like any hit; it wakes the enemy there at once, and a word from the server that left
+before the riposte reached it is not believed for 20 ticks. On the machine that parried, the
+enemy is not turned until the server says so: the 45 ticks cover that.
+
+**The numbers.**
+
+| Number | Value | Mine or theirs |
+|---|---|---|
+| The blow | the parrying weapon's damage | theirs ("like base damage"); no crit, no variation and no knockback are mine |
+| The riposte | 3 times the damage, 4 times the knockback, no crit | theirs |
+| It is the first hit only, and wakes it | | theirs |
+| The stagger | 120 ticks | theirs |
+| Giants: the hit lands, the blow lands | | theirs, as read |
+| A giant is | wider than 60 or taller than 84 | mine |
+| Light or heavy | `knockBackResist` above 0, or 0 | mine |
+| A heavy enemy is staggered on | the 2nd parry; the count never runs down | mine (Elden Ring's way) |
+| Every parry pushes back | | theirs |
+| The push | 96 px, over 24 ticks, each step 0.9 of the last | mine |
+| Solid: arrows, javelins, knives, bones | | theirs; which of vanilla's shots those are is mine |
+| Bullets | vanilla's three; others at `penetrate` 1 | theirs |
+| 'Dame' Quilt: the charge, the thrown lance, Triunfo's charge | | theirs |
+| She is staggered on | every second parry | mine (she is heavy) |
+| Turned aside, she is out of it for | 40 ticks | mine |
+| Triunfo is thrown back at | 5.9 px a tick, a hop of 3 | mine |
+| Her lance is knocked away at | 5 across, 9.5 up; three turns in 30 ticks | mine |
+| The camera for a riposte | 1.05 for 7 ticks, shake 6, flash 0.06 | mine |
+| A staggered thing loses of its speed | 14% a tick | mine |
+*[Superseded later in session 7: staggered on every second parry (flying) or every third (the
+rest), theirs; 'Dame' Quilt on every third. See §16.31.]*
+
+**How it was checked.** Nothing was run in the game.
+
+- `Parry.cs`, `ParryRules.cs`, `ParryTiming.cs`, `ParryConfig.cs` and `PADStaggerNPC.cs`, whole
+  and unchanged, compiled against stand-ins and run tick by tick in the game's own order
+  (below): 224 checks, all passing. A Zombie parried: one blow of 27 (30 less half its 6
+  defence), not tripled, no crit; its AI not run that tick or for 120 ticks; pushed 10.4
+  pixels on the first tick and 96.0 in 24; unable to hit; then its AI goes on with its own
+  count one more than it was. The riposte: 50 on it does 141, no crit though one was rolled,
+  knockback 10 for 5, awake at once, and the next hit is an ordinary 47. A bullet as the
+  riposte; somebody else's; a burn not waking it. A Paladin: the first parry strikes and
+  pushes it and its AI goes on; the second, 600 ticks later, staggers it; a riposte of 200
+  does 525 with no knockback; then the count starts over. An Ice Golem: one blow a parry, its
+  hit lands. A boss, a ball of fire, a boss's hand, a ghost, a bomb, one that cannot be hurt,
+  one under the star, a friend, a part of another mod's boss: nothing. One standing still,
+  one going away, one from behind, too early, too late: not parried. A worm and a segment:
+  parried, pushed, never staggered. A flyer: pushed up and out, falls, lies, gets up. A
+  flying weapon: as it was, and open. Shots of every kind above. A lance, a body and a thrown
+  thing through the mod's own doors, on a boss the mod speaks for: not staggered, then
+  staggered; spared 45 ticks to the tick. A wall behind the enemy; one that goes through
+  walls; one with weight that goes through tiles. The config's lists and another mod's words.
+  Two machines: the client, the server (and what it will not believe), another client, the
+  bytes sent with the enemy read whole, the late word.
+- The rules on every vanilla type, with the real assembly: the compiled `ParryRules.Kind` on
+  all 687 samples (the counts above), and `ParryRules.Solid` on all 1021 projectiles.
+- 'Dame' Quilt's own code was not run: read, line by line, against the phases beside it.
+- The whole mod compiles against the real 1.4.4 assemblies: 0 errors, 10 warnings.
+
+**Read in the 1.4.4 assembly's IL for this.** `Main.DoUpdateInWorld`: every player, then
+every NPC, then every projectile. `Player.Update`: `PlayerLoader.PreUpdate`,
+`Update_NPCCollision`, the move, `ItemCheckWrapped`, `PlayerLoader.PostUpdate`.
+`Update_NPCCollision` asks `CombinedHooks.CanNPCHitPlayer` (`NPCLoader.CanHitPlayer`: every
+global, stopping at the first no, then the NPC's own; and only then
+`PlayerLoader.CanBeHitByNPC`) before it looks at whether the player is immune, at
+`npcTypeNoAggro`, or at the rectangles. `NPC.UpdateNPC_Inner`: the gravity is worked out
+(`UpdateNPC_UpdateGravity`), then `AI`, then `velocity.Y += gravity` for what has weight, then
+`UpdateCollision` (or the bare move, for what goes through tiles), and `justHit` and
+`netUpdate` are cleared at the very end. `NPCLoader.NPCAI`: every global's `PreAI`, the AI
+only if they all said yes, every global's `PostAI`. `NPC.GetIncomingStrikeModifiers`:
+`FinalDamage` times `takenDamageMultiplier`, the defence, `Knockback` times `knockBackResist`,
+`DisableKnockback()` at exactly 0, then `NPCLoader.ModifyIncomingHit`.
+`HitModifiers.GetDamage`: the source damage, the variation, the defence, the crit or not,
+`FinalDamage` last, then the clamp. `GetKnockback`: none if disabled. `NPC.StrikeNPC`: nothing
+under 1 damage; `justHit`; the life (off the whole, by `realLife`); the knockback (eased over
+8, 10, 12 and 14, never over 16, times 1.4 for a crit, in full only when the damage is over a
+tenth of its life, a fifteenth in Expert); then `HitEffect`; then the death.
+`Player.ProcessHitAgainstNPC` and `Projectile.Damage` call `StrikeNPC` before the hooks for a
+hit landed (`NPCLoader.OnHitByItem`, `OnHitByProjectile`). `Player.ApplyDamageToNPC`, then
+`StrikeNPCDirect`, which sends the strike. `ScaleStats_ApplyGameMode` scales `knockBackResist`
+by 0.9 and 0.8. In `Projectile.Damage` a hostile shot's `penetrate` is taken down for four
+types only. `NPC.gravity` is `vanillaGravity` times `GravityMultiplier`. The Hungry
+(`aiStyle` 29) goes by `Main.wofNPCIndex`. `ContentSamples.Initialize` runs before any mod's
+`PostSetupContent`.
+
+**Found on the way.**
+
+- **The Megashark's musket balls can be parried now**, by the bullet rule: it fires
+  `ProjectileID.Bullet`, whose `penetrate` is 1. Its High Velocity rounds cannot be.
+- **Nothing else of the mod's own is reached**: every other NPC of the mod is a boss or does
+  nothing by touch, and no other hostile shot of the mod's is solid by the rules (White
+  Death's, the Queen Slime's core, Skeletron's, Amalgaermis's hands and ash).
+- A minion's hit is a hit: a summoner's minions will take the riposte before the summoner
+  does.
+
+**Mine, not asked for** (all in `RELEASE_TODO.md`): every number in the table marked mine; an
+enemy having to be attacking to be parried; a staggered enemy slumping and falling; nothing
+being able to parry what is already staggered; the config, the five `Mod.Call` words, `/parry`
+and the line in the log; the camera for a riposte; Amalgaermis's bones and skulls; The Hungry
+counted as a part of the Wall; the Etherian Goblin Bomber counted as a bomb; the seven lines
+of the Iron Flow's tooltip about what a parry does.
+
+**Not built**: any weapon or shield parrying with its own ticks, and a key for the ones whose
+right click is taken (§16.26's fourth). The Iron Flow is still the only thing that parries.
+
+**Not yet confirmed in game:** all of it. Riskiest: an enemy of vanilla's whose AI does not
+take being stopped for two seconds (none is known; the list for those is
+`PADStaggerNPC.NeverStagger`, the config's, and `Mod.Call`); how the push looks on slopes and
+at steps, where the tiles stop it short; the riposte's knockback, which is the game's at four
+times and throws a light enemy hard; 'Dame' Quilt turned aside, which was only read; the
+sounds, which have not been heard; two machines.
+
+**The tools are not in the mod folder.** The stand-ins, the two programs that run the compiled
+rules over vanilla, the storyboard and the script that drew it lived in the session's
+workspace and went with it.
+
+---
+
+## 16.31 Later in session 7: the parry's stagger: every second parry in the air, every third on the ground
+
+The ask, in the user's words:
+
+> for the parry why is it staggering after every parry, make it stagger every 2 parries for
+> flyiing enemies and 3 parries for ground enemies
+
+**Why it did.** §16.30 staggered an enemy at the first parry if the game lets it be knocked
+back, which is 353 of vanilla's kinds, and at the second if not. That line was mine, not asked
+for.
+
+**What it is now.** Every enemy a parry turns aside is still struck and pushed back at every
+parry. It is staggered at every second parry of it if it flies and every third if it does
+not (`Parry.FlyingParries` 2, `Parry.GroundParries` 3, read by `Parry.StaggersEvery`). The
+game letting it be knocked back or not no longer comes into the count: light and heavy are
+alike. Their difference is only the riposte's knockback, which is the game's.
+
+**How it was read.**
+
+- *Flying*: it has no weight (`NPC.noGravity`), as it is at that parry. A Demon Eye, a bat, a
+  flying weapon, a fish in water. One that climbs or swims part of the time is counted by
+  what it is doing when it is parried. **Mine.**
+- *Every 2, every 3*: a count on the enemy, kept where the world is decided
+  (`PADStaggerNPC.TakeParry`). It does not run down between parries, as before, and starts
+  over at each stagger: the third, the sixth, the ninth. **The count not running down is
+  still mine.**
+- *'Dame' Quilt* is on the ground: every third parry. Her NPC has no weight of its own only
+  because Triunfo carries her, so the mod says which she is (`Parry.AddNPC(..., flies:
+  false)`, a new last argument; left out, the weight says). **Mine**: say if she should be
+  two.
+- *A flying weapon* (the Enchanted Sword, the Cursed Hammer, the Crimson Axe) flies: its
+  stagger, thrown back spinning and open to the riposte, is on every second parry. The first
+  strikes it and pushes it back like anything else. (Vanilla's own AI puts it in its spin for
+  any hit in flight, so with a weapon given it spins after the first too; it is only not
+  open.)
+- Worms, segments and the lists' "never staggered" are never staggered, as before, and
+  giants are not turned aside at all.
+
+**One thing taken out.** With a server, the machine that parried a flying weapon used to throw
+it back at once, ahead of the server's word. Whether a parry staggers is now a count only the
+server has, so that machine decides nothing: it tells the server, as for any enemy, and the
+weapon cannot touch that player for the 45 ticks meanwhile.
+
+**The user's own edit, kept.** Between §16.30 and this, the Iron Flow's tooltip in the `.hjson`
+was rewritten by hand to one line, "Right click to parry". It was left as it is: the only
+change made to that file is the tooltip of the config's "Enemies always parried" list.
+
+**Changed.** `Parry.cs` (the two numbers in place of `HeavyParries`, `StaggersEvery`, `flies`
+on `AddNPC`, `Throw`, the client's side of `Turn`, the line in the log), `ParryRules.cs` and
+`PADStaggerNPC.cs` (their notes), `ParryCommand.cs` (`/parry` says "every second parry
+staggers it (it flies)" or "every third"), `DonaQuinn.cs` (`flies: false`),
+`DonaQuinn.Fight.cs` and `IronFlow.cs` (their notes), the `.hjson` (one tooltip).
+
+**How it was checked.** Nothing was run in the game. The stand-ins of §16.30, with the scenes
+that lean on a stagger given the parries that come before it, and a new scene for the count:
+232 checks, all passing. Six parries of a Zombie: the third and the sixth stagger it, six
+blows. Four of a Demon Eye: the second and the fourth. A Paladin: the third, 600 ticks after
+the second; then two that do not and one that does. A flying weapon: struck and pushed by the
+first, thrown back spinning and open by the second. A boss the mod speaks for, with no weight
+of her own and `flies: false`: the third. The whole mod compiles against the real 1.4.4
+assemblies: 0 errors, 10 warnings.
+
+**Not yet confirmed in game:** all of it, as §16.30.
+
+---
+
+## 16.32 Later in session 7: 'Dame' Quilt's lance is done with a player once it has hit them
+
+The ask, in the user's words:
+
+> why is dame quilt can still be parried after attacking me? is it because the spear too big?
+> how about disable spear hit on player after an attack in one direction so it cant be parried
+> when its alr hit the player
+
+**Why she could be.** Two things, both in `LanceStrike`. The lance is long (76 pixels of
+sprite, and its hit runs from 10 past her fist to 10 past the point, 24 thick) and she rides
+on past at up to 7.2 pixels a tick, so it is still across the parry's arc for some ticks
+after it lands. And the parry was asked before anything else every tick of the charge, ahead
+even of whether the player had just been hit: nothing remembered that this charge's lance had
+already landed. (Triunfo's ram and the thrown lance did remember: `rammed`, and the lance's
+own `localAI[0]`.)
+
+**What it is now.** As asked: a new flag, `lanced`, each machine's own for its own player,
+beside `rammed`. It is set when the lance lands on that player and cleared when she next
+begins a charge or a ram. While it is set `LanceStrike` does nothing: no second hit from that
+charge, and no parry of it.
+
+**What else that changes.** The lance hits once a charge. Before, only the player's own
+moment of immunity stood between them and a second hit from the same pass.
+
+**Not changed.** A parry before the hit works as before. An ordinary enemy that has just hit
+a player can still be parried while it keeps coming: only her lance was asked about.
+
+**How it was checked.** Read against the phases beside it; the whole mod compiles against the
+real 1.4.4 assemblies, 0 errors, 10 warnings. Her code is not in the stand-ins, so nothing
+was run. **Not yet confirmed in game.**
+
+---
+
+## 16.33 Later in session 7: the Golem's fist parried: sent back into the Golem
+
+The ask, in the user's words:
+
+> Make it so you can parry golem's fist, making it goes back (turn 180 degrees, back to its
+> core causing massive damage to both the hand (1/7 maxhp) and the core(1/21))
+
+and, while it was being read:
+
+> for this guy no stagger tho
+
+**What it is.** A Golem fist punching at a player can be parried. It takes the parry's blow as
+anything does, is turned half a turn, and flies back to its place on the Golem. When it gets
+there the fist loses a seventh of its full life and the Golem a twenty-first of the Golem's.
+It is never staggered, and so never open to the riposte; it is not pushed either. Seven
+punches parried break a fist; both fists broken that way have cost the Golem fourteen of its
+twenty-one parts.
+
+**The fist's AI, read from the 1.4.4 assembly** (`NPC.AI_047_GolemFist`; both fists, types 247
+and 248). Its place is the Golem's middle plus the Golem's speed, 9 up, and 84 left (the left
+fist) or 78 right, each times the fist's scale. `ai[0]` is its state:
+
+- 0, at the Golem or going back to it. It goes through tiles and flies at its place at 14 a
+  tick (3 more under half its life, 3 more under a quarter, 8 more once the Golem is below
+  full life; times a quarter of balance plus 3; at most 32). The tick it is within 12 plus
+  that speed, its speed is set to exactly the way left, it is turned to 0, and `ai[1]` counts
+  up by balance (more by the same three tests, ten times balance for the last); at 60 it
+  winds up, if the player is on its side.
+- 1, winding up: held at its place for 30 ticks, then thrown at the player at 12 (4, 4 and 10
+  more by the same tests; at most 48).
+- 2, the punch. It ends, back to 0, at 700 from its place or when a tile stops it (tiles only
+  stop it once it has passed the player).
+
+If there is no Golem (`NPC.golemBoss` under 0) the fist kills itself.
+
+**How it is done.** One new file, `Content/NPCs/GolemFistParry.cs`: a `GlobalNPC` on those two
+types only.
+
+- It is listed with `Parry.AddNPC` for both, parried only in state 2 and only while there is
+  a Golem. `Parry.Of` asks the mod's own list before the rules, so the rules' "a part of a
+  boss, never" does not come into it; the two stay on `ParryRules.BossLimbs`, with a note.
+- Parried (where the world is decided): marked as sent back, state 0, `ai[1]` 0, through
+  tiles, its speed turned toward its place. The game's own AI flies it home from there, at
+  the game's own speed for that.
+- Each tick it is on its way, after its AI has run, it is pointed half a turn from how the
+  game points a fist going home (worked out from its speed, not added to what it has, so a
+  tick its AI does not run turns it no further): knuckles first.
+- The tick its AI sets it down (its next step ends at its place; any other tick it ends 12
+  short or more), the mark is cleared, the Golem is struck for its full life over 21 and the
+  fist for its own over 7, each a flat `NPC.StrikeNPC`, sent to everyone on a server.
+- If the Golem goes while it is on its way, the mark is cleared and nothing is struck.
+
+**The numbers, in an ordinary world.** The Golem has 15000: 714 a punch. A fist has 10000:
+1428, on top of the parry's blow. In Expert and Master they are sevenths and twenty-firsts of
+what the two have there.
+
+**How it was read. Say which meant something else.**
+
+- *"golem's fist"*: both, and only the punch in flight. The fist at the Golem's side, winding
+  up, or going home by itself cannot be parried, as before. **Mine.**
+- *"the core"*: the Golem's body (type 245), the one with the boss's life. Yours, as I took
+  it.
+- *The Golem takes it while its head is on.* The game lets nothing hurt the body until the
+  head is off (`dontTakeDamage`, set each tick by its AI). `NPC.StrikeNPC` does not ask that,
+  and this strikes it all the same: otherwise the twenty-first would do nothing for the whole
+  first half of the fight. **Mine.** It cannot kill the Golem by itself: fourteen
+  twenty-firsts at most.
+- *When*: the damage is at the landing, not at the parry. Yours ("back to its core causing").
+- *Flat*: no armour taken off, no critical hit, no variation. **Mine.**
+- *"turn 180 degrees"*: the fist is drawn turned half a turn from how the game points it,
+  for as long as it is on its way, and goes home by the game's own way home. Yours.
+- *"no stagger"*: no count is kept for it at all, so nothing ever opens it to the riposte.
+  Yours. That it is not pushed either is **mine** (it is sent home instead).
+- *The parry's blow* still lands on the fist at the parry, as on anything turned aside.
+  **Mine**: nothing was said against it.
+- *The wait before its next punch starts from nothing* after a landing (`ai[1]` 0). The game
+  itself carries the punch's own ticks over into that wait. **Mine.**
+- *Whoever parried it is marked as having had a hand in the Golem* (`NPC.PlayerInteraction`,
+  which marks every part of the Golem at once), so the Golem's loot is theirs too if this is
+  what kills it later. **Mine.**
+
+**What follows from it, which is the game's doing.** The game reads a Golem below full life as
+further into the fight. From the first landing on: a fist flies home at 22 instead of 14 and
+punches at 22 instead of 12; it waits 6 ticks before winding up instead of 60; and the
+Golem's own count toward its next jump (`NPC.AI_045_Golem`) goes up by 2 a tick instead of
+1 while its head and both fists are on. In vanilla none of that starts until the head is
+off. Not changed, and not asked about: say if the first half of the fight
+should be kept as slow as it was.
+*[Superseded later in session 7: while its head is on, the Golem and its fists keep the pace of a Golem at full life, whatever the fists have cost it. See §16.34.]*
+
+**In `Parry`, for it.** `Parry.AddNPC` has two more last arguments: `reels` (false: never
+staggered, no count kept; `PADStaggerNPC.CanReel` now asks it through `Parry.NeverStaggers`)
+and `told` (what a parry does to it, in words, for `/parry`, where the usual words would be
+wrong). `Parry.Told(type)` reads it; `ParryCommand` uses it.
+
+**Vanilla's counts in the game** are now 353 light, 61 heavy (24 staggered, 35 worms, the 2
+fists), 25 giants, 75 never. The table the rules alone make is unchanged: it was run again
+and is the same file, byte for byte.
+
+**With two machines.** The machine that parries decides nothing, as for any enemy: its blow is
+its own hit and is sent, the server is told, and the fist cannot touch that player for 45
+ticks. The server sends the fist back, and at the landing makes both strikes and sends them
+as the game sends a hit. One bit goes with the fist (sent back or not). Every machine shows
+the landing itself, off its own copy of the fist getting there, once a trip: a thump, a ring,
+the temple's stone, a shake within 1400 pixels.
+
+**How it was checked.** Nothing was run in the game. The stand-ins of §16.30 now take in the
+new file, whole and unchanged, with the fist's AI written out from the assembly as above and
+a Golem that stands: 306 checks, 74 of them new, all passing. Not parried at the Golem's
+side or winding up; parried in the punch; let through, it lands for 59, goes home, and costs
+nothing. Parried: the blow (16, the sword's 30 less half of 28), sent home at 14, half a turn
+from the game's pointing on every tick of the way, no stagger, no push; the landing 16 ticks
+on: 714 off the Golem though nothing else can hurt it, 1428 off the fist, once, then it
+punches again at 22. Seven parries break it, the Golem at 10002. The right fist from the
+other side, at its own place. A punch parried one step out lands the same tick. The Golem
+gone mid-way: nothing struck. Stopped mid-way by the Greatbow's stagger: turned no further,
+and it lands when let go. Expert's numbers. The server: sent back on a client's word,
+both strikes sent, nothing on a word about a fist at the Golem's side. A client: nothing
+decided, the landing shown once whatever the server repeats, shown again for the next trip.
+The whole mod compiles against the real 1.4.4 assemblies: 0 errors, 10 warnings. The review
+was my own.
+
+**Changed.** New: `Content/NPCs/GolemFistParry.cs`. `Parry.cs` (`AddNPC`'s two arguments,
+`NeverStaggers`, `Told`), `ParryRules.cs` (a note on `BossLimbs`), `ParryCommand.cs` (the
+mod's own words for a kind).
+
+**Not yet confirmed in game:** all of it. The sounds of the landing (`DD2_MonkStaffGroundImpact`
+and `Item14`, both pitched down) were picked by what they are, not by ear. How the fist looks
+turned half a turn (it is upside down as well as about) has not been seen.
+
+---
+
+## 16.34 Later in session 7: a parried fist no longer hurries the Golem while its head is on
+
+The user, after trying §16.33:
+
+> does it agggro the fucking golem or something?
+
+It did, in the way §16.33 had set down under "What follows from it" and left in: the first
+fist sent back takes the Golem below full life, and the game makes a Golem below full life
+faster. Asked which they wanted, of three (keep the damage and keep it slow; no damage to
+the Golem until the head is off; leave it), the user chose the first.
+
+**What reads the Golem's life, from the 1.4.4 assembly.**
+
+- `NPC.AI_047_GolemFist`, three places, all "the Golem is below full life": 8 more speed home,
+  10 more speed in the punch, and ten times as much a tick toward winding up.
+- `NPC.AI_045_Golem`, its own: its count toward a jump (1 more a tick below full, 4 more
+  below half, 8 more below a third), its jump (below full it is scaled by balance), and a
+  cap on its speed across (1 more below full, below half and below a quarter).
+- The head while it is on (`aiStyle` 46, in `NPC.VanillaAI_Inner`) reads only where the body
+  is, never its life. The head once it is off (`aiStyle` 48) reads its life a great deal;
+  that is the second half of the fight and is left alone.
+
+Neither AI writes the Golem's life.
+
+**What it is now.** One new file, `Content/NPCs/GolemPace.cs`: a `GlobalNPC` on the Golem and
+its two fists. While the head is on (the body's `dontTakeDamage`, which its own AI sets each
+tick to whether a Golem Head is alive) and the Golem is below full life, its life is put by
+in `PreAI` and its full life put in its place; `PostAI` puts it back, less anything it lost
+in between, and never at less than 1 while it lives. So those two AIs see a Golem at full
+life, and nothing else does: hits, the bar, what is sent and what is drawn all come outside
+an AI. `NPCLoader.NPCAI` runs every global's `PreAI` whatever the others answer and always
+runs `PostAI`, so the two always pair; `PreAI` also puts back anything left over first.
+
+The fist's landing strikes the Golem from inside the fist's own `PostAI`, which runs before
+`GolemPace`'s. It asks `GolemPace.Restore()` first, or its twenty-first would be struck off
+the full life and lost when the real one was put back.
+
+**What that keeps and what it does not.**
+
+- Head on: a fist sent back costs the Golem its twenty-first and the fist its seventh as
+  before, and the fight stays at the pace it had: fists home at 14, punch at 12, 60 ticks
+  between punches, the jump count at 1. A fist's own life still makes that fist faster
+  (below half and below a quarter of its own), as in vanilla.
+- Head off: nothing is put by. The Golem is as fast as the life it has left makes it, which
+  after parried fists is less life, and so faster, than vanilla would have at that moment.
+  **Mine**: "while its head is on" was the question's wording and the answer's.
+
+**How it was checked.** Nothing was run in the game. The stand-ins take in the new file,
+whole and unchanged, with the globals' hooks in the game's order: 320 checks, 14 of them new,
+all passing. Head on and hurt: the Golem's AI and its fist's are shown 15000 and it has 9000
+after; what it loses inside its AI it has lost; its AI stopped by something else, nothing is
+lost or gained; head off, both are shown what it has. A parried fist with the head on: the
+Golem at 14286 after, 60 ticks to the next wind-up, the next punch at 12; seven parries
+still break the fist and leave the Golem at 10002. With the head off: 6 ticks, and 22. The
+whole mod compiles against the real 1.4.4 assemblies: 0 errors, 10 warnings. The review was
+my own.
+
+**Changed.** New: `Content/NPCs/GolemPace.cs`. `GolemFistParry.cs` (asks `GolemPace.Restore()`
+before it strikes; its notes).
+
+**Not yet confirmed in game:** all of it.

@@ -47,6 +47,15 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
     /// she shouts something, over her head, not in a box (Bark). Triunfo shares her life:
     /// hitting him hits her.
     ///
+    /// PARRIED. The charge, the throw and Triunfo running them down can all be parried (Parry;
+    /// the swing cannot: it wears the yellow star). Her lance or Triunfo met by a parry is
+    /// turned aside: she takes the parry's blow, Triunfo is thrown back the way he came, her
+    /// lance knocked up out of line, and she pulls up and comes again (Reel). On every third
+    /// one she is staggered, as anything on the ground is: Triunfo
+    /// rears, she slumps over his neck for two seconds, and the first hit on either of them
+    /// does three times its damage and wakes her. The thrown lance parried is knocked away,
+    /// turning end over end, and comes down somewhere else for her to ride back to.
+    ///
     /// THE BOX. From the road until she is thrown, the fight is boxed in (BossArena): two
     /// walls nobody sees, half the Cleared Ground apart, their middle halfway between the
     /// player and where she was put down. The player cannot walk past one, their camera will
@@ -162,6 +171,9 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             /// <summary>Somewhere she can throw from, at a player she cannot get to.</summary>
             Range,
 
+            /// <summary>Parried: her lance or Triunfo turned aside, the two of them thrown back; staggered, if it was the parry that does it.</summary>
+            Reel,
+
             /// <summary>At one: Triunfo rears and shakes her off.</summary>
             Buck,
 
@@ -241,6 +253,9 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         /// </summary>
         private float boxX;
 
+        /// <summary>The reel she is in is a stagger: the long one, slumped, open to the riposte.</summary>
+        private bool reelDeep;
+
         /// <summary>What she was doing last tick: a change is the first tick of the new phase, wherever it was decided.</summary>
         private Phase seen = (Phase)(-1);
 
@@ -290,6 +305,16 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
 
             // The tab says 'Dame' Quilt; she says it without the quotes, and that is when she is named.
             DialoguePortrait.SpokenAs(Type, "Dame Quilt");
+
+            // She can be parried, boss or not: in the charge and the ram, and what it does to
+            // her is her own (Turned). Her hits are worked out here, not by the game's touch,
+            // so each asks the parry itself before it lands (LanceStrike, RamStrike).
+            // On the ground, by the parry's count: she has no weight of her own only because
+            // Triunfo carries her.
+            Parry.AddNPC(Type,
+                npc => npc.ModNPC is DonaQuinn dona && dona.CanBeTurned,
+                (npc, by, away, staggers) => (npc.ModNPC as DonaQuinn)?.Turned(staggers),
+                flies: false);
         }
 
         public override void SetDefaults()
@@ -462,6 +487,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             writer.Write(hasLance);
             writer.Write(lanceX);
             writer.Write(boxX);
+            writer.Write(reelDeep);
         }
 
         public override void ReceiveExtraAI(BinaryReader reader)
@@ -473,6 +499,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             hasLance = reader.ReadBoolean();
             lanceX = reader.ReadSingle();
             boxX = reader.ReadSingle();
+            reelDeep = reader.ReadBoolean();
         }
 
         // ============================================================

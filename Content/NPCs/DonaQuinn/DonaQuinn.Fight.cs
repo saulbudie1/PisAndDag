@@ -15,8 +15,8 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
 {
     /// <summary>
     /// 'Dame' Quilt in the saddle: the road; the charge; the throw, Triunfo running them down
-    /// and the ride back for the lance; the swing; going into a wall; pulling up, the rear, the
-    /// turn round; and the fall that ends it. She is the rider and Triunfo the legs: every tick
+    /// and the ride back for the lance; the swing; going into a wall; being parried; pulling
+    /// up, the rear, the turn round; and the fall that ends it. She is the rider and Triunfo the legs: every tick
     /// she says where she wants to go (<see cref="ReinsFor"/>) and he goes there, with what sense
     /// he has of the ground (DonkeyNav). What she does next is the server's to pick
     /// (<see cref="NextAttack"/>); what lands on a player, each player's own machine finds, as
@@ -187,6 +187,22 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         private const int CrashTicks = 54;
         private const int CrashRear = 24;
 
+        // ---- parried -------------------------------------------------------------------
+
+        /// <summary>Turned aside and not staggered: this long before she gathers herself. Staggered, it is the parry's own time (Parry.StaggerTicks).</summary>
+        private const int TurnedTicks = 40;
+
+        /// <summary>Staggered, Triunfo is up on his hind legs for this much of it at the start.</summary>
+        private const int ReelRear = 30;
+
+        /// <summary>
+        /// Thrown back: how fast Triunfo leaves, the way he came, and the hop he leaves with.
+        /// At the rate he pulls up (BrakeDecel) that speed is spent over six tiles, what a
+        /// parry pushes anything back (Parry.PushPixels).
+        /// </summary>
+        private const float ReelPush = 5.9f;
+        private const float ReelHop = 3f;
+
         // ============================================================
         // THE RIDING POSE: worked out on every machine, never sent
         // ============================================================
@@ -222,6 +238,13 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         /// <summary>This ram, this swing, has already landed on this machine's player.</summary>
         private bool rammed;
         private bool swung;
+
+        /// <summary>
+        /// The lance of this charge has already landed on this machine's player: it is done
+        /// with them until she charges again. It neither hits them a second time nor can be
+        /// parried: what has gone through them is not turned aside.
+        /// </summary>
+        private bool lanced;
 
         private static readonly string[] Barks =
         {
@@ -280,6 +303,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
                     if (fresh)
                     {
                         rammed = false;
+                        lanced = false;
 
                         // Committed: at them, and on past them.
                         if (Authority && target != null)
@@ -432,6 +456,21 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
                     if (lost)
                         Go(Phase.Leave);
                     else if (Timer >= CrashTicks)
+                        FaceThem(target, donkey);
+                    break;
+
+                case Phase.Reel:
+                    NPC.dontTakeDamage = false;
+
+                    if (fresh)
+                        Recoil(donkey);
+
+                    // Staggered, the first hit on her or on him wakes her (PADStaggerNPC):
+                    // she is no longer reeling, and she gathers herself at once.
+                    if (lost)
+                        Go(Phase.Leave);
+                    else if (Authority && (Timer >= (reelDeep ? Parry.StaggerTicks : TurnedTicks)
+                        || (reelDeep && Timer > 1 && !NPC.GetGlobalNPC<PADStaggerNPC>().Reeling)))
                         FaceThem(target, donkey);
                     break;
 
@@ -732,6 +771,13 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
                     reins.Rear = Timer < CrashRear;
                     break;
 
+                case Phase.Reel:
+                    // Thrown back with what the parry gave him (Recoil), pulling up; staggered, up on his hind legs first.
+                    reins.Speed = 0f;
+                    reins.Accel = BrakeDecel;
+                    reins.Rear = reelDeep && Timer < ReelRear;
+                    break;
+
                 case Phase.Buck:
                     reins.Speed = 0f;
                     reins.Accel = BrakeDecel;
@@ -757,11 +803,11 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         /// held forward and moving; the shaft from just past her fist to a little past the point,
         /// thick. Thirty at the slowest a strike counts and sixty-seven flat out, by how fast
         /// Triunfo is going, through armour, varied the way vanilla varies any hit, not grown by
-        /// the world's difficulty.
+        /// the world's difficulty. Once a charge: having landed, it is done with them (lanced).
         /// </summary>
         private void LanceStrike(TriunfoTheDonkey donkey)
         {
-            if (Main.dedServ || State != Phase.Charge || !hasLance || donkey.Backing)
+            if (Main.dedServ || State != Phase.Charge || !hasLance || lanced || donkey.Backing)
                 return;
 
             // Forward: backing off for a run at a bank is not a charge.
@@ -772,14 +818,27 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
 
             Player me = Main.LocalPlayer;
 
-            if (me == null || !me.active || me.dead || me.immune)
+            if (me == null || !me.active || me.dead)
                 return;
 
             DonaRig.Pose pose = RidingPose(donkey);
             Vector2 along = (pose.Tip - pose.FistAt).SafeNormalize(Vector2.UnitX);
+            Vector2 from = pose.FistAt + along * StrikeFrom;
+            Vector2 to = pose.Tip + along * StrikePast;
+
+            // The parry first: the lance met at their arc is turned aside and she with it
+            // (Turned); and for the ticks after one, it does not touch them.
+            ParryPlayer parry = me.GetModPlayer<ParryPlayer>();
+
+            if (parry.Spares(NPC) || parry.MeetsLine(NPC, from, to, StrikeWidth))
+                return;
+
+            if (me.immune)
+                return;
+
             float point = 0f;
 
-            if (!Collision.CheckAABBvLineCollision(me.position, me.Size, pose.FistAt + along * StrikeFrom, pose.Tip + along * StrikePast, StrikeWidth, ref point))
+            if (!Collision.CheckAABBvLineCollision(me.position, me.Size, from, to, StrikeWidth, ref point))
                 return;
 
             float hard = MathHelper.Clamp((speed - StrikeSpeed) / (TriunfoTheDonkey.TopSpeed - StrikeSpeed), 0f, 1f);
@@ -787,6 +846,12 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
 
             if (!Pierce(me, "DonaLance", damage, chargeDir, StrikeKnockback))
                 return;
+
+            // Landed: this charge's lance is through with them. It is long and she rides on
+            // past, so it is still across their arc for some ticks after it hits; without
+            // this a parry pressed after the hit would turn aside what had already gone
+            // through them.
+            lanced = true;
 
             SoundEngine.PlaySound(SoundID.Item1 with { Pitch = -0.3f, Volume = 0.9f }, pose.Tip);
             me.PIS().BumpScreenShake(4f + 3f * hard, 10);
@@ -940,7 +1005,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
 
             Player me = Main.LocalPlayer;
 
-            if (me == null || !me.active || me.dead || me.immune)
+            if (me == null || !me.active || me.dead)
                 return;
 
             Rectangle body = donkey.NPC.Hitbox;
@@ -950,7 +1015,13 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
 
             body.Width += 12;
 
-            if (!body.Intersects(me.Hitbox))
+            // The parry first, as with the lance: Triunfo met at their arc is turned aside.
+            ParryPlayer parry = me.GetModPlayer<ParryPlayer>();
+
+            if (parry.Spares(NPC) || parry.MeetsBox(NPC, body, donkey.NPC.velocity))
+                return;
+
+            if (me.immune || !body.Intersects(me.Hitbox))
                 return;
 
             float hard = MathHelper.Clamp((speed - RamFrom) / (TriunfoTheDonkey.TopSpeed - RamFrom), 0f, 1f);
@@ -1157,6 +1228,67 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         }
 
         // ============================================================
+        // PARRIED
+        // ============================================================
+
+        /// <summary>
+        /// Whether a parry turns her aside as she is: in the charge, with Triunfo running them
+        /// down, or pulling up from either (a parry's word takes a tick or two to get to the
+        /// server, and she may be past them by then). Never the swing, which wears the star.
+        /// </summary>
+        public bool CanBeTurned => Mounted && !NPC.dontTakeDamage
+            && (State == Phase.Charge || State == Phase.Ram || State == Phase.Brake);
+
+        /// <summary>
+        /// Parried, the server's: thrown back (Reel); and staggered, if this is the parry that
+        /// does it (every third, for her as for anything on the ground), which
+        /// leaves the next hit on her a riposte. She has her own state for it, so her AI is not
+        /// stopped: only open (PADStaggerNPC.Reel, not held). The parry's blow is not here: it
+        /// is a hit of the player's, landed on their machine before this.
+        /// </summary>
+        private void Turned(bool staggers)
+        {
+            if (!Authority || !CanBeTurned)
+                return;
+
+            reelDeep = staggers;
+            Go(Phase.Reel);
+
+            if (staggers)
+                NPC.GetGlobalNPC<PADStaggerNPC>().Reel(NPC, Parry.StaggerTicks, false);
+        }
+
+        /// <summary>
+        /// Thrown back, as it is seen, on every machine: Triunfo off the way he came with a
+        /// hop, pulling up as he goes; her head thrown back; the dirt his hooves take with
+        /// them, and the thump.
+        /// </summary>
+        private void Recoil(TriunfoTheDonkey donkey)
+        {
+            donkey.NPC.velocity = new Vector2(-chargeDir * ReelPush, -ReelHop);
+
+            if (Authority)
+                donkey.NPC.netUpdate = true;
+
+            headTilt = -0.45f;
+            lean = -0.22f;
+
+            if (Main.dedServ)
+                return;
+
+            Vector2 hooves = new Vector2(donkey.NPC.Center.X, donkey.NPC.Bottom.Y);
+
+            SoundEngine.PlaySound(SoundID.Dig with { Pitch = -0.6f, Volume = 0.8f }, hooves);
+
+            for (int i = 0; i < 12; i++)
+            {
+                Dust dust = Dust.NewDustDirect(hooves - new Vector2(28f, 6f), 56, 8, DustID.Dirt,
+                    chargeDir * Main.rand.NextFloat(0.5f, 2.5f), Main.rand.NextFloat(-2.5f, -0.3f), 60, default, Main.rand.NextFloat(0.9f, 1.3f));
+                dust.noGravity = false;
+            }
+        }
+
+        // ============================================================
         // HER VOICE
         // ============================================================
 
@@ -1273,6 +1405,25 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
                     lanceRate = 0.2f;
                     break;
 
+                case Phase.Reel:
+                    if (reelDeep && !rearing)
+                    {
+                        // Staggered, once he is down again: slumped over his neck, the lance drooping.
+                        lanceWant = MathHelper.PiOver2 + 0.6f;
+                        armWant = 0.45f;
+                        leanWant = 0.16f;
+                        lanceRate = 0.08f;
+                    }
+                    else
+                    {
+                        // The lance knocked up out of line and waving, as it is off a wall.
+                        lanceWant = -0.5f + 0.4f * (float)Math.Sin(t * 0.6f);
+                        armWant = -0.3f + 0.3f * (float)Math.Sin(t * 0.8f + 1f);
+                        leanWant = -0.12f;
+                        lanceRate = 0.2f;
+                    }
+                    break;
+
                 case Phase.Brake:
                     lanceWant = 0.15f;
                     leanWant = -0.08f;
@@ -1328,6 +1479,10 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
 
             if (State == Phase.Buck)
                 tiltWant = 0.3f * (float)Math.Sin(t * 1.7f);
+
+            // Staggered and down off his hind legs: her head hangs.
+            if (State == Phase.Reel && reelDeep && !rearing)
+                tiltWant = 0.25f;
 
             headTilt += (tiltWant - headTilt) * (State == Phase.Buck ? 0.3f : 0.07f);
 

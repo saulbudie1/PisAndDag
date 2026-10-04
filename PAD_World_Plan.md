@@ -320,7 +320,7 @@ Everything horizontal in vanilla is decided inside the **Reset** pass — `dunge
 | 4 | *after* `Gem Caves` | **PAD The Ball** | the shell, its bank, the chasms, the ring and the shaft |
 | 5 | *after* `Gem Caves` | **PAD Grace Plain** | raises the pitch over the country at x ≥ 10800 |
 | 6 | *after* `Gem Caves` | **PAD Sealed Pocket** | repaints a cave under the Cleared Ground |
-| 6a | *after* `Gem Caves` | **PAD Cleared Ground** | takes the floating islands off the Cleared Ground, with the leaf walls under them, and cuts any living tree on it to a stump; levels nothing; see §5c |
+| 6a | *after* `Gem Caves` | **PAD Cleared Ground** | takes the floating islands off the Cleared Ground, with the leaf walls under them, makes the middle of 'Dame' Quilt's ground flat and eases it into the edges vanilla made, and cuts any living tree on it to a stump; makes nothing else level; see §5c |
 | 7 | *after* `Shimmer` | **The Rootworks** | *[not written]* reads `GenVars.shimmerPosition`, dresses the pool's cavern |
 | 8 | *after* `Micro Biomes` | **PAD Wasted Mile** | goblin siege works |
 | 9 | *after* `Micro Biomes` | **Grace** | *[not written]* the capital, and the shaft down to whatever the Shimmer roll gave |
@@ -331,8 +331,8 @@ at scale, and every one of them registers itself with `GenVars.structures` on th
 §5a says why neither of those is sufficient on its own. They run Ball → Plain → Pocket, so
 the Pocket knows where the Ball went and can refuse to sit on it. The Cleared Ground's pass
 runs ahead of the three of them, in the same place for a different reason: it has to come
-after everything that carves and before everything that grows. It builds nothing, and
-registers nothing.
+after everything that carves and before everything that grows. It builds nothing. It
+registers one thing: the flat middle of 'Dame' Quilt's ground (§5c).
 
 ### Killing the ocean — and the trap in it
 
@@ -590,7 +590,11 @@ for the ground it lands on. `On_WorldGen.GrowLivingTree` (the Living Trees pass)
 Wasted Mile. The cleanup pass at the end still strips ordinary growth; this is for the
 ones too big to strip cleanly.
 
-On the Cleared Ground a giant may still grow. It is cut down there (§5c).
+On the Cleared Ground a giant may still grow at either end, in its first and last 190 tiles,
+and is cut down there (§5c). None takes root on the part of 'Dame' Quilt's ground that is
+made, the flat and the easing past it, or within 45 tiles of that (`Layout.NoGiantHere`: 255
+tiles either side of the middle): a stump there would stand at whatever height the tree grew
+at, on ground that is then moved out from under it.
 
 The graveyard is the same problem in a different pass. It picks a beach at random and
 searches inland from it — and the Grace end has a sixty-tile sliver of beach with the
@@ -599,12 +603,13 @@ never falls back to the other one.
 
 ---
 
-## 5c. The Cleared Ground keeps its ground and loses its islands
+## 5c. The Cleared Ground keeps its ground, loses its islands, and is flat in the middle
 
 §3 says the Cleared Ground is empty. Vanilla does not leave it empty, and most of what it
 leaves is wanted: the lumps of dirt, the ponds and the cracks are the character of the
 place, and a first make that levelled them away was turned down for it. **PAD Cleared
-Ground** (`ClearedGroundPass`) levels nothing. It does two things.
+Ground** (`ClearedGroundPass`) makes nothing level. It does three things, and the second
+has two halves.
 
 - **The floating islands go.** Vanilla's Tunnels pass hangs a crust of soil a dozen tiles
   over the ground on nothing, and the room under it comes out hung with leaf wall. A crust
@@ -613,24 +618,49 @@ Ground** (`ClearedGroundPass`) levels nothing. It does two things.
   ground under it, with the walls that stood under it, and one that starts on the Cleared
   Ground is followed off either end of it. The ground it stood over, and any water lying
   there, is not touched.
+- **The middle of 'Dame' Quilt's ground is made flat.** She rides at whoever she stops, and
+  left as vanilla made it the flattest place in one world was 57 tiles with a pit 18 deep at
+  the end of them. Her ground is the middle 560 tiles (x 9605 – 10165: her box, and the 56
+  tiles either way its middle can fall). The middle 280 of those (x 9745 – 10025) are put on
+  a line that follows the lie of the land, its highs still high and its lows still low, never
+  more than six rows off its level. Ground within a row of that line is left as it lies; the
+  rest is cut down or filled up to it. No column stands more than a row from the next,
+  nothing is hollow in its first four rows, no water stands on it or can run onto it, and a
+  few small holes that were there are left there: four at the most, none deeper than five
+  rows or wider than eight.
+- **The edges of her ground are vanilla's**: its hills, its ponds and its cracks, which were
+  asked for there. Past either end of the flat the ground eases back into them over 70 tiles,
+  each column put part of the way from where it lies to the height of the flat, all of the
+  way beside the flat and none of it where the easing stops. What stands there is lower,
+  shallower and smaller the nearer the flat it is. A pond there keeps its water, as much of
+  its depth as its bed keeps and none of it higher than it stood. What is hollow under that
+  ground stays hollow, but a cave that a cut goes through into is filled its part of the way
+  like a pit. From there out, the last 70 tiles of her ground at either end and the 165 of
+  the Cleared Ground beyond them, nothing is touched but water that would run onto the flat.
+  The world remembers that it has such ground and how much of it is flat
+  (`PADWorld.CalmGround`, `CalmFlat`).
 - **A living tree on it is a stump**, five blocks over the ground beside it, broken at the
   top, with its foot, its roots, its hollow and the room under it kept. One standing past
-  either end is left whole.
+  either end is left whole. None grows on the flat, on its easing or within 45 tiles of them
+  (§5b), so a stump can stand only in the first or last 190 tiles.
 
-There is no made flat for 'Dame' Quilt: nothing is levelled for her. She is put down where
-the ground vanilla left is flattest (`DonaQuinnEncounter`: the column with the most flat ground
-on its shorter side, flat being ground that keeps within six rows and steps two at most, with a
-living tree's stump passed over), and she comes the first time a player stands on the Cleared
-Ground within 1350 pixels of that, which is off their screen.
+She is met at the middle of her ground (`DonaQuinnEncounter`): she comes the first time a
+player stands on the Cleared Ground within 1350 pixels of it, which is off their screen, and
+is put down there. A world made before her ground was has none, and there she is put down
+where the ground vanilla left is flattest: the column with the most flat ground on its shorter
+side, flat being ground that keeps within six rows and steps two at most, with a small hole
+stepped over and a living tree's stump passed over.
 
 Her fight is boxed in (`BossArena`): two walls nobody sees, always half the Cleared Ground
 apart (445 tiles), their middle halfway between the player and where she was put down. The
 player cannot walk past one, their camera does not show past one, and inside them nothing is
 built, broken or blown up (the Boss Active buff). The box stands from the road until she is
-thrown; she herself is not held by it.
+thrown; she herself is not held by it. In a world with her ground the box lies on it: on the
+flat, and at its ends on the edges, 82 tiles of them at each end with the fight begun at her
+place and 138 at one end at the most.
 
-Numbers and how it was checked: `PADWorkFlow_1.md` §16.24 for the pass, §16.25 for the flattest
-place and the box.
+Numbers and how it was checked: `PADWorkFlow_1.md` §16.24 for the islands and the giants,
+§16.25 for the flattest place and the box, §16.28 and §16.29 for her ground.
 
 ---
 

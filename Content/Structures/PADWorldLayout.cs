@@ -59,6 +59,38 @@ namespace PisAndDag.Content.Structures
         public const int MileEnd = 10800;
         public const int PlainStart = 10800;
 
+        /// <summary>
+        /// 'Dame' Quilt's ground: the middle of the Cleared Ground, shaped for her to ride on
+        /// (ClearedGroundPass). This far either side of the middle, which is room for her
+        /// box: the box is half the Cleared Ground, 222 tiles and a half either side of its
+        /// own middle, and its middle is within 56 tiles of the middle of her ground, the
+        /// place she is met by, whenever she is put down on that place's side of the player
+        /// (DonaQuinnEncounter.FlatSpot: its first choice, and on the flat there is standing
+        /// for it).
+        /// </summary>
+        public const int CalmHalf = 280;
+        public const int CalmStart = (ClearedStart + ClearedEnd) / 2 - CalmHalf;
+        public const int CalmEnd = (ClearedStart + ClearedEnd) / 2 + CalmHalf;
+
+        /// <summary>
+        /// The flat middle of her ground, this far either side of the middle: where she is
+        /// met, and all of it flat and calm. The rest of her ground, from here out to
+        /// CalmHalf at either end, is its edges, and they are vanilla's: its hills, its
+        /// ponds and its cracks, as the user asked the edges to be.
+        /// </summary>
+        public const int FlatHalf = 140;
+        public const int FlatStart = (ClearedStart + ClearedEnd) / 2 - FlatHalf;
+        public const int FlatEnd = (ClearedStart + ClearedEnd) / 2 + FlatHalf;
+
+        /// <summary>
+        /// Past either end of the flat, the columns over which it eases into the ground as
+        /// vanilla made it. The rest of an edge, from there to the rim, is not touched.
+        /// </summary>
+        public const int FlatEase = 70;
+
+        /// <summary>How far to either side of its trunk a living tree's crown and roots are taken to reach.</summary>
+        public const int GiantReach = 45;
+
         /// <summary>How far an edge is allowed to wander. Enough to matter, not enough to reorder.</summary>
         public const int Jitter = 120;
 
@@ -86,6 +118,26 @@ namespace PisAndDag.Content.Structures
             (int plainLeft, int plainRight) = Plain;
 
             return (x >= mileLeft && x <= mileRight) || (x >= plainLeft && x <= plainRight);
+        }
+
+        /// <summary>
+        /// No living tree takes root here: on the two spans nothing grows on, and on the
+        /// part of 'Dame' Quilt's ground that is made, the flat and the easing past either
+        /// end of it, with room beyond for a crown and roots to spread. A giant there would
+        /// stand, cut to a stump, on whatever height it grew at, on ground that is then
+        /// moved out from under it. Vanilla looks for somewhere else to grow it.
+        /// </summary>
+        public static bool NoGiantHere(int x)
+        {
+            if (NothingGrowsHere(x))
+                return true;
+
+            if (!ExtraLargeWorld.Active)
+                return false;
+
+            (int left, int right) = WorldMirror.Span(FlatStart - FlatEase - GiantReach, FlatEnd + FlatEase + GiantReach);
+
+            return x >= left && x <= right;
         }
 
         // -------------------------------------------------------------- the second evil
@@ -708,11 +760,13 @@ namespace PisAndDag.Content.Structures
         /// was planned for the ground it lands on. Two spans are spoken for: the pitch
         /// Grace stands on, and the field in front of it that was cleared on purpose.
         ///
-        /// Those are the Grace plain and the Wasted Mile (NothingGrowsHere). On the
-        /// Cleared Ground a giant may still grow, and ClearedGroundPass cuts it to a stump.
+        /// Those are the Grace plain and the Wasted Mile (NothingGrowsHere). A third is
+        /// spoken for giants only: the made part of 'Dame' Quilt's ground, in the middle of
+        /// the Cleared Ground (Layout.NoGiantHere). Either side of that a giant may still
+        /// grow, and ClearedGroundPass cuts it to a stump.
         /// </summary>
         public static bool NoGiantsHere(On_WorldGen.orig_GrowLivingTree orig, int i, int j, bool patchwork)
-            => !Layout.NothingGrowsHere(i) && orig(i, j, patchwork);
+            => !Layout.NoGiantHere(i) && orig(i, j, patchwork);
 
         public static bool NoEpicsHere(On_WorldGen.orig_GrowEpicTree orig, int i, int j)
             => !Layout.NothingGrowsHere(i) && orig(i, j);
@@ -1490,10 +1544,11 @@ namespace PisAndDag.Content.Structures
             Insert(tasks, "Gem Caves", new GracePlainPass("PAD Grace Plain", 120f));
             Insert(tasks, "Gem Caves", new TheBallPass("PAD The Ball", 220f));
 
-            // The chopped forest in front of the Mile: its floating land taken off and the
-            // giants on it cut down, the ground itself left as vanilla made it. Here for the
-            // reason the plain is: after everything that carves and before everything that
-            // grows, so the grass comes up on the ground the floating land leaves bare.
+            // The chopped forest in front of the Mile: its floating land taken off, the
+            // middle of it made flat for 'Dame' Quilt and the giants on it cut down, the
+            // rest of the ground left as vanilla made it. Here for the reason the plain is:
+            // after everything that carves and before everything that grows, so the grass
+            // comes up on the ground the floating land leaves bare.
             Insert(tasks, "Gem Caves", new ClearedGroundPass("PAD Cleared Ground", 80f));
 
             Insert(tasks, "Micro Biomes", new WastedMilePass("PAD Wasted Mile", 90f));

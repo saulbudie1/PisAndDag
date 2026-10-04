@@ -20,14 +20,16 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
     /// the world has not gone hard, the Eye has been seen off the way EyeFinale does it
     /// (Pugream is owed his shore: PugreamPresence.Stage), and she has not been spared or
     /// finished in this world. Then the first time a player stands on the Cleared Ground,
-    /// on their feet, with no other fight on, near enough to the flattest of it (THE FLATTEST
-    /// PLACE, below) for her to be put down there off their screen, she comes.
+    /// on their feet, with no other fight on, near enough to her place on it (HER PLACE,
+    /// below: the middle of her ground, where it was made flat for her, or the flattest of
+    /// the Cleared Ground in a world made before there was any) for her to be put down there
+    /// off their screen, she comes.
     ///
     /// If it is night or raining, the world first runs on to eight in the morning, quickly,
     /// the sky going through it, and the rain stops: by tModLoader's own time rate
     /// (ModifyTimeRate), the way the Enchanted Sundial does, so everything that happens at
     /// dawn still happens. The player is held through it with the bars in. Then she is put
-    /// down where the ground is flattest, off their screen, on Triunfo, facing them; the
+    /// down at her place, off their screen, on Triunfo, facing them; the
     /// fight is boxed in round the two of them (<see cref="BoxHalf"/>, BossArena); and the
     /// rest is hers (DonaQuinn).
     ///
@@ -88,7 +90,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         private const double SkipTicks = 150.0;
 
         /// <summary>
-        /// Where she is put down when it cannot be the flattest place (nobody has been near it:
+        /// Where she is put down when it cannot be her place (nobody has been near it:
         /// /dona; or there is no standing there): this far off the player, on the Wasted Mile's
         /// side; nearer if there is no ground there.
         /// </summary>
@@ -355,8 +357,8 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         }
 
         /// <summary>
-        /// Her and Triunfo, off the screen, standing, facing the player: where the ground is
-        /// flattest if the player is by it, and otherwise out on the Mile's side of them.
+        /// Her and Triunfo, off the screen, standing, facing the player: at her place if the
+        /// player is by it, and otherwise out on the Mile's side of them.
         /// </summary>
         private static bool Spawn(Player player)
         {
@@ -470,24 +472,38 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         }
 
         // ============================================================
-        // THE FLATTEST PLACE
+        // HER PLACE
         // ============================================================
         //
-        // She is put down where the Cleared Ground is flattest, and comes when a player is near
-        // enough to that for it to be off their screen. Where that is, is looked for once in a
-        // session (not saved; the server's), the first time it is wanted, from where that player
-        // stands: a walk along the ground they are on, the whole length of the Cleared Ground,
-        // up what rises and down what drops, under whatever hangs over it; then every column is
-        // asked how far the flat ground runs either side of it, and the one with the most on its
-        // shorter side is the place.
+        // She is put down at her place on the Cleared Ground, and comes when a player is near
+        // enough to that for it to be off their screen.
         //
-        // Flat ground, from a column: ground with head room over it and no water on it, within
-        // FlatBand rows of where it is at that column, and stepping FlatStep rows at most from
-        // one column to the next. A living tree in the way is passed (a stump counts; so does one
-        // still standing, which a charge then ends in): its columns are not ground and do not
-        // end the run, for TreeMost of them.
+        // In a world made with her ground (PADWorld.CalmGround: ClearedGroundPass shapes the
+        // middle of the Cleared Ground for her, and makes the middle of that flat) the place is
+        // the middle of it, so that she is met on the flat, and her box, half the Cleared Ground
+        // wide, lies on her ground (Layout.CalmHalf is as wide as that takes): the flat, and at
+        // its ends what they reach of the edges, which are as vanilla made them, hills, ponds
+        // and cracks, because the user asked for those there. In a world made before there was
+        // any, it is where the Cleared Ground is flattest. The names below say "flat" for both.
+        //
+        // Either is looked for once in a session (not saved; the server's), the first time it is
+        // wanted, from where that player stands: a walk along the ground they are on, the whole
+        // length of the Cleared Ground, up what rises and down what drops, under whatever hangs
+        // over it; then a column is asked how far the flat ground runs either side of it. The
+        // flattest is the column with the most on its shorter side. The middle is the column
+        // nearest the middle of the Cleared Ground that is not the bottom of a hole.
+        //
+        // Flat ground, from a column: ground with head room over it and no water on it, stepping
+        // FlatStep rows at most from one column to the next; and, where the flattest is looked
+        // for, within FlatBand rows of where it is at that column (her ground rolls further than
+        // that, by design, and is not asked to). A small hole is stepped over, lip to lip: one
+        // such as ClearedGroundPass leaves on the flat, no wider than its HoleWide and no
+        // deeper than its HoleDeep under the lip it is stepped from, and no more of them than its
+        // HolesMost. A living tree in the way is passed (a stump counts; so does one still
+        // standing, which a charge then ends in): its columns are not ground and do not end the
+        // run, for TreeMost of them.
 
-        /// <summary>She comes when a player is this near the flattest place, and is put down on it if they are this far from it or further; else this far from them, on its side of them.</summary>
+        /// <summary>She comes when a player is this near her place, and is put down on it if they are this far from it or further; else this far from them, on its side of them.</summary>
         private const float MeetFurthest = 1350f;
         private const float MeetNearest = 1150f;
 
@@ -525,7 +541,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         private static bool surveyed;
         private static int surveyTries;
 
-        /// <summary>The place: its column in the world, -1 if there is none. Its row is the walk's (<see cref="groundRow"/>).</summary>
+        /// <summary>Her place: its column in the world, -1 if there is none. Its row is the walk's (<see cref="groundRow"/>).</summary>
         private static int flatColumn = -1;
 
         /// <summary>How far the flat ground runs from it, toward the Cleared Ground's start and toward the Mile, in tiles.</summary>
@@ -544,7 +560,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         /// <summary>How many columns in from the Cleared Ground's start this pixel is.</summary>
         private static int Along(float x) => ((int)(x / 16f) - WorldMirror.X(Layout.ClearedStart)) * WorldMirror.Dir;
 
-        /// <summary>The middle of the flattest place's column, x in the world, in pixels.</summary>
+        /// <summary>The middle of her place's column, x in the world, in pixels.</summary>
         private static float FlatX => flatColumn * 16f + 8f;
 
         private static void ForgetSurvey()
@@ -559,9 +575,9 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         }
 
         /// <summary>
-        /// Near enough to the flattest place for her to be put down on it off their screen. Not
-        /// yet, if it has not been looked for and cannot be from where they stand; anywhere, if
-        /// there is no such place.
+        /// Near enough to her place for her to be put down on it off their screen. Not yet, if
+        /// it has not been looked for and cannot be from where they stand; anywhere, if there
+        /// is no such place.
         /// </summary>
         private static bool ByTheFlattest(Player player)
         {
@@ -582,7 +598,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         }
 
         /// <summary>
-        /// Where she is put down for a player who is by the flattest place: on it, if that is off
+        /// Where she is put down for a player who is by her place: on it, if that is off
         /// their screen. If they are too near it for that, the same distance she is always put
         /// down at, on its side of them (the Mile's side if they are standing on it), and if
         /// there is no standing there, on their other side. Within a few tiles of that, the
@@ -645,7 +661,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         }
 
         /// <summary>
-        /// The flattest place, looked for if it has not been: from the ground under this
+        /// Her place, looked for if it has not been: from the ground under this
         /// player's feet. True once it has been looked for, whether or not there is one. False
         /// while it cannot be (they are not on the Cleared Ground, or there is nothing under
         /// their feet to start the walk from: a platform, a living tree, a ledge's edge), and
@@ -696,23 +712,52 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
                 last = Walk(k, last, row, kind);
 
             int best = -1, bestShort = -1, bestBoth = -1, back = 0, on = 0;
+            bool calm = PADWorld.CalmGround;
 
-            for (int c = FlatEdge; c <= span - FlatEdge; c++)
+            if (calm)
             {
-                if (kind[c] != FlatGround)
-                    continue;
+                // The middle of her ground, which is the middle of the Cleared Ground: 0, 1,
+                // -1, 2, -2, ... columns off it, the first that is flat ground and has as much
+                // of it either side as the widest hole is wide, so is not the bottom of one.
+                int middle = span / 2;
 
-                int a = Reach(row, kind, c, -1);
-                int b = Reach(row, kind, c, 1);
-                int least = Math.Min(a, b);
-
-                if (least > bestShort || (least == bestShort && a + b > bestBoth))
+                for (int n = 0; n <= span && best < 0; n++)
                 {
+                    int c = middle + ((n + 1) / 2) * (n % 2 == 1 ? 1 : -1);
+
+                    if (c < FlatEdge || c > span - FlatEdge || kind[c] != FlatGround)
+                        continue;
+
+                    int a = Reach(row, kind, c, -1, int.MaxValue);
+                    int b = Reach(row, kind, c, 1, int.MaxValue);
+
+                    if (Math.Min(a, b) < ClearedGroundPass.HoleWide)
+                        continue;
+
                     best = c;
-                    bestShort = least;
-                    bestBoth = a + b;
                     back = a;
                     on = b;
+                }
+            }
+            else
+            {
+                for (int c = FlatEdge; c <= span - FlatEdge; c++)
+                {
+                    if (kind[c] != FlatGround)
+                        continue;
+
+                    int a = Reach(row, kind, c, -1, FlatBand);
+                    int b = Reach(row, kind, c, 1, FlatBand);
+                    int least = Math.Min(a, b);
+
+                    if (least > bestShort || (least == bestShort && a + b > bestBoth))
+                    {
+                        best = c;
+                        bestShort = least;
+                        bestBoth = a + b;
+                        back = a;
+                        on = b;
+                    }
                 }
             }
 
@@ -725,7 +770,9 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
 
             ModContent.GetInstance<PisAndDag>().Logger.Info(best < 0
                 ? "Dona Quinn: no flat ground on the Cleared Ground; she comes anywhere on it."
-                : $"Dona Quinn: the Cleared Ground is flattest at x {flatColumn} (row {row[best]}): {back} tiles of flat ground toward its start, {on} toward the Mile.");
+                : calm
+                    ? $"Dona Quinn: her place is the middle of her ground, x {flatColumn} (row {row[best]}): {back} tiles of flat ground toward the Cleared Ground's start, {on} toward the Mile."
+                    : $"Dona Quinn: the Cleared Ground is flattest at x {flatColumn} (row {row[best]}): {back} tiles of flat ground toward its start, {on} toward the Mile.");
 
             return true;
         }
@@ -796,13 +843,15 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
 
         /// <summary>
         /// How many columns the flat ground runs from this one, this way (-1 toward the Cleared
-        /// Ground's start, 1 toward the Mile).
+        /// Ground's start, 1 toward the Mile), keeping within <paramref name="band"/> rows of
+        /// where it is at this one.
         /// </summary>
-        private static int Reach(int[] row, byte[] kind, int c, int way)
+        private static int Reach(int[] row, byte[] kind, int c, int way, int band)
         {
             int span = row.Length - 1;
             int last = row[c];
             int trees = 0;
+            int holes = 0;
             int got = 0;
 
             for (int k = c + way, n = 1; k >= 0 && k <= span; k += way, n++)
@@ -815,7 +864,34 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
                     continue;
                 }
 
-                if (kind[k] != FlatGround || Math.Abs(row[k] - last) > FlatStep || Math.Abs(row[k] - row[c]) > FlatBand)
+                if (kind[k] != FlatGround)
+                    break;
+
+                int step = row[k] - last;
+
+                if (step > FlatStep)
+                {
+                    // A drop of more than a step: a small hole is stepped over, to its far lip.
+                    int lip = holes < ClearedGroundPass.HolesMost ? FarLip(row, kind, k, way, last) : -1;
+
+                    if (lip < 0)
+                        break;
+
+                    holes++;
+                    n += Math.Abs(lip - k);
+                    k = lip;
+                }
+                else if (step < -FlatStep)
+                {
+                    // A rise of more than a step: the far side of a small hole that was
+                    // walked down into, if the lip behind is as high as this one.
+                    if (holes >= ClearedGroundPass.HolesMost || !OutOfHole(row, kind, k, way, c))
+                        break;
+
+                    holes++;
+                }
+
+                if (Math.Abs(row[k] - row[c]) > band)
                     break;
 
                 trees = 0;
@@ -824,6 +900,62 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             }
 
             return got;
+        }
+
+        /// <summary>
+        /// The far lip of a small hole that starts at this column: the first column past it
+        /// that is back within a step of the lip it was stepped from, which stands at
+        /// <paramref name="lip"/>. -1 if what starts here is no small hole: wider than
+        /// ClearedGroundPass.HoleWide, deeper than its HoleDeep under that lip, or with water,
+        /// a living tree or a low roof in it.
+        /// </summary>
+        private static int FarLip(int[] row, byte[] kind, int k, int way, int lip)
+        {
+            int span = row.Length - 1;
+
+            for (int m = k, wide = 0; m >= 0 && m <= span && wide <= ClearedGroundPass.HoleWide; m += way, wide++)
+            {
+                if (kind[m] != FlatGround)
+                    return -1;
+
+                int under = row[m] - lip;
+
+                if (Math.Abs(under) <= FlatStep)
+                    return m;
+
+                if (under < 0 || under > ClearedGroundPass.HoleDeep)
+                    return -1;
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// This column stands more than a step over the one walked from: true if that is the
+        /// far lip of a small hole, one whose near side was gentle enough to be walked down.
+        /// Looked for back the way the walk came, no further than the column it began at: a
+        /// lip within a step of this one, no more than ClearedGroundPass.HoleWide columns
+        /// behind, and nothing between the two deeper than its HoleDeep under that lip.
+        /// </summary>
+        private static bool OutOfHole(int[] row, byte[] kind, int k, int way, int c)
+        {
+            int bottom = row[k];
+
+            for (int m = k - way, wide = 0; (m - c) * way >= 0 && wide <= ClearedGroundPass.HoleWide; m -= way, wide++)
+            {
+                if (kind[m] != FlatGround)
+                    return false;
+
+                if (Math.Abs(row[m] - row[k]) <= FlatStep)
+                    return bottom - row[m] <= ClearedGroundPass.HoleDeep;
+
+                if (row[m] < row[k])
+                    return false;
+
+                bottom = Math.Max(bottom, row[m]);
+            }
+
+            return false;
         }
 
         /// <summary>A living tree stands in this column at this row: its wood, its leaves or its heartwood, from a stump's height over the row to a step under it.</summary>
@@ -868,7 +1000,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         /// <summary>
         /// The road, now, for this player, wherever they are: none of the trigger's checks of
         /// place, progress or once only. Night or rain still runs the world on to the morning
-        /// first, as it would. She is put down on the flattest place if they are by it, and off
+        /// first, as it would. She is put down at her place if they are by it, and off
         /// on the Mile's side of them if not; boxed in either way. Null when it started; why not
         /// when it did not.
         /// </summary>
@@ -940,7 +1072,19 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
                 : flatColumn < 0 ? "none found"
                 : $"x {flatColumn}, {flatBack} tiles of flat ground toward the Cleared Ground's start and {flatOn} toward the Mile";
 
-            return "'Dame' Quilt: " + stage + ". The flattest of the Cleared Ground: " + place + ".";
+            if (PADWorld.CalmGround)
+            {
+                // What the world says was made flat, not what a world made today would have.
+                int middle = (Layout.ClearedStart + Layout.ClearedEnd) / 2;
+
+                (int left, int right) = WorldMirror.Span(Layout.CalmStart, Layout.CalmEnd);
+                (int flatLeft, int flatRight) = WorldMirror.Span(middle - PADWorld.CalmFlat, middle + PADWorld.CalmFlat);
+
+                return "'Dame' Quilt: " + stage + $". Her ground: x {left}-{right}, made flat from x {flatLeft} to {flatRight}. Her place, the middle of it: " + place + ".";
+            }
+
+            return "'Dame' Quilt: " + stage + ". The flattest of the Cleared Ground: " + place
+                + ". No ground was made for her in this world: it was made before there was any.";
         }
 
         // ============================================================

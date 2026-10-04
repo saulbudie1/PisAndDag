@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PisAndDag.Content.Combat;
+using PisAndDag.Content.Particles;
 using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
@@ -21,6 +23,11 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
     /// In the air its head hurts: 52 through armour, once, against each machine's own player,
     /// checked as anything that hurts by touch is. In the ground it is only a lance in the
     /// ground. Drawn behind the tiles, so the part of it in the ground is in the ground.
+    ///
+    /// It can be parried (Parry.AddProjectile): met by a parry in the air it is knocked away,
+    /// up and back the way it came, turning end over end about its own middle, hurting
+    /// nobody; it rights itself as it falls, comes down point first somewhere else, and goes
+    /// into the ground there like any other throw. She rides back to wherever that is.
     ///
     /// The same picture as the one she holds (Lance_AlsoGore.png, by name), its point at the top
     /// middle (11, 0). The projectile is its point: the hitbox, the arc and the drawing are all
@@ -51,9 +58,43 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         /// <summary>The point on the picture.</summary>
         private static readonly Vector2 Point = new Vector2(DonaRig.LanceWidth / 2f, 0f);
 
-        // ai[0] her whoAmI · ai[1] 0 in the air, 1 in the ground · localAI[0] 1 once it has hit this machine's player
+        /// <summary>Parried: how fast it leaves, back the way it came and up.</summary>
+        private const float TurnedAlong = 5f;
+        private const float TurnedUp = 9.5f;
+
+        /// <summary>Parried: ticks it takes to turn over and right itself, and how many times it turns over in them.</summary>
+        private const int WhirlTicks = 30;
+        private const int WhirlTurns = 3;
+
+        private static readonly Color[] Sparks = { new Color(255, 255, 255), new Color(214, 226, 240), new Color(184, 211, 222) };
+
+        // ai[0] her whoAmI · ai[1] 0 in the air, 1 in the ground · ai[2] 1 once it has been parried
+        // localAI[0] 1 once it has hit this machine's player
 
         private bool Planted => Projectile.ai[1] == 1f;
+
+        /// <summary>Parried: knocked away, hurting nobody, on its way to somewhere else.</summary>
+        private bool Turned => Projectile.ai[2] == 1f;
+
+        // ---- each machine's own: how the knocking away is drawn -----------------------------
+
+        /// <summary>This machine has begun turning it over; ticks since; the way it lay just before, against the way it flies now; which way round it goes.</summary>
+        private bool whirling;
+        private int whirl;
+        private float whirlFrom;
+        private int whirlWay = 1;
+
+        /// <summary>The way it lay last tick.</summary>
+        private float lastRotation;
+
+        public override void SetStaticDefaults()
+        {
+            // In the air, not yet parried, with someone coming back for it, and not already
+            // through this machine's player: then a parry knocks it away (Deflect).
+            Parry.AddProjectile(Type,
+                projectile => projectile.ai[1] == 0f && projectile.ai[2] == 0f && projectile.alpha == 0 && projectile.localAI[0] == 0f,
+                (projectile, by) => (projectile.ModProjectile as DonaLanceThrown)?.Deflect(by));
+        }
 
         public override void SetDefaults()
         {
@@ -139,7 +180,81 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             Projectile.velocity.Y = Math.Min(Projectile.velocity.Y + Gravity, MaxFall);
             Projectile.rotation = Projectile.velocity.ToRotation() + MathHelper.PiOver2;
 
-            Strike();
+            if (Turned)
+                Whirl();
+            else
+                Strike();
+
+            lastRotation = Projectile.rotation;
+        }
+
+        /// <summary>
+        /// Parried, where the world is decided and, ahead of that, on the machine of whoever
+        /// parried it: knocked up and back the way it came. From here on it hurts nobody and
+        /// only falls; where it comes down it goes into the ground as any throw does.
+        /// </summary>
+        internal void Deflect(Player by)
+        {
+            if (Planted || Turned)
+                return;
+
+            float along = Projectile.velocity.X;
+            int back = along > 0f ? -1 : along < 0f ? 1 : Projectile.Center.X >= by.Center.X ? 1 : -1;
+
+            Projectile.ai[2] = 1f;
+            Projectile.velocity = new Vector2(back * TurnedAlong, -TurnedUp);
+            Projectile.netUpdate = true;
+
+            // On the machine of whoever parried it, it is through with them: a word from the
+            // server that left before the parry got there must not bring it back onto them.
+            if (!Main.dedServ && by.whoAmI == Main.myPlayer)
+                Projectile.localAI[0] = 1f;
+        }
+
+        /// <summary>
+        /// Knocked away, as each machine sees it: from the tick it first sees it parried, the
+        /// lance turns over about its middle (PreDraw), starting from the way it lay and ending
+        /// along the way it flies, and throws sparks off its point for the first of that.
+        /// </summary>
+        private void Whirl()
+        {
+            if (!whirling)
+            {
+                whirling = true;
+                whirl = 0;
+                whirlFrom = MathHelper.WrapAngle(lastRotation - Projectile.rotation);
+                whirlWay = Projectile.velocity.X < 0f ? -1 : 1;
+            }
+            else if (whirl < WhirlTicks)
+            {
+                whirl++;
+            }
+
+            if (Main.dedServ || whirl >= 18 || whirl % 2 != 0)
+                return;
+
+            Vector2 behind = -Projectile.velocity.SafeNormalize(Vector2.UnitY);
+            float length = Main.rand.NextFloat(12f, 20f);
+
+            PADParticleHandler.SpawnParticle(new SparkShard(Projectile.Center + behind * Main.rand.NextFloat(0f, DonaRig.LanceLength),
+                behind.RotatedByRandom(0.9f) * Main.rand.NextFloat(1.5f, 4f), Sparks[Main.rand.Next(Sparks.Length)],
+                length * 0.5f, 12f, length, Main.rand.Next(10, 16), falls: true));
+        }
+
+        /// <summary>
+        /// How far the lance is turned from the way it flies, this tick, while it is turning
+        /// over: all of the way it lay at first, none of it by the end, and whole turns between,
+        /// fast at first and slowing, so that it joins and leaves without a jump.
+        /// </summary>
+        private float Turning()
+        {
+            if (!Turned || Planted || whirl >= WhirlTicks)
+                return 0f;
+
+            float left = 1f - whirl / (float)WhirlTicks;
+            float done = 1f - left * left;
+
+            return whirlFrom * (1f - done) + whirlWay * WhirlTurns * MathHelper.TwoPi * done;
         }
 
         /// <summary>Its head against this machine's own player: 52 through armour, varied as vanilla varies any hit, once.</summary>
@@ -150,7 +265,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
 
             Player me = Main.LocalPlayer;
 
-            if (me == null || !me.active || me.dead || me.immune)
+            if (me == null || !me.active || me.dead)
                 return;
 
             Vector2 along = Projectile.velocity.SafeNormalize(Vector2.UnitY);
@@ -158,6 +273,14 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             float where = 0f;
 
             if (!Collision.CheckAABBvLineCollision(me.position, me.Size, point - along * Head, point + along * 4f, HeadWidth, ref where))
+                return;
+
+            // On them: the parry first, if it came from their front (Deflect). At their arc,
+            // before it gets this far, the parry finds it for itself (ParryPlayer.PostUpdate).
+            if (me.GetModPlayer<ParryPlayer>().Takes(Projectile, point - along * Head))
+                return;
+
+            if (me.immune)
                 return;
 
             int damage = Main.DamageVar(DonaQuinn.ThrowDamage, -me.luck);
@@ -233,6 +356,21 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             // Lit where the shaft is, not where the point is (in the ground, in the dark).
             Vector2 along = (Projectile.rotation - MathHelper.PiOver2).ToRotationVector2();
             Color light = Lighting.GetColor((Projectile.Center - along * 30f).ToTileCoordinates());
+
+            float turning = Turning();
+
+            if (turning != 0f)
+            {
+                // Turning over: about its own middle, which is half its length back from the
+                // point along the way it flies. With no turn left this is the same picture as
+                // the one below.
+                Vector2 middle = new Vector2(DonaRig.LanceWidth / 2f, DonaRig.LanceLength / 2f);
+
+                Main.EntitySpriteDraw(texture, Projectile.Center - along * (DonaRig.LanceLength / 2f) - Main.screenPosition, null,
+                    Projectile.GetAlpha(light), Projectile.rotation + turning, middle, 1f, SpriteEffects.None);
+
+                return false;
+            }
 
             Main.EntitySpriteDraw(texture, Projectile.Center - Main.screenPosition, null, Projectile.GetAlpha(light),
                 Projectile.rotation, Point, 1f, SpriteEffects.None);

@@ -34,6 +34,13 @@ namespace PisAndDag
 
         /// <summary>Client to server: from the player the Guide's first words are for. See GuideIntro.</summary>
         GuideIntro,
+
+        /// <summary>
+        /// A parry: client to server from the player who made it (what they turned aside, and
+        /// where), server to the other clients (the spark). See Parry. What it does to the
+        /// thing goes with the thing; the parry's blow is a hit like any other.
+        /// </summary>
+        Parry,
     }
 
     // Please read https://github.com/tModLoader/tModLoader/wiki/Basic-tModLoader-Modding-Guide#mod-skeleton-contents for more information about the various files in a mod.
@@ -55,9 +62,12 @@ namespace PisAndDag
 
         /// <summary>
         /// Other mods' way in. ("FireProjectile", type), ("FireItem", type) or ("FireDebuff", type):
-        /// that counts as fire for Rage! Sweet Fire (Content.Combat.FireAffinity). Returns true when taken.
+        /// that counts as fire for Rage! Sweet Fire (Content.Combat.FireAffinity). ("ParryNPC", type),
+        /// ("ParryNoNPC", type), ("ParryNoStagger", type), ("ParryProjectile", type) or
+        /// ("ParryNoProjectile", type): what the parry makes of that enemy or that shot
+        /// (Content.Combat.Parry.Call). Returns true when taken.
         /// </summary>
-        public override object Call(params object[] args) => Content.Combat.FireAffinity.Call(args);
+        public override object Call(params object[] args) => Content.Combat.Parry.Call(args) ?? Content.Combat.FireAffinity.Call(args);
 
         public override void HandlePacket(BinaryReader reader, int whoAmI)
         {
@@ -87,6 +97,10 @@ namespace PisAndDag
 
                 case PADPacket.GuideIntro:
                     Content.NPCs.GuideIntro.HandlePacket(reader, whoAmI);
+                    break;
+
+                case PADPacket.Parry:
+                    Content.Combat.Parry.HandlePacket(reader, whoAmI);
                     break;
 
                 default:

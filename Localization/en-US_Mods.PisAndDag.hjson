@@ -239,6 +239,11 @@ Items: {
 			'''
 	}
 
+	IronFlow: {
+		DisplayName: Iron Flow
+		Tooltip: Right click to parry
+	}
+
 	RageSweetFire: {
 		DisplayName: Rage! Sweet Fire
 		Tooltip:
@@ -352,6 +357,7 @@ Projectiles: {
 	VisusChop.DisplayName: Visus
 	FleshMaidenStrike.DisplayName: Flesh Maiden
 	FleshMaidenSmash.DisplayName: Flesh Maiden
+	IronFlowHoldout.DisplayName: Iron Flow
 	QueenSlimeCore.DisplayName: Crystal Core
 	SweetFireCall.DisplayName: Rage! Sweet Fire
 	DonaLanceThrown.DisplayName: Lance
@@ -437,6 +443,37 @@ Magic: {
 	NothingIn: Nothing in the arsenal
 	Up: Up: {0}
 	NothingMemorised: Nothing in the arsenal
+}
+
+Configs: {
+	ParryConfig: {
+		DisplayName: Parry
+
+		NeverParried: {
+			Label: Enemies never parried
+			Tooltip: A parry does nothing to these, whatever else they are
+		}
+
+		ParriedAnyway: {
+			Label: Enemies always parried
+			Tooltip: Parried whatever their size or rank, and staggered as any other is: every second parry if they fly, every third if not
+		}
+
+		NeverStaggered: {
+			Label: Enemies never staggered
+			Tooltip: Still parried, struck and pushed back, but never stopped
+		}
+
+		SolidShots: {
+			Label: Shots a parry breaks
+			Tooltip: Counted as solid things, like arrows. A parry breaks them when they are an enemy's
+		}
+
+		NeverSolidShots: {
+			Label: Shots never parried
+			Tooltip: Never broken by a parry, whatever else they are
+		}
+	}
 }
 
 UI: {

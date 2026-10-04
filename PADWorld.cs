@@ -1,4 +1,5 @@
 using System.IO;
+using PisAndDag.Content.Structures;
 using Terraria;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
@@ -94,6 +95,26 @@ namespace PisAndDag
         public static bool GuideSpokeOfLegends;
 
         /// <summary>
+        /// Whether this world has 'Dame' Quilt's ground: the middle of the Cleared Ground, shaped
+        /// for her when the world was made (ClearedGroundPass, which sets this). Its middle is
+        /// then the place she is met by. A world made before there was such a thing has none,
+        /// and the flattest of what it has is looked for instead (DonaQuinnEncounter). World
+        /// state: saved, sent to joining clients, never per player.
+        /// </summary>
+        public static bool CalmGround;
+
+        /// <summary>
+        /// How much of that ground was made flat when the world was made: this many tiles
+        /// either side of its middle (ClearedGroundPass sets this as well). The rest of it,
+        /// out to Layout.CalmHalf, is its edges, which are left to vanilla. 0 in a world
+        /// with no such ground. The number is the world's and not the mod's, because the
+        /// mod's has changed: a world made while all of her ground was made calm says
+        /// nothing of it, and is read as all of it. World state: saved, sent to joining
+        /// clients, never per player.
+        /// </summary>
+        public static int CalmFlat;
+
+        /// <summary>
         /// Runs whenever a world is loaded or generated, before LoadWorldData.
         /// Without this the static would leak between worlds inside one session — start a
         /// fresh character and it would still think Legends was on from your last world.
@@ -108,6 +129,8 @@ namespace PisAndDag
             ArchmageShimmer = false;
             GraceUnsealed = false;
             GuideSpokeOfLegends = false;
+            CalmGround = false;
+            CalmFlat = 0;
         }
 
         /// <summary>
@@ -144,6 +167,12 @@ namespace PisAndDag
 
             if (GuideSpokeOfLegends)
                 tag["GuideSpokeOfLegends"] = true;
+
+            if (CalmGround)
+            {
+                tag["CalmGround"] = true;
+                tag["CalmFlat"] = CalmFlat;
+            }
         }
 
         public override void LoadWorldData(TagCompound tag)
@@ -155,6 +184,12 @@ namespace PisAndDag
             ArchmageShimmer = tag.ContainsKey("ArchmageShimmer");
             GraceUnsealed = tag.ContainsKey("GraceUnsealed");
             GuideSpokeOfLegends = tag.ContainsKey("GuideSpokeOfLegends");
+            CalmGround = tag.ContainsKey("CalmGround");
+
+            // A world made while all of her ground was made calm has the first key and not the second.
+            CalmFlat = !CalmGround ? 0
+                : tag.ContainsKey("CalmFlat") ? tag.GetInt("CalmFlat")
+                : Layout.CalmHalf;
         }
 
         // Brings joining clients in line with the server. Inert in singleplayer, but it
@@ -168,6 +203,8 @@ namespace PisAndDag
             writer.Write(ArchmageShimmer);
             writer.Write(GraceUnsealed);
             writer.Write(GuideSpokeOfLegends);
+            writer.Write(CalmGround);
+            writer.Write(CalmFlat);
         }
 
         public override void NetReceive(BinaryReader reader)
@@ -179,6 +216,8 @@ namespace PisAndDag
             ArchmageShimmer = reader.ReadBoolean();
             GraceUnsealed = reader.ReadBoolean();
             GuideSpokeOfLegends = reader.ReadBoolean();
+            CalmGround = reader.ReadBoolean();
+            CalmFlat = reader.ReadInt32();
         }
     }
 }
