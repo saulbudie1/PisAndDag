@@ -440,27 +440,24 @@ Tips: {
 			Text:
 				'''
 				A Golem's fist can be parried.
-				It turns about and flies back into the Golem.
-				The seventh breaks the fist.
+				It turns about and flies back crashing into the Golem.
 				'''
 		}
 
 		ThirdParry: {
-			Title: The Third Parry
+			Title: Parry
 			Text:
 				'''
-				Every third parry staggers an enemy for 2 seconds.
-				One that flies is staggered by every second.
-				The first blow on a staggered enemy deals triple damage.
+				Parry an enemy enough and it staggers.
+				During stagger, a strike will be three fold critical.
 				'''
 		}
 
 		SolidThings: {
-			Title: What a Parry Breaks
+			Title: Arrows and Bullets
 			Text:
 				'''
-				A parry breaks an arrow, a bone, a dart or a bullet in the air.
-				Fire and spells are not solid. They pass it by.
+				Projectiles that are solid things can be broken upon parry.
 				'''
 		}
 
@@ -469,8 +466,7 @@ Tips: {
 			Text:
 				'''
 				A yellow star, and after it a yellow outline.
-				That blow cannot be parried.
-				It throws whoever it lands on, whatever they wear.
+				This signifies a blow that will move the player.
 				'''
 		}
 
@@ -478,8 +474,8 @@ Tips: {
 			Title: Lance and Donkey
 			Text:
 				'''
-				The charge can be parried. So can the lance, thrown.
-				The swing wears the yellow star.
+				Someone awaits you before Wasted Miles.
+				They appear in Pre Hardmode, after Eye of Cthulhu.
 				'''
 		}
 
@@ -497,9 +493,8 @@ Tips: {
 			Title: The Megashark
 			Text:
 				'''
-				No bench makes a Megashark any more.
-				The one in the sea leaves a dented one behind.
-				The Mechanic can straighten it.
+				Do not get too far from a Megashark.
+				It will enter enraged mode.
 				'''
 		}
 
@@ -507,9 +502,7 @@ Tips: {
 			Title: The Handswitch
 			Text:
 				'''
-				It fires on your life, not on ammunition.
-				About 8 a shot at 100 life, 12 at 500.
-				It will take the last of it.
+				Watch the lifeforce bar when you hold it.
 				'''
 		}
 
@@ -517,9 +510,8 @@ Tips: {
 			Title: Bounded to the Ground
 			Text:
 				'''
-				Wings and flying mounts do nothing at first.
-				The Empress of Light has to fall before they wake.
-				Wings then carry three fifths as far.
+				Wings are restricted until you beat a lady with wings.
+				She shines and hates the sun.
 				'''
 		}
 
@@ -548,8 +540,7 @@ Tips: {
 			Text:
 				'''
 				A spell or an incantation does nothing in the pack.
-				It goes in the Magic Arsenal, near a house someone lives in.
-				A staff casts the spells there. A seal, the incantations.
+				It goes in the Magic Arsenal, near a house someone lives in. 
 				'''
 		}
 
@@ -567,7 +558,7 @@ Tips: {
 			Title: The Wasted Mile
 			Text:
 				'''
-				A bunny or a squirrel let go on the Mile does not get away.
+				Bunnies and squirrels placed on the Wasted Mile calls a monster.
 				The world keeps count of them.
 				The tenth is answered.
 				'''
@@ -642,8 +633,8 @@ Tips: {
 			Title: Things Carried
 			Text:
 				'''
-				Some of what you carry gives a townsperson more to say.
-				The new line is there for as long as it is in your pack.
+				The item you have in your inventory or Lore Codex will unlock
+				dialogues from different NPCs.
 				'''
 		}
 	}
