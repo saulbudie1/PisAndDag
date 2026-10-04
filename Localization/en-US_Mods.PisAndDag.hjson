@@ -255,6 +255,16 @@ Items: {
 			'Whoever named it had not yet been burned.'
 			'''
 	}
+
+	SubworldDoor: {
+		DisplayName: Unmarked Door
+		Tooltip:
+			'''
+			Right click to step through
+			Once placed, it cannot be taken back
+			'It was not there yesterday.'
+			'''
+	}
 }
 
 Buffs: {
@@ -329,6 +339,7 @@ Tiles: {
 	Game_Changing_Orb.MapEntry: Ominous Orb
 	BladeOfMorsInStone.MapEntry: Blade Of Mors In Stone
 	MakeshiftAltar.MapEntry: Makeshift Altar
+	SubworldDoor.MapEntry: Unmarked Door
 }
 
 Projectiles: {
@@ -411,6 +422,231 @@ Hints: {
 	GuideKingdom: Far {0}, past the field where every tree is a stump, there's a wall taller than any tree ever grew. A kingdom's, my books say. Its gates are still shut. The books don't say who shut them.
 	GuidePilgrim: A man came through here leaning on a bow taller than he was, with a huge sword on his back too. He told me his name twice and laugh loudly, as if the first time might not have taken.
 	GuideHut: I scouted the area before your awakening. On the trail seawards, there is a little hut, tethered yet foreboding. I'm too much of a coward and dared not enter. Do me a favour and tell me what is inside.
+}
+
+Subworlds: {
+	DoorNotAlone: It does not open while others share the world.
+	DoorForgot: It has forgotten where it leads.
+	DoorWall: It opened onto a wall.
+}
+
+Tips: {
+	Next: Next
+	VanillaTitle: Common Knowledge
+
+	List: {
+		GolemFist: {
+			Title: The Golem's Fist
+			Text:
+				'''
+				A Golem's fist can be parried.
+				It turns about and flies back into the Golem.
+				The seventh breaks the fist.
+				'''
+		}
+
+		ThirdParry: {
+			Title: The Third Parry
+			Text:
+				'''
+				Every third parry staggers an enemy for 2 seconds.
+				One that flies is staggered by every second.
+				The first blow on a staggered enemy deals triple damage.
+				'''
+		}
+
+		SolidThings: {
+			Title: What a Parry Breaks
+			Text:
+				'''
+				A parry breaks an arrow, a bone, a dart or a bullet in the air.
+				Fire and spells are not solid. They pass it by.
+				'''
+		}
+
+		YellowStar: {
+			Title: The Yellow Star
+			Text:
+				'''
+				A yellow star, and after it a yellow outline.
+				That blow cannot be parried.
+				It throws whoever it lands on, whatever they wear.
+				'''
+		}
+
+		LanceAndDonkey: {
+			Title: Lance and Donkey
+			Text:
+				'''
+				The charge can be parried. So can the lance, thrown.
+				The swing wears the yellow star.
+				'''
+		}
+
+		Magazines: {
+			Title: Magazines
+			Text:
+				'''
+				A gun reloads by itself when its magazine runs dry.
+				The Reload key does it sooner.
+				A gun put away goes on reloading.
+				'''
+		}
+
+		Megashark: {
+			Title: The Megashark
+			Text:
+				'''
+				No bench makes a Megashark any more.
+				The one in the sea leaves a dented one behind.
+				The Mechanic can straighten it.
+				'''
+		}
+
+		Handswitch: {
+			Title: The Handswitch
+			Text:
+				'''
+				It fires on your life, not on ammunition.
+				About 8 a shot at 100 life, 12 at 500.
+				It will take the last of it.
+				'''
+		}
+
+		Grounded: {
+			Title: Bounded to the Ground
+			Text:
+				'''
+				Wings and flying mounts do nothing at first.
+				The Empress of Light has to fall before they wake.
+				Wings then carry three fifths as far.
+				'''
+		}
+
+		Mana: {
+			Title: Mana
+			Text:
+				'''
+				Mana does not come back on its own.
+				Stand still 2 seconds and it does, at 15 a second.
+				Accessories bring it back. A Mana Regeneration Potion does not.
+				'''
+		}
+
+		ManaPotions: {
+			Title: One Potion Too Many
+			Text:
+				'''
+				Every mana potion makes the screen swim for a while.
+				More than five inside two minutes are poison:
+				10 life a second, 20 with the stronger kinds.
+				'''
+		}
+
+		Arsenal: {
+			Title: The Magic Arsenal
+			Text:
+				'''
+				A spell or an incantation does nothing in the pack.
+				It goes in the Magic Arsenal, near a house someone lives in.
+				A staff casts the spells there. A seal, the incantations.
+				'''
+		}
+
+		Altar: {
+			Title: The Makeshift Altar
+			Text:
+				'''
+				Spells and incantations are written, each with a Book.
+				The altar for it is 15 Bones, 10 Wood and a Book,
+				put together at a Work Bench.
+				'''
+		}
+
+		Mile: {
+			Title: The Wasted Mile
+			Text:
+				'''
+				A bunny or a squirrel let go on the Mile does not get away.
+				The world keeps count of them.
+				The tenth is answered.
+				'''
+		}
+
+		OnFoot: {
+			Title: On Foot
+			Text:
+				'''
+				Nobody arrives in the Kingdom of Grace but on foot.
+				No rod, potion, pylon or conch sets you down inside.
+				No bed there will keep a spawn point.
+				'''
+		}
+
+		Builders: {
+			Title: What the Builders Laid
+			Text:
+				'''
+				What the kingdom's builders laid cannot be broken.
+				What you build inside its walls, you can take up again.
+				'''
+		}
+
+		Shimmer: {
+			Title: Shimmer
+			Text:
+				'''
+				Shimmer changes nothing that goes into it.
+				Not yet.
+				'''
+		}
+
+		LoreItems: {
+			Title: Lore Items
+			Text:
+				'''
+				A lore item cannot be dropped, trashed, stored or reforged.
+				The Lore Codex holds any that are in the way.
+				'''
+		}
+
+		Trumpet: {
+			Title: A Tune of Your Own
+			Text:
+				'''
+				The trumpet can be taught a tune.
+				/trumpet learn NAME, then /trumpet add for each part
+				of the score, then /trumpet save.
+				'''
+		}
+
+		Dash: {
+			Title: A Dash Goes Level
+			Text:
+				'''
+				A dash carries you level, even over a drop.
+				You fall again the moment it is spent.
+				'''
+		}
+
+		NameRead: {
+			Title: While the Name Is Read
+			Text:
+				'''
+				A boss does not fight while its name is on the screen.
+				Nor can it be hurt until the name is gone.
+				'''
+		}
+
+		Carried: {
+			Title: Things Carried
+			Text:
+				'''
+				Some of what you carry gives a townsperson more to say.
+				The new line is there for as long as it is in your pack.
+				'''
+		}
+	}
 }
 
 Keybinds: {

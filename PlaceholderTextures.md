@@ -13,6 +13,7 @@ keep the same path and file name, keep the size (or change the matching `Item.wi
  
 | `Content/Buffs/ManaNausea1.png`, `ManaNausea2.png`, `ManaNausea3.png` | Mana Nausea I, II, III buff icons | 32x32 | Buff icons are always 32x32. |
 | `Content/Buffs/ManaPoisoning1.png`, `ManaPoisoning2.png` | Mana Poisoning I, II buff icons | 32x32 | Buff icons are always 32x32. |
+| `Content/Buffs/BossActive.png` | Boss Active buff icon (in 'Dame' Quilt's box) | 32x32 | Buff icons are always 32x32. 16x16 art at 2x: a skull with lit eyes on a dark red tile with a dark border and empty corners, like the other buff icons. |
 | `Content/Items/Mage/Staves/TreeBranchStaff.png` | Tree Branch Staff | 40x40 | One frame: 20x20 art at 2x, on the diagonal, head up and right, like vanilla staffs. Cold Call holds the staff's head to the mouth by the point where its branches part, (28, 12) on this sprite: `HeadOnSprite` in `Content/Projectiles/Magic/ColdCallHold.cs`, as a fraction of the size. Move it too if the new head is elsewhere. |
  
 | `Content/Projectiles/Magic/ColdCallIcicle.png` | Cold Call's icicle | 10x26 | One frame, tip up. The hitbox centres on (5, 9) of the sprite: `Pivot` in `ColdCallIcicle.cs`. |
@@ -28,6 +29,10 @@ keep the same path and file name, keep the size (or change the matching `Item.wi
 | `Content/Biomes/GraceBiome_Background.png` | The Kingdom of Grace, bestiary card and full-screen map background | 115x65 | At 1x. |
 | `Content/Biomes/GraceDeepBiome_Icon.png` | Beneath Grace, bestiary filter icon | 30x30 | Bestiary icons are 30x30 at 1x (tModLoader complains and draws nothing at any other size). |
 | `Content/Biomes/GraceDeepBiome_Background.png` | Beneath Grace, bestiary card and full-screen map background | 115x65 | At 1x. |
+| `Content/Items/Misc/SubworldDoor.png` | Unmarked Door, the item | 22x34 | One frame. The picture in the inventory, on the ground, and on the cursor over a placed door. |
+| `Content/Tiles/SubworldDoor.png` | Unmarked Door, the placed tile (the way into a subworld, and the way back out of one) | 36x54 | 2 frames across, 3 down. Each frame is 16 px by 16 px with 2 px of empty padding after it. Frame x: 0, 18. Frame y: 0, 18, 36. A door standing by itself, walked past: nothing of it is solid. |
+| `Content/Subworlds/LoadingFrame.png` | The loading screen of a door's passage: the frame laid over the picture | 1920x1080 | Stretched to the window. Clear in the middle; black, unevenly, at the edges; blackest low on the right (from about 0.60 across and 0.64 down, to the corner), where the tip is read, and along the bottom, where the bar and the key are: keep those dark, and keep pale marks out of them. Grain, specks, splotches, stains and scratches over all of it. **Save it premultiplied** (each pixel's red, green and blue already multiplied by its alpha): tModLoader does not do it for a mod's pictures, and a frame saved the plain way has its pale marks come out white. Dark marks come out all but the same either way. |
+| `Content/Subworlds/LoadingArt.png` | The loading screen's picture, under the frame | 1920x1080 | **Not in the mod yet: yours to put in.** Any size will do (it is drawn to cover the window: cut at the sides or the top and bottom, never squeezed); 1920x1080 is the size it is mostly seen at. Opaque. Until it is there the frame is over plain black. |
  
  
  

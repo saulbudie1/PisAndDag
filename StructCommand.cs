@@ -80,6 +80,14 @@ namespace PisAndDag
                 return;
             }
 
+            // The structures are a world's: a subworld is a few hundred tiles with none of
+            // the ground the passes look for, and they would be written into it anyway.
+            if (Content.Subworlds.Subworld.Active)
+            {
+                caller.Reply("Not in a subworld: the structures are the world's.", Color.OrangeRed);
+                return;
+            }
+
             caller.Reply("Checking the world...", Color.Gray);
 
             foreach (string line in StructureUpdate.Run())

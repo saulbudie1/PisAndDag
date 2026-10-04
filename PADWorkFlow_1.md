@@ -5462,3 +5462,528 @@ my own.
 before it strikes; its notes).
 
 **Not yet confirmed in game:** all of it.
+
+---
+
+## 16.35 Later in session 7: a subworld system of the mod's own: the Unmarked Door and the Empty Hall
+
+The user, who had said "not using other mod tho" and "id rather its its own dimension, like a
+home made subworld, thinking a gateway to the magic academy":
+
+> For now its very single player heavy, Create a sub world system native to the mod(0 dependancies), check this to get how they do it, for now create a wall/furniture 3tall 2 wide tile (texture is a door, rightclick will fades the screen and transport (probably load subworld) you)that can be right click to transport to an new subworld for now its an empty 400(width)x250(height) tile subworld with just 3 tile thick of solid stone brick ground. Also all the tiles and furniture and walls there are in destructible for every subworld.  there is also the door at the very left of the subworld that transports you back to the other door (both doors indestructible)
+
+and, with Subworld Library unpacked in `Downloads\tModUnpacker\SubworldLibrary`: "heres ref".
+
+**The reference, and what was taken from it: nothing.** Subworld Library was read to see how
+such a thing can be done at all. Its licence asks that whatever is derived from it be GPL3
+and open source, so none of its code, names or layout is here. What follows was written
+against the game's own 1.4.4 assembly and goes by another road: the game's own Save and Exit
+and its own entering of a world, with a black screen held over the menu between the two.
+The mod needs no other mod for it.
+
+**What a subworld is.** A world file like any other, written and read by the game's own
+code, with one line of the mod's in its `.twld` (`PADSubworld`, the name of the place it is).
+That line is what makes a world a subworld; it is read when the world is loaded and written
+whenever it is saved. A place's file is made the first time somebody goes there and kept from
+then on:
+
+    Worlds/PisAndDag_Subworlds/[the world's own id]/[the place].wld  (and .twld)
+
+So every world has its own of each place. The game's list of worlds reads only the top of the
+Worlds folder (`Main.LoadWorlds`), so none of them is in it. The world's own id is its
+`UniqueId` (what the game names its map files by); a world from before worlds had one goes by
+its number. The file takes the world's name and difficulty; its number and id are its own.
+
+**The files.** All new, in `Content/Subworlds` unless said:
+
+- `Subworld.cs`: what a place is (a `ModType`, found and kept by itself like an item): its
+  size, its `Build()`, where its door stands, where a player who dies there comes back, its
+  music. `Subworld.Active` and `Subworld.Current` are what the rest of the mod asks.
+- `SubworldKeeper.cs`: which place the loaded world is, where its file is kept, and the making
+  of it (`Make`: a world of its size cleared, laid out by the place, saved by the game).
+- `SubworldPassage.cs`: going through a door, there and back.
+- `SubworldRules.cs`: what holds in every subworld: nothing broken, nothing built, nothing
+  spawns, the clock stands still.
+- `SubworldScene.cs`: how every subworld looks and sounds.
+- `EmptyHall.cs`: the first place.
+- `Content/Tiles/SubworldDoor.cs` and `Content/Items/Misc/SubworldDoor.cs`: the door and the
+  item that places it. In the game both are called **Unmarked Door**.
+- `SubworldCommand.cs` (the root): `/subworld`, for testing.
+
+**The door.** Two wide, three tall, standing by itself and walked past like any furniture
+(vanilla's `Style2xX`, on solid ground only). Right click takes whoever tried it to the place
+it leads to; the one standing there takes them back to the door they came through. It cannot
+be broken anywhere, by anything: its own `CanKillTile`, `KillTile`, `CanExplode` and
+`CanReplace`, and the game is told the same where it decides such things at all (below).
+What it stands on cannot be dug, hammered or swapped from under it (the game's own sets for
+that). So where it is put down is where it stays. The item has no recipe yet, and every door
+leads to the one place there is (`SubworldDoor.LeadsTo`). Another place is another class of
+`Subworld`'s kind: a size, a `Build()` and where its door stands.
+
+**The passage.** Single player only.
+
+1. The door is tried: a door's creak, and the screen goes to black over 24 ticks with the
+   player held.
+2. On the third frame of full black the world is left by the very calls the game's Save and
+   Exit button makes, in its order (`SteamedWraps.StopPlaytimeTracking`,
+   `SystemLoader.PreSaveAndQuit`, menu 10, `Main.gameMenu`, `WorldGen.SaveAndQuit`), so the
+   player and the world are saved by the game and every system is told the world is going.
+   Not `IngameOptions.Close`, which the button also calls: that opens the inventory.
+3. When the save is done (the game hands that to a callback, on its saving thread) the
+   place's file is made if it is not there, and the other world is entered as the game
+   enters one picked from its list (`WorldGen.playWorld`).
+4. Nothing of the menu is seen meanwhile: the black is drawn after everything
+   (`Main.OnPostDraw`), with the game's own word on how the saving and loading is going at
+   the foot of it. The music that was playing plays on.
+5. The game puts the player into the other world (`Player.Spawn`, whose last act is the
+   players' `OnEnterWorld`). There they are stood in front of the door, a door shuts, the
+   black holds 15 ticks while the place settles and lifts over 30. They can move again half
+   way up.
+
+Coming back is the same, to the door gone through. The world it belongs to and that door are
+remembered in memory only: a game left from inside a subworld comes back in the world, at its
+own spawn.
+
+**What the game does to a player between worlds, and what is carried by hand.** Read from the
+assembly, and proved by a control run without the carrying:
+
+- Leaving a world the game writes four items to the player's file (`Player.SavePlayer`) and
+  empties them (`Player.ClearPlayerTempInfo`): the one on the cursor, the one in Journey's
+  research slot, the Guide's and the Goblin's. Entering one it sets all four from what the
+  player was last read from a file with (`Player.SetPlayerDataToOutOfClassFields`), which
+  through a door is from before this game began. So they would be lost. They are copied
+  before the leaving and given back on arrival.
+- The same method puts Journey's own powers (godmode and the like) back to the file's word.
+  So what they are now is written and read back in memory first, by the game's own writer and
+  reader, and the file's word and the truth agree.
+- The game's autosave writes the world and the map of it on threads of their own, and Save
+  and Exit steps round a save in flight rather than wait (`WorldFile.SaveWorld` and
+  `MapHelper.SaveMap` each try a private lock and return if it is held). At the menu that is
+  harmless; here the next world is loaded at once into the same tiles and map. So the leaving
+  waits a frame at a time while either lock is held, and waits again before the next world is
+  touched. The locks are private to the game and found by name; if a later version moves
+  them, client.log says so and that save is not waited for.
+
+**When it goes wrong.**
+
+- The place cannot be made: the world is loaded again, the player stands at the door they
+  tried, and the door says "It opened onto a wall." client.log has why.
+- The leaving itself fails before the game has begun to save (the save is the last thing
+  asked for, and `WorldGen.SaveAndQuit` does nothing but hand it to another thread): the
+  player is in the world still, with everything.
+- The other world will not load: the game's own "Load failed!" screen comes up, and the black
+  gets out of its way after six frames of it. Its "Load Backup" enters the world with the
+  player as they are in memory, not read from their file, so what was carried is given them
+  on that arrival too. It is held for that player only: one picked from the game's list is
+  read from their file, which has it.
+- A place that will not load and has no backup: the game offers nothing but "Back" to its
+  title, and the door would lead there for good. So that file is remembered as it is (both
+  halves, by size and time written), and the next time the door is tried the place is laid
+  out afresh over it; the game keeps the file that failed beside the new one as `.bak`. A
+  file put right by hand meanwhile is tried like any other. With a backup beside it nothing
+  is remembered: "Load Backup" is the way on.
+- A making cut short (the `.wld` there, the `.twld` not): made again over what is there.
+- Save and Exit pressed, or the player dead, before the black is up: the passage lets go and
+  its black goes by itself.
+- With others in the world the door stays shut: "It does not open while others share the
+  world." In a subworld with no world behind it, which takes its file being put into the
+  game's list by hand and opened from there: "It has forgotten where it leads."
+
+**What holds in every subworld** (`SubworldRules`).
+
+- *Nothing is broken.* The first thing `WorldGen.KillTile` asks is
+  `WorldGen.CheckTileBreakability`; on an answer of 2 it returns at once, with no sound, dust
+  or cracks. A detour gives that answer for everything in a subworld, and for a door tile
+  anywhere. tModLoader's own hooks say the same, so the rule holds by them alone: no tile is
+  dug, blown up, hammered to another shape or swapped (`GlobalTile.CanKillTile`, `KillTile`,
+  `CanExplode`, `Slope`, `CanReplace`), and no wall is knocked down or blown up
+  (`GlobalWall.KillWall`, `CanExplode`).
+- *Nothing is built.* **Mine**, not asked for: without it a block could be put down that
+  nothing could ever take up again. A player there cannot place, dig or pour
+  (`Player.noBuilding`, what Creative Shock sets). And what puts a tile down with no player's
+  hand in it is refused where the game does it: `WorldGen.PlaceTile` (a ball of sand, a block
+  of ice from a rod, a dirt bomb, a coil of rope, a web), `TileObject.Place` (a tombstone:
+  it lies where it fell until it is gone, as one does that finds no room),
+  `WorldGen.PlaceLiquid` (the water, lava and honey of a bomb or a rocket) and
+  `WorldGen.PlaceActuator` (a block switched off is a block walked through, which for a floor
+  is as good as broken; the Kingdom of Grace refuses the same on its kept blocks,
+  `GraceWorld`). Not while a place is being laid out. Not stopped, having no one place to stop
+  them at: paint and its scraping off, wire, and what turns one kind of tile into another.
+- *Nothing spawns* (`GlobalNPC.EditSpawnRate`), and *the clock stands still*
+  (`ModSystem.ModifyTimeRate`, all three rates at nothing): no night, no rain, nobody moves
+  in, nothing grows. A place is saved at a quarter past eight in the morning, where the game
+  starts every new world. **Mine**, both.
+- The first two are lifted by hand, to build in one: `/subworld rules off`, until the game is
+  closed.
+
+**How every subworld looks and sounds** (`SubworldScene`). The game takes everything within
+200 rows of a world's floor for the Underworld and a world's two ends for the sea, by
+counting rows and columns; in a world 250 rows tall that is all of it. So:
+
+- a scene effect of the mod's is in force there, ranked above where the game picks the
+  Underworld's music and under any boss or event: its music (Overworld Day, a place may name
+  its own), a backdrop of no pictures at all so that only the sky is drawn, and the game's own
+  open sky behind the full screen map in place of the Underworld's;
+- the heat haze is taken off each tick, and the player is not counted as in the Underworld or
+  on a beach (`SpecialVisuals`, the last thing in `Player.UpdateBiomes`);
+- what has no hook is stopped by detour, five of them: the Underworld's backdrop and its
+  layers (`Main.DrawUnderworldBackground`, `DrawUnderworldBackgroudLayer`), the cave walls
+  drawn behind the tiles (`Main.DrawBackground`: its Underworld band starts 330 rows up from
+  the floor), the Underworld's red light (`TileLightScanner.ApplyHellLight`), and the three
+  achievements given for where a player stands, the bottom of the world, the top of it and the
+  Underworld (`AchievementsHelper.HandleSpecialEvent`);
+- the surface line of a place is put under everything that can be seen (35 rows up from its
+  bottom edge), so all of it is lit as open air under the sky.
+
+**The Empty Hall** (`EmptyHall`). 400 by 250 tiles, as asked. The game keeps a player, and the
+camera, 41 tiles in from a world's left and top edges and 42 from its right and bottom ones
+(`Player.BordersMovement`, `Main.ClampScreenPositionToWorld`), so of the 400 by 250 what can
+be seen and walked is 317 by 167: columns 41 to 357, rows 41 to 207. In that:
+
+- the floor is the last three rows that can be seen (205 to 207), Gray Brick, laid across all
+  400 columns so that a screen wider than the hall sees no end to it;
+- the door back stands on it in the first two columns that can be seen (41 and 42), so its
+  left side is the left side of the screen;
+- nothing else: no wall, no liquid, open sky.
+
+A player who dies there comes back beside the door (the game wants the three columns over a
+spawn clear, and a door in them counts).
+
+**What comes in from the world.** `PADWorld.Legends`, and whether flight is unlocked
+(`PADWorld.FlightUnlocked` now reads it from the world that was left, in a subworld). Nothing
+else, and nothing done in a place goes back. **Mine.** The game's own progress is left out on
+purpose: every system of the mod's was read against a second, empty world and all of them are
+asleep in one as it is, but hard mode carried in would wake `MorsPresence`, which would find
+its place on the hall's floor.
+
+**Elsewhere.** `/struct update` now refuses in a subworld (the structures are the world's, and
+the passes would write them into it). The hjson has the item's name and tooltip, the tile's
+map name, and the three lines the door says (`Subworlds.DoorNotAlone`, `DoorForgot`,
+`DoorWall`).
+
+**`/subworld`**, for testing: alone it says where this is and where each place's file is kept;
+`door` gives an Unmarked Door; `undoor` takes up the door under the cursor (nothing else can);
+`enter [place]` and `leave` go by hand; `rules on|off`; `remake [place]` lays a place out
+afresh the next time it is gone to.
+
+**Read from the 1.4.4 assembly, besides the above.**
+
+- `WorldGen.clearWorld` runs at every world load (`WorldFile.LoadHeader`) and empties the
+  whole tile grid; tModLoader calls every system's `ClearWorld` from it. A world file's mod
+  half is read by `WorldIO.Load`, which calls `LoadWorldData` only for systems that saved
+  something.
+- `WorldGen.playWorldCallBack` clears `Main.gameMenu` and only then queues the putting in of
+  the player for the main thread, which runs what is queued after its update
+  (`Main.Update`). So a tick of the new world is lived before the player is put into it, more
+  often than not, with the player where they stood in the last one. Nothing in it does harm
+  (the game clamps them into the world), but a hold asked of `Cinematic` cannot cover it nor
+  the first tick after: a hold is a tick behind whoever asks. So the passage takes the
+  controls itself, from its player's `SetControls`, for exactly the ticks `Cinematic` would.
+- A failed load: `WorldFile.LoadWorld` sets `WorldGen.loadFailed`; the game tries twice, then
+  shows menu 200 if a `.bak` is beside the file ("Load Backup" moves it into place and calls
+  `playWorld` again) and 201 if not; "Back" on either is the title.
+- A world's sections are counted rounding up (`WorldGen.setWorldSize`, `clearWorld`) and a
+  section's bounds are held to the world (`WorldGen.GetSectionBounds`), so a world that is not
+  a multiple of 200 by 150 is framed whole.
+- A backdrop that names no picture draws none (`SurfaceBackgroundStylesLoader`: a slot under 0
+  is skipped in all three layers).
+- At the menu the game leaves `Main.screenWidth` and `screenHeight` divided by the interface's
+  scale (`Main.PreDrawMenu`), so the black is sized by the viewport, or it would stop short of
+  the right and bottom edges at any scale over 100%.
+- `TileLoader.Slope` answers true when a hook stopped it.
+- A tombstone is set down by `TileObject.Place`, not `WorldGen.PlaceTile`
+  (`Projectile.VanillaAI`).
+- `Player.PlaceThing` runs the paintbrush, roller and scraper before it looks at
+  `noBuilding`; the wiring tools never look at it.
+
+**Mine, to confirm or change.** Nothing can be placed there either. "Stone brick" is Gray
+Brick (`TileID.GrayBrick`). The clock stands still at morning and nothing spawns. Only Legends
+and flight come in. The door is flush with the left edge of the screen and the floor is the
+bottom of it. The door once placed is permanent. Single player only. The names: "Unmarked
+Door", its tooltip and its three lines. The numbers: 24 ticks to black, 15 held, 30 back, the
+world left on the third frame of black. The sounds: `DoorOpen` going, `DoorClosed` arriving.
+Added without being asked: `/subworld`; the remaking of a place that will not load and has no
+backup; `/struct update` refusing in a subworld.
+
+**How it was checked.** Nothing was run in the game. A rig of my own boots the real
+`tModLoader.dll` with no window and drives the mod's own compiled classes through it: 258
+checks, all passing. In it the game itself makes, saves and loads the files; the passage goes
+through the game's real `WorldGen.SaveAndQuit` and `WorldGen.playWorld`, there and back, from
+a small world and from a Grand one (12600 by 3000, with `ExtraLargeWorld`'s hook in place:
+nothing of the Grand world is left in the grid, and all of it is back after); the rules are
+asked through the detours and through tModLoader's hooks, and by the game's own bomb blast,
+dirt bomb, lava bomb, tombstone and actuator; the time rates, the light, the scene and all
+eleven detours; a place that cannot be made, one too small, a making cut short, a remaking;
+the autosave's locks held by another thread; a passage cut across; the leaving failing; the
+other side failing to load with and without a backup; the items and Journey's powers through
+all of it, with the control. `Player.Spawn` itself, the drawing and the sound were read, not
+run: the rig has no screen, and a stand-in does the part of `Spawn` that matters to a
+passage. The whole mod compiles against the real 1.4.4 assemblies: 0 errors, 10 warnings. The
+review was my own.
+
+**Changed.** New: `Content/Subworlds/Subworld.cs`, `SubworldKeeper.cs`, `SubworldPassage.cs`,
+`SubworldRules.cs`, `SubworldScene.cs`, `EmptyHall.cs`; `Content/Tiles/SubworldDoor.cs` and
+`.png`; `Content/Items/Misc/SubworldDoor.cs` and `.png`; `SubworldCommand.cs`. `PADWorld.cs`
+(`FlightUnlocked`), `StructCommand.cs` (`update` refuses in a subworld),
+`Localization/en-US_Mods.PisAndDag.hjson`. Both textures are placeholders
+(`PlaceholderTextures.md`).
+
+**Not yet confirmed in game:** all of it. What only the game can show: the black over the
+menu while it saves and loads (and that nothing of the menu shows through at any interface
+scale); the sky, the light and the music in the hall; the door's right click and the cursor's
+picture over it; where the camera sits at the hall's left edge; the game's own three menu
+sounds under the black (its save and its entering a world make them), which may want
+silencing.
+
+---
+
+## 16.36 Later in session 7: the hall's ground twenty-six deep and silent, and a loading screen for the door: a bar, tips, and a frame for a picture
+
+The user, on §16.35 (so the door, the passage and the hall had been seen working; nothing
+else of §16.35 was reported on):
+
+> Nice, make the ground 26 gray bricks deep tho, dont give it any music,
+>
+> Also give a loading bar like elden rings(a small loading bar 1/7 width of the screen in the corner) minimalistic.
+> And add a list of tips on the screen, clicking E jumps to the next one.
+> Like: You can parry Golem's fist.
+> You can register your own trumpet song using "command here"
+> etc etc
+
+and, while it was being built, four more:
+
+> give about 20 tips now (usually these are mechanics that are hidden in the mod) and 1/5 chance to give a vanilla tip
+
+> like these, dont do artwork just yet
+
+(with a picture of Elden Ring's loading screen: a title and three lines low on the left, a
+key in a ring and ":Next" in the bottom left corner, a thin bar with a mark at each end in
+the bottom right, and a painting behind all of it with black, blemished edges)
+
+> make the  loading bar bottom left and text right, create an image 1920x1080 to fit on the screen and a few frame edge dark and blemage like in the reference artwork photo
+
+> i think the art i will put in, what u need to focus on is a seperate full art, a frame for blemished black edges and graints and splouches and scratches
+
+**The ground** (`EmptyHall`). `FloorThick` is 26, was 3: Gray Brick in rows 182 to 207, all
+400 columns. The door's top left tile is (41, 179) and whoever dies there comes back at
+(44, 182). Only its top rows are lit: brick lets the sky's light no further down than earth
+does, so the rest of it is dark, as ground is. **Mine:** "26 deep" is read as twenty-six
+rows that can be seen, its top moved up; the last row that can be seen is still its last.
+
+**A place's layout has a number** (`Subworld.Layout`: 1 unless a place says otherwise; the
+hall says 2). A place past its first layout is kept in a file with the number in its name
+(`SubworldKeeper.PathFor`):
+
+    Worlds/PisAndDag_Subworlds/[the world's own id]/EmptyHall.2.wld  (and .twld)
+
+A new name is a new file, so every world's hall is laid out the new way the next time its
+door is used, with nothing to do by hand. The old `EmptyHall.wld` and what goes with it are
+left where they lie, unread: nothing is deleted. Raise the number whenever `Build()` changes
+and places already made should change with it. **Mine:** the deeper ground was asked for;
+that halls already made get it too, and by this road, is my doing.
+
+**No music.** `Subworld.Music` is `Subworld.NoMusic` (0) unless a place names some, so the
+hall is silent and so is any place that says nothing. 0 is an answer the game takes, not the
+want of one (below).
+
+**The loading screen** (`SubworldLoading`, new; `SubworldPassage` draws the black and asks
+it for the rest, once a frame, inside its own batch). On the black, from a quarter of a
+second after the world is left until the place has settled on the other side:
+
+- **The picture**, if there is one: two files beside the code. `LoadingArt.png` is the
+  picture itself, drawn to cover the window whatever its shape (cut at the sides or the top
+  and bottom, never squeezed). **It is not in the mod: the user is to put it in.** 1920 by
+  1080 is the size it is mostly seen at; it should be opaque. `LoadingFrame.png` is laid
+  over it, stretched to the window. Either gone, that layer is left out: with neither the
+  screen is the plain black it was.
+- **A tip**, low on the right: a title in the game's big font brought down, and under it
+  what the tip says, in the game's small font, every line ending at the same edge (0.94 of
+  the window across; the title's top 0.653 of the way down). Lines are wrapped by the game's
+  own hand at 0.40 of the window; a tip too long for its place is moved up, not let run into
+  the key.
+- **The key**: "E" in a box and ":Next", in the corner under the tip. E turns to the next
+  tip (a press, not a hold; only with the window in front).
+- **The bar**, low on the left: a seventh of the window wide, starting 0.06 of the way
+  across, on the same line as the key (0.951 down). A faint line, one pixel thick in a
+  window 1080 high, with a mark at each end; as much of it as is done is three times as
+  thick and bright, with a mark where it stops.
+
+Everything is measured as shares of the window, off Elden Ring's own screen and turned about
+left for right as asked; the words are the size of the game's menus (`Main.PreDrawMenu`'s
+scale: the window's height over 900, never under 1, and 1 if the game is set not to scale
+its menus up).
+
+**The bar is the game's own word on how far along it is.** The game writes what it is doing
+in `Main.statusText`, and for the long steps how far through, as the step's name, a space, a
+number and "%". Each such step has a stretch of the bar:
+
+| | step (`Lang.gen`) | its stretch |
+|---|---|---|
+| saving | the map (66) | 0 to 0.12 |
+| | the world's tiles (49) | 0.12 to 0.62 |
+| | the check of what was written (73) | 0.62 to 0.97 |
+| loading | the tiles (51) | 0.03 to 0.55 |
+| | the liquids settling (27) | 0.55 to 0.72 |
+| | the map read (67) | 0.72 to 0.84 |
+| | the map drawn (68) | 0.84 to 1 |
+
+The saving and the loading share the bar by the two worlds' sizes in tiles (never less than
+0.08 of it for either), so leaving a world for the hall the bar is nearly all saving, and
+coming back nearly all loading. It only ever rises, closes on where it should be rather than
+jumping, and is full when the player is put into the other world. What the game had written
+last before the passage began (the end of an autosave, or of the passage in) is not listened
+to: it is still there when the next passage begins and is not about it. **Mine:** the
+stretches are guesses at how long each step takes, the quarter second of plain black first
+(so a passage that short shows nothing), and the bar's look.
+
+**The tips** are the hjson's (`Mods.PisAndDag.Tips.List`): every entry there with a `Title`
+and a `Text` is one, so a tip is added by writing it there and nowhere else. They are gone
+through in a shuffled order, each once before any comes round again, and the order goes on
+from one passage to the next. One time in five (`GameTipOneIn`) the tip is one of the game's
+own instead: the ones on its own loading screens, found and worded exactly as it words them
+(the keys they name put in), under one title for all of them, "Common Knowledge"
+(`Tips.VanillaTitle`). Two of the game's are left out as untrue with the mod in
+(`NotHere`): "Nothing improves your mobility like Wings. Who wouldn't want to fly?" and "The
+best wizards around use Mana Flowers." The gamepad's tips are used only on a gamepad. The
+section is named `Tips` and not `GameTips` because tModLoader puts everything under
+`Mods.[mod].GameTips` on the game's own loading screens as well.
+
+The twenty-two, each read off the mod's own code before it was written (titles and wording
+**mine, to confirm or change**; mechanical lines: present tense, numbers, no voice):
+
+| Key | Title | What it says, and where it is so |
+|---|---|---|
+| `GolemFist` | The Golem's Fist | Can be parried; flies back into the Golem; the seventh breaks it (`GolemFistParry`, `FistShare` 7). |
+| `ThirdParry` | The Third Parry | Every third parry staggers 2 seconds, every second for one that flies; the first blow on a staggered enemy is triple (`Parry.GroundParries`, `FlyingParries`, `StaggerTicks`, `RiposteDamage`). |
+| `SolidThings` | What a Parry Breaks | An arrow, a bone, a dart, a bullet; not fire or spells (`ParryRules`). |
+| `YellowStar` | The Yellow Star | A star, then an outline: cannot be parried, and throws through any knockback immunity (`CCBypass`, `RagdollPlayer`). |
+| `LanceAndDonkey` | Lance and Donkey | Her charge and thrown lance can be parried; her swing wears the star (§16.32). |
+| `Magazines` | Magazines | Reloads when dry; the Reload key sooner; goes on reloading put away (`PSItem`). |
+| `Megashark` | The Megashark | No recipe; the boss leaves a dented one; the Mechanic mends it (`PADRecipes`, `MechanicRepair`). |
+| `Handswitch` | The Handswitch | Fires on life: about 8 at 100, 12 at 500; takes the last of it (`Handswitch`: the fourth root of most life, times 2.7). |
+| `Grounded` | Bounded to the Ground | Wings and flying mounts do nothing until the Empress of Light falls; then three fifths (`PADWorld.FlightUnlocked`, `FlightFraction`). |
+| `Mana` | Mana | None on its own; 15 a second after 2 seconds still; accessories yes, the potion no (`ManaRegenPlayer`). |
+| `ManaPotions` | One Potion Too Many | Every one makes the screen swim; more than five in two minutes poison: 10 life a second, 20 with the greater and super (`ManaDrinkPlayer`, `ManaNausea`, `ManaPoisoning`). |
+| `Arsenal` | The Magic Arsenal | Spells and incantations work from it, near a lived-in house; a staff casts the one, a seal the other (`MagicArsenal`). |
+| `Altar` | The Makeshift Altar | Written each with a Book; 15 Bones, 10 Wood and a Book at a Work Bench. |
+| `Mile` | The Wasted Mile | A bunny or squirrel let go there is counted; the tenth is answered (`AbomanationSummon`). |
+| `OnFoot` | On Foot | No teleport into Grace; no bed spawn there (`GraceRules`). |
+| `Builders` | What the Builders Laid | Cannot be broken; what the player builds there can (`GraceGuard`). |
+| `Shimmer` | Shimmer | Changes nothing. Not yet (`ShimmerLock`). |
+| `LoreItems` | Lore Items | Not dropped, trashed, stored or reforged; the Lore Codex holds them (`LoreLock`, `LoreCodex`). |
+| `Trumpet` | A Tune of Your Own | `/trumpet learn NAME`, `/trumpet add` for each part, `/trumpet save` (`TrumpetScore`). |
+| `Dash` | A Dash Goes Level | Level even over a drop (`LevelDash`). |
+| `NameRead` | While the Name Is Read | A boss neither fights nor is hurt while its name is up (`BossArrivalWait`). |
+| `Carried` | Things Carried | Some carried things give a townsperson a line (`TalkOptions`). |
+
+**The frame** (`Content/Subworlds/LoadingFrame.png`, 1920 by 1080, 2.8 MB: grain does not
+compress). A separate picture the size of the screen, drawn over whatever picture is under
+it: clear in the middle (it covers under a tenth there, the grain and the stains), black at the
+edges and unevenly so, as smoke comes in rather than to a line; blackest low on the right,
+from about 0.60 across and 0.64 down to the corner, where the tip is read (never under 0.8
+there), shaded lighter all the way up that side, and black along the bottom, where the bar
+and the key are. Over all of it: grain, every pixel a little darker or paler; specks in
+drifts; ragged splotches, small and black, and a few larger ones that dried unevenly with
+droplets about them; faint stains with a darker rim; scratches (long faint ones near
+upright, others any way round, hairs, nicks, and patches of scuffing). No pale mark is put
+where the words or the bar go. Made by a script of my own from numbers alone
+(`work/sw/art/loading/frame.py`, in the session's workspace and not in the mod; nothing is
+sampled from any picture, Elden Ring's included).
+
+**It is stored premultiplied**, as the game blends. tModLoader copies a mod's picture
+straight through, at build (`ImageIO.ToRaw`) and at load (`RawImgReader.FromStream`); only a
+`.png` read as a `.png` is premultiplied (`PngReader.PreMultiplyAlpha` in ReLogic), which a
+built mod's never is. The first version of this frame was saved the plain way, and its pale
+dust and scratches would have been added at full strength, white. Anyone repainting the
+frame saves it premultiplied (each pixel's colour already multiplied by its alpha), or keeps
+to dark marks only, which come out all but the same either way. The picture under it is
+opaque, so none of this touches it.
+
+**Read from the 1.4.4 assembly, besides the above.**
+
+- Music. tModLoader takes a scene's `Music` when it is not -1
+  (`SceneEffectLoader.UpdateSceneEffect`) and hands it to the game when it is over -1 and
+  ranks above what is there (`UpdateMusic`). The game's choice
+  (`Main.UpdateAudio_DecideOnNewMusic`) is, at each rank from BossHigh down to BiomeLow,
+  "if the scene ranks at least this, the scene's music, and done", with no look at the
+  number; the place's rank (Environment) is asked before the Underworld's music is chosen.
+  The game's own no-music is 0: it sets it itself when the volume is at nothing, and
+  `Main.UpdateAudio` sets `curMusic` to 0 for the silence before the Moon Lord, its loop
+  over the tracks starting at 1.
+- The game's own tips (`GameTipsDisplay`): `Language.FindAll` over
+  `LoadingTips_Default.`, `LoadingTips_Keyboard.` and `LoadingTips_GamePad.` (109, 9 and
+  15 in English), each worded with `FormatWith(Lang.CreateDialogSubstitutionObject(null))`
+  and `Lang.SupportGlyphs`.
+- The hjson. `LocalizationLoader.Autoload` registers every key of a mod's hjson
+  (`GetOrRegister`) and makes a loading tip of the game's own of every one under
+  `Mods.[mod].GameTips.`; `LoadModTranslations` then gives each its words.
+  `LanguageManager.GetText` does not register a key that is not there.
+- The status text. `Main.statusText` is a property over `_statusText`. The steps with a
+  number, each `Lang.gen[n].Value + " " + number + "%"`: `WorldFile.SaveWorldTiles` (49),
+  `ValidateWorld` (73), `LoadWorldTiles` (51), `MapHelper.InternalSaveMap` (66; not when
+  `MapHelper.noStatusText`), `LoadMapVersion2` (67), `WorldGen.playWorldCallBack` (68). The
+  liquids (27) are two counts under one name: `Liquid.QuickWater(2)` runs 1 to 50
+  (`Liquid.UpdateProgressDisplay`), then `WorldFile.LoadWorld` settles whatever still moves
+  from 50 to 100, which in a world with nothing to settle does not happen. I had read only
+  the second and had the step start at 50; listening to real passages in the rig showed the
+  first. With no number: 50 "Backing up world file", tModLoader's "Backing up player file"
+  and "Saving modded world data".
+- What the game says through a real passage, in order, as heard in the rig (no map there):
+  Backing up player file; Saving world data 1 to 100; Validating world save 1 to 100;
+  Backing up world file; Saving modded world data; then Loading world data 1 to 100;
+  Settling liquids 1 to 50.
+- The bottom-of-the-world achievement is raised when a player's top is under
+  `bottomWorld - 640 - 150 - height` (`Player.BordersMovement`): row 198 in a world 250
+  high. The hall's ground now tops out over that.
+- `ModContent.HasAsset` is false on a server and otherwise asks the mod's own content
+  source; `LoaderManager.Get` hands out a throwaway loader for a kind tModLoader has not set
+  up (it has in the game; the rig has to).
+
+**Mine, to confirm or change.** Besides what is marked above: silence is for every place
+that names no music, not the hall alone. The tip is on the right with its lines ending at
+one edge, and the key under it. The key is E as asked, fixed: it is not a keybind, and on a
+gamepad nothing turns the tip. The title over the game's tips. The frame: how wide its black
+is on each side, that the right side is the dark one, how much grain.
+
+**How it was checked.** Nothing was run in the game. The rig of §16.35 (the real
+`tModLoader.dll`, no window) was moved to the new ground and file name and given the new
+checks: 336, all passing. New in it: the hjson read by tModLoader's own reader
+(`LocalizationLoader.LoadTranslations`, from a mod file made in memory: 250 keys) and
+registered as tModLoader registers it; the twenty-two tips found, each with a title and a
+text, none with a brace, bracket, exclamation mark or dash, the longest line 63 characters;
+116 of the game's tips used on a keyboard and every one worded with nothing left unfilled;
+30000 turns of the tip, a fifth of them the game's (19.6% to 20.0% over three runs), the mod's in rounds of 22 with every one
+in each round and none twice running; a tip added to the hjson found, a title with no text
+not; the bar's reading of every step, of lines with no number and of lines that are not
+steps; its shares; a whole passage's worth of status lines by hand, the bar never going
+back; a line left over from before the passage not listened to; two real passages listened
+to, in which every numbered line the game wrote (five or six hundred of them) moved the bar; the places
+of everything at four window sizes; a fault in the drawing (there is nothing to draw with
+there, so it throws) caught, marked and kept out of the passage; the hall's 26 rows, its
+door and spawn; the file named for its layout, with an old `EmptyHall.wld` beside it left
+as it was; the scene's music 0 at Environment, tModLoader's answer to the game for it, a
+boss's music left alone, and the game's own choice of music run in the hall with the volume
+up: 0. The drawing itself, with the game's fonts, was read and not run. The frame was
+measured (how much it covers in the middle, under the words and under the bar; no pale mark
+in either; no colour over its alpha; no repeating pattern, against plain noise) and looked
+at whole and at full size over grey, over parchment, over colour and over a stand-in
+picture, with the tip and the bar sketched on in a stand-in font. The whole mod compiles
+against the real 1.4.4 assemblies: 0 errors, 10 warnings. The review was my own.
+
+Seen on the way: `Content/Items/Melee/IronFlow.cs` on the device has its recipe commented
+out (the user's own, kept); `Content/Projectiles/Ranged/ChlorophyteBullet.cs`, long gone
+from the device, was still in my build copy and is out of it now. Neither changes the
+build's count.
+
+**Changed.** New: `Content/Subworlds/SubworldLoading.cs`, `Content/Subworlds/LoadingFrame.png`.
+`EmptyHall.cs` (26 rows, layout 2), `Subworld.cs` (`NoMusic`, `Music`, `Layout`),
+`SubworldKeeper.cs` (`PathFor`), `SubworldPassage.cs` (the loading screen in place of the
+game's status line; `Begin` at the leaving), `SubworldScene.cs` (its notes only),
+`Localization/en-US_Mods.PisAndDag.hjson` (`Tips`).
+
+**Not yet confirmed in game:** all of it. What only the game can show: the tip, the key and
+the bar in the game's own fonts, and whether they sit well at other interface scales and
+window shapes; the bar's pace through a real save and load, map and all; E turning the tip
+(E is also the grapple: held when the black lifts, it throws a hook); the frame over a real
+picture, and whether the words read on it; the hall's silence; how the deeper ground looks
+with only its top lit.

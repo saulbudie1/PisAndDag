@@ -26,8 +26,11 @@ namespace PisAndDag
         /// beat the Empress before this mod was installed is already unlocked. Making
         /// those players kill her a second time to get something they had already earned
         /// would be the wrong answer.
+        ///
+        /// In a subworld it is as it was in the world that was left for it (SubworldKeeper): a
+        /// place has no Empress of its own to have beaten.
         /// </summary>
-        public static bool FlightUnlocked => NPC.downedEmpressOfLight;
+        public static bool FlightUnlocked => NPC.downedEmpressOfLight || Content.Subworlds.SubworldKeeper.FlightFromHome;
 
         /// <summary>
         /// Whether the unlock has been announced in chat.
