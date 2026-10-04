@@ -13,7 +13,7 @@ using Terraria.ModLoader;
 namespace PisAndDag.Content.Projectiles.Summoner
 {
     /// <summary>
-    /// Joint Arms of the Defiled, swung (the item is JointArmsOfTheDefiled). Raw meat, as long
+    /// Joint Arms Of The Defiled, swung (the item is JointArmsOfTheDefiled). Raw meat, as long
     /// as a Firecracker, with the animal's own tail end at the tip.
     ///
     /// Each swing tells the streak whether it landed (JointArmsStreak). Each hit throws the
@@ -23,7 +23,7 @@ namespace PisAndDag.Content.Projectiles.Summoner
     ///
     /// Its sheet, 16 wide, each piece pointing down, two empty rows between them: the handle
     /// (24 tall: a bone joint behind the hand, the grip after it), three links of 18 thinning
-    /// for the first, middle and last third of the lash, and the tail end (18) with the
+    /// for the first, middle and last third Of The lash, and the tail end (18) with the
     /// opening at its far end.
     /// </summary>
     public class JointArmsOfTheDefiledProj : BaseWhip
@@ -66,7 +66,7 @@ namespace PisAndDag.Content.Projectiles.Summoner
             if (i == count - 2)
                 return TailEnd;
 
-            // The links, as a share of the way along them: thick, then thinner, then thin.
+            // The links, as a share Of The way along them: thick, then thinner, then thin.
             float along = (i - 1) / (float)Math.Max(1, count - 3);
 
             if (along < 1f / 3f)
@@ -105,7 +105,7 @@ namespace PisAndDag.Content.Projectiles.Summoner
         }
 
         /// <summary>
-        /// The whip is meat, and it spatters where it strikes: droplets from the point of the
+        /// The whip is meat, and it spatters where it strikes: droplets from the point Of The
         /// lash that met the target, thrown on away from the one swinging it, in a fan. As
         /// many and as fast as the hit was hard, on the animal's own scale.
         /// </summary>
@@ -120,7 +120,7 @@ namespace PisAndDag.Content.Projectiles.Summoner
             if (points.Count == 0)
                 return;
 
-            // Where it met: the point of the lash nearest the target, brought onto its box.
+            // Where it met: the point Of The lash nearest the target, brought onto its box.
             Rectangle box = target.Hitbox;
             Vector2 met = points[points.Count - 1];
             float nearest = float.MaxValue;

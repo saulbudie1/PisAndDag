@@ -14,7 +14,7 @@ namespace PisAndDag.Content.Projectiles.Mage
     /// What sits in the hand while Meagre Flame is held down. Not the fireball; the
     /// gathering of it. Let go and the ball leaves. Hold, and after
     /// <see cref="ChargeTicks"/> it is ready to go out twice the size at three times the
-    /// damage, for the rest of the mana (the cast's own cost was paid on the click; the
+    /// damage, for the rest Of The mana (the cast's own cost was paid on the click; the
     /// charged throw asks for the difference up to forty on release, and if the player
     /// has not got it the small ball goes instead).
     ///
@@ -31,7 +31,7 @@ namespace PisAndDag.Content.Projectiles.Mage
         /// <summary>Seven seconds.</summary>
         public const int ChargeTicks = 2*60;
 
-        /// <summary>Total mana of the charged throw. The cast's Mana is already paid; the rest is taken on release.</summary>
+        /// <summary>Total mana Of The charged throw. The cast's Mana is already paid; the rest is taken on release.</summary>
         public const int ChargedMana = 40;
 
         public const int BigDamageTimes = 3;
@@ -125,7 +125,7 @@ namespace PisAndDag.Content.Projectiles.Mage
             }
         }
 
-        /// <summary>Embers drawn in from the air around the hand, more of them the longer it is held.</summary>
+        /// <summary>Embers drawn in from the air around the hand, more Of Them the longer it is held.</summary>
         private void Gather(Vector2 hand)
         {
             int count = Charged ? 3 : (Main.rand.NextFloat() < 0.4f + 0.6f * Charge ? 1 : 0) + (Charge > 0.5f ? 1 : 0);

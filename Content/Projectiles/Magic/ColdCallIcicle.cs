@@ -17,9 +17,9 @@ namespace PisAndDag.Content.Projectiles.Magic
     ///
     /// ai[0] is its age in ticks. It is spawned below zero and sits in the staff's head, unseen
     /// and harmless, until the count comes up to zero: that is how the five of one cast leave a
-    /// fifth of a period apart. ai[1] is the aim, ai[2] the period of the wave in ticks.
+    /// fifth of a period apart. ai[1] is the aim, ai[2] the period Of The wave in ticks.
     ///
-    /// In flight it holds the wave. Its heading swings either side of the aim on a cosine,
+    /// In flight it holds the wave. Its heading swings either side Of The aim on a cosine,
     /// which puts it on a sine path at an even speed, rising first whichever way it was cast.
     /// Every icicle of every cast runs the same path, so together they read as one wave.
     ///
@@ -38,8 +38,8 @@ namespace PisAndDag.Content.Projectiles.Magic
         public const float Speed = 10f;
 
         /// <summary>
-        /// How far the heading swings either side of the aim, in radians. At Speed and a
-        /// 25-tick period, 0.9 takes the path about 33 pixels either side of the aim, over about
+        /// How far the heading swings either side Of The aim, in radians. At Speed and a
+        /// 25-tick period, 0.9 takes the path about 33 pixels either side Of The aim, over about
         /// 200 pixels of travel toward it.
         /// </summary>
         public const float Sway = 0.9f;
@@ -60,13 +60,13 @@ namespace PisAndDag.Content.Projectiles.Magic
         /// <summary>The cold mist that comes off the icicles.</summary>
         public static readonly Color Fog = new Color(200, 230, 255);
 
-        /// <summary>No mist until it has been out of the staff this long: half a second.</summary>
+        /// <summary>No mist until it has been out Of The staff this long: half a second.</summary>
         public const int MistDelay = 15;
 
         /// <summary>One tick in this many, once it is past MistDelay and on screen, it lets go a wisp of mist.</summary>
         public const int MistChance = 5;
 
-        /// <summary>The point of the sprite the hitbox centres on: a third of the way back from the tip.</summary>
+        /// <summary>The point Of The sprite the hitbox centres on: a third Of The way back from the tip.</summary>
         private static readonly Vector2 Pivot = new Vector2(5f, 9f);
 
         private float Age
@@ -79,13 +79,13 @@ namespace PisAndDag.Content.Projectiles.Magic
 
         private float Period => Projectile.ai[2] > 0f ? Projectile.ai[2] : 25f;
 
-        /// <summary>Out of the staff. Worked out the same way on every client.</summary>
+        /// <summary>Out Of The staff. Worked out the same way on every client.</summary>
         private bool released;
 
         /// <summary>Set the first time it homes. From then on it is done with the wave.</summary>
         private bool homed;
 
-        /// <summary>Which of the five it is, 0 first, from how long it had to wait. Sets the pitch of its note.</summary>
+        /// <summary>Which Of The five it is, 0 first, from how long it had to wait. Sets the pitch of its note.</summary>
         private int index = -1;
 
         public override void SetStaticDefaults()
@@ -159,7 +159,7 @@ namespace PisAndDag.Content.Projectiles.Magic
             return Aim - side * Sway * (float)Math.Cos(MathHelper.TwoPi * (Age + 0.5f) / Period);
         }
 
-        /// <summary>Out of the staff's head and away, with a note and a flash. No mist yet: see MistDelay.</summary>
+        /// <summary>Out Of The staff's head and away, with a note and a flash. No mist yet: see MistDelay.</summary>
         private void Release(Player owner)
         {
             released = true;
@@ -347,7 +347,7 @@ namespace PisAndDag.Content.Projectiles.Magic
                 DepthStencilState.None, Main.Rasterizer, null, Main.GameViewMatrix.TransformationMatrix);
 
             // The trail: the icicle again at each place it has just been, fainter and thinner
-            // the further back, so the path of the wave hangs behind it for a moment. Vanilla
+            // the further back, so the path Of The wave hangs behind it for a moment. Vanilla
             // fills the cache after the move, so slot 0 is where it is now: skipped.
             for (int i = length - 1; i >= 1; i--)
             {

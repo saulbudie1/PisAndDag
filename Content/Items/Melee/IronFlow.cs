@@ -134,12 +134,12 @@ namespace PisAndDag.Content.Items.Melee
             return false;
         }
 
-        public override void AddRecipes()
-        {
-            CreateRecipe()
-                .AddRecipeGroup(RecipeGroupID.IronBar, 12)
-                .AddTile(TileID.Anvils)
-                .Register();
-        }
+        //public override void AddRecipes()
+        //{
+        //    CreateRecipe()
+        //        .AddRecipeGroup(RecipeGroupID.IronBar, 12)
+        //        .AddTile(TileID.Anvils)
+        //        .Register();
+        //}
     }
 }

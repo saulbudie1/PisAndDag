@@ -18,7 +18,7 @@ namespace PisAndDag.Content.Projectiles.Magic
     /// It turns the front arm across the chest to hold the shaft (<see cref="ArmRotation"/>)
     /// and marks the player as holding (<see cref="ColdCallHoldPlayer"/>).
     /// The staff itself is drawn by <see cref="ColdCallStaffLayer"/>, among the player's own
-    /// layers: over the body and head, under the front arm, with vanilla's drawing of the held
+    /// layers: over the body and head, under the front arm, with vanilla's drawing Of The held
     /// staff hidden meanwhile.
     ///
     /// Not the player's heldProj on purpose: vanilla draws a heldProj from inside its held-item
@@ -35,13 +35,13 @@ namespace PisAndDag.Content.Projectiles.Magic
 
         /// <summary>
         /// Where the staff's head is held, from the player's centre, facing right, the right way
-        /// up. Measured off the player's sprite: the mouth is about (6, -5.5), the front of the
-        /// face 7 to 9 out; this is just in front of the mouth.
+        /// up. Measured off the player's sprite: the mouth is about (6, -5.5), the front Of The
+        /// face 7 to 9 out; this is just in front Of The mouth.
         /// </summary>
         public static readonly Vector2 Mouth = new Vector2(10f, -6f);
 
         /// <summary>
-        /// The staff's head on its own sprite, where the branches part, as a fraction of the
+        /// The staff's head on its own sprite, where the branches part, as a fraction Of The
         /// sprite: (28, 12) of TreeBranchStaff.png's 40 by 40.
         /// </summary>
         public static readonly Vector2 HeadOnSprite = new Vector2(0.7f, 0.3f);
@@ -117,7 +117,7 @@ namespace PisAndDag.Content.Projectiles.Magic
             Vector2 grip = head + down * Vector2.Dot(shoulder - head, down);
 
             // A quarter-stretched arm puts the hand 6 along it and 3 across it, toward the
-            // front: aim short of the grip by that much, so the hand lands on it.
+            // front: aim short Of The grip by that much, so the hand lands on it.
             float angle = (grip - shoulder).ToRotation() - dir * (float)Math.Atan2(3.0, 6.0);
 
             return (angle - MathHelper.PiOver2) * player.gravDir;

@@ -12,7 +12,7 @@ namespace PisAndDag.Content.PADplayer
     ///
     /// Effects are declared, not toggled: something calls the effect's method every tick
     /// it should be active, and stopping the call is what turns it off. Nothing has to
-    /// remember to switch anything back, and two sources of the same effect stack by both
+    /// remember to switch anything back, and two sources Of The same effect stack by both
     /// asking for it rather than overwriting each other.
     ///
     /// Reached with player.PAD(). Kept apart from PisPlayer on purpose: the state in here
@@ -38,7 +38,7 @@ namespace PisAndDag.Content.PADplayer
 
         /// <summary>
         /// Default reach, in pixels. Measured to the nearest point of an enemy's hitbox
-        /// rather than to its centre, so a large body standing at the edge of the ring
+        /// rather than to its centre, so a large body standing at the edge Of The ring
         /// still counts — centre to centre would quietly shorten the range against
         /// anything big.
         /// </summary>
@@ -66,22 +66,22 @@ namespace PisAndDag.Content.PADplayer
         /// <param name="rate">Ticks between volleys. Lower is faster.</param>
         /// <param name="arcs">Enemies struck per volley, nearest first.</param>
         /// <param name="range">Reach in pixels, to the nearest edge of an enemy's hitbox.</param>
-        /// <param name="thickness">Half-width of the bolt at the hand. It tapers on its own.</param>
+        /// <param name="thickness">Half-width Of The bolt at the hand. It tapers on its own.</param>
         /// <param name="throughWalls">Let it target and hurt what it cannot see.</param>
-        /// <param name="colour">Tint of the glow. The core burns white on top of it regardless.</param>
+        /// <param name="colour">Tint Of The glow. The core burns white on top of it regardless.</param>
         public void SurgingCore(int damage = 40, int rate = 36, int arcs = 1, float range = SurgeRange,
             float thickness = SurgeArc.DefaultWidth, bool throughWalls = false, Color? colour = null)
         {
-            // First caller of the tick sets the terms; everyone after it merges in. Taking
+            // First caller Of The tick sets the terms; everyone after it merges in. Taking
             // the best of each rather than letting the last call win means the order the
             // accessories happen to update in cannot change the result — and two sources
-            // of the effect read as two sources instead of one quietly cancelling the
+            // Of The effect read as two sources instead of one quietly cancelling the
             // other. More arcs, harder hits, shorter gap, longer arm, fatter bolt, and a
             // wall-piercing source upgrades the whole volley.
             //
             // Colour is the exception and is first-come. There is no sensible "best" of
             // two colours — averaging them gives a muddy third one nobody chose — so the
-            // first caller of the tick owns the look. If two pieces of gear want different
+            // first caller Of The tick owns the look. If two pieces of gear want different
             // lightning, that is a design question, not something to split the difference on.
             if (!surging)
             {

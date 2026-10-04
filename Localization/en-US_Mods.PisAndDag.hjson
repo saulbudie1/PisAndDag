@@ -25,7 +25,7 @@ Items: {
 	}
 
 	LocketOfABookCrazedGirl: {
-		DisplayName: Locket of a Book-Crazed Girl
+		DisplayName: Locket Of A Book-Crazed Girl
 		Tooltip: "'It was opened more often than it was closed.'"
 	}
 
@@ -105,10 +105,10 @@ Items: {
 	}
 
 	CourtOfHands: {
-		DisplayName: Court of Hands
+		DisplayName: Court Of Hands
 		Tooltip:
 			'''
-			Calls hands up out of the ground under the cursor, three at a time, for 5 seconds
+			Calls hands up out Of The ground under the cursor, three at a time, for 5 seconds
 			Click elsewhere to move them. Hold 2 seconds and they follow the cursor, at 14 mana a second
 			'Can I get a show of hands?'
 			'''
@@ -126,7 +126,7 @@ Items: {
 	}
 
 	EssenceOfTheFouled: {
-		DisplayName: Essence of the Fouled
+		DisplayName: Essence Of The Fouled
 		Tooltip: "'It ate itself down to this.'"
 	}
 
@@ -136,7 +136,7 @@ Items: {
 	}
 
 	JointArmsOfTheDefiled: {
-		DisplayName: Joint Arms of the Defiled
+		DisplayName: Joint Arms Of The Defiled
 		Tooltip:
 			'''
 			{$CommonItemTooltip.Whips}
@@ -166,7 +166,7 @@ Items: {
 		DisplayName: Cold Call
 		Tooltip:
 			'''
-			Calls five icicles out of the staff in a wave, one full wave a cast
+			Calls five icicles out Of The staff in a wave, one full wave a cast
 			Each homes on the nearest enemy 
 			Inflicts Frostbite, and Chilled
 			'Somebody always picks up.'
@@ -240,7 +240,7 @@ Items: {
 	}
 
 	IronFlow: {
-		DisplayName: Iron Flow
+		DisplayName: Tusked Man's Curved Sword
 		Tooltip: Right click to parry
 	}
 
@@ -343,8 +343,8 @@ Projectiles: {
 	PilgrimArrow.DisplayName: Pilgrim Arrow
 	MeagreFlameHold.DisplayName: Meagre Flame
 	MeagreFlameBall.DisplayName: Meagre Flame
-	CourtOfHandsRite.DisplayName: Court of Hands
-	CourtHand.DisplayName: Court of Hands
+	CourtOfHandsRite.DisplayName: Court Of Hands
+	CourtHand.DisplayName: Court Of Hands
 	EverHungerHead.DisplayName: Everhunger
 	ColdCallIcicle.DisplayName: Cold Call
 	ColdCallHold.DisplayName: Cold Call
@@ -352,19 +352,19 @@ Projectiles: {
 	AquaticFirearmsBattery.DisplayName: Aquatic Firearms
 	ArmMeCall.DisplayName: Chlorophyte, Arm Me
 	SkeletronBreathSkull.DisplayName: Skeletron Breath Skull
-	JointArmsOfTheDefiledProj.DisplayName: Joint Arms of the Defiled
+	JointArmsOfTheDefiledProj.DisplayName: Joint Arms Of The Defiled
 	VisusThrust.DisplayName: Visus
 	VisusChop.DisplayName: Visus
 	FleshMaidenStrike.DisplayName: Flesh Maiden
 	FleshMaidenSmash.DisplayName: Flesh Maiden
-	IronFlowHoldout.DisplayName: Iron Flow
+	IronFlowHoldout.DisplayName: Tusked Man's Curved Sword
 	QueenSlimeCore.DisplayName: Crystal Core
 	SweetFireCall.DisplayName: Rage! Sweet Fire
 	DonaLanceThrown.DisplayName: Lance
 	AbomanationBone.DisplayName: Somebody's Bone
 	AbomanationSkull.DisplayName: Somebody's Skull
 	AbomanationHand.DisplayName: Somebody's Hand
-	AbomanationAsh.DisplayName: A Handful of Ash
+	AbomanationAsh.DisplayName: A Handful Of Ash
 }
 
 NPCs: {

@@ -13,7 +13,7 @@ using Terraria.ModLoader;
 namespace PisAndDag.Content.Items.Summoner
 {
     /// <summary>
-    /// Joint Arms of the Defiled: a whip, from Amalgaermis. Every player's own off the kill in
+    /// Joint Arms Of The Defiled: a whip, from Amalgaermis. Every player's own off the kill in
     /// classic, and in the treasure bag in expert and master (AbomanationHead.ModifyNPCLoot,
     /// AmalgaermisBag). 30 damage, a 35-tick swing, as long as a Firecracker; the swing itself
     /// is JointArmsOfTheDefiledProj.
@@ -92,10 +92,10 @@ namespace PisAndDag.Content.Items.Summoner
     }
 
     /// <summary>
-    /// The streak of Joint Arms of the Defiled, kept as the Chlorophyte Rifle keeps its own
+    /// The streak of Joint Arms Of The Defiled, kept as the Chlorophyte Rifle keeps its own
     /// (PisPlayer's Chlo*): a crack that lands counts one; five charge it; the next crack
     /// spends it for Many Hands. A miss, a lull of 3.5 seconds, the whip put away or a death
-    /// ends it, and the blood it had built falls out of the player.
+    /// ends it, and the blood it had built falls out Of The player.
     ///
     /// On a ModPlayer of its own, not PADPlayer, because PADPlayer is reset every tick and a
     /// streak has to last between swings. The owner's only: hits are only ever told to the
@@ -165,7 +165,7 @@ namespace PisAndDag.Content.Items.Summoner
             return true;
         }
 
-        /// <summary>The streak is over. <paramref name="lost"/> when it was lost rather than spent: then it falls out of the player.</summary>
+        /// <summary>The streak is over. <paramref name="lost"/> when it was lost rather than spent: then it falls out Of The player.</summary>
         private void Break(bool lost)
         {
             if (lost)
@@ -216,7 +216,7 @@ namespace PisAndDag.Content.Items.Summoner
                 PADParticleHandler.SpawnParticle(new BloomGeneric(Player.Center, Vector2.Zero, Reds[1], Player.height / 160f, 22));
         }
 
-        /// <summary>The streak was lost: the blood built up falls out of the player, more the longer it was.</summary>
+        /// <summary>The streak was lost: the blood built up falls out Of The player, more the longer it was.</summary>
         private void Spill()
         {
             if (Main.dedServ || Player.whoAmI != Main.myPlayer || Count <= 0)

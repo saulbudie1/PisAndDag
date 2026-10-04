@@ -11,7 +11,7 @@ namespace PisAndDag.Content.Items.Mage.Spell
     /// <summary>
     /// The first spell. The staff goes to the caster's mouth (<see cref="ColdCallHold"/>) and
     /// five icicles leave its head one after another, a fifth of a cast apart, all on the same
-    /// sine path: together they draw one period of the wave per cast. Then the staff waits
+    /// sine path: together they draw one period Of The wave per cast. Then the staff waits
     /// <see cref="ReuseDelay"/> ticks before it will cast again. Each icicle homes, the way
     /// Calamity's projectiles do, on anything within 8 tiles, and never goes faster for it
     /// (<see cref="ColdCallIcicle"/>).
@@ -55,7 +55,7 @@ namespace PisAndDag.Content.Items.Mage.Spell
             Vector2 fallback = velocity.SafeNormalize(Vector2.UnitX * player.direction);
             float aim = (Main.MouseWorld - head).SafeNormalize(fallback).ToRotation();
 
-            // One period of the wave per cast, however fast this cast really is: the length of
+            // One period Of The wave per cast, however fast this cast really is: the length of
             // this use, prefixes and speed bonuses included, set before Shoot is called.
             float period = Math.Max(player.itemAnimationMax, Count);
 

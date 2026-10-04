@@ -7,7 +7,7 @@ using Terraria.WorldBuilding;
 namespace PisAndDag.Content.Structures
 {
     /// <summary>
-    /// The signs on the way in. Four of them on the Cleared Ground just before the
+    /// The signs on the way in. Four Of Them on the Cleared Ground just before the
     /// Mile, in the order they are read walking toward it, five to seventeen tiles
     /// apart, on whatever the ground is there. Somebody put them up; nobody says who.
     ///

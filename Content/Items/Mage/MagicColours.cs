@@ -18,8 +18,8 @@ namespace PisAndDag.Content.Items.Mage
     /// colour, then the text over it.
     ///
     /// An element can also have a stroke that is not one colour (<see cref="StrokeRamps"/>):
-    /// it runs from its first colour at the bottom of the letters to its last at the top,
-    /// all of them showing at once. A sprite is drawn in one colour, so that stroke is
+    /// it runs from its first colour at the bottom Of The letters to its last at the top,
+    /// all Of Them showing at once. A sprite is drawn in one colour, so that stroke is
     /// drawn a row of each letter at a time, each row in its own colour.
     /// </summary>
     public static class MagicColours
@@ -44,7 +44,7 @@ namespace PisAndDag.Content.Items.Mage
         };
 
         /// <summary>
-        /// Elements whose stroke is a ramp: the first colour at the bottom of the letters,
+        /// Elements whose stroke is a ramp: the first colour at the bottom Of The letters,
         /// the last at the top, blended in between. Two or more colours.
         /// </summary>
         public static readonly Dictionary<string, Color[]> StrokeRamps = new()
@@ -101,7 +101,7 @@ namespace PisAndDag.Content.Items.Mage
             public readonly Texture2D Texture;
             public readonly Rectangle Glyph;
 
-            /// <summary>Where its word starts, from the start of the text. Not turned: ChatManager does not turn it either.</summary>
+            /// <summary>Where its word starts, from the start Of The text. Not turned: ChatManager does not turn it either.</summary>
             public readonly Vector2 Word;
 
             /// <summary>Its top left inside the word, scaled, before the word's turn.</summary>
@@ -159,7 +159,7 @@ namespace PisAndDag.Content.Items.Mage
                     {
                         Vector2 local = letter.In + new Vector2(0f, row * scale.Y);
 
-                        // 0 at the top of the ink, 1 at the bottom; the ramp runs the other way.
+                        // 0 at the top Of The ink, 1 at the bottom; the ramp runs the other way.
                         float down = (letter.Word.Y + local.Y + 0.5f * scale.Y + offset.Y - top) / span;
 
                         spriteBatch.Draw(letter.Texture, Vector2.Transform(local, turn) + at + letter.Word + offset,

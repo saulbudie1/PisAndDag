@@ -7,7 +7,7 @@ using Terraria.ModLoader;
 namespace PisAndDag.Content.NPCs.Pugream
 {
     /// <summary>
-    /// Pugream on the night of the Eye: the man who loosed the arrow, standing a long
+    /// Pugream on the night Of The Eye: the man who loosed the arrow, standing a long
     /// way off, seen once, and gone before the player can get to him. He cannot be
     /// spoken to (that is PugreamStanding, later, on the shore). He is the scene's
     /// clock: EyeFinale runs from his AI, because the Eye is dead halfway through it
@@ -63,7 +63,7 @@ namespace PisAndDag.Content.NPCs.Pugream
             NPC.netAlways = true;
         }
 
-        /// <summary>He stays for the length of the shot however far away everyone is. EyeFinale takes him away.</summary>
+        /// <summary>He stays for the length Of The shot however far away everyone is. EyeFinale takes him away.</summary>
         public override bool CheckActive() => false;
 
         public override void SendExtraAI(BinaryWriter writer)

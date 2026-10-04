@@ -15,7 +15,7 @@ namespace PisAndDag.Content.NPCs.Pugream
     /// he is usually right. He wants nothing and asks for nothing. He does not mention
     /// the arrow, then or ever: asked, he talks about supper. The sword is not his and
     /// he says so, and says nothing about whose it is. Plain words, contractions, a
-    /// tired man being kind; none of Mors's old grammar. The two of them are the book's
+    /// tired man being kind; none of Mors's old grammar. The two Of Them are the book's
     /// two wanderers and should sound nothing alike.
     ///
     /// The first time anyone speaks to him (the opener) is what lets him go: after that
