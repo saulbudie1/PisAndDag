@@ -72,7 +72,10 @@ namespace PisAndDag.Content.Items.Mage.Spell
                 if (p.owner == player.whoAmI && p.type == hold)
                 {
                     p.ai[0] = ticks;
-                    p.netUpdate = true;
+
+                    // Not netUpdate: this is no part of its own update, and the game forgets
+                    // that one before it looks (Projectile.Update). This one it keeps.
+                    p.netUpdate2 = true;
                     held = true;
                     break;
                 }

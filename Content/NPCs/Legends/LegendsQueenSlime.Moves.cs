@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PisAndDag.Content.Combat;
 using PisAndDag.Content.Particles;
 using PisAndDag.Content.Projectiles.NPCs;
 using Terraria;
@@ -21,6 +22,9 @@ namespace PisAndDag.Content.NPCs.Legends
     //                   round like a boomerang, half a screen wide, and back, slowly (QueenSlimeCore:
     //                   exactly 150 a hit); she waits for it without it
     //     CATCH    20   it goes back into her, and the red goes out of it
+    //
+    //     Parried on its way (QueenSlimeCore), her core is sent straight back into her, and takes a
+    //     tenth of her full life as it goes in (CoreReturned, CoreShattered); then the catch, as ever.
     //
     // THE DASH (in the air, her second half)
     //     LINE    ...   she flies out to one side of the player, level with them
@@ -284,6 +288,76 @@ namespace PisAndDag.Content.NPCs.Legends
 
             Splash(npc, 0.6f);
             PADParticleHandler.SpawnParticle(new BloomGeneric(npc.Center, Vector2.Zero, QueenSlimeArt.Red, 180f / 160f, 16));
+        }
+
+        /// <summary>
+        /// The server's: her own core, parried, has come back into her. It takes a tenth of her
+        /// full life from her, whatever her armour (QueenSlimeCore.ParriedShare), and whoever
+        /// parried it has had a hand in her. A blow like any other after that: it can take her
+        /// to her wings, or to her death.
+        /// </summary>
+        internal static void CoreReturned(NPC npc, int by, int way)
+        {
+            if (!Authority || !npc.active || npc.type != NPCID.QueenSlimeBoss || npc.life <= 0)
+                return;
+
+            if (by >= 0 && by < Main.maxPlayers && Main.player[by].active)
+                npc.PlayerInteraction(by);
+
+            Parry.Take(npc, Math.Max(1, npc.lifeMax / QueenSlimeCore.ParriedShare), way);
+        }
+
+        /// <summary>
+        /// Every machine's, as the core it sent back is ended in her: she caves round it and is
+        /// knocked the way it was going, her crown jumps, crystal breaks, and her gel is thrown
+        /// out of the far side of her. <paramref name="came"/> is the way the core came in.
+        /// </summary>
+        internal static void CoreShattered(NPC npc, Vector2 came)
+        {
+            if (Main.dedServ)
+                return;
+
+            Vector2 way = came.SafeNormalize(new Vector2(npc.direction == 0 ? 1 : -npc.direction, 0f));
+            int side = way.X < 0f ? -1 : 1;
+            Vector2 at = npc.Center;
+            float half = npc.width * 0.5f;
+
+            if (npc.TryGetGlobalNPC(out LegendsQueenSlime queen))
+            {
+                queen.Kick(-0.3f, side * 0.14f, 0.7f);
+                queen.Jerk(side * 0.1f);
+                queen.PopCrown(0.22f);
+            }
+
+            SoundEngine.PlaySound(SoundID.Shatter with { Pitch = 0.1f, Volume = 1f }, at);
+            SoundEngine.PlaySound(SoundID.Item27 with { Pitch = -0.3f, Volume = 0.9f }, at);
+            SoundEngine.PlaySound(SoundID.DD2_MonkStaffGroundImpact with { Pitch = -0.2f, Volume = 0.9f }, at);
+
+            PADParticleHandler.SpawnParticle(new ParryRing(at, 14f, half + 90f, 20, ParryEffects.Steel));
+            PADParticleHandler.SpawnParticle(new BloomGeneric(at, Vector2.Zero, QueenSlimeArt.Red, 220f / 160f, 16));
+            SparkShard.Spray(at, QueenSlimeArt.RedHot, 16, 10f, 32f, 18, falls: true, palette: QueenSlimeArt.Gel);
+
+            // Out of the far side of her, the way it was going.
+            Vector2 far = at + way * (half * 0.6f);
+
+            for (int i = 0; i < 18; i++)
+            {
+                Vector2 velocity = way.RotatedByRandom(0.8f) * Main.rand.NextFloat(4f, 12f) + new Vector2(0f, Main.rand.NextFloat(-3f, -0.5f));
+
+                PADParticleHandler.SpawnParticle(new SlimeGlob(far + Main.rand.NextVector2Circular(14f, 14f), velocity, Main.rand.NextFloat(0.7f, 1.25f), 90, GelColour()));
+            }
+
+            QueenDust(new Vector2(far.X - 24f, far.Y - 24f), 48, 48, 22, 7f);
+
+            Player local = Main.LocalPlayer;
+
+            if (local != null && local.active && !local.dead)
+            {
+                float near = 1f - MathHelper.Clamp((Vector2.Distance(local.Center, at) - 500f) / 1100f, 0f, 1f);
+
+                if (near > 0f)
+                    local.PIS().BumpScreenShake(9f * near, 16);
+            }
         }
 
         /// <summary>How red her core is: coming as she means to throw it, going once it is back.</summary>

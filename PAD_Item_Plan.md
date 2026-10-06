@@ -22,6 +22,7 @@
 | Handswitch | Ranged | built |
 | **Greatbow of a Pilgrim** | Ranged | **textures in, code to write** |
 | Iron Flow | Melee | built; never run in game (below) |
+| Meat Hook | Ranged | built; never run in game (below) |
 
 ---
 
@@ -196,7 +197,8 @@ damage has broken it.
 
 A hooked sword with a crescent for a guard. 12 Iron or Lead Bars at an anvil. 25 damage. Your
 art (`Content/Items/Melee/IronFlow.png`, 64 by 64, the point up and to the right). The whole
-record is PADWorkFlow §16.26, and §16.30, §16.31, §16.33 and §16.34 for the parry as it is now.
+record is PADWorkFlow §16.26, and §16.30, §16.31, §16.33, §16.34 and §16.42 for the parry as it
+is now.
 
 ### Files
 
@@ -210,6 +212,8 @@ record is PADWorkFlow §16.26, and §16.30, §16.31, §16.33 and §16.34 for the
 | `Content/NPCs/PADStaggerNPC.cs` | `PADStaggerNPC` | The stagger a parry gives, the push, the riposte (and the Greatbow's stagger, as it was) |
 | `Content/NPCs/GolemFistParry.cs` | `GolemFistParry` | The Golem's fists parried: sent back into the Golem |
 | `Content/NPCs/GolemPace.cs` | `GolemPace` | While its head is on, the Golem and its fists keep a full-life Golem's pace |
+| `Content/NPCs/SkeletronHandParry.cs` | `SkeletronHandParry` | Skeletron's hands parried: a fifth of a hand's full life, thrown back |
+| `Content/Projectiles/NPCs/QueenSlimeCore.cs` | `QueenSlimeCore` | The Queen Slime's core in Legends, parried: sent back into her |
 | `Content/Combat/ParryEffects.cs`, `Content/Particles/ParryRing.cs` | `ParryEffects`, `ParryRing` | What it looks and sounds like |
 | `Content/Combat/ParryConfig.cs`, `ParryCommand.cs` | `ParryConfig`, `ParryCommand` | Five lists for whoever runs the world; `/parry` |
 
@@ -255,7 +259,7 @@ shot breaks.
 | Giant | wider than 60 px or taller than 84 | its hit lands; the parry's blow lands on it too, once |
 | Never | a boss or a part of one, a shot in an enemy's place, a bomb, a ghost, beyond being hurt, under the yellow star | nothing |
 
-In vanilla: 353 light, 61 heavy (35 of them worms and 2 the Golem's fists, never staggered), 25 giants, 75 never.
+In vanilla: 353 light, 62 heavy (35 of them worms; 3 the mod speaks for, the Golem's two fists and Skeletron's hand, never staggered), 25 giants, 74 never.
 
 - **The blow** is the damage of the weapon that parried, as you have it: no critical hit, no
   variation, no knockback of its own.
@@ -284,11 +288,26 @@ a seventh of its full life and the Golem a twenty-first of its own, head on or o
 staggered, never pushed. Seven parries break a fist. While the head is on, the life that
 costs the Golem does not make it or its fists any faster; once the head is off it does.
 
+**Skeletron's hands** can be parried while they are swung at you, though they are parts of a
+boss: vanilla's swing down and its sweep in from his side (and for as long after as the hand
+is still flying), and in Legends the clap as the hands shut and the smash as they come down.
+Not a hand that only hangs by him. A parried hand takes the blow, then loses a fifth of its
+own full life whatever its armour, is thrown back about nine tiles, and touches nobody for 45
+ticks. Never staggered, never pushed. Five parries break a hand. In the clap and the smash
+the other hand is thrown back with it and loses nothing, neither can touch you, and the bang
+of the blow is left out.
+
+**The Queen Slime's core**, thrown in Legends, can be parried anywhere on its way out or back.
+It is not broken: it turns and flies straight back into her, faster each tick, hurting nobody,
+and as it goes in she loses a tenth of her full life whatever her armour. Then she catches it.
+The tenth can bring her wings, or begin her death.
+
 **For other mods and other worlds**: the config (five lists), `Mod.Call` with `"ParryNPC"`,
 `"ParryNoNPC"`, `"ParryNoStagger"`, `"ParryProjectile"` or `"ParryNoProjectile"` and a type,
 `/parry` and `/parry list`. In code: `Parry.AddNPC(type, when, thrown, flies, reels, told)`,
 `Parry.AddProjectile(type, when, turned)`, and for a hit the mod works out itself,
-`ParryPlayer.Spares`, `MeetsLine`, `MeetsBox` and `Takes`.
+`ParryPlayer.Spares`, `MeetsLine`, `MeetsBox` and `Takes`. `Parry.Take` is a flat loss of
+life, armour or no; `ParryPlayer.AboutToTurn` is for a blow that is two things' as one.
 
 Pressed 6 to 17 ticks before an arrow at 11 pixels a tick would land, it is parried: a fifth of
 a second. Later and it lands first; earlier and it lands after.
@@ -300,6 +319,76 @@ a second. Later and it lands first; earlier and it lands after.
   taken. `ParryPlayer.Begin(timing, facing, weapon)` is there for it; nothing but the Iron Flow
   calls it.
 - The numbers that are mine, and the readings to confirm: RELEASE_TODO.
+
+---
+
+## Meat Hook
+
+A double-barrelled shotgun with a hook on a chain slung under its barrels. Your art, four
+textures (below). No source yet: a recipe is written out and commented in the item. The whole
+record is PADWorkFlow §16.41.
+
+### Files
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Ranged/MeatHook.cs` + `.png` (70 by 22, yours) | `MeatHook` | The item: the shell fired |
+| `Content/Projectiles/Ranged/MeatHookHoldOut.cs` + `MeatHookHoldOut_WithoutHook.png` (70 by 22, yours) | `MeatHookHoldOut`, `MeatHookLayer` | The gun in the hands while it is the item held: aims, kicks, breaks open, throws the hook; drawn in the hand |
+| `Content/Projectiles/Ranged/MeatHook_Hook.cs` + `.png` (22 by 32, yours), `MeatHook_Chain.png` (14 by 16, yours) | `MeatHook_Hook` | The hook and its chain |
+| `Content/Combat/MeatHookPull.cs` | `MeatHookRules`, `MeatHookNPC`, `MeatHookPlayer`, `MeatHookHUD` | Who is dragged, the two drags, the wait, the bar beside the player |
+| `Content/Combat/ParryRules.cs` | `ParryRules.BossOrPart` | A boss or a part of one (one line, beside the parry's lists) |
+
+The hook as it lies on the gun has no texture of its own: it is the item's sprite less every
+pixel of the gun without it, worked out once (the two are the same gun, pixel for pixel).
+
+### The gun
+
+**Left click** fires a shell: 8 of whatever bullet is loaded for the one that is spent, 22
+damage each, two of them near the line and the rest within 9 degrees of it. 28 ticks a shot; 2
+shells, then 72 ticks to reload (PSItem's magazine, as every gun's; the Reload key does it
+sooner). It is in both hands whenever it is held, pointed at the cursor; it kicks with a shot
+and is broken open for the reload.
+
+### The hook
+
+**Right click** throws it, a fresh press each time; while the gun fires, reloads or is empty
+too. One at a time.
+
+| Stage | What it does |
+|---|---|
+| Out | 24 px a tick, the harpoon's sound; 50 tiles at the most; a tile turns it back; through platforms |
+| Caught | the first enemy it touches takes 1.5 of the gun's damage and is held: 5 ticks of bite, the drag, then 48 ticks more; 150 at the most |
+| Back | straight to the gun through anything; there, the wait begins: 3 seconds if it caught something, 5 if not |
+
+**A small enemy is dragged to you; anything else drags you to it.** Small
+(`MeatHookRules.Hauled`): the game lets it be knocked back, it is no wider than 60 px and no
+taller than 84, it is no boss and no part of one, and its AI can be stopped. In vanilla 378
+kinds are dragged in and 164 drag you: bosses and their parts, worms, giants, and what cannot
+be knocked back (a Paladin, a Target Dummy). Every NPC of the mod's own drags you.
+
+- **Dragged in**, an enemy's AI is stopped and it touches nobody; it comes at 20 px a tick,
+  over ledges, and hangs 30 px off. Let down, it is thrown a little way off and goes on from
+  where it stopped.
+- **Dragged out**, you go at 16 px a tick and stop 56 px short, with no fall counted, your
+  jumps back, off a mount and off any grappling hook.
+- **While the hook is in an enemy every pellet does double damage**, at whatever it hits. "x2"
+  stands beside you.
+- **It lets go** when what it holds dies, when what it drags comes no nearer for 24 ticks, with
+  the chain past 1.15 of its reach, on a second right click (once it has held 12 ticks), on a
+  jump when it is you being dragged, and when you are barred from using anything. The gun put
+  away, or you dead, frozen, stoned or webbed, it is gone at once.
+- **What shows it**: the hook glows red on the gun when it can be thrown, lies dark while it
+  waits and is not there while it is out; a small bar beside you fills as the wait runs out; a
+  low note when it is over.
+
+### Open
+
+- No source: the recipe in `MeatHook.cs` is commented out (a Shotgun, a Grappling Hook, 10
+  Chain, 10 Souls of Night, a Mythril Anvil).
+- Letting go (a second right click, a jump) is said nowhere in the game.
+- Never run in the game, never heard, never tried with a second player.
+- The numbers that are mine, the readings to confirm and what was added without being asked:
+  RELEASE_TODO.
 
 ---
 

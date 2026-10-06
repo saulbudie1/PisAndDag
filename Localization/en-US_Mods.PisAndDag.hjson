@@ -265,6 +265,19 @@ Items: {
 			'It was not there yesterday.'
 			'''
 	}
+
+	MeatHook: {
+		DisplayName: Meat Hook
+		Tooltip:
+			'''
+			Fires a spread of 8 bullets
+			Right click throws the hook, 50 tiles at most
+			It drags a small enemy to you, and you to anything else
+			Shots fired while it holds an enemy deal double damage
+			Ready 3 seconds after it comes back, 5 if it caught nothing
+			'It was made to hold what had stopped moving.'
+			'''
+	}
 }
 
 Buffs: {
@@ -333,6 +346,11 @@ DeathText: {
 	DonaTrampled: "{0} was run down by a donkey with somewhere to be."
 	DonaSwept: "{0} was swept off their feet by a lance."
 	AmalgaermisSteam: "{0} was standing over it when the hundred breathed out."
+	FoighSword: "{0} could not give an old man what he asked for."
+	FoighDagger: "{0} did not see the knife leave his hand."
+	FoighSwordThrown: "{0} was where the sword came down."
+	FoighSpitted: "{0} drank, and was lifted off the ground."
+	FoighReturned: "{0} was given back what they sent."
 }
 
 Tiles: {
@@ -376,6 +394,11 @@ Projectiles: {
 	AbomanationSkull.DisplayName: Somebody's Skull
 	AbomanationHand.DisplayName: Somebody's Hand
 	AbomanationAsh.DisplayName: A Handful Of Ash
+	MeatHookHoldOut.DisplayName: Meat Hook
+	MeatHook_Hook.DisplayName: Meat Hook
+	FoighDagger.DisplayName: Throwing Knife
+	FoighSwordThrown.DisplayName: Sword
+	FoighReturned.DisplayName: Returned Shot
 }
 
 NPCs: {
@@ -389,6 +412,7 @@ NPCs: {
 	PugreamAtTheEye.DisplayName: Pugream
 	DonaQuinn.DisplayName: "'Dame' Quilt"
 	TriunfoTheDonkey.DisplayName: Triunfo
+	Foigh.DisplayName: Foigh
 }
 
 Biomes: {
@@ -455,9 +479,24 @@ Tips: {
 
 		SolidThings: {
 			Title: Arrows and Bullets
+			Text: Projectiles that are solid things can be broken upon parry.
+		}
+
+		ShimmerLock: {
+			Title: Shimmer Is Sealed Away
 			Text:
 				'''
-				Projectiles that are solid things can be broken upon parry.
+				In a chamber at the end of the land.
+				Not only is it sealed but its properties are not the same.
+				'''
+		}
+
+		PugreamCoconut: {
+			Title: Pugream's Coconuts
+			Text:
+				'''
+				He picked three up from the sandy beach.
+				And he gave you two.
 				'''
 		}
 
@@ -500,10 +539,7 @@ Tips: {
 
 		Handswitch: {
 			Title: The Handswitch
-			Text:
-				'''
-				Watch the lifeforce bar when you hold it.
-				'''
+			Text: Watch the lifeforce bar when you hold it.
 		}
 
 		Grounded: {

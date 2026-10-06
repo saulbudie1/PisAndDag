@@ -12,7 +12,7 @@ namespace PisAndDag.Content.Subworlds
     ///
     /// The game takes everything within two hundred rows of a world's floor for the
     /// Underworld, and a world's two ends for the sea, by counting rows and columns. In a
-    /// world a few hundred tiles each way that is all of it. So, in a subworld:
+    /// world a few hundred tiles each way that is most of it, or all. So, in a subworld:
     ///
     ///   - this scene is the one in force over the game's own: its music over the
     ///     Underworld's (ranked above where the game picks that, and under any boss or
@@ -94,15 +94,15 @@ namespace PisAndDag.Content.Subworlds
     ///   - the Underworld's backdrop, drawn whenever the screen's foot is within 220 rows
     ///     of the world's floor (Main.DrawUnderworldBackground, and the layers of it);
     ///   - the cave and Underworld walls drawn behind the tiles (Main.DrawBackground): its
-    ///     Underworld band starts 330 rows up from the floor, which in a world this small
-    ///     is above the top of it;
+    ///     Underworld band starts 330 rows up from the floor, which is above the top of
+    ///     any place lower than that;
     ///   - the Underworld's red light on every open tile under the surface line
     ///     (TileLightScanner.ApplyHellLight);
     ///   - and three achievements given for where a player is: at the bottom of the world,
     ///     at the top of it, in the Underworld (AchievementsHelper.HandleSpecialEvent). A
-    ///     place a few hundred rows high is under the game's line for the Underworld nearly
-    ///     everywhere, and its top and bottom rows are the game's top and bottom of the
-    ///     world.
+    ///     place a few hundred rows high is under the game's line for the Underworld over
+    ///     most of its height or all of it, and its top and bottom rows are the game's top
+    ///     and bottom of the world.
     /// </summary>
     public class SubworldSceneSystem : ModSystem
     {

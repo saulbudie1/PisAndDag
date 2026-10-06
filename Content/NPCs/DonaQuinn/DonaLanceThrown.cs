@@ -203,7 +203,12 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
 
             Projectile.ai[2] = 1f;
             Projectile.velocity = new Vector2(back * TurnedAlong, -TurnedUp);
-            Projectile.netUpdate = true;
+
+            // Sent by its owner (the server) from the end of its next update. Not netUpdate:
+            // a parry is no part of the lance's own update, and the game forgets that one at
+            // the start of every update, before it looks (Projectile.Update). This is the
+            // one the game itself sets from outside one (a fishing bobber, reeled in).
+            Projectile.netUpdate2 = true;
 
             // On the machine of whoever parried it, it is through with them: a word from the
             // server that left before the parry got there must not bring it back onto them.

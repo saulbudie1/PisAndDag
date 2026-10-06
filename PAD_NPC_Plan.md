@@ -21,6 +21,7 @@
 | Mors | `Content/NPCs/Mors` | built, town-side, dialogue |
 | Legends slimes / Guide sacrifice | `Content/NPCs/Legends` | built |
 | **Abomanation** | `Content/NPCs/Abomanation_Small` | **built; one move planned, §2.4** |
+| **Foigh, the Swordsman** | `Content/NPCs/Foigh` | **his road and phase one of three built; put down by `/foigh` only; §5** |
 
 ---
 
@@ -385,3 +386,171 @@ file itself; not repeated here.
 
 One attack and a stub. Needs a plan before it needs code. Lore: the sniper, §8 of
 `PAD_Lore_Planning.md`.
+
+---
+
+# 5 · Foigh, the Swordsman
+
+The Clanmaster of `PAD_Lore_Planning.md` §9, under the name you asked for him by and his
+art's folder has. A grey-haired man with a red eye and a sword twice his height, which he
+drags. An optional boss, after the Moon Lord by the lore plan, fought in the Empty Hall
+(`Content/Subworlds/EmptyHall.cs`, walled, roofed and lit for it).
+
+**His road and the first of his three phases are built** (PADWorkFlow §16.43). Phases two
+and three, the ending, and whatever brings him to the hall are not: §5.8.
+
+Everything here was run in a rig on the game's own engine (its NPC update with tile
+collision, its projectile update, `Player.Hurt`, an item's swing) and **never seen in
+play**. Numbers marked **yours** are as given; **measured** came out of that rig; the rest
+are mine and want confirming.
+
+## 5.1 What is built
+
+| | |
+|---|---|
+| `Foigh.cs` | the NPC: numbers, moves, what is sent with him, the words a player's machine sends the server, the one tick of his AI, `/foigh`'s call |
+| `Foigh.Scene.cs` | the road: his lines, its ticks, what the player it is for is shown |
+| `Foigh.Fight.cs` | the fight: every move, what he picks, the sword against the player |
+| `Foigh.React.cs` | what he does about what is sent at him; `FoighMark`, a shot's verdict kept on the shot |
+| `Foigh.Draw.cs` | drawing him from his pieces, the blade's trail, the ghosts of a flash step, sparks, dust, sounds |
+| `FoighRig.cs` | where everything is on his art, and the sums that put seven pieces together for any pose. No game in it |
+| `FoighTrack.cs` | a movement as poses at moments, eased between |
+| `FoighMoves.cs` | every movement he has, and the ticks things happen at in each |
+| `FoighPlayers.cs` | the player's side: the walk up (`FoighScenePlayer`); held, thrown or shoved (`FoighGripPlayer`) |
+| `FoighDagger.cs`, `.png` | his throwing knife (the picture is a stand-in: PlaceholderTextures.md) |
+| `FoighSwordThrown.cs` | his sword, thrown, and standing in the ground |
+| `FoighReturned.cs` | a shot of a player's on its way back to them |
+| `FoighCommand.cs` | `/foigh`, `/foigh gone`, mod root |
+
+He is **seven pictures, not a sheet**, each turned about its own joint: your head, torso,
+two arms, two legs and sword, used as they are. A movement is poses at moments; the fight
+says which movement and which tick; the drawing, the blade that hits and the trail behind
+it all ask the same sum. If a piece is exported again at another size, its numbers at the
+head of `FoighRig.cs` are what has to change (size, the joint on the picture, the limb's
+length).
+
+He does **nothing by touch** (damage 0). The sword, the knives and the hand are worked out
+on each machine against its own player. Because the game does not scale an NPC that does
+nothing by touch (`NPC.ScaleStats`, 1.4.4), his life is set in `SetDefaults` for the world
+as it is.
+
+## 5.2 Numbers
+
+| | Classic | Expert | Master | in Legends |
+|---|---|---|---|---|
+| life (**yours**) | 150,000 | 240,000 | 360,000 | x1.5: 225,000 / 360,000 / 540,000 |
+| the sword, over 66% of his life (**yours**) | 100 | 130 | 150 | x1.5: 150 / 195 / 225 |
+| the sword, from 66% down (**yours**) | 150 | 200 | 230 | x1.5: 225 / 300 / 345 |
+| the blow down in the third move (**yours**) | twice the sword | | | |
+| a knife; a shot sent back (**yours**) | 100 | 100 | 100 | 100 |
+
+All of it through armour (all of a player's defence ignored), varied as the game varies any
+hit. Defence 40 (mine). Not grown by how many are in the world. Stages by his life: over
+66%, to over 30%, from 30% down (**yours**); only the sword's damage follows them yet.
+
+How far a blow throws a player standing still (**measured**): a cut about 7 tiles, the
+thrust 13, the blow down 12, a knife 4, a swing of theirs met 10, the thrown sword 13, the
+fling off the sword 28.
+
+## 5.3 The road
+
+Await, Turn, Talk, Draw, Vow, Begin: six states before the fight, and nothing can land on
+him in any of them.
+
+1. He stands with his back to whoever has come, the sword in the ground beside him.
+2. On the player's machine the picture fades (30 ticks); under the black they are put down
+   28 tiles behind him, and it comes back up (36); they walk to **20 tiles** (**yours**) at
+   half a walk's pace, nothing in their hands and nothing able to touch them.
+3. The camera goes over to him (54 ticks). He looks back over his shoulder, and turns
+   round (112).
+4. Three lines (**yours**, word for word), each with the one answer "...".
+5. He takes the sword out of the ground behind him, swings it up over his head and lets it
+   down behind him, into the stance he fights from (108).
+6. The fourth line (**yours**), and "Ready".
+7. His name comes up under him ("Foigh", his title "The Swordsman" with it) and goes to
+   the bar; black; the camera back on the player; and he begins to walk, 3.5 s after Ready
+   (**measured**).
+
+The server waits for the player's three words (walked up, talked, ready) 25 s, 90 s and
+90 s, and then goes on by itself. If the player it is for dies or leaves on the road, he is
+gone. No music on the road; `MusicID.OtherworldlyBoss2` in the fight (`FightMusic`).
+
+`FirstPhaseLine` in `Foigh.Scene.cs` is the line your list asks for as the fight begins
+("Auto skip dialouge box"), in a box that goes by itself (`Dialogue.Aside`). It is empty:
+no words were given.
+
+## 5.4 Phase one
+
+**Walking** at them at 1.15 px a tick (a player walks at 3), the dull side of the sword
+dragged behind him, to rest about 54 px off. Between moves, 26 to 70 ticks of it. What he
+does next is by where they are (**measured**, 600 picks each):
+
+| where they are | what he picks, by weight |
+|---|---|
+| within 150 px, no more than 84 px over him or 70 under | one 3, three 3, two 2, four 2 |
+| more than 150 px over his head | knives 4, four 2.5, two 2 |
+| anywhere else | knives 5.5, behind 2.5, and two 2 within 30 tiles |
+
+The move he did last is a quarter as likely.
+
+| move | what | ticks |
+|---|---|---|
+| **one** | wound up over his head; the cut down (lands at 40), the cut up (58), turns to face them, the thrust with a lunge of about 74 px (lands about 89), and a leap back with the sword coming round after him, which cuts too | 150 |
+| **two** | down into his knees (18), a leap onto them, point first, aimed a third of the way ahead of where they are going (34 to 56 ticks in the air, up to 30 tiles). On them: 12 ticks, then 3 in 5 into the first move from its second cut, 2 in 5 into twice round. On nothing: the sword is in the ground **two seconds** (**yours**), and 34 ticks more to be back in his stance | |
+| **three** | the bottom hand: wound up and held, the blow down for **twice the sword** (**yours**; lands at 51); the whole of him round once with the sword out at arm's length (20; it cuts behind him and in front); a knife off the top hand | 138 |
+| **four** | a jump of ten tiles; the sword thrown at where they will be at 24 px a tick, wearing the yellow star: the sword's damage, and whoever it goes through is down for **a second** after they land (**yours**); it stands in the ground. He comes down, runs to it (8.6 px a tick), takes it, and goes round twice with it | about 160 |
+| **knives** | one (30 ticks, out of his hand at 13) or, 22 times in 100, three, **20 ticks apart** (**yours**; 70 ticks). 17.5 px a tick, level, gone at the first tile. After three, 40 times in 100, the leap | |
+| **behind** | a flash step to 58 px behind them (7 ticks, nothing can land on him); **half a second** with the blade low (**yours**); the cut up (lands at 31); a flash step back to where he stood | 52 and two steps |
+
+## 5.5 What he does about what is sent at him
+
+Only while he walks (**yours**: "while not attacking"). Decided on the machine of whoever
+shot or swung, rolled once for each shot a little before it gets to him.
+
+| | chance | what |
+|---|---|---|
+| a swing of theirs (an item swung; a spear, a whip, anything held out) | 3 in 5 (**yours**) | met: it does not land, and they are thrown back about ten tiles whatever shield they have (the yellow star) |
+| a hard shot (ranged or thrown, solid by the parry's count: an arrow, a dart, a knife, a bullet that stops at the first thing) | 2 in 5 (**yours**) | struck out of the air; half of those (**yours**) go back at whoever sent them for 100 through armour, broken on the first tile |
+| anything else thrown (a spell, a sword's light, a boomerang, fire, a rocket, a bullet that goes through things) | 3 in 5 (**yours**) | he is not there: a flash step to in front of them and into one or three, or up over it and down on them with the leap |
+| a minion, a sentry, and what those shoot | never | lands |
+
+**Measured** over 400 of each: bullets 178 struck and 85 sent back, arrows 154 and 71,
+throwing knives 167 and 100, a spell 239 stepped out of the way of, rockets 244, swings
+235 met.
+
+## 5.6 The one who drank
+
+A healing potion drunk within 100 tiles (known by the wait for the next one beginning). If
+he is walking, throwing a knife or at the tail of a move he comes at once; in the middle of
+something longer he keeps it in mind two seconds and no more.
+
+A flash step to beside them; the bottom hand to their throat (the yellow star; closes at
+tick 10); held there at arm's length (40; their feet a pixel or two off the ground: he is
+not much taller than they are); thrown up as the sword comes up (16); the sword up through
+them about six tiles over the ground, held (30); flung off it as a ragdoll, about 28 tiles,
+down a second after they land. One blow in it, as the sword goes through: the sword's
+damage, that nothing dodges and no earlier hit's grace stops.
+
+The hand can be got out of the way of: a run in good boots (7 px a tick) or a jump as he
+comes, and it closes on nothing and he is 40 ticks getting over it (**measured**). Walking
+away is not enough.
+
+## 5.7 Parried
+
+His cuts can be turned aside by the universal parry (`Parry.AddNPC`): the first move, the
+leap, the third move's blow and turn, twice round, the cut from behind. Not the thrown
+sword, not the hand. He reels 44 ticks; on every third he is down on a knee two seconds,
+open to the riposte (three times the blow). A knife and a shot sent back are broken by a
+parry.
+
+## 5.8 Not built
+
+- **Phases two and three.** Nothing happens at 66% or at 30% but the sword's damage.
+- **The ending.** A blow that would kill him leaves him on 1: a knee, a fade, gone, nothing
+  dropped, nothing said. The lore plan's choice (kill him as he asks, or spare him and be
+  given his sword) belongs here.
+- **What brings him to the hall.** `/foigh` only (RELEASE_TODO).
+- **The fight's first words** (§5.3).
+- A flag that he was beaten, a Boss Checklist entry (§2.5), a bestiary entry, a tip.
+- **Anything but flat ground.** He does not step up a block or walk a slope.
+- **Two machines.** Written for it, never run with two.

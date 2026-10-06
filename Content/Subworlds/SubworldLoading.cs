@@ -23,45 +23,66 @@ namespace PisAndDag.Content.Subworlds
     /// right, a title over a few lines, each ending at the same edge, with the key under
     /// them in the right corner.
     ///
-    /// THE PICTURE is two files beside this one. LoadingArt is the picture itself, of any
-    /// size (1920 by 1080 is the size it is mostly seen at), drawn to cover the window
-    /// whatever its shape, cut at the sides or the top and bottom rather than squeezed.
-    /// LoadingFrame goes over it, stretched to the window's own edges: clear in the
-    /// middle, black at the edges and blackest where the words and the bar are, and
-    /// grained, blotted and scratched as an old print is (PlaceholderTextures.md), so
-    /// any picture put under it gets the same edges with nothing else done. The frame is
-    /// stored premultiplied, as the game blends: tModLoader does not do that to a mod's
-    /// pictures, and one saved the plain way would have its pale marks come out white.
-    /// Either file gone, that layer is left out; both gone, the screen is the plain
-    /// black it was.
+    /// THE PICTURE is one of those in the folder beside this file, LoadingArts: every
+    /// picture in it (and in folders inside it), whatever it is called, so one is added by
+    /// putting it there and taken out by taking it away. Which is up is drawn by lot, any
+    /// of them but not the one that was up last, and drawn ahead: there is always one held
+    /// ready, loaded where the time it takes is no one's (as a world is entered, and at
+    /// each passage once the game has been set to its saving), so that the frame a door is
+    /// tried on has nothing to load. A picture may be any size (1920 by 1080 is the size it
+    /// is mostly seen at): it is drawn to cover the window whatever its shape, cut at the
+    /// sides or the top and bottom rather than squeezed. LoadingFrame, beside this file,
+    /// goes over it, stretched to the window's own edges: clear in the middle, black at the
+    /// edges and blackest where the words and the bar are, and grained, blotted and
+    /// scratched as an old print is (PlaceholderTextures.md), so any picture put under it
+    /// gets the same edges with nothing else done. The frame is stored premultiplied, as
+    /// the game blends: tModLoader does not do that to a mod's pictures, and one saved the
+    /// plain way would have its pale marks come out white. No picture in the folder, or no
+    /// frame, and that layer is left out; neither, and the screen is the plain black it was.
     ///
     /// THE TIPS are the hjson's (Mods.PisAndDag.Tips.List): every entry there with a Title
     /// and a Text is one, so a tip is added by writing it there and nowhere else. They are
     /// gone through in a shuffled order, each once before any comes round again. One time
-    /// in <see cref="GameTipOneIn"/> the tip is one of the game's own instead (the ones on
-    /// its own loading screen, found and worded exactly as it does: GameTipsDisplay), under
+    /// in <see cref="GameTipOneIn"/> the tip is one of the game's own instead (the ones its
+    /// own loading screen has, worded exactly as it words them: GameTipsDisplay), under
     /// one title for all of them (Tips.VanillaTitle). Two of the game's are left out, as
-    /// untrue with this mod in (<see cref="NotHere"/>).
+    /// untrue with this mod in (<see cref="NotHere"/>). Like the picture, they are found
+    /// ahead (as a world is entered, and as one is left), so that a door's own frame has
+    /// only to turn to one.
     ///
-    /// THE BAR is the game's own word on how far along it is. The game says what it is doing
-    /// in Main.statusText, and for the long steps says how far through, as a number and a
-    /// "%" that its code puts after the step's name (WorldFile.SaveWorldTiles,
-    /// LoadWorldTiles, ValidateWorld, LoadWorld; Liquid.UpdateProgressDisplay;
-    /// MapHelper.InternalSaveMap, LoadMapVersion2; WorldGen.playWorldCallBack). Each of
-    /// those steps has a stretch of the bar; the saving and the loading share the bar by
-    /// the sizes of the two worlds, so leaving a great world for a small place the bar is
-    /// nearly all saving, and the other way nearly all loading. What the game had said
-    /// last before the passage began is not listened to. The bar never goes back, and is
-    /// full when the player is put into the other world.
+    /// THE BAR goes by the clock, and is kept honest by the game's own word. A passage is
+    /// eleven steps the game takes in one order, six of leaving a world and five of
+    /// entering one, and it says which it is at in Main.statusText. Each step has a stretch
+    /// of the bar as long as the step is expected to take: what it took the last time this
+    /// same passage was made, and before there has been one, a reckoning from the two
+    /// worlds' sizes (<see cref="Reckon"/>). Within a step the bar goes by how long the
+    /// step has run against how long it was expected to: most of its stretch at the
+    /// clock's own pace and the rest slower and slower, so it is not at a step's end before
+    /// the game is. Seven of the steps the game also counts through, as a number and a "%"
+    /// after the step's name, and in six of those the bar goes no further than the count:
+    /// a step slower than was expected does not run ahead of itself (the seventh, the
+    /// settling of the liquids, is counted in a way that cannot be held to:
+    /// <see cref="HeldToCount"/>). The count alone is not gone by, for it is not the whole
+    /// of a step (reading a great world's tiles is a quarter of "Loading world data"; the
+    /// rest, under the same line at 100%, is tModLoader reading what mods keep), and four
+    /// of the steps have none, one of them among the longest (what mods keep in a world,
+    /// written; and tModLoader's backup of the player is as long again wherever the
+    /// passage has not left it out). The bar never goes back, and is full when the player
+    /// is put into the other world.
     ///
-    /// Nothing shows for the first quarter second, so a passage that short stays plain black.
-    /// Client-side, and drawn from the passage's own batch.
+    /// All of it is up from the frame the door is tried: it comes with the passage's black
+    /// and is as strong as the black is, so the world goes down into the picture and its
+    /// tip, with no plain black between. The bar is empty until the world is left, and the
+    /// key turns no tip until then. Client-side, and drawn from the passage's own batch.
     /// </summary>
     public static class SubworldLoading
     {
         /// <summary>What the passage is doing, as far as this is concerned.</summary>
         public enum Phase
         {
+            /// <summary>The door has been tried: the screen is on its way to black, and the world still runs under it.</summary>
+            Leaving,
+
             /// <summary>The game is saving the player and the world left.</summary>
             Saving,
 
@@ -79,6 +100,15 @@ namespace PisAndDag.Content.Subworlds
         private const string TextSuffix = ".Text";
         private const string NextKey = "Mods.PisAndDag.Tips.Next";
         private const string GameTitleKey = "Mods.PisAndDag.Tips.VanillaTitle";
+
+        /// <summary>
+        /// The names the game's own tips go by, as its loading screen asks for them
+        /// (GameTipsDisplay): those for anyone, and those for whoever plays with a keyboard
+        /// or with a gamepad.
+        /// </summary>
+        private const string GameTips = "LoadingTips_Default.";
+        private const string KeyboardTips = "LoadingTips_Keyboard.";
+        private const string GamepadTips = "LoadingTips_GamePad.";
 
         /// <summary>One tip in this many is one of the game's own.</summary>
         public const int GameTipOneIn = 5;
@@ -98,19 +128,33 @@ namespace PisAndDag.Content.Subworlds
 
         // ---- the picture -----------------------------------------------------------------------
 
-        private const string ArtPath = "Content/Subworlds/LoadingArt";
+        /// <summary>The folder the pictures are in, as the mod's own files have it, and the frame.</summary>
+        private const string ArtFolder = "Content/Subworlds/LoadingArts/";
         private const string FramePath = "Content/Subworlds/LoadingFrame";
 
+        /// <summary>
+        /// What a picture's file ends in inside a built mod: tModLoader turns every .png into
+        /// a .rawimg as it packs one (ContentConverters); the other is in case one was not.
+        /// </summary>
+        private static readonly string[] PictureEndings = { ".rawimg", ".png" };
+
+        /// <summary>Every picture in the folder, by the name the game is asked for it by, in a settled order.</summary>
+        private static readonly List<string> arts = new();
+
+        /// <summary>The one that is up for this passage.</summary>
         private static Asset<Texture2D> art;
+
+        /// <summary>The one held ready for the next door tried, loaded already (<see cref="HoldAPicture"/>): null if there is none to hold.</summary>
+        private static Asset<Texture2D> readied;
+
+        /// <summary>The name of the last one drawn by lot, so that the next is another.</summary>
+        private static string lastArt;
+
         private static Asset<Texture2D> edges;
 
         // ---- how it looks ----------------------------------------------------------------------
 
-        /// <summary>Seconds of plain black before any of it shows, and seconds it takes to come up.</summary>
-        private const float Wait = 0.25f;
-        private const float ComeUp = 0.3f;
-
-        /// <summary>Seconds a tip turned to takes to come up.</summary>
+        /// <summary>Seconds a tip turned to takes to come up. The first of a passage does not: it is up with the rest.</summary>
         private const float TipComeUp = 0.2f;
 
         /// <summary>How fast the bar closes on where it should be: this much of the way a second, near enough.</summary>
@@ -186,50 +230,88 @@ namespace PisAndDag.Content.Subworlds
         // ---- the bar ---------------------------------------------------------------------------
 
         /// <summary>
-        /// A step of the game's that says how far through it is: its name (Lang.gen), and the
-        /// stretch of its half of the bar that is its own.
+        /// The steps of a passage, in the order the game takes them. Leaving a world
+        /// (WorldGen.SaveAndQuitCallBack): the player's map of it is written; the player's
+        /// file is written, and the world's file goes into tModLoader's backup of the day
+        /// (Player.SavePlayerFile_Write, then WorldFile.InternalSaveWorld before it says
+        /// anything of its own; in any other saving the player's file and every map they
+        /// have go into a backup of the day first, which a passage leaves out:
+        /// SubworldPassage); the world is written, and what was written is checked; the
+        /// game's own backups of the world are moved along; and what mods keep in a world
+        /// is written (WorldIO.Save). Entering one (WorldGen.playWorldCallBack): the world
+        /// before is cleared out (WorldGen.clearWorld), the tiles are read, the liquids
+        /// settled, the player's map read, and the map drawn.
         /// </summary>
-        private readonly struct Step
-        {
-            public readonly int Label;
-            public readonly float From;
-            public readonly float To;
+        internal const int MapSaved = 0;
+        internal const int PlayerKept = 1;
+        internal const int WorldSaved = 2;
+        internal const int SaveChecked = 3;
+        internal const int WorldKept = 4;
+        internal const int ModsSaved = 5;
+        internal const int Cleared = 6;
+        internal const int WorldRead = 7;
+        internal const int Settled = 8;
+        internal const int MapRead = 9;
+        internal const int MapDrawn = 10;
+        internal const int StepCount = 11;
 
-            public Step(int label, float from, float to)
-            {
-                Label = label;
-                From = from;
-                To = to;
-            }
-        }
+        /// <summary>
+        /// What the game writes in Main.statusText at each step: one of its own lines
+        /// (Lang.gen, by number) or, for the two steps that are tModLoader's, one of its (by
+        /// key). After seven of them it puts how far through the step it is, a space, a
+        /// number and a "%" (MapHelper.InternalSaveMap, WorldFile.SaveWorldTiles,
+        /// ValidateWorld, LoadWorldTiles, Liquid.UpdateProgressDisplay and WorldFile.LoadWorld,
+        /// MapHelper.LoadMapVersion2, WorldGen.playWorldCallBack).
+        /// </summary>
+        private static readonly int[] GameLine = { 66, -1, 49, 73, 50, -1, 65, 51, 27, 67, 68 };
 
-        /// <summary>Saving: the map (66), the world's tiles (49), the check of what was written (73).</summary>
-        private static readonly Step[] SavingSteps =
+        private static readonly string[] LoaderLine =
         {
-            new Step(66, 0.00f, 0.12f),
-            new Step(49, 0.12f, 0.62f),
-            new Step(73, 0.62f, 0.97f),
+            null, "tModLoader.BackingUpPlayerFile", null, null, null, "tModLoader.SavingModdedWorldData", null, null, null, null, null,
         };
 
         /// <summary>
-        /// Loading: the tiles (51), the liquids settling (27), the map read (67) and drawn
-        /// (68). The settling is two counts under one name: the game's quick pass over the
-        /// rows runs it to 50 (Liquid.QuickWater, asked for with 2), and settling whatever
-        /// still moves takes it from 50 to 100 (WorldFile.LoadWorld), so in a world with
-        /// nothing left to settle it stops at half.
+        /// Whether the bar is held to the game's count of a step. Not to the settling's: its
+        /// number is two counts under one name, the game's quick pass over the rows running
+        /// it to 50 and the settling of whatever still moves taking it on to 100, so in a
+        /// world with nothing left to settle it stands at half while the step runs on.
         /// </summary>
-        private static readonly Step[] LoadingSteps =
-        {
-            new Step(51, 0.03f, 0.55f),
-            new Step(27, 0.55f, 0.72f),
-            new Step(67, 0.72f, 0.84f),
-            new Step(68, 0.84f, 1.00f),
-        };
+        internal static bool HeldToCount(int of) => of != Settled;
 
-        /// <summary>The saving's share of the bar is never less than this, nor more than one less this.</summary>
-        private const float LeastShare = 0.08f;
+        /// <summary>
+        /// How much of a step's stretch goes by at the clock's own pace; the rest is closed
+        /// on slower and slower (<see cref="Creep"/>).
+        /// </summary>
+        internal const float EvenShare = 0.8f;
 
-        private static float saveShare = 0.5f;
+        /// <summary>
+        /// How long each step of this passage is expected to take, in seconds; the sum of
+        /// those before each; and the sum of all.
+        /// </summary>
+        private static readonly float[] expected = new float[StepCount];
+        private static readonly float[] before = new float[StepCount];
+        private static float whole;
+
+        /// <summary>What each step of this passage did take, as far as it has got.</summary>
+        private static readonly float[] took = new float[StepCount];
+
+        /// <summary>The step the game is at (-1 until it has said anything), and when it got there, by the passage's clock.</summary>
+        private static int step = -1;
+        private static double stepBegan;
+
+        /// <summary>The player is in the other world, and what this passage took has been kept.</summary>
+        private static bool over;
+
+        /// <summary>Runs from the moment the world is left.</summary>
+        private static readonly System.Diagnostics.Stopwatch clock = new();
+
+        /// <summary>
+        /// What each step took the last time a passage was made between worlds of these two
+        /// sizes (tiles left, tiles entered), this game. That is what the next one like it
+        /// is expected to take: the same machine, the same player and worlds as big.
+        /// </summary>
+        private static readonly Dictionary<(long, long), float[]> lastTime = new();
+        private static (long, long) sizes;
 
         /// <summary>Where the bar should be, 0 to 1: only ever raised.</summary>
         private static float toward;
@@ -237,12 +319,8 @@ namespace PisAndDag.Content.Subworlds
         /// <summary>Where it is drawn: closing on that.</summary>
         private static float bar;
 
-        /// <summary>
-        /// The game's status text as it stood when the passage began: the last word of
-        /// whatever the game did before (an autosave, the passage in), and nothing to do with
-        /// this one. Not read until the game writes another, which is always a new string.
-        /// </summary>
-        private static string leftOver;
+        /// <summary>Seconds the picture for the passage after the last took to load, once the world had been left: for client.log.</summary>
+        internal static double PictureTook { get; private set; }
 
         // ---- the tip ---------------------------------------------------------------------------
 
@@ -256,23 +334,209 @@ namespace PisAndDag.Content.Subworlds
         private static readonly List<LocalizedText> games = new();
         private static string lastGame;
 
+        /// <summary>The tips have been found since the mod was loaded (<see cref="Gather"/>).</summary>
+        private static bool gathered;
+
+        /// <summary>One of the game's tips has been worded since the mod was loaded (<see cref="WorldEntered"/>).</summary>
+        private static bool worded;
+
         /// <summary>The tip that is up, worded and ready.</summary>
         private static string title = "";
         private static string text = "";
 
+        /// <summary>Seconds the tip that is up has been up.</summary>
         private static float tipAge;
-        private static float waited;
+
+        /// <summary>How much of it all shows, 0 to 1.</summary>
         private static float shown;
+
         private static bool keyWas;
 
         /// <summary>Something here threw: none of it is drawn again until the mod is loaded again. The passage goes on, plain black.</summary>
         private static bool broken;
 
-        /// <summary>The two files of the picture are asked for, if they are there. Client only.</summary>
+        /// <summary>
+        /// The pictures in the folder are found, by name only: none is loaded for being
+        /// found (the first is when a world is entered: <see cref="WorldEntered"/>). The
+        /// frame is asked for, if it is there. Client only.
+        /// </summary>
         internal static void Load(Mod mod)
         {
-            art = Ask(mod, ArtPath);
+            arts.Clear();
+            arts.AddRange(Pictures(mod.GetFileNames(), mod.Name));
+            art = null;
+            readied = null;
+            lastArt = null;
             edges = Ask(mod, FramePath);
+        }
+
+        /// <summary>
+        /// The pictures among a mod's files (Mod.GetFileNames: every file packed into it, by
+        /// its path with forward slashes): each one in the folder, or in a folder inside it,
+        /// as the name the game knows it by, which is the mod's name, a slash, and the path
+        /// with no ending. Sorted, so the order does not hang on how the mod was packed.
+        /// </summary>
+        internal static List<string> Pictures(IEnumerable<string> files, string modName)
+        {
+            var found = new List<string>();
+
+            if (files == null)
+                return found;
+
+            foreach (string file in files)
+            {
+                if (string.IsNullOrEmpty(file))
+                    continue;
+
+                string path = file.Replace('\\', '/');
+
+                if (!path.StartsWith(ArtFolder, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                foreach (string ending in PictureEndings)
+                {
+                    // Something must be left for a name once the folder and the ending are off.
+                    if (path.Length <= ArtFolder.Length + ending.Length || !path.EndsWith(ending, StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    string name = modName + "/" + path.Substring(0, path.Length - ending.Length);
+
+                    if (!found.Contains(name))
+                        found.Add(name);
+
+                    break;
+                }
+            }
+
+            found.Sort(StringComparer.Ordinal);
+            return found;
+        }
+
+        /// <summary>
+        /// One of the pictures, by lot: any of them, but not the one that was up last if there
+        /// is another. Null if there is none.
+        /// </summary>
+        internal static string Choose()
+        {
+            if (arts.Count == 0)
+                return null;
+
+            int at = dice.Next(arts.Count);
+
+            if (arts.Count > 1 && arts[at] == lastArt)
+                at = (at + 1 + dice.Next(arts.Count - 1)) % arts.Count;
+
+            lastArt = arts[at];
+            return lastArt;
+        }
+
+        /// <summary>
+        /// Draws the next passage's picture by lot and loads it, here and now, to be held
+        /// until a door is tried. The loading is a wait (the file is read, and a picture as
+        /// big as the screen handed to the graphics card), so this is called only where a
+        /// wait is not seen. One that will not load is struck off, with a line in
+        /// client.log, and another is drawn, until one loads or there is none left: then no
+        /// picture is held, and the rest of the screen is not touched by it.
+        /// </summary>
+        private static void HoldAPicture()
+        {
+            readied = null;
+
+            // The one that is up, or was up last: not that one again, whatever is struck off meanwhile.
+            string up = lastArt;
+
+            // Every turn of this either ends it or strikes one off: never more turns than there are pictures.
+            for (int left = arts.Count; left > 0; left--)
+            {
+                string name = Choose();
+
+                if (name == null)
+                    return;
+
+                try
+                {
+                    readied = ModContent.Request<Texture2D>(name, AssetRequestMode.ImmediateLoad);
+                    return;
+                }
+                catch (Exception e)
+                {
+                    readied = null;
+                    arts.Remove(name);
+                    lastArt = up;
+
+                    try
+                    {
+                        ModContent.GetInstance<SubworldPassage>()?.Mod?.Logger?.Warn("Subworlds: the loading picture " + name + " would not load and is left out until the mod is loaded again.", e);
+                    }
+                    catch (Exception)
+                    {
+                        // Nothing to say it with.
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// A world has been entered. What the first door tried in it will want is made ready
+        /// now, so that the door's own frame has nothing to find, load or run for the first
+        /// time: the tips are found, and a picture is loaded and held if none is held
+        /// already. The wait is beside a longer one of the game's own: on the same call,
+        /// just before, tModLoader has every thread stand while it collects all garbage
+        /// (Player.Hooks.EnterWorld: Interface.ResetData).
+        /// </summary>
+        internal static void WorldEntered()
+        {
+            if (broken)
+                return;
+
+            try
+            {
+                Gather();
+
+                // The first wording of one of the game's own tips is slow, some thousandths
+                // of a second: its code is the game's, and is compiled as it first runs. It
+                // is run once here, for nothing, so that the first run is not on a door's frame.
+                if (!worded && games.Count > 0)
+                {
+                    worded = true;
+                    Worded(games[0]);
+                }
+
+                if (readied == null)
+                    HoldAPicture();
+            }
+            catch (Exception e)
+            {
+                Break(e);
+            }
+        }
+
+        /// <summary>
+        /// The world has been left, and the picture that was held is on the screen: another
+        /// is loaded and held for the passage after this one. The game's saving is on a
+        /// thread of its own by now, and this one has nothing to do meanwhile but draw what
+        /// is up already. (Nothing of the game's is touched here but the mod's own
+        /// pictures: the saving thread is at work on the rest.)
+        /// </summary>
+        internal static void WorldLeft()
+        {
+            PictureTook = 0.0;
+
+            if (broken)
+                return;
+
+            try
+            {
+                double from = clock.Elapsed.TotalSeconds;
+
+                HoldAPicture();
+
+                PictureTook = clock.Elapsed.TotalSeconds - from;
+            }
+            catch (Exception e)
+            {
+                Break(e);
+            }
         }
 
         private static Asset<Texture2D> Ask(Mod mod, string path)
@@ -284,11 +548,19 @@ namespace PisAndDag.Content.Subworlds
 
         internal static void Unload()
         {
+            arts.Clear();
             art = null;
+            readied = null;
+            lastArt = null;
             edges = null;
-            leftOver = null;
+            lastTime.Clear();
+            clock.Reset();
+            step = -1;
+            over = false;
             own.Clear();
             games.Clear();
+            gathered = false;
+            worded = false;
             ownAt = 0;
             lastGame = null;
             title = "";
@@ -301,32 +573,82 @@ namespace PisAndDag.Content.Subworlds
         // ============================================================
 
         /// <summary>
-        /// The world is about to be left. <paramref name="leaving"/> and
-        /// <paramref name="entering"/> are the two worlds' sizes in tiles, for sharing the bar
-        /// out; 0 for one not known.
+        /// A door has been tried. The picture held ready is this passage's, and a tip is
+        /// turned to: both are up from this frame on, coming with the black. Nothing is
+        /// found or loaded here. A world entered has left a picture held and the tips found
+        /// (<see cref="WorldEntered"/>), and so has a world left, for the passage after it
+        /// (<see cref="Begin"/>, <see cref="WorldLeft"/>); only if either is wanting is it
+        /// seen to now.
         /// </summary>
-        internal static void Begin(long leaving, long entering)
+        internal static void Open()
         {
             toward = 0f;
             bar = 0f;
-            waited = 0f;
             shown = 0f;
-            leftOver = Main.statusText;
+            art = null;
 
             // A key already down is not a press.
             keyWas = true;
-
-            saveShare = leaving > 0 && entering > 0
-                ? MathHelper.Clamp(leaving / (float)(leaving + entering), LeastShare, 1f - LeastShare)
-                : 0.5f;
 
             if (broken)
                 return;
 
             try
             {
-                Gather();
+                if (readied == null)
+                    HoldAPicture();
+
+                // It stays the one held until the world is left (WorldLeft): a passage let
+                // go of before that has not used it up.
+                art = readied;
+
+                if (!gathered)
+                    Gather();
+
                 Turn();
+
+                // The first tip is not behind the rest: it is up with it.
+                tipAge = TipComeUp;
+            }
+            catch (Exception e)
+            {
+                Break(e);
+            }
+        }
+
+        /// <summary>
+        /// The world is about to be left: the bar begins. <paramref name="leaving"/> and
+        /// <paramref name="entering"/> are the two worlds' sizes in tiles, for sharing the bar
+        /// out; 0 for one not known. <paramref name="backedUp"/> is whether tModLoader's
+        /// backup of the player is in the saving, as it is in any other, or left out of it
+        /// (SubworldPassage): its step is reckoned by that. The tips are found afresh here,
+        /// for the turning of them during this passage and for the passage after it: the
+        /// screen is at black, and the saving, which is another thread at work among the
+        /// game's things, has not begun.
+        /// </summary>
+        internal static void Begin(long leaving, long entering, bool backedUp)
+        {
+            toward = 0f;
+            bar = 0f;
+
+            // A key already down is not a press.
+            keyWas = true;
+
+            Expect(leaving, entering, backedUp);
+            clock.Restart();
+
+            if (broken)
+                return;
+
+            // Whatever the game said last before this (an autosave's last line, the passage
+            // in) is wiped, so that any line read from here on is this passage's own. It
+            // cannot be told by looking: the lines the game gives no number with are one
+            // string each, said again and again, and a new one is the old one.
+            Main.statusText = string.Empty;
+
+            try
+            {
+                Gather();
             }
             catch (Exception e)
             {
@@ -349,17 +671,39 @@ namespace PisAndDag.Content.Subworlds
         // ============================================================
 
         /// <summary>
-        /// Finds the tips: the mod's in the hjson, the game's as the game finds them. The
-        /// mod's are kept in the order they were being gone through unless the list itself
-        /// has changed (another language, a reload).
+        /// Finds the tips: the mod's in the hjson, and the game's, the ones its own loading
+        /// screen finds. The mod's are kept in the order they were being gone through unless
+        /// the list itself has changed (another language, a reload). Done where the wait is
+        /// not seen, and so not on the frame a door is tried: as a world is entered, and as
+        /// one is left for a passage, which finds what the passage after it will use.
+        /// Neither is a time when the game's saving is at work on another thread.
         /// </summary>
         private static void Gather()
         {
+            string theirs = PlayerInput.UsingGamepad ? GamepadTips : KeyboardTips;
             var found = new List<string>();
 
-            foreach (LocalizedText entry in Language.FindAll((key, _) => key.StartsWith(ListPrefix, StringComparison.Ordinal) && key.EndsWith(TitleSuffix, StringComparison.Ordinal)))
+            games.Clear();
+
+            // One asking for all of it: each asking is the game going over every word it has
+            // (LanguageManager.FindAll). And each name is tested by its letters alone. The
+            // game's own filter for its tips (Lang.CreateDialogFilter) tests as the machine's
+            // language has words compared, which outside English costs many times as much,
+            // and for these names comes to the same.
+            foreach (LocalizedText entry in Language.FindAll((key, _) =>
+                OwnTitle(key) || key.StartsWith(GameTips, StringComparison.Ordinal) || key.StartsWith(theirs, StringComparison.Ordinal)))
             {
-                string id = entry.Key.Substring(0, entry.Key.Length - TitleSuffix.Length);
+                string key = entry.Key;
+
+                if (!OwnTitle(key))
+                {
+                    if (!NotHere.Contains(key))
+                        games.Add(entry);
+
+                    continue;
+                }
+
+                string id = key.Substring(0, key.Length - TitleSuffix.Length);
 
                 // A title with nothing under it is not a tip.
                 if (Language.Exists(id + TextSuffix) && !string.IsNullOrWhiteSpace(entry.Value))
@@ -376,18 +720,13 @@ namespace PisAndDag.Content.Subworlds
                 ownAt = 0;
             }
 
-            games.Clear();
-            AddGameTips("LoadingTips_Default.");
-            AddGameTips(PlayerInput.UsingGamepad ? "LoadingTips_GamePad." : "LoadingTips_Keyboard.");
+            gathered = true;
         }
 
-        private static void AddGameTips(string prefix)
+        /// <summary>The name of a tip of the mod's own: its title.</summary>
+        private static bool OwnTitle(string key)
         {
-            foreach (LocalizedText tip in Language.FindAll(Lang.CreateDialogFilter(prefix)))
-            {
-                if (!NotHere.Contains(tip.Key))
-                    games.Add(tip);
-            }
+            return key.StartsWith(ListPrefix, StringComparison.Ordinal) && key.EndsWith(TitleSuffix, StringComparison.Ordinal);
         }
 
         /// <summary>The same tips, whatever the order.</summary>
@@ -478,35 +817,111 @@ namespace PisAndDag.Content.Subworlds
         // ============================================================
 
         /// <summary>
-        /// How far through its half the game says it is, from its status text: the step it
-        /// names and the number after the name. False if it names none of the steps known
-        /// here, or gives no number: the bar then stays where it is.
+        /// How long each step of a passage between worlds of these sizes is taken to last,
+        /// in seconds, before one has been made: so many seconds a million tiles of the
+        /// world left, or of the world entered. Measured, not worked out: the times
+        /// tModLoader's own log gives for ten passages between a world of 37.8 million tiles
+        /// and the hall, on one machine, with one player (5 October 2026; the workflow notes
+        /// have the table). The player's step is two things under one line. One is
+        /// tModLoader's backup of the player, which is that player's: as long as the maps
+        /// they have, whatever the world, 3.9 seconds of the step there. It is in the step
+        /// only if <paramref name="backedUp"/>; a passage leaves it out (SubworldPassage),
+        /// and what is left then, besides the writing of the player's file (put at a
+        /// twentieth of a second: no log has that apart from the backup), is the other
+        /// thing, tModLoader's backup of the world left, which goes by the world's size.
+        /// Only the first passage each way in a game goes by any of this; after it, what
+        /// that one took is used (<see cref="lastTime"/>).
         /// </summary>
-        internal static bool Read(string status, bool loading, out float through)
+        internal static float[] Reckon(long leaving, long entering, bool backedUp)
         {
-            through = 0f;
+            float left = Math.Max(0L, leaving) / 1000000f;
+            float entered = Math.Max(0L, entering) / 1000000f;
 
-            if (string.IsNullOrEmpty(status))
-                return false;
+            var seconds = new float[StepCount];
 
-            foreach (Step step in loading ? LoadingSteps : SavingSteps)
+            seconds[MapSaved] = 0.128f * left;
+            seconds[PlayerKept] = (backedUp ? 3.9f : 0.05f) + 0.016f * left;
+            seconds[WorldSaved] = 0.0183f * left;
+            seconds[SaveChecked] = 0.0066f * left;
+            seconds[WorldKept] = 0.0026f * left;
+            seconds[ModsSaved] = 0.0968f * left;
+
+            // The clearing is of the map of the world left, and then of the tile grid, which is as big as it ever was.
+            seconds[Cleared] = 0.08f + 0.0055f * left;
+            seconds[WorldRead] = 0.047f * entered;
+            seconds[Settled] = 0.021f * entered;
+            seconds[MapRead] = 0.053f * entered;
+            seconds[MapDrawn] = 0.035f;
+
+            return seconds;
+        }
+
+        /// <summary>The stretches of the bar for a passage between worlds of these sizes: as the last one like it went, or as reckoned.</summary>
+        private static void Expect(long leaving, long entering, bool backedUp)
+        {
+            sizes = (leaving, entering);
+
+            float[] from = lastTime.TryGetValue(sizes, out float[] last) ? last : Reckon(leaving, entering, backedUp);
+
+            whole = 0f;
+
+            for (int i = 0; i < StepCount; i++)
             {
-                if (step.Label >= Lang.gen.Length)
-                    continue;
-
-                string label = Lang.gen[step.Label].Value;
-
-                if (string.IsNullOrEmpty(label) || !status.StartsWith(label, StringComparison.Ordinal))
-                    continue;
-
-                if (!Percent(status, label.Length, out int percent))
-                    return false;
-
-                through = MathHelper.Lerp(step.From, step.To, MathHelper.Clamp(percent / 100f, 0f, 1f));
-                return true;
+                expected[i] = Math.Max(0f, from[i]);
+                before[i] = whole;
+                whole += expected[i];
+                took[i] = 0f;
             }
 
-            return false;
+            step = -1;
+            stepBegan = 0.0;
+            over = false;
+        }
+
+        /// <summary>The line the game writes for a step, in the language it is in now. Null if it has none.</summary>
+        private static string Line(int of)
+        {
+            // A key tModLoader does not have comes back as the key, which the game never
+            // writes: the step is then never seen, and its time goes to the one before.
+            if (LoaderLine[of] != null)
+                return Language.GetTextValue(LoaderLine[of]);
+
+            int line = GameLine[of];
+
+            return line >= 0 && line < Lang.gen.Length ? Lang.gen[line]?.Value : null;
+        }
+
+        /// <summary>
+        /// Which step the game's status text names: -1 if none known here.
+        /// <paramref name="through"/> is how far through it the game says it is, 0 to 1, from
+        /// the number after the name: -1 if it gives none.
+        /// </summary>
+        internal static int Read(string status, out float through)
+        {
+            through = -1f;
+
+            if (string.IsNullOrEmpty(status))
+                return -1;
+
+            int named = -1;
+            int length = 0;
+
+            // The longest line it begins with, in case one step's line begins another's in some language.
+            for (int i = 0; i < StepCount; i++)
+            {
+                string line = Line(i);
+
+                if (!string.IsNullOrEmpty(line) && line.Length > length && status.StartsWith(line, StringComparison.Ordinal))
+                {
+                    named = i;
+                    length = line.Length;
+                }
+            }
+
+            if (named >= 0 && Percent(status, length, out int percent))
+                through = MathHelper.Clamp(percent / 100f, 0f, 1f);
+
+            return named;
         }
 
         /// <summary>The whole number the game put after a step's name, before its "%".</summary>
@@ -531,36 +946,70 @@ namespace PisAndDag.Content.Subworlds
             return digits > 0 && at < status.Length && status[at] == '%';
         }
 
-        /// <summary>Raises where the bar should be by what the game says now, and moves the drawn bar toward it.</summary>
-        private static void Follow(Phase phase, float seconds)
+        /// <summary>
+        /// How far through a step is taken to be, 0 to 1, by how long it has run and how long
+        /// it was expected to: <see cref="EvenShare"/> of the way as the clock goes, and from
+        /// there closing on the end at a pace that falls away, so that a step running long
+        /// still moves and one running short has little left to make up. Never 1: only the
+        /// game's going on to the next step ends one.
+        /// </summary>
+        internal static float Creep(float run, float expect)
         {
-            string said = Main.statusText;
+            if (expect <= 0f || run <= 0f)
+                return 0f;
 
-            if (ReferenceEquals(said, leftOver))
-                said = null;
-            else
-                leftOver = null;
+            float through = run / expect;
 
-            switch (phase)
+            if (through <= EvenShare)
+                return through;
+
+            float rest = 1f - EvenShare;
+
+            return Math.Min(0.9999f, EvenShare + rest * (1f - (float)Math.Exp(-(through - EvenShare) / rest)));
+        }
+
+        /// <summary>
+        /// Raises where the bar should be by the step the game is at now and how far through
+        /// it, and moves the drawn bar toward that. <paramref name="now"/> is the passage's
+        /// clock, in seconds.
+        /// </summary>
+        private static void Follow(Phase phase, float seconds, double now)
+        {
+            // Before the world is left the game has said nothing of this passage, and its clock has not been started.
+            if (phase == Phase.Leaving)
+                return;
+
+            if (phase == Phase.Arrived)
             {
-                case Phase.Saving:
-                    if (Read(said, false, out float saved))
-                        toward = Math.Max(toward, saved * saveShare);
+                Keep(now);
+                toward = 1f;
+            }
+            else
+            {
+                int said = Read(Main.statusText, out float through);
 
-                    break;
+                // The game has gone on to a later step: the one it was at took this long. A
+                // line for an earlier step (a place being made says the saving's over again,
+                // between the saving and the loading) is this step still.
+                if (said > step)
+                {
+                    if (step >= 0)
+                        took[step] = (float)(now - stepBegan);
 
-                case Phase.Loading:
-                    // The saving is done, whatever was last heard of it.
-                    toward = Math.Max(toward, saveShare);
+                    step = said;
+                    stepBegan = now;
+                }
 
-                    if (Read(said, true, out float loaded))
-                        toward = Math.Max(toward, saveShare + loaded * (1f - saveShare));
+                if (step >= 0 && whole > 0f)
+                {
+                    // By the clock; and where the game is counting this step, no further than its count.
+                    float within = Creep((float)(now - stepBegan), expected[step]);
 
-                    break;
+                    if (said == step && through >= 0f && HeldToCount(step))
+                        within = Math.Min(within, through);
 
-                default:
-                    toward = 1f;
-                    break;
+                    toward = Math.Max(toward, Math.Min(1f, (before[step] + expected[step] * within) / whole));
+                }
             }
 
             bar += (toward - bar) * (1f - (float)Math.Exp(-seconds * BarRate));
@@ -569,15 +1018,49 @@ namespace PisAndDag.Content.Subworlds
                 bar = toward;
         }
 
+        /// <summary>
+        /// The player has been put into the other world. What the passage took is kept here
+        /// and now, and not left to the next frame drawn: with Frame Skip on, the game runs
+        /// the updates a long frame has put it behind by before it draws again (FNA's
+        /// Game.Tick), and the ticks this is still on the screen for (the passage's
+        /// settling) can be gone by then.
+        /// </summary>
+        internal static void Arrive()
+        {
+            if (clock.IsRunning)
+                Keep(clock.Elapsed.TotalSeconds);
+        }
+
+        /// <summary>
+        /// The passage is over: the last step's time is known, and what every step took is
+        /// kept for the next passage between worlds of these sizes. Not if the game was never
+        /// heard (nothing was drawn while it worked): that would be a row of noughts.
+        /// </summary>
+        private static void Keep(double now)
+        {
+            if (over)
+                return;
+
+            over = true;
+
+            if (step < 0)
+                return;
+
+            took[step] = (float)(now - stepBegan);
+            lastTime[sizes] = (float[])took.Clone();
+        }
+
         // ============================================================
         // EVERY FRAME
         // ============================================================
 
         /// <summary>
-        /// Once a frame while the passage is at black, inside the passage's own batch (raw
-        /// window pixels). <paramref name="fade"/> is how much of it is left on the way out
-        /// (<see cref="Phase.Arrived"/>): 1 to 0. <paramref name="seconds"/> is the frame's
-        /// length.
+        /// Once a frame while any of the passage's black is up, inside the passage's own
+        /// batch (raw window pixels). <paramref name="fade"/> is how much of all this is to
+        /// show, 0 to 1: on the way to black (<see cref="Phase.Leaving"/>) as much as the
+        /// black itself, and on the way out (<see cref="Phase.Arrived"/>) what is left of
+        /// it; between the two it is all up, whatever is given. <paramref name="seconds"/>
+        /// is the frame's length.
         /// </summary>
         internal static void Draw(SpriteBatch spriteBatch, Viewport window, Phase phase, float fade, float seconds)
         {
@@ -588,25 +1071,34 @@ namespace PisAndDag.Content.Subworlds
             {
                 seconds = MathHelper.Clamp(seconds, 0f, 0.1f);
 
-                Follow(phase, seconds);
-
-                if (phase == Phase.Arrived)
+                if (phase == Phase.Leaving)
                 {
-                    shown = Math.Min(shown, MathHelper.Clamp(fade, 0f, 1f));
+                    // The world is not left yet, and still runs: there is nothing for the
+                    // bar to go by, and the keys are the world's.
+                    shown = MathHelper.Clamp(fade, 0f, 1f);
                 }
                 else
                 {
-                    waited += seconds;
+                    // The steps are timed by a clock of their own: a frame's length as the game
+                    // gives it is never more than half a second, however long the wait was, and
+                    // with Frame Skip on it is so many updates' worth (FNA's Game.Tick).
+                    Follow(phase, seconds, clock.Elapsed.TotalSeconds);
 
-                    if (waited >= Wait)
-                        shown = Math.Min(1f, shown + seconds / ComeUp);
+                    if (phase == Phase.Arrived)
+                    {
+                        shown = Math.Min(shown, MathHelper.Clamp(fade, 0f, 1f));
+                    }
+                    else
+                    {
+                        shown = 1f;
 
-                    bool down = Main.hasFocus && Keyboard.GetState().IsKeyDown(NextTip);
+                        bool down = Main.hasFocus && Keyboard.GetState().IsKeyDown(NextTip);
 
-                    if (down && !keyWas && shown > 0f)
-                        Turn();
+                        if (down && !keyWas)
+                            Turn();
 
-                    keyWas = down;
+                        keyWas = down;
+                    }
                 }
 
                 if (shown <= 0f)

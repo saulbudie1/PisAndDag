@@ -106,8 +106,9 @@ namespace PisAndDag.Content.Combat
         /// Parts of vanilla's bosses that are not bosses by their own flags, are not giants by
         /// their size and can be hurt: their hands, their arms, their segments, what is
         /// mounted on them or grows out of them, what they call up that is no small thing.
-        /// The Golem's fists are here by the rules; in the game the mod speaks for those two
-        /// itself (GolemFistParry), and it is asked before the rules are.
+        /// The Golem's fists and Skeletron's hand are here by the rules; in the game the mod
+        /// speaks for those itself (GolemFistParry, SkeletronHandParry), and it is asked
+        /// before the rules are.
         /// </summary>
         private static readonly HashSet<int> BossLimbs = new()
         {
@@ -238,6 +239,14 @@ namespace PisAndDag.Content.Combat
         }
 
         private static bool Bossy(NPC npc) => npc.boss || NPCID.Sets.ShouldBeCountedAsBoss[npc.type];
+
+        /// <summary>
+        /// A boss or a part of one, whatever else is true of it: by its own flags, by the list
+        /// above, or by being one of the many parts of something that is (NPC.realLife). For
+        /// what asks only that (the Meat Hook, which drags its wielder to these and never
+        /// these to its wielder).
+        /// </summary>
+        public static bool BossOrPart(NPC npc) => Bossy(npc) || BossLimbs.Contains(npc.type) || PartOfBoss(npc);
 
         /// <summary>One of the many parts of something that is a boss (NPC.realLife: the part whose life is the life of all of them).</summary>
         private static bool PartOfBoss(NPC npc)

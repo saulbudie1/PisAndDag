@@ -55,6 +55,10 @@ namespace PisAndDag.Content.UI
     /// already up, and OfferCorners(left, right) puts two in the panel's two bottom
     /// corners, for a fork rather than a list.
     ///
+    /// And a speaker can say something that stops nothing (Aside): the panel comes up
+    /// with the line and no answers, holds nobody, takes no click, and goes down by itself
+    /// a little after the line has all arrived. For something said in the middle of a fight.
+    ///
     /// Whoever speaks is named on a tab over the panel's top edge: "???" until they
     /// have said their name, then their name and title (DialoguePortrait.Name).
     /// </summary>
@@ -249,6 +253,16 @@ namespace PisAndDag.Content.UI
         /// <summary>Answers an opener asked to be shown instead of the registered ones.</summary>
         private static List<TalkOption> pendingScene;
 
+        /// <summary>
+        /// The line up is an aside: nothing to answer, nobody held, no way out because none is
+        /// needed. It goes by itself this many ticks after it has all arrived.
+        /// </summary>
+        private static bool aside;
+        private static int asideLinger;
+
+        /// <summary>The update the aside's line had all arrived on; none yet at 0.</summary>
+        private static uint asideDoneAt;
+
         public static bool Open => npcIndex >= 0;
 
         /// <summary>Read by DialogueLock, which is what actually holds the player.</summary>
@@ -338,6 +352,7 @@ namespace PisAndDag.Content.UI
             replaced = null;
             locked = false;
             corners = false;
+            aside = false;
             pendingScene = null;
             hovered = -1;
             letters = speaker.LettersPerTick;
@@ -376,6 +391,7 @@ namespace PisAndDag.Content.UI
                 locked = false;
 
             corners = false;
+            aside = false;
             replaced = new List<TalkOption>(followUps);
             SetLine(text);
         }
@@ -395,6 +411,7 @@ namespace PisAndDag.Content.UI
 
             locked = true;
             corners = false;
+            aside = false;
             replaced = new List<TalkOption>(answers);
             SetLine(text);
         }
@@ -422,6 +439,7 @@ namespace PisAndDag.Content.UI
             letters = lettersPerTick;
             locked = true;
             corners = false;
+            aside = false;
             replaced = new List<TalkOption>(answers);
 
             SetLine(text);
@@ -434,6 +452,43 @@ namespace PisAndDag.Content.UI
             }
         }
 
+        /// <summary>How long an aside stays up once all of it has arrived, when whoever says it does not say: two seconds.</summary>
+        public const int AsideLinger = 120;
+
+        /// <summary>
+        /// This speaker says this, and nothing stops for it: the panel comes up with the line
+        /// and no answers, the player is not held and can do anything, a click on it does
+        /// nothing, and it goes down by itself <paramref name="linger"/> ticks after the line
+        /// has all arrived. Not over a scene: a line that holds the player is not replaced by
+        /// one that does not. The speaker need not be registered.
+        /// </summary>
+        public static void Aside(NPC npc, string text, float lettersPerTick, int linger = AsideLinger)
+        {
+            if (npc == null || !npc.active || string.IsNullOrEmpty(text) || Locked)
+                return;
+
+            bool already = Open;
+
+            npcIndex = npc.whoAmI;
+            npcType = npc.type;
+            faceIndex = npc.whoAmI;
+            faceType = npc.type;
+            pendingScene = null;
+            hovered = -1;
+            letters = lettersPerTick;
+            locked = false;
+            corners = false;
+            aside = true;
+            asideLinger = Math.Max(1, linger);
+            asideDoneAt = 0;
+            replaced = new List<TalkOption>();
+
+            SetLine(text);
+
+            if (!already)
+                lineStart += FadeTicks;
+        }
+
         /// <summary>The speaker says this and there is nothing to answer. The player stays held.</summary>
         public static void Line(string text)
         {
@@ -442,6 +497,7 @@ namespace PisAndDag.Content.UI
 
             locked = true;
             corners = false;
+            aside = false;
             replaced = new List<TalkOption>();
             SetLine(text);
         }
@@ -457,6 +513,7 @@ namespace PisAndDag.Content.UI
 
             locked = true;
             corners = false;
+            aside = false;
             replaced = new List<TalkOption>(answers);
         }
 
@@ -471,6 +528,7 @@ namespace PisAndDag.Content.UI
 
             locked = true;
             corners = true;
+            aside = false;
             replaced = new List<TalkOption> { left, right };
         }
 
@@ -512,6 +570,7 @@ namespace PisAndDag.Content.UI
             replaced = null;
             locked = false;
             corners = false;
+            aside = false;
         }
 
         /// <summary>Lets the player go without ending the conversation.</summary>
@@ -528,6 +587,7 @@ namespace PisAndDag.Content.UI
             pendingScene = null;
             locked = false;
             corners = false;
+            aside = false;
             offered.Clear();
             hovered = -1;
         }
@@ -626,8 +686,8 @@ namespace PisAndDag.Content.UI
                 }
             }
 
-            // A scene has no way out but through.
-            if (!locked)
+            // A scene has no way out but through; an aside needs none.
+            if (!locked && !aside)
                 offered.Add(Leave);
 
             return offered;
@@ -745,11 +805,14 @@ namespace PisAndDag.Content.UI
 
                 // Walking away and the inventory end an ordinary conversation. They do
                 // not end a scene: the player cannot walk, and the scene is the content.
-                if (!locked)
+                // Nor an aside, which is said to someone in the middle of something else.
+                if (!locked && !aside)
                     gone |= Main.playerInventory || Vector2.Distance(player.Center, npc.Center) > LeaveRange;
 
                 if (gone)
                     Close();
+                else if (aside)
+                    TickAside();
             }
 
             fade = MathHelper.Clamp(fade + (Open ? 1f : -1f) / FadeTicks, 0f, 1f);
@@ -768,6 +831,19 @@ namespace PisAndDag.Content.UI
             }
 
             DrawPanel(spriteBatch, player, Main.npc[npcIndex]);
+        }
+
+        /// <summary>An aside goes down by itself, silently, a little after all of its line has arrived.</summary>
+        private static void TickAside()
+        {
+            if (Arrived() < wrapped.Length)
+                return;
+
+            if (asideDoneAt == 0)
+                asideDoneAt = Math.Max(1u, Main.GameUpdateCount);
+
+            if (Main.GameUpdateCount - asideDoneAt >= (uint)asideLinger)
+                Close(silent: true);
         }
 
         private static void DrawPanel(SpriteBatch spriteBatch, Player player, NPC npc)
@@ -799,8 +875,9 @@ namespace PisAndDag.Content.UI
             Rectangle box = new Rectangle(x, y, PanelWidth, height);
 
             // Over the panel the cursor is ours, and a click while the line is still
-            // arriving brings the rest of it at once.
-            if (box.Contains(Main.mouseX, Main.mouseY) && PADMouse.Steering)
+            // arriving brings the rest of it at once. Not over an aside: the player is in
+            // the middle of something, and the panel takes nothing from them.
+            if (!aside && box.Contains(Main.mouseX, Main.mouseY) && PADMouse.Steering)
             {
                 player.mouseInterface = true;
 

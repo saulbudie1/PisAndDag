@@ -5987,3 +5987,2075 @@ window shapes; the bar's pace through a real save and load, map and all; E turni
 (E is also the grapple: held when the black lifts, it throws a hook); the frame over a real
 picture, and whether the words read on it; the hall's silence; how the deeper ground looks
 with only its top lit.
+
+---
+
+## 16.37 Later in session 7: the loading screen's pictures are a folder now, one drawn by lot each passage; three stand-ins put in it
+
+The user first asked what size the picture should be (answered: 1920 by 1080, 16 by 9,
+opaque; any size is drawn to cover the window), and then, with the four-view preview of the
+frame attached:
+
+> ok create the 3 loading arts into the Subworlds\LoadingArts (rainbow, flame in fog and blank), then make it so that these are randomized within the folder for every time it loads art.
+
+**What was on the device already.** The user had made `Content/Subworlds/LoadingArts`
+themselves and put their own work in it: `LoadingArt.png` (1920 by 1080: a purple ground
+with guide lines), `LoadingArt_EpicClash.png` (1960 by 1080: a line sketch on grey) and two
+Aseprite sources (`LoadingArt_EpicClash.aseprite`, `LoadingArt_DameQuilt.aseprite`). None of
+it was touched. They had also rewritten the tips in the hjson in their own words and added
+two (24 now: `ShimmerLock` and `PugreamCoconut` are new): theirs, kept as they are. The
+table of tips in §16.36 is of my first wording and no longer what the hjson says.
+
+**The three pictures**, new, in that folder, named after the user's own
+(`LoadingArt_[Name].png`), each 1920 by 1080 and opaque, each exactly what the previews of
+the frame were shown over:
+
+- `LoadingArt_Rainbow.png`: plain colour, red rising and blue falling from left to right,
+  green rising from top to bottom.
+- `LoadingArt_FlameInFog.png`: the stand-in picture of §16.36, smoke in sepia with a low
+  fire in it and a dark line of ground.
+- `LoadingArt_Blank.png`: plain parchment colour (214, 198, 170), nothing on it. **Mine:**
+  "blank" is read as the plain parchment the frame was first shown over, not the black of
+  no picture at all.
+
+All three are made from numbers by scripts of mine (`work/sw/art/loading/arts.py` and
+`gen.py`, in the session's workspace, not in the mod); nothing is sampled from any picture.
+They are stand-ins (`PlaceholderTextures.md`).
+
+**The lot** (`SubworldLoading`). The single file `Content/Subworlds/LoadingArt.png` is no
+longer looked for. When the mod loads, every picture under `Content/Subworlds/LoadingArts`
+is found by name (`Pictures`, from `Mod.GetFileNames`): anything in the folder, or in a
+folder inside it, that is a picture, whatever it is called. Nothing is loaded then. When a
+passage begins (`Begin`, on the frame the world is left, the screen already black) one is
+drawn by lot (`Choose`): any of them, but not the one that was up last if there is another;
+and it is loaded there and then (`TakeAPicture`), so it is up from the first frame the
+loading screen shows. One that will not load is struck off until the mod is loaded again,
+with a line in client.log, and that passage has no picture; the tip and the bar are not
+touched by it. A picture is added by putting it in the folder and taken out by taking it
+away: there is no list anywhere. **Mine:** not the same one twice running; folders inside
+the folder count; and every picture there is in the lot, the user's own two unfinished ones
+as well, "within the folder" being the instruction: five in all now.
+
+**Read from the 1.4.4 assembly.**
+
+- `Mod.GetFileNames` is the mod file's own list of names (`TmodFile.GetFileNames`; null if
+  the mod has no file), each a path from the mod's folder with forward slashes
+  (`TmodFile.Sanitize`, on the way in).
+- Packing a mod (`ModCompile.AddResource`): a file's name is its path from the mod's folder;
+  every `.png` but `icon.png` is turned into a `.rawimg`, its name with it
+  (`ContentConverters.Convert`), and stays a `.png` only if the game could not read it.
+- Which of a mod's files are assets: those whose ending has a reader (`TModContentSource`,
+  by `AssetReaderCollection.TryGetReader`). An `.aseprite` has none, so one beside a `.png`
+  of the same name is no clash ("Multiple extensions for asset" is said only of files that
+  are assets: `ContentSource.SetAssetNames`). It is packed into the mod all the same:
+  nothing in `build.txt` leaves it out.
+- An asset's name is its path with no ending, kept with backslashes inside
+  (`AssetPathHelper.CleanPath`); `ModContent.Request` takes the mod's name, a slash and the
+  path, with either slash, and throws if there is no such mod.
+
+**How it was checked.** Nothing was run in the game. The rig: 348 checks, all passing. New
+in it: a mod file made in memory with the folder as it is on the user's machine plus the
+three (named as tModLoader packs them), given to the mod, and the loading screen's own
+`Load` finding exactly the five pictures, in order, and none of the `.aseprite` files, the
+frame or any other picture; the finding by itself against names it should take (either
+slash, either case, either ending, a folder inside, the same picture under both endings
+once) and should not (a folder whose name only begins the same, a file with no name, a text
+file, a sound, nothing at all); 30000 draws, never the same twice running and each of the
+five a fifth of the time to within one in a hundred; one picture, and none; five pictures
+that will not load (none can there) struck off one a passage, with the tip still up and
+nothing marked broken. The rig's checks of the tips now take the hjson as the user has it:
+24, each with a title and a text; how they are worded is no longer checked. The three
+pictures were measured (1920 by 1080, opaque, their corners' colours) and looked at; the
+flame is the stand-in of §16.36 byte for byte. The loading of a picture by the game, and its
+drawing, were read and not run. The whole mod compiles against the real 1.4.4 assemblies:
+0 errors, 10 warnings. The review was my own.
+
+**Changed.** `Content/Subworlds/SubworldLoading.cs`. New:
+`Content/Subworlds/LoadingArts/LoadingArt_Rainbow.png`, `LoadingArt_FlameInFog.png`,
+`LoadingArt_Blank.png`.
+
+**Not yet confirmed in game:** all of it. What only the game can show: that another
+picture is up each time; that the first showing of each brings no hitch that can be seen
+(it is loaded on the frame the world is left); the user's `LoadingArt_EpicClash.png`, which
+is 1960 wide and so has 20 pixels off each side in a 16 by 9 window.
+
+---
+
+## 16.38 Later in session 7: the hall's ground forty deep, the hall 320 high
+
+The user:
+
+> raise the ground to 40, and raise the world height to 320
+
+**What changed** (`EmptyHall`). `FloorThick` 40, was 26; `Height` 320, was 250; `Layout` 3,
+was 2. Nothing else: the door, the spawn and the ground are all counted from those.
+**Mine:** "raise the ground to 40" is read as forty rows deep, as "26 gray bricks deep" was.
+
+- 400 by 320 tiles, of which the game lets 317 by 237 be seen and walked: columns 41 to
+  357, rows 41 to 277.
+- The ground is rows 238 to 277, all 400 columns: 16000 bricks. The door's top left tile is
+  (41, 235); whoever dies there comes back at (44, 238).
+- The new number is a new file, `EmptyHall.3.wld`, so every world's hall is laid out afresh
+  the next time its door is used. `EmptyHall.2.wld` (and `EmptyHall.wld`, where there was
+  one) are left where they lie, unread.
+
+**Where the game's own lines fall in a place this high** (read from the 1.4.4 assembly, the
+numbers worked out from it):
+
+- The surface line is 35 rows up from the bottom edge (`SubworldKeeper.Make`): row 285,
+  still under everything that can be seen, so all of it is lit as open air. The rock line is
+  row 292.
+- The Underworld, to the game, is everything from 200 rows up from the bottom edge
+  (`Main.UnderworldLayer`): row 120 down. At 250 high that was row 50 and so all that could
+  be seen; now the top 79 rows that can be seen are over it. Nothing in the mod leaned on
+  all of a place being under that line: the ground and whoever stands on it still are, and
+  what `SubworldScene` turns off is turned off wherever it would apply. Three of its notes
+  said "all" and now say "most or all".
+- Gravity thins where a player's top is over row 60 + a sixth of the surface line
+  (`Player.Update`): about row 108 here, some 130 rows over the ground (it was about 86).
+  The sky is at its full colour while the middle of the screen is under row 65 + a fifth of
+  the surface line (`Main.UpdateAtmosphereTransparencyToSkyColor`): row 122. Standing on the
+  ground it is at about row 237.
+- A world's sections are counted rounding up: 2 by 3 now.
+- The bottom-of-the-world achievement's line (`Player.BordersMovement`) is row 268 for a
+  player's top; on the ground it is at about row 235.
+- With 40 rows of ground under them and the world's bottom edge further off, a player on
+  the ground is no longer held above the middle of the screen by that edge in a window 1080
+  high at no zoom: they stand at the middle of it, with the ground filling the screen under
+  them (32 of its 40 rows show). In a taller window the edge holds the camera again and all
+  40 show.
+
+**How it was checked.** Nothing was run in the game. The rig: 349 checks, all passing, in a
+hall of the new size: the game making, saving and loading a world 400 by 320 (edges at 6400
+and 5120, 2 by 3 sections, surface 285, rock 292, spawn 44, 238); every tile of it (16000
+bricks in rows 238 to 277, the door in rows 235 to 237, nothing else); the passage there and
+back through the game's own save and world entry, from the small world and the Grand one;
+the rules, the light (open air lit down to the ground, none of the Underworld's red under
+the surface line), the edges (a player kept to row 277), the scene and its music; the file
+named `EmptyHall.3.wld`, with `EmptyHall.wld` and `EmptyHall.2.wld` put beside it and left
+as they were. The rig's own numbers for the hall are said once now (`HallIs`, in its
+`Hall.cs`) and every row it uses is counted from them, so the next change of size is one
+edit there. The whole mod compiles against the real 1.4.4 assemblies: 0 errors, 10 warnings.
+The review was my own.
+
+**Changed.** `Content/Subworlds/EmptyHall.cs`; `Content/Subworlds/SubworldScene.cs` (its
+notes only).
+
+**Not yet confirmed in game:** all of it. What only the game can show: how forty rows of
+ground look with only the top few lit, and where the player sits on the screen at the user's
+own window size and zoom.
+
+---
+
+## 16.39 Later in session 7: why the door's loading lagged; the bar goes by the clock; the map's render targets let go of on the main thread; a line in the log for every passage
+
+The user:
+
+> the loading of the loading screen is a bit laggy rn do you know why?
+
+**What was looked at.** client.log as it stood, the game still running (5 October):
+tModLoader writes a line there, with the time, whenever the game's status text changes, so
+every step of ten passages between the Grand world "The Run of Bladders" (12600 by 3000,
+37.8 million tiles) and the hall is timed in it. And the 1.4.4 assembly, for what each step
+is. Nothing was run in the game.
+
+**tModLoader had been updated under these notes.** The assembly staged for reading on
+17 September was no longer the one the game runs: the install was updated on 1 October
+(2026.08.3.0, commit c9545cf; 21,883,392 bytes where the staged one was 21,875,712).
+`tModLoader.dll`, `TerrariaHooks.dll`, `ReLogic.dll` and `FNA.dll` were staged afresh. The
+mod compiles against them as before (0 errors, the same 10 warnings, which are the 10 the
+user's own build wrote to the log), and the rig's 349 checks passed against them before
+anything was touched. Everything below is read from the current ones. **At the start of a
+session, compare the install's `tModLoader.dll` (size, date) with the staged copy.**
+
+**Where the time goes** (seconds: each step from its line in the log to the next line).
+
+| | whole | map written | player kept | world written | checked | world kept | mods' data | cleared | tiles read | liquids | map read | map drawn |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| out, the hall made | 16.54 | 4.76 | 6.37 | 0.81 | 0.27 | 0.12 | 3.88 | 0.28 | 0.01 | 0.01 | 0.00 | 0.00 |
+| out | 14.34 | 4.71 | 4.41 | 0.67 | 0.26 | 0.11 | 3.78 | 0.32 | 0.01 | 0.00 | 0.01 | 0.04 |
+| out | 14.33 | 4.75 | 4.44 | 0.71 | 0.26 | 0.10 | 3.71 | 0.30 | 0.01 | 0.03 | 0.01 | 0.03 |
+| out | 14.28 | 4.73 | 4.58 | 0.65 | 0.24 | 0.10 | 3.63 | 0.29 | 0.02 | 0.00 | 0.01 | 0.04 |
+| out | 14.82 | 5.25 | 5.04 | 0.61 | 0.23 | 0.07 | 3.30 | 0.27 | 0.02 | 0.00 | 0.00 | 0.03 |
+| back | 9.54 | 0.01 | 3.81 | 0.01 | 0.00 | 0.00 | 0.02 | 0.10 | 2.12 | 0.89 | 2.50 | 0.08 |
+| back | 9.68 | 0.01 | 3.82 | 0.01 | 0.00 | 0.00 | 0.02 | 0.10 | 2.18 | 0.90 | 2.60 | 0.03 |
+| back | 6.86 | 0.01 | 3.91 | 0.02 | 0.00 | 0.00 | 0.04 | 0.06 | 1.16 | 0.52 | 1.11 | 0.03 |
+| back | 6.88 | 0.01 | 3.88 | 0.01 | 0.00 | 0.00 | 0.03 | 0.10 | 1.24 | 0.50 | 1.07 | 0.03 |
+| back | 10.44 | 0.01 | 4.14 | 0.02 | 0.00 | 0.00 | 0.03 | 0.10 | 2.18 | 1.17 | 2.76 | 0.03 |
+
+("out" is the Grand world left for the hall, "back" the hall left for it. The first passage
+out made the hall, whose own saving is under "cleared" and "mods' data" there. An eleventh
+passage, out, was in the log by the time this was written: 14.60 s, of which 5.16, 4.91,
+0.64, 0.22, 0.13, 3.19 and 0.29 for the first seven steps.)
+
+- All of it is the game's own Save and Exit and its own world entry, which is what a door's
+  passage is (§16.35). None of it is the mod's: its hooks on a world's saving and unloading
+  set flags and clear lists, and what it keeps in a world is a few tags (the world's `.twld`
+  is 191 KB, all mods' data together).
+- **"player kept"** is tModLoader's line "Backing up player file". Under it tModLoader
+  deletes the day's backup of the player and writes it again: a zip, at the highest
+  compression there is (level 9), of the player's file and **every file in the player's
+  folder, which is their map of every world they have been in**
+  (`Player.SavePlayerFile_Write`; `BackupIO.Player.ArchivePlayer`, `WriteLocalFiles`,
+  `AddZipEntry`; `BackupIO.RunArchiving`, `DeleteOldArchives`). Then the player's file is
+  copied to `.bak` and written. It does this every time the player is saved: every passage,
+  both ways, and every autosave. Still under that line, the world's save begins by doing the
+  same for the world: the day's zip of its `.wld` and `.twld`
+  (`WorldFile.InternalSaveWorld`, `BackupIO.World.ArchiveWorld`); and leaving the Grand
+  world (22 MB) does take 0.5 to 0.9 s longer under that line than leaving the hall. About
+  3.8 s of it is this player's own, whatever world is left. How the 3.8 s is shared between
+  the zip and the writes the log does not say; the writes are of the player's two small
+  files.
+- **"mods' data"** is tModLoader's "Saving modded world data" (`WorldIO.Save`), 3.3 to
+  3.9 s leaving the Grand world (it runs on to the next world's first line, through every
+  mod's unloading). It is as long for a Grand world with nothing of a mod's in it: the
+  rig's has none, and took 2.8 to 4.5 s for it on the session's machine, 1.1 to 1.8 of that
+  tModLoader's pass over every tile for mods' tiles and walls (`TileIO.SaveBasics`). It
+  goes by the world's size, not by what this mod keeps. (The log's autosaves cannot be read
+  for it: an autosave is two saves at once on two threads, the player's with its map and
+  the world's, `WorldGen.saveToonWhilePlaying` and `saveAndPlay`, and their lines are
+  shuffled together.)
+- **"map written"**, 4.7 s, is the game's own (`MapHelper.InternalSaveMap`): every tile of
+  the player's map of the world.
+
+**Why the bar lagged.** It had a stretch for each step the game counts through and none for
+the rest (§16.36: "the bar's pace is guessed"), and two of the rest are among the longest.
+So on the way out it stood still for as long as "player kept" lasted (4.4 to 6.4 s) and
+again for "mods' data" (3.3 to 3.9 s), with nearly four fifths of itself run through in the
+second between them; and on the way back it stood at nothing for the 3.8 to 4.1 s of
+"player kept", the saving having eight hundredths of the bar by the two worlds' sizes
+though it is two fifths of that passage or more. And where the game does count, the count
+is not the step: measured in the rig (below), "Loading world data" is at 100% a quarter of
+the way through itself.
+
+**A fault of mine, found in the same log.** Every entry to the hall from the Grand world
+wrote `[PisAndDag] ERROR: Extra Large world size: could not grow the world arrays.` with
+`ThreadStateException: most FNA3D audio/graphics functions must be called on the main
+thread`, from `ExtraLargeWorld.FitMapTargets`: it disposed of the map's render targets
+there and then, on whatever thread was clearing the world, which in a passage (and whenever
+a world is picked from the game's list) is the thread loading it. Nothing was lost by it in
+these passages: the exception was caught, the world loaded, and the grid stayed the Grand
+world's 8 by 3, which serves the hall as well. But the same would have happened going from
+a smaller world to a Grand one in one sitting, once the smaller one's map had been drawn:
+the grid would not have grown, and `Main.DrawToMap` walks seven columns of it in a Grand
+world. Not seen; fixed with the rest.
+
+**What changed.**
+
+1. **The bar** (`SubworldLoading`) goes by the clock, kept honest by the game's own word.
+   - A passage is eleven steps the game takes in one order (the table's columns): six of
+     leaving a world, five of entering one. It says which it is at in `Main.statusText`:
+     nine of the lines are the game's (`Lang.gen` 66, 49, 73, 50, 65, 51, 27, 67, 68) and
+     two tModLoader's (`tModLoader.BackingUpPlayerFile`,
+     `tModLoader.SavingModdedWorldData`). A line for a later step ends the step the game
+     was at; one for an earlier step is the same step still (a hall being made says the
+     saving's lines over again, between the saving and the loading); anything else is not
+     listened to.
+   - Each step has a stretch of the bar as long as it is expected to take: **what it took
+     the last time a passage was made between worlds of these two sizes**, this game
+     (`lastTime`, kept at the arrival), and before there has been one, a reckoning from the
+     sizes (`Reckon`): the table above turned into seconds a million tiles, with the
+     player's backup as this player's 3.9 s. **Mine:** the last one only, not an average:
+     on the log's ten passages an average did no better, and the last one is the one made
+     in the same state of the machine.
+   - Within a step the bar goes by how long the step has run against how long it was
+     expected to (`Creep`): four fifths of its stretch at the clock's own pace, the rest
+     slower and slower, never the whole of it until the game goes on. So a step that runs
+     over still moves for a while, and one that runs short leaves little to make up.
+   - Where the game counts a step, the bar goes no further than the count, so a step
+     slower than was expected does not run ahead of itself. Not for the settling of the
+     liquids, whose number is two counts under one name and stands at 50 in a world with
+     nothing left to settle (`HeldToCount`).
+   - The status text is wiped when a passage begins (`Begin`). Before, what the game had
+     said last was told from what it said next by its being another string; but the lines
+     with no number are one string each, said again and again, and those are now listened
+     to.
+   - The steps are timed by a stopwatch of the loading screen's own. A frame's length as
+     the game hands it to a draw is never more than half a second and, with Frame Skip on,
+     is a count of updates (FNA's `Game.Tick`).
+2. **The map's render targets** (`ExtraLargeWorld`). A grid with a map in it is now only
+   ever made bigger, never smaller (`FitMapTargets`, `Holds`): going into the hall it is
+   left as it is, the Grand world's fourteen targets in it, and it is there for the way
+   back. That is what has in fact happened in every passage so far, by the fault: the
+   refit threw before it had changed anything. Now it is what is meant, and nothing is
+   thrown or written. An empty grid is still fitted exactly (`MapGrid`: the old sum by
+   itself). When a grid does have to grow under a map (a smaller world and then a Grand
+   one in one sitting), it is made the new size there and then, on whatever thread, and
+   the old one's targets are handed to the main thread to dispose of (`LetGo`:
+   `Main.QueueMainThreadAction`, which `Main.Update` runs at the end of every update), or
+   disposed of at once if this is the main thread (`Program.IsMainThread`). One that will
+   not go does not keep the rest. They are not carried over into the bigger grid: the last
+   column and the last row of a grid are made short (`Main.checkMap`), and would be short
+   in the wrong place. **Mine:** kept rather than freed. The fourteen are about 200 MB of
+   video memory (2000 by 1800 each), held in the hall as they always have been; fitting
+   the hall's grid exactly would free them and make them again on every way back, which
+   has never once run in the game.
+3. **A line in client.log for every passage** (`SubworldPassage.Tell`, `Account`), written
+   when the world is back up:
+   `Subworlds: through the door to PisAndDag/EmptyHall in 14.86 s. Frames drawn, the
+   longest wait for one, and the garbage collector's share of the time: going to black, 27
+   in 0.45 s, 17 ms, 0 ms; saving, 836 in 13.94 s, 21 ms, 35 ms; loading, 23 in 0.39 s,
+   18 ms, 2 ms; coming back up, 44 in 0.75 s, 19 ms, 0 ms. The frame the world was left on
+   spent 48 ms leaving it, 39 ms of that loading the picture.`
+   (those numbers are made up, to show its shape). For each stage: the frames drawn in it,
+   the seconds they took, the longest wait for one, and how long the garbage collector held
+   every thread meanwhile (the runtime's own count, `GC.GetTotalPauseDuration`).
+   tModLoader's log already has when each step began; nothing in it said what the screen
+   did meanwhile. **Mine, not asked for:** it is there so that the next "it lags" can be
+   read and not guessed at. The picture is still loaded on the frame the world is left
+   (§16.37); what that costs is in the line now.
+
+**Measured in the rig for this** (the session's machine, 2 processors; a Grand world filled
+under its surface with tiles changing every few rows, walls and pockets of water; a 37 MB
+file). How far through its own time each counted step is when its count is at its end:
+
+| step | its time | count at its end after | then, with nothing said |
+|---|---|---|---|
+| Saving world data | 0.57 to 1.22 s | 0.84 to 0.91 of it | 0.06 to 0.11 s |
+| Validating world save | 0.19 to 0.25 s | 0.99 | 0.00 s |
+| Loading world data | 2.00 to 2.52 s | **0.18 to 0.25** | **1.61 to 2.00 s** |
+| Settling liquids | 1.19 to 1.63 s | 0.87 to 0.92 (at 99) | 0.10 to 0.19 s |
+
+The world's writing, its checking and its reading count evenly with the clock through
+their counted part (a quarter of the count at about a quarter of that part, and so on). The
+liquids' count runs behind the clock and makes the last of it up at once: half at 0.54 to
+0.60 of the step, three quarters and nine tenths together at 0.79 to 0.85. What follows
+"Loading world data: 100%" is tModLoader reading what mods keep (`WorldIO.Load`: 1602 ms
+run by itself against the 1612 ms of that run's tail; `WorldFile.LoadWorld` calls it after
+the game's own reading, before the liquids). The player's map could not be run there as a
+client runs it: its three steps were read, not measured (`InternalSaveMap` writes
+tModLoader's own map file after its count, `WorldMap.Load` reads it after its count).
+
+**The garbage collector, in the rig.** A forced, full collection with the filled Grand
+world loaded (a heap of 1.2 GB) took 59 to 70 ms there. And the game's saving of a Grand
+world makes the collector stop every thread by itself: in the rig's real passages out of
+its Grand world the longest wait for a frame while saving was 22 and 27 ms in two runs and
+95, 225 and 245 ms in three others, and in the run where it was counted the collector had
+held every thread for 224 ms of that stage's 3.3 s (all but a millisecond of its longest
+wait, 225 ms). Saving the filled Grand world eight times over with a loop turning every
+millisecond beside it, as a draw would: the longest wait was 7 to 13 ms in five of them and
+34, 64 and 223 ms in three, each the collector's own (its count: 5, 63 and 222 ms). With
+the runtime asked to put its full collections off meanwhile
+(`GCSettings.LatencyMode = SustainedLowLatency`), eight more: 8 to 14 ms in all of them.
+What it is in the game, on the user's machine, is what the line is for.
+
+**Read from the 1.4.4 assembly** (the current one).
+
+- `WorldGen.SaveAndQuitCallBack`: `Player.SavePlayer`, `Player.ClearPlayerTempInfo`,
+  `Rain.ClearRain`, `WorldFile.SaveWorld`, `SystemLoader.OnWorldUnload`, then what it was
+  handed to do. `Player.SavePlayer`: the achievements, the map (`InternalSaveMap`, "Saving
+  map data"), then `InternalSavePlayerFile` (mods' hooks, the player written to memory,
+  `SavePlayerFile_Write`).
+- `BackupIO.AddZipEntry` sets `CompressionMethod` 8 (Deflate) and `CompressionLevel` 9 for
+  every entry; a folder is added whole (`Directory.GetFiles`, `ZipFile.AddFiles`).
+  `RunArchiving` deletes today's archive if there is one, prunes older ones, and writes a
+  new `yyyy-MM-dd-[name].zip`. `BackupIO.archiveLock`, when set, makes the world's save
+  skip its archive (the game's own world making sets it); nothing skips the player's.
+- `WorldFile.InternalSaveWorld`: the world's archive; the world written to memory
+  (`SaveWorld_Version2`, "Saving world data"); written to disk and read back;
+  `ValidateWorld` ("Validating world save"); `DoRollingBackups` ("Backing up world file",
+  `Lang.gen[50]`, no number); `WorldIO.Save` ("Saving modded world data", no number).
+- `WorldGen.clearWorld` writes `Lang.gen[65]` ("Clearing map data:") with no number, once
+  for every column of the world before, and only if a map was up (`Main.mapReady`): which
+  is why the log has it in a passage and not at the first load from the menu.
+- `Main.statusText` is a property: its setter logs the line, numbers stripped, if it
+  differs from the last one logged and is not empty (`Logging.LogStatusChange`), and keeps
+  the string. So the log has each step once, when it begins. `Language.GetTextValue` and
+  `LocalizedText.Value` hand back the same string each time.
+- `WorldGen.playWorldCallBack` logs "Loading World" first, loads the world, the map
+  (`Main.Map.Load`, "Loading map data"), waits for the main thread to draw it ("Drawing
+  map"), sets `Main.gameMenu` false, and hands `FinishPlayWorld` to the main thread
+  (`Main.QueueMainThreadAction`): the player's spawning and `OnEnterWorld`, so the mod's
+  arrival, are on the main thread, inside `Main.Update`.
+- tModLoader's FNA: `FNA3D_AddDisposeTexture` (and so `RenderTarget2D.Dispose`) calls
+  `ThreadCheck.CheckThread`, which throws off the main thread; the texture is not marked
+  disposed when it does. `GraphicsResource`'s finaliser is empty: a texture dropped without
+  being disposed of is never freed. `Terraria.Program.IsMainThread` is the game's own word
+  for the main thread.
+- The map's render targets are made one at a time when first wanted (`Main.checkMap`, from
+  `DrawToMap` and `DrawToMap_Section`, which the main thread's draw calls) and never
+  disposed of by the game. `DrawToMap` wants every one from column 0 to
+  `maxTilesX / textureMaxWidth` and row 0 to `maxTilesY / textureMaxHeight`, inclusive:
+  fourteen in a Grand world, one in the hall; with `Main.clearMap` set (as `clearWorld`
+  sets it) it clears those and no others. `DrawMap` walks every column of the grid, up to
+  `mapTargetX - 1`, and leaves out any whose tiles begin past the part of the world on
+  show (the game's own grid is five columns for a small world that fills three, so a grid
+  wider than the world, with targets or none past its edge, is nothing new to it). Nothing
+  but those and `Main`'s own constructor reads the grid.
+- FNA's `Game.Tick`: the time waited is cut off at 500 ms (`MaxElapsedTime`); with a fixed
+  step it runs as many updates as that holds and tells the draw their count times a
+  sixtieth, with a free step it runs one and tells the draw the time. `Main.DoUpdate` sets
+  a fixed step only with Frame Skip on (or the window not the active one); with it off or
+  subtle there is at most one update a frame.
+- **tModLoader forces a full garbage collection on the main thread every time a world is
+  entered:** `Player.Hooks.EnterWorld` (from `Player.Spawn`, which `FinishPlayWorld` runs)
+  calls `Interface.ResetData`, which calls
+  `GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced)`, just before mods are told of the
+  arrival (`PlayerLoader.OnEnterWorld`). In a passage that is the frame the player is put
+  down on the other side, the loading screen still up and nothing on it moving but the
+  bar's last closing. tModLoader.dll calls `GC.Collect` nowhere else on the path of a save
+  or a load (its other three calls are for running out of memory, unloading mods and the
+  camera's snapshots).
+
+**How it was checked.** Nothing was run in the game. The rig, built against the current
+assembly: 413 checks, all passing. New in it:
+- the bar's own code given four of the log's passages again, at sixty frames a second and
+  by a clock of the test's, each counted step counted to its end over the share of its time
+  measured above. The 14.34 s passage out, stretches reckoned: the bar never stood more
+  than 0.15 s and kept within 0.02 of an even pace; the same again by what that one took:
+  0.17 s, 0.03. The first of the day (16.54 s, the backup two seconds over and the hall
+  made) by what a 14.34 s one took: 0.95 s, 0.07. A 9.68 s passage back, reckoned: 0.22 s,
+  0.06; a 6.86 s one by what the 9.68 s one took: 0.13 s, 0.24. Never back, never ahead
+  of where it was bound, full at the arrival, in all five. ("Stood" is the longest time in
+  which it moved less than a two-hundredth of its length.)
+- each of the eleven lines read, bare and with a number; the reckoning against the log
+  (14.38 s out, 8.62 s back); the creep; a step never said stepped over; an earlier step's
+  line, another mod's line and no line at all; the count holding the bar back, and not for
+  the liquids; the wipe, with the very string the game uses; what a passage took kept at
+  the arrival, once, and not for a passage that said nothing; forgotten at unload.
+- the same code run every frame of four real passages there (the game's own saving and
+  loading of the rig's Grand world and its hall): the steps came in the bar's order
+  (player kept, world written, checked, mods' data, tiles read, liquids), the bar never
+  went back, what each step took was kept, and the second passage out went by the first.
+  In two real passages the game wrote nothing in its status text that is not one of the
+  eleven lines.
+- the map's grid, with stand-ins for render targets that only say when and on which thread
+  they were disposed of: the mod's own hook on `clearWorld` run whole on another thread,
+  out of a Grand world into the hall and back (nothing thrown, the game's clearing run
+  after, the grid and its fourteen targets untouched, nothing written to the log at all);
+  the same hook with a Large world's map in the grid and a Grand world to come (the grid
+  8 by 3 at once, nothing disposed of on that thread, nothing written but the grid's line,
+  then the main thread's next update disposing of all ten); on the main thread, at once;
+  one that throws; an empty grid, fitted exactly; a grid with a map in it kept one way and
+  grown the other; the size already there; a server.
+- the passage's line, taken from the log as written: its words, its numbers against the
+  frames the test counted and the test's own clock, written with a point on a machine that
+  writes a comma; a full collection forced while a world loaded turning up in the line as
+  the loading's (71 ms); none for a passage let go of part way.
+The whole mod compiles against the real 1.4.4 assemblies: 0 errors, 10 warnings. The review
+was my own.
+
+**Changed.** `Content/Subworlds/SubworldLoading.cs`, `Content/Subworlds/SubworldPassage.cs`,
+`ExtraLargeWorld.cs`.
+
+**Not yet confirmed in game:** all of it. What only the game can show: the bar through a
+real passage each way; the line in client.log, and what its numbers are (above all the
+longest wait for a frame while saving, the collector's share of it, and how many frames
+the coming back up is drawn in); no "could not grow the world arrays" in the log after a
+visit to the hall, and the map whole, full screen, in the hall and in the Grand world
+after coming back (it should be as it has been: the grid does there what it did).
+
+**Still as it was, and why.**
+- **The wait itself.** A door's passage out of a Grand world is 14 s because the game's
+  save of one is. The one part of it that could be left out without losing anything saved
+  is tModLoader's backup of the day (about 4 s each way): offered, not done, since it is
+  the user's saves' backup (RELEASE_TODO).
+- **The coming back up** (15 ticks of black, 30 of fade) is counted in ticks. With Frame
+  Skip on, a long first frame in the new world is followed by the updates it cost, all
+  before the next draw, and the fade is seen in fewer frames; with it off or subtle a tick
+  is a frame. Whether that is seen is in the line now (44 frames is all of them).
+- **The picture** is loaded on the frame the world is left, the screen already black.
+- **The collector's stops while the game saves** are the game's and tModLoader's own
+  allocating (a world written to memory, read back, zipped). If the line shows them long
+  in the game, the runtime can be asked to put its full collections off for the length of
+  a passage (`GCSettings.LatencyMode`), which took them away in the rig; not done on the
+  rig's word alone.
+
+**For the next session.** `work/sw/lag` has the log's passages as numbers (`runs.json`) and
+the sums done on them (`final.py`); the rig has `Lag.cs` (the grid, the line, real
+passages followed by the bar) and `Timing.cs` (run with `PAD_TIMING=1`: not checks, the
+table above).
+
+---
+
+## 16.40 Later in session 7: tModLoader's backup of the player left out of a door's passage; the loading screen's picture and tip up from the frame the door is tried
+
+The user:
+
+> yeah sure, js make the art and tips load right away
+
+**Read as.** Two things. "Yeah sure" is the yes to the offer §16.39 ended on: leave
+tModLoader's backup of the player out of a door's passage. And the loading screen's picture
+and tip are to be up at once, with no wait before them. As it stood, a door tried gave 24
+ticks of fade to plain black, the frame the world was left on (with the picture loaded on
+it and the tips found), a quarter of a second more of plain black (`Wait`), and then the
+picture, the tip and the bar coming up over three tenths of a second (`ComeUp`): about a
+second from the door to the picture being there, two thirds of it with nothing to look at.
+
+**Nothing of §16.39 had been seen in the game either.** client.log, read again before
+anything was touched: the game was still the one started at 18:10 on the build before
+§16.39's (no `Subworlds: through the door` line in it). One more passage was in it, the
+hall left for the Grand world at 20:29: 3.83 s under "Backing up player file", as before.
+The device's three code files were byte for byte what §16.39 delivered. Two files had
+changed on the device, neither mine to touch and neither touched:
+`LoadingArt_FlameInFog.png` (975,293 bytes now: more of the user's painting) and the
+hjson, which tModLoader had written over in its own layout (two tips' `'''` blocks made
+single lines; no word changed). The cloud mirror's hjson was made the device's again; the
+rig reads it.
+
+### 1. tModLoader's backup of the player is left out of a passage's save
+
+**What it is** (the 1.4.4 assembly, read again).
+`Player.SavePlayerFile_Write(PlayerFileData, byte[], TagCompound)`: the status text is set
+to `tModLoader.BackingUpPlayerFile`; `BackupIO.Player.ArchivePlayer(path, isCloudSave)`;
+the `.plr` is copied to `.plr.bak`; the `.plr` is written; `PlayerIO.Save`. `ArchivePlayer`
+is one call: `BackupIO.RunArchiving(Player.WriteArchive, isCloudSave,
+Player.PlayerBackupDir, name, path)`. `RunArchiving(Action<ZipFile, bool, string>
+saveAction, bool isCloudSave, string dir, string name, string path)`, inside a try whose
+catch logs "A problem occurred when trying to create a backup file.": the folder is made;
+`DeleteOldArchives` deletes today's zip and thins the older ones; a new zip named
+`yyyy-MM-dd-name.zip` is opened in `dir`, `saveAction` fills it, and it is saved. A world's
+backup is the same method given `World.WriteArchive` and `World.WorldBackupDir`
+(`BackupIO.World.ArchiveWorld`, from `WorldFile.InternalSaveWorld`, which calls it before
+it writes the world, unless `BackupIO.archiveLock`). `BackupIO` is
+internal to tModLoader; its nested `Player` and `World` are public inside it;
+`RunArchiving` is private. `Player.PlayerBackupDir` is `Main.SavePath/Players/Backups`,
+set in the nested class's static constructor.
+
+**What was done** (`SubworldPassage.HookTheBackup`, `LeaveOutTheBackup`,
+`TakesWhatItTook`). At the mod's load, on a client, `RunArchiving` and
+`Player.PlayerBackupDir` are found by name, and a detour is put on `RunArchiving` with
+tModLoader's own `MonoModHooks.Add(MethodBase, Delegate)` (public; it makes a MonoMod
+`Hook` and keeps it; tModLoader writes `Hook Terraria.ModLoader.BackupIO::RunArchiving(...)
+added by PisAndDag` to client.log, and takes a mod's detours off when the mod is unloaded:
+`MonoModHooks.RemoveAll`, which goes by the assembly the detour's own method is in). The
+detour does nothing but this: if the passage is at its saving (`stage == Stage.Saving`)
+and the folder it is given is the players', it returns without making the zip, and marks
+the passage (`backupLeftOut`); otherwise it calls the original. It runs on the saving
+thread; `stage` is volatile. `stage` is `Saving` from just before `WorldGen.SaveAndQuit`
+is asked for until the saving thread, the save done, turns to the other world (`Saved`),
+and no other save of the player can begin in between: the autosave is started from the
+update, and the game is at its menu by then.
+
+- **What is still saved by a passage:** the player's map of the world left, the player's
+  file and the game's own `.bak` of it, what mods keep in a player (`.tplr`), the world,
+  the game's rolling backups of it, what mods keep in it, **and tModLoader's backup of the
+  world**. Only the zip of the player's file and maps is not made. It is made again, whole,
+  by the next save that is not a passage's: the autosave (every ten minutes in the log) or
+  Save and Exit. Until then the newest zip of the player is from before the passage.
+- **The detour's first parameter is typed `Delegate`.** tModLoader declares it
+  `Action<Ionic.Zip.ZipFile, bool, string>`, and naming that would make the mod's source
+  refer to tModLoader's zip library. MonoMod takes a detour whose parameters are
+  assignable to or from the method's own, one by one
+  (`MethodSignature.IsCompatibleWith`, `Extensions.IsCompatible`); tried in the rig both
+  ways, with the exact type built at run time and with `Delegate`, and both ran.
+- **If tModLoader moves any of it:** no detour is put on, one warning is written at load
+  (`Subworlds: tModLoader's backup of a player is not where it was ...` or `no detour
+  could be put on ...`), and a passage backs the player up as any other save does.
+  Nothing else depends on it. Each passage's line in client.log ends by saying which it
+  was: `... was left out of the saving.`, `... was made in the saving: there is no detour
+  to leave it out.`, or, if the detour is on and did not run, `... was not left out of the
+  saving: the detour for it is on, and was not run.`
+
+**Why `RunArchiving` and not `ArchivePlayer`,** which is nearer and is the player's alone.
+`ArchivePlayer` is 46 bytes of IL, and the runtime can compile so small a method into the
+one that calls it; where it has, a detour on it is never reached. Tried in the rig, which
+runs tModLoader's own assembly (`HookProbe`: so many saves of a player, then the detour,
+then more saves, looking at whether the detour ran and whether the day's zip was written):
+
+| detour on | saves before it | runtime | the detour ran, of the 121 saves after |
+|---|---|---|---|
+| `ArchivePlayer` | 180 | as tModLoader leaves it | **0**: the zip was written every time |
+| `ArchivePlayer` | 180 | `DOTNET_TieredPGO=0` | 121 |
+| `ArchivePlayer` | 82 | `DOTNET_TieredCompilation=0` | 121 |
+| `ArchivePlayer` | 0 | as tModLoader leaves it | 121 |
+| `RunArchiving` | 0, 180, 480 | as tModLoader leaves it | 121 each time |
+
+"As tModLoader leaves it" is .NET 8's own: `tModLoader.runtimeconfig.json` sets nothing
+about how code is compiled, tModLoader's log of its environment has no `DOTNET_` setting
+but roll-forward, and `tModLoader.dll` is not compiled ahead of time (no ReadyToRun
+header), so methods are compiled in tiers, the later tier guided by how the code has run,
+and it is that later tier that took `ArchivePlayer` into its caller. MonoMod does mark a
+method not to be taken in so when a detour is made on it
+(`PlatformTripleDetourFactory.CreateDetour`, `TryDisableInlining`;
+`FxCoreBaseRuntime.DisableInlining` sets a flag on the method), which is why a detour made
+before the saves holds; it cannot help a caller compiled already. In the game the detour
+goes on as the mod loads, before any player is saved, so either would have held there; the
+difference is a mod switched on late in a long sitting. `RunArchiving` has a try in it,
+and .NET 8 does not compile a method with one into its caller: a detour on it ran however
+late it was made.
+
+**The bar.** `SubworldLoading.Reckon(leaving, entering, backedUp)`: the player's step was
+3.9 s and 0.016 s a million tiles of the world left; with the backup left out the 3.9
+becomes 0.05. The 0.016 a million stays: it is tModLoader's backup of the world, made
+under the same line. The 0.05 is put, not measured: it is for the writing of the player's
+two small files, which no log has apart from the backup (in the rig, with a new player,
+that part of the step is 2 to 3 ms). Only the first passage each way in a game goes by
+it. Reckoned so, a Grand world left for the hall is 10.5 s (it was 14.4) and the way back
+4.8 s.
+
+**Mine, and offered:** the world's backup is left in. It is 0.5 to 0.9 s leaving the
+Grand world (§16.39), it was not what was offered, and it is the one backup of a world
+that tModLoader itself makes (the game's own are the `.bak` files beside the world).
+Dropping the test of the folder from the detour would leave it out too.
+
+### 2. The picture and the tip are up from the frame the door is tried
+
+**What is seen now.** The loading screen comes with the passage's black and is as strong
+as the black is (`SubworldLoading.Phase.Leaving`; `SubworldPassage.Draw` gives it the
+black's own strength in the stage `Out`): from the first tick the world goes down into the
+picture, its frame and the tip, and at the 24th they are up in full, with no plain black
+at any point. `Wait` and `ComeUp` are gone. The first tip has no coming up of its own
+(`tipAge` starts at `TipComeUp`); a tip turned to with E still comes up over 0.2 s. Until
+the world is left the bar is drawn empty and follows nothing, and E turns no tip: the
+world is still running under it. A passage let go of part way (the player died in those
+24 ticks) lets the loading screen go with its black, which takes the stage `None` in
+`Draw` too. The arrival is as it was: the screen goes to black over the 15 ticks the place
+settles in, and the world comes up over 30.
+
+**Mine:** the world going down into the picture, over the same 24 ticks the black always
+took, and not a cut to the picture. What was asked is that there be no wait, and there is
+none; a cut is a different look, and is `OutTicks`. To be confirmed in play.
+
+**Nothing is found or loaded on the frame the door is tried.** That frame draws, and it
+was doing two things that are waits.
+
+- **The picture is held ready** (`readied`, `HoldAPicture`). One is drawn by lot and
+  loaded when a world is entered (`SubworldPassagePlayer.OnEnterWorld`, once `Arrived` has
+  run; `SubworldLoading.WorldEntered`; single player only, since with others in the world
+  the door stays shut), and at each passage another is, once `WorldGen.SaveAndQuit` has handed
+  the saving to its thread and this one has only to draw what is up (`Go`, then
+  `SubworldLoading.WorldLeft`, outside the try that guards the leaving, and keeping its own
+  faults). The door's frame takes the one held (`Open`). It is not used up until the world
+  is left, so a passage let go of leaves it for the next. The loading is still
+  `ModContent.Request(..., AssetRequestMode.ImmediateLoad)` on the main thread: the same
+  call as before, at another moment. Asked for in the background instead, a picture that
+  will not load would not throw where it was asked for
+  (`AssetRepository.LoadAssetWithPotentialAsync` throws on only for `ImmediateLoad`), and
+  could not be struck off there and then.
+- **A world's entry already stands still for longer than the picture takes:** on the same
+  call, just before the players' hooks, tModLoader collects all garbage with every thread
+  stopped (`Player.Hooks.EnterWorld`: `Interface.ResetData`, `GC.Collect(MaxGeneration,
+  Forced)`; 60 to 100 ms in the rig with a Grand world loaded).
+- **A picture that will not load** is struck off and another drawn in the same breath,
+  until one loads or none is left (before, that passage had none). The one that is up is
+  not drawn again on that account (`lastArt` is put back after a failure). tModLoader's
+  part in it is as it was: once mods are loaded, an asset that fails is logged by it and,
+  for a missing or unreadable one, it puts up its own box (`Mod.OnceFailedLoadingAnAsset`,
+  `FancyErrorPrinter.ShowFailedToLoadAssetError`). A picture is turned into raw pixels
+  when the mod is built, so one that cannot be read means a damaged `.tmod`.
+- **The tips are found ahead** (`Gather`): as a world is entered (`WorldEntered`) and as
+  one is left (`Begin`, before the saving thread is started, so that nothing else is at
+  work among the game's words while they are gone over). The door's frame turns to one
+  (`Turn`), and finds them only if they have never been found (`gathered`). A tip written
+  into the hjson while the game runs is in the lot from the next finding.
+- **The finding itself is one pass now, and by the letters.** It was three askings of
+  `Language.FindAll`, two of them with the game's own filter for its tips
+  (`Lang.CreateDialogFilter`), which is `key.StartsWith(prefix)`: the comparison the
+  machine's language asks for. For a machine set to English that is quick; for any other
+  it is not. The old way, timed in the rig over the game's 19,609 names: 0.84 ms, and
+  10.0 ms with the thread set to German. It was done on the frame the world was left, at
+  black, where it did not matter; on a door's frame it would have been a frame lost. It
+  is one asking now, each name tested ordinally: 0.42 and 0.44 ms, and not on a door's
+  frame either. The tips found are the same (checked against the game's own filter with
+  the thread set to German).
+  (`LanguageManager.FindAll(LanguageSearchFilter)` is one pass over every name; it is the
+  `Regex` one that goes over them twice.)
+- **The first wording of one of the game's own tips** (`Worded`:
+  `Lang.CreateDialogSubstitutionObject`, `FormatWith`, `Lang.SupportGlyphs`) costs 7 to
+  11 ms the first time it is run in a game and 0.1 to 0.2 ms after. It is run once, for
+  nothing, as the first world is entered (`worded`).
+- **What the door's frame costs now** (rig, a game just started, `ColdOpen`): 0.5 to
+  0.6 ms the first time, 0.001 to 0.16 ms after; the readying at a world's entry, 10 to
+  15 ms with no picture to read. With a picture to read it is that and the picture: not
+  measured here, where there is no graphics card. The game will say: each passage's line
+  has both.
+
+**The passage's line in client.log** has more in it (`Account`; `opening`,
+`SubworldLoading.PictureTook`). As the rig wrote it, where a frame is not drawn and there
+is no picture to read:
+`Subworlds: through the door to PisAndDag/EmptyHall in 2.87 s. Frames drawn, the longest
+wait for one, and the garbage collector's share of the time: going to black, 27 in 0.00 s,
+0 ms, 0 ms; saving, 1231 in 2.77 s, 9 ms, 0 ms; loading, 44 in 0.10 s, 2 ms, 0 ms; coming
+back up, 44 in 0.01 s, 5 ms, 0 ms. The frame the door was tried on spent 0 ms putting the
+picture and the tip up. The frame the world was left on spent 1 ms leaving it, and then 0
+ms loading the next picture. tModLoader's backup of the player was left out of the
+saving.`
+
+### What was checked, and how
+
+- **The build:** 0 errors, the baseline 10 warnings, against the current assemblies.
+- **The rig: 465 checks, all passing** (413 before). New, all through tModLoader's own
+  code:
+  - the detour is on after the passage's own `Load`, and knows the players' folder; a
+    player saved with it on and no passage gets the day's zip as ever; through a passage
+    each way the detour runs, the zip is not touched (its time is from more than a second
+    before), the player's file is written and its `.bak` is there, and the world's zip is
+    made; a save between passages makes the player's zip again;
+  - the reckoning with the backup left out (every step but the player's as it was; the
+    player's 3.85 s the shorter);
+  - a tip is up on the frame the door is tried, the first of a passage at full, one turned
+    to starting from nothing; the leaving turns to no other;
+  - the screen on the way to black: nothing shown and nothing followed with no black up,
+    four tenths shown at four tenths, the bar empty whatever the game is saying; all of it
+    in full from the first frame of the saving;
+  - the picture held ready, with **ReLogic's own repository and tModLoader's own
+    `ModContent.Request`** over a source and a reader of the rig's (`PictureMod`,
+    `FakeSource`, `FakeReader`; this thread standing for the main one): a world entered
+    loads and holds one; one held already is kept; the door's frame takes it and loads
+    nothing; a passage let go of does not use it up; the world left loads another, and the
+    one up stays up; 3000 passages, the picture always the one held, never the same twice
+    running, each of five as often as any other and each read from the mod once; two of
+    five unreadable, struck off the first time each is drawn, no passage without a
+    picture; the one up never drawn again because another was struck off (300 trials);
+    none readable, none held and nothing broken;
+  - the same through two real passages with pictures to be had: the player's own hook at a
+    world's entry holds one (and with others in the world readies nothing), the passage
+    has it up, the leaving holds the next;
+  - when the tips are found (the door's frame only if never; the leaving; a world's
+    entry), and that the same ones are found with the thread set to German, at no more
+    cost;
+  - the passage's line, in its new wording, with a comma-writing machine.
+- **Two probes, not checks:** `PAD_HOOKPROBE=<saves before>` with
+  `PAD_HOOKTARGET=archive|run|run2` (the table above), and `PAD_COLDOPEN=1` (the door's
+  frame in a game just started). `PAD_TIMING=1` now also saves the player with the backup
+  left out, beside the save with it in.
+- **Read through by me, not by another.**
+
+**Not seen in the game: any of it,** and §16.39's changes neither. What to look for is in
+RELEASE_TODO's test step.
+
+**Still as it was, or left.**
+- The time a passage takes but for the backup: the game's own saving and world entry
+  (§16.39's table). Offered and not done: the world's backup left out as well; the runtime
+  asked to put its full collections off for a passage; the Grand world's map targets freed
+  in the hall.
+- A door tried while the autosave is writing the world: the leaving waits (§16.35). What
+  is on the screen meanwhile is the loading screen in full with its bar empty, where it
+  was plain black.
+- E is not a keybind, and on a gamepad nothing turns the tip.
+- A picture loaded stays loaded until the mod is unloaded; one more than have been up is
+  loaded now (the one held).
+
+---
+
+## 16.41 Later in session 7: the Meat Hook: a double-barrelled shotgun, and a hook on a chain that drags the small to you and you to the rest
+
+The user:
+
+> IDk js make it load the frame and art fast and the tips too, its your choice how it plays out. Also added textures for meathook, make it shoots like a brutaller version of a shotgun, almost like onyx blast without the onyx, right click shoots the hook out, if it attaches to any small npc(check kb and hitbox and non boss and boss component), it pulls the NPCs to you , else you are pulled to the NPC, (5 for unsuccessful hook and 3 for successful) second cooldown since the hook returns. During hook, shot fired deals 2x more damage. Hit tile means return, max distance: 50 tiles. Hook glows red. hook i think is its own projectile with mother projectile being the gun. Make it nice tho. use the harpoon sound for hook shoot.
+
+**Read as.** Two things. The first sentence is the answer to what §16.40 left open about the
+loading screen (the fade or a cut; the world's backup left out too): mine to choose, so long
+as the frame, the picture and the tips are there fast. The rest is a new weapon, for which
+four textures had been put in the tree.
+
+### 1. The loading screen: nothing changed
+
+client.log was read again first. It is the log §16.40 read: 137,712 bytes, the game started
+at 18:10 and shut at 21:09, on the build before §16.39's. The game has not been started, and
+the mod has not been built, since. **Nothing of §16.39 or §16.40 has been seen yet**, and
+what the message asks for is what §16.40 delivered:
+
+- the **frame** (LoadingFrame.png) is asked for when the mod loads, long before any door;
+- the **picture** is loaded and held when a world is entered, and the next one as a world is
+  left, so the frame a door is tried on loads nothing;
+- the **tips** are found when a world is entered, and the first of the game's own is worded
+  then;
+- all three come up with the black, from the frame the door is tried on (measured in the rig:
+  0.5 ms on that frame the first time, 0.16 ms after).
+
+The device's SubworldLoading.cs and SubworldPassage.cs are byte for byte what §16.40
+delivered. **My choices, kept:** the picture, the frame and the tip rise with the black over
+its 24 ticks, and are not cut to (a cut would put a whole picture up a tick after a creak; if
+it should be one, it is `SubworldPassage.OutTicks`); and the world's own backup is still made
+in a passage (it is the one copy of a world a bad save cannot take with it; the player's,
+left out, is 4 seconds and the world's a tenth of that in a hall).
+
+### 2. What there was
+
+The four textures, measured (all 2x pixel art, alpha 0 or 255, every clear pixel black):
+
+| File | Size | What is in it |
+|---|---|---|
+| `Content/Items/Ranged/MeatHook.png` | 70 by 22 | The gun pointing right, the hook lying under its barrels (x 42 to 69) |
+| `Content/Projectiles/Ranged/MeatHookHoldOut_WithoutHook.png` | 70 by 22 | The same gun without the hook |
+| `Content/Projectiles/Ranged/MeatHook_Hook.png` | 22 by 32 | The hook pointing up: two prongs, the chain's place at the bottom middle |
+| `Content/Projectiles/Ranged/MeatHook_Chain.png` | 14 by 16 | One link, upright |
+
+**The two guns are the same gun, pixel for pixel**: compared, every pixel the second has is
+in the first unchanged, and the 184 pixels only the first has are the hook. So the hook as it
+lies on the gun can be had by taking one from the other, and no fifth texture is needed.
+
+The names say what was meant: an item `MeatHook`, a holdout whose own sprite is the gun
+without its hook, a projectile `MeatHook_Hook`, and a chain drawn by it. They are used as
+named.
+
+### 3. What was built
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Ranged/MeatHook.cs` | `MeatHook` | The item: the shell fired |
+| `Content/Projectiles/Ranged/MeatHookHoldOut.cs` | `MeatHookHoldOut`, `MeatHookLayer` | The gun in the hands; throws the hook; drawn in the hand |
+| `Content/Projectiles/Ranged/MeatHook_Hook.cs` | `MeatHook_Hook` | The hook and its chain |
+| `Content/Combat/MeatHookPull.cs` | `MeatHookRules`, `MeatHookNPC`, `MeatHookPlayer`, `MeatHookHUD` | Who is dragged, the two drags, the wait, the bar |
+| `Content/Combat/ParryRules.cs` | `ParryRules.BossOrPart` | One public line: a boss or a part of one |
+| `Localization/en-US_Mods.PisAndDag.hjson` | | `Items.MeatHook`, two projectile names |
+
+**The shell** (left click; `MeatHook.Shoot`). The item is an ordinary gun to the game: it
+uses bullets, has PSItem's magazine (2 shells, 72 ticks to reload; asked for in the item's
+own `SetDefaults`, as the Handswitch's, the Chlorophyte Rifle's and the Dented Megashark's
+are), and is used through the game's own item use, so the magazine, the count beside the
+player, R to reload and the flash and smoke at the muzzle are what every gun in the mod
+has. `Shoot` shoots all of it and leaves the game nothing: 8 of whatever bullet is loaded
+for the one spent (the Onyx Blaster shoots 4 and its bolt; the Shotgun 4 or 5), two of them
+within 2.5 degrees of the aim and the rest within 9, each at 0.82 to 1.12 of the shot's
+speed. From the middle of the player, as the game shoots every gun, so that something
+standing against them is not shot past (the muzzle is 56 pixels out). On top of PSItem's
+flash: a second, bigger one, more smoke, a cone of sparks, the Tactical Shotgun's sound low
+under the Shotgun's own, the screen shaken, and the gun kicking in the hands.
+
+**The flash is PSItem's and lands on the muzzle by a sum** (`MeatHook.ModifyShootStats`).
+PSItem puts its flash 0.85 of the item sprite's width out from the point the shot is given,
+along the shot: right for a gun the game draws from the middle of the player, and 6 pixels
+low and 3 long for one held by its grip. PSItem is the user's file and is not touched; the
+point the item gives is moved to where PSItem's sum lands on the muzzle of the gun as held.
+Nothing is shot from that point.
+
+**The gun in the hands** (`MeatHookHoldOut`, a `BaseIdleHoldoutProjectile`: there while the
+item is held, as the Greatbow's and the Iron Flow's are). Every tick on every machine it
+turns its wielder to the cursor, sets both arms (the front hand on the grip, the back hand
+found on the line of the gun by `VisusGrip.BackArmOnto`) and tells `MeatHookPlayer` the
+gun's angle and where its grip is, in the player's own upright frame. `MeatHookLayer`, a
+player draw layer in the slot vanilla draws a held item in, draws it from that: behind the
+front arm, riding the walk, mirrored with the player (the Iron Flow's way, §16.26). The aim
+is the wielder's cursor, kept in `Projectile.velocity` and sent when it has turned 2 degrees
+or for 8 ticks. It kicks with a shot, read off the item's animation (13 degrees up and 5
+pixels back by the fourth tick, level again at the end; half as much again for a shot fired
+while the hook holds), and is broken open for a reload (28 degrees down, its wielder's
+machine only: nobody else has the count).
+
+**The hook is thrown by the gun, not by the item's use.** A fresh press of the right button
+with the cursor on the world, read off the player's own `controlUseTile` on their machine.
+The item's alternate use was not used, for what the 1.4.4 assembly says of it
+(`Player.ItemCheck_ManageRightClickFeatures`): it needs the item not in use
+(`itemAnimation == 0`, `itemTime == 0`), the left button up, and `CanUseItem` to say yes,
+and PSItem's says no for the whole of a reload. The hook would have been dead for 28 ticks
+after every shot and 72 after every second one, which is exactly when it is wanted. Read
+off the controls instead, it is thrown while the gun fires, reloads, or has no bullets. What
+stands in for the game's guards: not over the interface, not on a tile that took the press
+(`tileInteractionHappened`), not over somebody to talk to, not with the map up or the camera
+out, not with the item on the cursor, not cursed, and not while any `ModPlayer.CanUseItem`
+says no (the mod's scenes and its ragdoll say it there; they take the controls away too).
+A press held from before the gun came out, or begun over the interface, throws nothing.
+
+**The hook** (`MeatHook_Hook`). Three stages in `ai[0]`:
+
+- **Out.** 24 pixels a tick along the aim, the harpoon's sound as it leaves
+  (`SoundID.Item10`: the Harpoon's own `UseSound`, read off the item). Its tile box is 10
+  by 10 and it goes through platforms. A tile turns it back; so does the tick that would
+  take it past 50 tiles from its wielder.
+- **Caught.** The first enemy it touches takes a hit of its own (one and a half of the
+  gun's damage, no knockback) and is held: `ai[1]` is which, `ai[2]` whether it is dragged
+  or drags, settled then by `MeatHookRules.Hauled`. For 5 ticks nothing moves (the chain
+  cracks taut); then the drag. Once what is dragged is there the hook holds 48 ticks more
+  and comes back.
+- **Back.** Straight to the gun through anything, 20 pixels a tick and quicker each tick up
+  to 44. There, it ends, and the wait begins.
+
+**Small or not** (`MeatHookRules.Hauled`): the four things asked for, and one more the
+dragging needs.
+
+| | |
+|---|---|
+| knockback | the game lets it be knocked back: `knockBackResist` above 0 |
+| hitbox | no wider than 60 and no taller than 84 (the parry's giant: three players wide, two tall) |
+| not a boss | `boss`, or `NPCID.Sets.ShouldBeCountedAsBoss` |
+| not a part of one | the parry's list of limbs, or `realLife` pointing at a boss (`ParryRules.BossOrPart`, made public for this) |
+| its AI can be stopped | `PADStaggerNPC.CanReel`: not a worm's segment, not one of many parts, nothing a list says is never stopped |
+
+Of vanilla's 542 kinds that are not friendly, 378 are dragged in and 164 drag the wielder.
+Every NPC of the mod's own (all nine) has no knockback, and drags the wielder. So does a
+Target Dummy (`knockBackResist` 0, read off its defaults).
+
+**An enemy dragged** (`MeatHookNPC`). While the hook says it holds it (every tick, from the
+hook's own AI on every machine) its AI is not run (`PreAI` false, as the parry's stagger
+does it), it touches nobody, and after the bite it is moved toward its wielder: 20 pixels a
+tick within a few ticks, easing over the last of the way, to stop with its nearest edge 30
+pixels from the wielder's middle. The move is written into its position as far as the tiles
+let it go; stopped sideways, it is lifted 8 pixels a tick, over a ledge. Its own speed is
+held at nothing meanwhile. Let down, it is thrown a little way off.
+
+**The wielder dragged** (`MeatHookPlayer.PreUpdateMovement`). The game's grapple in small:
+while the hook says so their speed is the chain's, up to 16 pixels a tick, easing to a stop
+56 pixels from the nearest edge of what holds it. No fall is counted on it, their jumps are
+given back, they are taken off a mount and off any other hook. Inside the 56 pixels they are
+free; leaving it, they are dragged back, so under something in the air they hang.
+
+**It lets go sooner** when what it holds dies (or its place among the enemies is given to
+another the same tick: a slime's young take their mother's), when what it drags comes no
+nearer for 24 ticks, when the chain is past 1.15 of its reach, after 150 ticks whatever
+happens, when its wielder presses the right button again (once it has held 12 ticks) or,
+dragged, jumps (they keep four fifths of the chain's speed), and when they are barred from
+using anything. And it is gone at once, with no flight home, when the gun is put away, when
+its wielder dies, and when they are frozen, stoned or webbed (the gun is out of their hands
+then: section 8); the wait begins there.
+
+**While it holds, a pellet does double damage**: `MeatHook.Shoot` asks
+`MeatHook_Hook.Holds` and doubles what it shoots. Every pellet, at whatever it hits.
+
+**The wait** (`MeatHookPlayer.Wait`): 180 ticks if it caught something, 300 if not, from the
+tick the hook ends. Kept on the player and not on the gun, so putting the gun away does not
+shorten it. Not saved.
+
+**What shows it.** The hook lies on the gun dark while it waits, glows red when it can be
+thrown (and lights the place a little), and is not on the gun while it is out. Beside the
+player, under the magazine's count, a small bar fills as the wait runs out, flashes and
+goes (`MeatHookHUD`); while the hook is in an enemy "x2" stands there. A low note when the
+wait ends. In flight and in an enemy the hook glows red and lights the place; the chain's
+last seven links take its heat. The chain hangs slack as it flies and as it comes back, and
+is a line while it drags.
+
+### 4. The numbers
+
+**Yours:** the shell doubled while the hook holds; 5 seconds and 3, from the hook's coming
+back; 50 tiles; a tile turns it back; it glows red; the harpoon's sound; small by knockback,
+hitbox, not a boss and not a part of one; the hook its own projectile, the gun its mother.
+
+**Mine**, every one of them a constant with its name on it:
+
+| | | where |
+|---|---|---|
+| damage | 22 a pellet, 8 pellets | `MeatHook.Damage`, `Pellets` |
+| a shot | 28 ticks; 2 shells, then 72 ticks | `UseTicks`, `Shells`, `ReloadTicks` |
+| spread | 9 degrees either side, 2 of them within 2.5; 0.82 to 1.12 of the speed | `Cone`, `TightCone`, `Slowest`, `Quickest` |
+| knockback, speed | 7; 8 on top of the bullet's own | `Knockback`, `ShootSpeed` |
+| rarity, price | light red; 25 gold to buy | |
+| the hook's flight | 24 pixels a tick out; 20 rising to 44 back | `MeatHook_Hook.FlySpeed`, `BackSpeed`, `BackMost` |
+| the hook's own hit | 1.5 of the gun's damage | `MeatHook.HookDamage` |
+| the bite, the hold, the most | 5, 48 and 150 ticks | `MeatHookRules.BiteTicks`, `HoldTicks`, `LatchLimit` |
+| the drags | an enemy 20 a tick to 30 pixels off; the wielder 16 a tick to 56 off | `HaulSpeed`, `HaulStandoff`, `PullSpeed`, `PullStandoff` |
+| giving up | 24 ticks of no nearer; the chain at 1.15 of its reach | `StuckTicks`, `Snap` |
+
+Against the mod's own Onyx Blaster (30 ticks, 6 shots, 60 to reload: 4 pellets of 24 and a
+bolt of 48, 864 every 210 ticks): a shell is 176 to its blast's 144, and two shells every
+100 ticks is 211 a second to its 247. With the hook used well (both shells into something
+it holds, about every 4.4 seconds at 20 tiles) it is about 290, which is the mod's Tactical
+Shotgun and a little over. The pellet's 22 is the one number to turn.
+
+**Three readings.** "During hook" is while the hook is in an enemy, not while it is in the
+air: a throw that catches nothing doubles nothing. "2x more" is double. "Since the hook
+returns" is from the tick the hook ends, which is its coming home, or its going with the gun
+when the gun is put away.
+
+### 5. What the 1.4.4 assembly says (read, each of them, before it was leaned on)
+
+- **Item defaults**, by running `Item.SetDefaults` in the rig: Shotgun 24 damage, 45 ticks,
+  `Item36`; Onyx Blaster the same at 48 ticks; Boomstick 14, 40; Quad-Barrel 14, 55;
+  Tactical Shotgun 29, 34, `Item38`; Harpoon `UseSound` `Item10`. (1254, taken for the
+  Tactical Shotgun in an earlier note, is the Sniper Rifle; the Tactical Shotgun is 679.)
+- **`Player.ItemCheck_Shoot`**: `CombinedHooks.CanShoot` first; `PickAmmo`; the point shot
+  from is `RotatedRelativePoint(MountedCenter, false, true)`; `ModifyShootStats`; then
+  `CombinedHooks.Shoot`, and nothing more if it says no. Only for the machine's own player.
+  The Onyx Blaster's case: two times two pellets, each the aim with up to 2 pixels a tick
+  added at 22 to 45 degrees off it, and a `BlackBolt` at 1.3 of the speed and twice the
+  damage. The Shotgun's: 4 or 5, each with up to 2 a tick added either way on each axis.
+- **`ItemLoader.Shoot`**: every global's `Shoot` is called and anded, then the item's if all
+  said yes. PSItem says yes for a gun with a magazine, so the item's is reached.
+- **`Projectile.Update`**: `AI`, then `HandleMovement`, then `Damage`, every update;
+  it is ended without `OnKill` if it is outside the world's edges (the rig's first run:
+  the hall's edges were still set).
+- **`Projectile.Damage`**: nothing unless `ProjectileLoader.CanDamage` allows; an NPC is hit
+  only on the owner's machine and only if `damage > 0`; `dontTakeDamage` is passed over
+  before anything is asked; `CanHitNPC` true sets a flag that skips the friendly-or-hostile
+  test and the `npc.immune[owner]` test (which a shot with local immunity is otherwise held
+  to: ten ticks after a piercing shot of the same player's), and after the hitboxes meet
+  the game still asks `!npc.friendly` and `Player.CanNPCBeHitByPlayerOrPlayerProjectile`.
+  So the hook answers true, and the Guide and a spared critter are still safe.
+- **`Projectile.HandleMovement`**: a projectile faster than its tile box is wide is stepped
+  along in box-widths, its position left where it was and its speed set to the sum of the
+  steps taken; `OnTileCollide` is called with that. The hook, turned back there, takes that
+  last part of the way first, or it would turn 14 pixels short of the wall.
+  `ProjectileLoader.TileCollideStyle` and `ShouldUpdatePosition` ask the mod's projectile
+  only for a type past vanilla's.
+- **`NPC.UpdateNPC_Inner`**: `UpdateNPC_UpdateGravity` first, which sets the tick's
+  `gravity` and `maxFallSpeed` (thinned near the world's top; less in water, honey and
+  shimmer); `AI` (and in it `NPCLoader.NPCAI`: every global's `PreAI` anded, with no short
+  cut; `PostAI` always); then that same `gravity` added to one with weight and capped at
+  `maxFallSpeed`; then `UpdateCollision`, or `position += velocity` for one that goes
+  through tiles. So an enemy left with `-gravity` in `PostAI` is left with exactly none, in
+  a liquid too.
+- **`Player.CCed`**: `frozen`, `webbed`, `stoned`, or the flag `Player.SetCCed` sets.
+- **`Player.Update`**: `GrappleMovement`, later `PlayerLoader.PreUpdateMovement`, then the
+  collisions that move the player, then `ItemCheck`, then `PostUpdate`.
+  `LookForTileInteractions` is before the item check and sets `tileInteractionHappened`;
+  it stays set until the button has been up. `GrappleMovement` is what the drag is cut
+  from: `fallStart`, `RefreshMovementAbilities`, the mount, `GoingDownWithGrapple`.
+- **Order in a tick** (`Main.DoUpdateInWorld`): players, NPCs, projectiles.
+- **`Player.GetFrontHandPosition`, `GetBackHandPosition`**: the sums `VisusGrip` has.
+  **`SetCompositeArmFront` and `Back`** negate the rotation under reversed gravity, so the
+  arms are passed the right way up (the Iron Flow's way; `VisusGrip.ArmRotation` is not
+  used, RELEASE_TODO has why).
+- **`Main.DrawProjectiles`** draws every projectile that is not `hide`. The gun's holdout is
+  `hide` and draws nothing: the layer draws the gun.
+- **`Main.MouseWorld`** is turned over under reversed gravity already.
+
+### 6. Verified
+
+- **Compiled** against the 1.4.4 assemblies: 0 errors, the baseline 10 warnings.
+- **The rig, `MeatHookRig.cs`** (`PAD_MEATHOOK=1`; the mod's classes as compiled): 76
+  checks of its own, 172 of 172 with the 96 that run before it. The two projectile types
+  are registered with the game's own `ProjectileLoader` and its tables resized; a hook is
+  made by `Projectile.NewProjectile` and run by `Projectile.Update` whole: the game's
+  movement, its tile collision, its `Damage`, `StrikeNPC` and `Kill`. An enemy is moved by
+  the mod's `PreAI` and `PostAI` and then the game's own fall and `NPC.UpdateCollision`.
+  What stands in: the player's update (the fall, the mod's `PreUpdateMovement`, the game's
+  `Collision.TileCollision`) and an enemy's own AI (it stands still). What they show:
+  - every vanilla enemy weighed: the thirteen named ones dragged in; bosses, their parts,
+    the Paladin, the Dungeon Guardian, worms and the Ice Golem not;
+  - the gun's sums against the game's own hand, at every 4 degrees both ways: the grip in
+    the hand the game will draw (0.0000 off), the muzzle 56 out and 6 up aimed level, what
+    the item asks for before the gun is turned the same place the gun says after; both
+    arms set, the back hand on the line of the gun; the arm passed the right way up under
+    reversed gravity;
+  - thrown at nothing: turned back 795 pixels out (the next tick would have passed 800),
+    home on tick 54, the wait 300 ticks and over 300 ticks later;
+  - at a wall: its middle 5 pixels from the face, home on tick 21; through a wall of
+    platforms; down through a floor of them to the ground;
+  - **a zombie 20 tiles off**: in on tick 11, one hit of its own, nothing moves for the
+    bite (7 ticks as the machines' turns fall), dragged 279 pixels in 16 ticks without a
+    step back and never nearer than 30, held 48, let go, home a tick later, 180 ticks'
+    wait; its AI never run while it hung and nobody touched; "double" true from the bite to
+    the letting go and not after; let down, it lands a little way off;
+  - a ledge 1, 2 and 4 high put between them once it is caught: lifted over each;
+  - walled off once caught: let go 36 ticks after the bite;
+  - a Demon Eye dragged down out of the air, and hanging where it is held;
+  - what it holds dying; its place given to a slime the same tick; its wielder barred from
+    using anything (let go the next tick); killed by the hook's own hit (not held, and a
+    catch); let go by a second press at 12 ticks and not before; in spite of the game's ten
+    ticks after a piercing shot; the Guide and a zombie nothing can hurt gone through and
+    not hurt (a miss);
+  - **a Paladin 25 tiles off**: the wielder dragged 325 pixels in 22 ticks, never over 16 a
+    tick, stopped at 56 and not nearer, held 48, no fall counted, the Paladin not moved and
+    its AI left running;
+  - a Dungeon Guardian hung in the air: dragged 239 pixels up to it, hanging there for the
+    hold, fallen back to the ground after;
+  - jumped off at 16 a tick: let go the next tick; something that runs off faster than the
+    chain drags: let go 29 ticks after the bite;
+  - the gun put away with the hook in a zombie: both gone, the zombie off it, the wait
+    whole; its wielder frozen, webbed or stoned with the hook in a zombie and the gun
+    still counted among the shots: the hook gone the next tick, the zombie off it, the
+    wait begun; frozen with the hook in flight: gone, and a miss;
+  - **the gun's own tick**: the aim to the cursor both ways and kept with the cursor on the
+    player; no kick on the shot's own tick (the flash is where the muzzle is drawn), 13
+    degrees by tick 4, level at the end; open 28.6 degrees in a reload and shut at both
+    ends;
+  - **the right button**: held from before, begun over the inventory, on a door: nothing; a
+    fresh press in the middle of a reload: thrown along the aim for one and a half of the
+    gun's damage; held on: still one hook; again in flight: nothing; again as it bites:
+    nothing; 12 ticks on: let go; in the wait: nothing; after it: thrown;
+  - **the shell**: 8 pellets from the middle of the player, the shot's damage each and
+    twice it with the hook in a Paladin, two within 2.5 degrees and all within 9, 0.82 to
+    1.12 of the speed, and PSItem's sum landing on the muzzle.
+- **The whole rig after it: 465 of 465**, on the build delivered. (One run made while the
+  mod was being compiled beside it failed one of §16.39's timing checks; alone, none.)
+- **The device's copies staged again before delivery** and compared byte for byte:
+  `ParryRules.cs`, the hjson, the three notes, PSItem, VisusHold and the holdout's base as
+  they were read; the four textures as they were measured (the hook's 184 pixels counted
+  again). client.log is still the 18:10 game's.
+- **A defaults probe** for the rig: `PAD_ITEMPROBE`, `PAD_PROJPROBE`, `PAD_NPCPROBE` with
+  ids print what the game's own `SetDefaults` gives (`ItemProbe.cs`).
+- **Drawn outside the game**, from the same sums, with the four textures: the gun in the
+  hands at fourteen aims both ways, kicked and broken open; and the gun with its hook home
+  (glowing, and dark), the hook in flight, in an enemy and coming back, with its chain.
+  Shown in the chat only.
+- **Read through by me, not by another.**
+
+**Not seen in the game: any of it. Not heard: any of its sounds. Not tried with anyone else
+in the world.**
+
+### 7. Added without being asked
+
+- The gun is in the hands whenever it is held, and its wielder faces the cursor.
+- It kicks, and is broken open to reload; a shot fired while the hook holds kicks harder,
+  flashes bigger, sparks redder and has a thump under it.
+- The hook does a hit of its own.
+- An enemy on the hook has its AI stopped and touches nobody; let down, it is thrown a
+  little way off.
+- The wielder on the chain takes no fall damage from it, has their jumps back, and is off
+  their mount and any grappling hook.
+- A second right click lets go (after 12 ticks of holding); so does a jump, dragged.
+- The hook can be thrown while the gun reloads, fires or is empty.
+- Frozen, stoned or webbed, the hook is gone and its wait begun.
+- The bar beside the player, "x2", the note when the wait ends, the hook dark on the gun.
+
+### 8. Still as it was, or left
+
+- **No source.** A recipe is written out and commented in `MeatHook.cs`, as the other
+  weapons' are: a Shotgun, a Grappling Hook, 10 Chain and 10 Souls of Night at a Mythril
+  Anvil.
+- **Letting go is said nowhere in the game.** The tooltip has five lines without it. A
+  tip's worth, and the tips are the user's.
+- **PSItem's flash.** If `PSItem.MuzzleOverrides` is ever given an entry for the Meat Hook,
+  `MeatHook.FlashReach` (0.85, PSItem's default) has to follow it.
+- **With others in the world**: what the hook holds and which way the drag goes are sent
+  with it, and every machine does the dragging from its own copy; the world sends a dragged
+  enemy every 6 ticks. Reasoned, not run. On a slow line the enemy will jump once as the
+  world's word of it catches up.
+- **An idle holdout is ended and made again every tick its owner is frozen, stoned or
+  webbed** (RELEASE_TODO, from the Iron Flow): the Meat Hook's too, so the gun is not in the
+  hands then. A hook that asked only whether there was a gun would have been gone or not
+  by which of the two the game updates first (the gun made again that tick is still there
+  when a hook in a lower slot looks). So the hook asks `Player.CCed` itself: frozen, stoned
+  or webbed, it is gone at once and the wait begins. Found on the last reading before
+  delivery; the one change made after the first full run of the rig, which was run again.
+- **The wait is not saved**: leaving the world ends it.
+- **The bar and "x2" are placed as the magazine's count is**, by the screen: under reversed
+  gravity none of the three is turned over with the player.
+
+---
+
+## 16.42 Later in session 7: Skeletron's hands parried for a fifth of their life; the Queen Slime's core parried, sent back into her for a tenth of hers; and a projectile's sync that was never sent
+
+The user:
+
+> make parry parry skeleton hands (1/5 max hand HP) and parry queen slime crystal core boomerang returning it to her and shredding her by 1/10 hp
+
+**Read as.** Two more things the parry answers in a way of their own, as it does the Golem's
+fist (§16.33). (1) Skeletron's two hands can be parried, and a parried hand loses a fifth of
+its own full life. (2) The Queen Slime's core, thrown in the move Legends gives her (§16.7,
+§16.14), can be parried: it goes back to her, and when it gets into her she loses a tenth of
+her full life.
+
+### 1. The log, and the device, read first
+
+client.log is a new one (107,644 bytes): the game was started at 00:21 on 10/6 and shut at
+00:48. **The mod was built there for the first time since §16.38**: `Compilation finished
+with 0 errors and 10 warnings`, the ten the cloud build has. So §16.39, §16.40 and §16.41
+have been in a game. What that log says:
+
+- **The world is an Expert one** (`GameMode: 1`, The Run of Bladders, 12600 by 3000). No rig
+  before this section set a difficulty, so every one of them ran in a Classic world. This
+  section's is run in both.
+- **The door was used once each way.** The two lines §16.39 writes, the first seen from a
+  game (frames drawn, the seconds they took, the longest wait for one):
+
+  | | in all | going to black | saving | loading | coming back up |
+  |---|---|---|---|---|---|
+  | to the hall | 8.55 s | 26, 0.42 s, 28 ms | 421, 7.00 s, 28 ms | 7, 0.18 s, 92 ms | 45, 0.94 s, 228 ms |
+  | to the world | 10.80 s | 26, 0.42 s, 23 ms | 5, 0.08 s, 17 ms | 331, 5.59 s, 85 ms | 45, 4.71 s, **3678 ms** |
+
+  The frame the door was tried on spent 0 ms putting the picture and the tip up, both times;
+  tModLoader's backup of the player was left out, both times; the screen was drawn 60 times a
+  second through the save and through the load. **One frame of 3.7 seconds as the Grand
+  world came back up** (the collector's stops in that whole stage come to 0.2): not looked
+  into here, it is not this request's, and it is in RELEASE_TODO. Five seconds after that
+  line the world was saved and left (Save and Exit), and it was entered again 22 seconds
+  after that.
+- **Nothing of the mod's threw.** The only exceptions in it are two `Expected Re-Logic file
+  format` as the character list is read: a player file the game cannot read, and its backup.
+  They are in every older log looked at (five, the oldest of 9/30, before the mod had a
+  door): not the mod's.
+- **The parry's line at load**, from the build before this one, with the mod's own enemies
+  counted: `of 518 kinds of enemy that hurt by touch, 415 are turned aside by a parry (62 of
+  them the game does not let be knocked back), 25 are too big to turn aside, 78 cannot be
+  parried`. With Skeletron's hand it should read 416, 63, 25 and 77.
+
+**The device's source, every file of it, compared byte for byte with the cloud's copy** (307
+files; until now a file was compared when a change was to touch it, and by size the whole
+looked the same). Thirteen differed, each by not one byte of length:
+
+- "of the" and "of them" are "Of The" and "Of Them" in the comments of twelve files
+  (`ManyHands`, `PADPlayer`, `MileSignsPass`, `MagicColours`, `JointArmsOfTheDefiled` and its
+  projectile, `PugreamAtTheEye`, `PugreamTalk`, `MeagreFlameHold`, `ColdCall`,
+  `ColdCallHold`, `ColdCallIcicle`), all within four seconds of each other;
+- **three numbers of the user's**: Cold Call's damage 36 to 39 and its use time 25 to 30, the
+  icicle's `MistDelay` 30 to 15;
+- **the Iron Flow's colours** (`IronFlowHoldout`: `Pink`, `Pale`, `Dusk`, `Sparks`, and the
+  light on its trail), nearer orange now.
+
+All the user's. The cloud's copies were made the device's, and everything below was built
+and run on that. Nothing delivered since those edits had touched any of the thirteen, so
+none was lost. Two of them are changed below (`IronFlowHoldout.cs`, `ColdCall.cs`), from
+the device's copies, the user's edits kept.
+
+### 2. What there was
+
+- `Parry.AddNPC(type, when, thrown, flies, reels, told)` and
+  `Parry.AddProjectile(type, when, turned)` (§16.30, §16.33): the mod speaking for a thing,
+  asked before the rules. `GolemFistParry` is the one boss's part spoken for so far.
+- Skeletron's hand is never parried by the rules: it is on the list of bosses' parts
+  (`ParryRules.BossLimbs`). The Queen Slime's core is no solid shot by them.
+- The hands are vanilla's own NPCs with vanilla's own AI in every world; in Legends two of
+  his four moves take them from it (`LegendsSkeletronHand`: the clap and the smash).
+- The core is the mod's own projectile (`QueenSlimeCore`), flown from its start and its own
+  clock on every machine, and ended by the server.
+
+### 3. What was built
+
+| File | Class | Does |
+|---|---|---|
+| `Content/NPCs/SkeletronHandParry.cs` (new) | `SkeletronHandParry` | The hands parried: when, the fifth, the throw back, harmless after |
+| `Content/NPCs/Legends/LegendsSkeletron.cs` | `LegendsSkeletronHand`, `LegendsSkeletron` | Whether a move has a hand and is in its blow; a parried hand out of the move; the pair as one blow; a broken blow's bang left out |
+| `Content/Projectiles/NPCs/QueenSlimeCore.cs` | `QueenSlimeCore` | The core parried: turned, its way back, the two machines |
+| `Content/NPCs/Legends/LegendsQueenSlime.Moves.cs` | `LegendsQueenSlime` | `CoreReturned` (the tenth), `CoreShattered` (what it looks and sounds like) |
+| `Content/Combat/Parry.cs` | `Parry`, `ParryPlayer` | `Parry.Take` (a flat loss of life); `ParryPlayer.AboutToTurn` |
+| `Content/Combat/ParryRules.cs` | | A comment |
+| `Content/Projectiles/Melee/IronFlowHoldout.cs`, `Content/Items/Mage/Spell/ColdCall.cs`, `Content/NPCs/DonaQuinn/DonaLanceThrown.cs`, `Content/Projectiles/Ranged/MeatHook_Hook.cs` | | One line each: section 8, the last |
+
+No texture, no sound file, no localization key. The words `/parry` says of a hand are in
+`SkeletronHandParry.Told`.
+
+#### The hands
+
+**When.** Only a hand that is being swung at somebody (`SkeletronHandParry.Swung`), and, as
+for any enemy, only one that is attacking: able to hit that player now, and coming at them
+at the arc, or on them from the front (§16.30).
+
+- **Vanilla's two swings, in flight**: brought down at a player from over his head (its
+  state 2, `NPC.ai[2]`), and swept in at one from out to his side (5).
+- **And for as long after as it is still flying.** Vanilla calls the first over the tick the
+  hand's top is under its target's, and the second the tick its middle passes theirs, with
+  the hand still going through them at the swing's speed. So a hand hanging by him (0 or 3)
+  that is faster than 11 pixels a tick is taken as swung (`SwingSpeed`), whatever sent it
+  flying. Hanging lets nothing take a hand away from its place faster than 10 (section 6).
+- **In Legends, the blow of the two moves that are the hands'**: the clap as they shut (the
+  move's ticks 96 to 107), the smash as they come down (from 78 until that hand is down).
+  `LegendsSkeletronHand.Striking`.
+- **Not**: hanging by him otherwise, or lying on a player it has just struck (walked into,
+  not swung); drawn back for a swing (1 and 4); on its way to its place in a move, locked
+  there, or after the blow; while he arrives; while it is turned; with his head gone.
+
+**What** (`SkeletronHandParry.Thrown`, where the world is decided).
+
+- It takes the parry's blow as anything does (the weapon's damage, on the parrier's
+  machine), and then **a fifth of its own full life, whatever its armour**
+  (`LifeShare`, `Parry.Take`: `NPC.StrikeNPC` with the damage given, which asks neither its
+  armour nor whether it can be hurt). Five parries break a hand (where its life does not
+  divide by five, the parry's blows make up the rest).
+- **Its swing is over**: vanilla's own state for after it (3 after the swing down, 0 after
+  the sweep; his count to the next left as it was), or, in a move of Legends, no further
+  part in that move (`spent`: `LegendsSkeletronHand.PreAI` moves it no more until the move
+  is over).
+- **It is thrown back the way it came**: 15 pixels a tick, nine tenths of that each tick
+  after, for 26 ticks, 140 pixels in all, over whatever its AI gives it (`PostAI`). Out of a
+  move it then hangs where it was thrown to until the move ends.
+- **It touches nobody** for 45 ticks (as long as the one who parried it is spared it:
+  `ParryPlayer.Spare`), and, parried out of a move, until that move is over. It cannot be
+  parried again meanwhile.
+- Never staggered, and so never open to the riposte; not pushed: thrown back instead.
+- Whoever parried it is marked as having had a hand in him (`NPC.PlayerInteraction`).
+- What shows it, the first tick a machine sees a hand turned (`Chipped`): bone knocked off
+  it the way it is thrown, a ring, two sounds. On top of the parry's own clash.
+
+**The clap and the smash are both hands' as one**, and a parry faces one way.
+
+- With one of the two turned aside the blow is broken: **the other is thrown back with it**,
+  away from the parrier, out of the move too. It loses nothing.
+- **On the parrier's machine the other cannot touch them from that tick**
+  (`LegendsSkeletronHand.CanHitPlayer`), whatever the server has yet to say, and whichever
+  of the two the game asks first: section 8.
+- **What the blow would have shown is left out** (`LegendsSkeletronHand.Broken`): the clap's
+  bang, its dust and the screen's shake as the hands would have met; and, on the machine
+  that parried, where the hands may come down before the server has thrown them back, the
+  ground's heave and the bang of a smash. The head keeps which move was broken
+  (`LegendsSkeletron.brokenIn`), since the hand that was parried may not have lived through
+  it.
+
+**Who decides.** The server, or the one machine there is; a hand's turned state is sent with
+it (three bits and up to fourteen bytes: 16 bytes in all for every global on a hand in the
+rig). **A server takes the word of a parry for a swing that is over where it has it, if it
+was over no more than 30 ticks ago** (`Late`): section 8.
+
+#### The core
+
+**When** (`QueenSlimeCore.CanBeTurned`). Anywhere on its way, out or back, while it can hurt
+anyone, as any shot: at the arc, or as it reaches the player from the front. Never one
+already turned, or under the yellow star.
+
+**What.**
+
+- **It is not broken: it is turned** (`Turned`, `Return`). From that tick it goes straight
+  to wherever her core is, through anything, 16 pixels a tick and one more each tick to 36
+  at the most, spinning the other way, the parry's steel over its own red. It is in her when
+  it is within one tick's flight and 20 pixels of her core.
+- **It hurts nobody on its way back**: no player (`CanHitPlayer`) and nobody of the town's
+  (`CanHitNPC`).
+- **In her, she loses a tenth of her full life, whatever her armour**
+  (`LegendsQueenSlime.CoreReturned`: `ParriedShare`, `Parry.Take`), and whoever parried it
+  is marked as having had a hand in her. A blow like any other after that: it brings her
+  wings if it takes her under half, and her death if it would kill her (her death begins as
+  it always does, her life held at one).
+- **What that looks and sounds like** (`CoreShattered`, each machine's own as the core is
+  ended in her): she caves round it and is knocked the way it was going, her crown jumps,
+  crystal breaks off, her gel is thrown out of the far side of her, the screen shakes.
+- **Then she catches it, as ever**: her move goes on to its catch the tick the core is gone.
+- If she is gone, or done waiting for it, before it gets there, the server ends it as it
+  always did, and nothing is struck.
+
+**Two machines.** The machine that parried it turns it at once; the server turns its own
+when it is told, sends that with the core (`sentBack`, and how long it has been on its way:
+three bytes more), takes her life and ends it. On the parrying machine the core is then
+further on its way back than the server's (by its word's way there and the server's back):
+**it stays where that machine has it** (`own`, `confirmed`), gets into her that much sooner,
+and waits there unseen to be told it is ended. A parry the server never answers is undone a
+second after the core has got there, and the core goes on as it was, from where its own
+clock has it. A machine that did not see it get there shows it going into her if it is
+ended within 200 pixels of her. Section 8.
+
+### 4. The numbers
+
+**Yours:** a fifth of the hand's full life; a tenth of hers; the core returned to her.
+
+**Mine**, each a constant with its name on it:
+
+| | | where |
+|---|---|---|
+| a hanging hand is swung | faster than 11 pixels a tick | `SkeletronHandParry.SwingSpeed` |
+| thrown back | 15 a tick, 0.9 of it each tick, 26 ticks (140 pixels) | `ThrowSpeed`, `ThrowKeep`, `ThrowTicks` |
+| harmless | 45 ticks, and the rest of the move | `Harmless` |
+| the server's patience | 30 ticks after a swing is over there | `Late` |
+| the core's way back | 16 a tick, 1 more each tick, 36 at most | `QueenSlimeCore.BackSpeed`, `BackGain`, `BackMost` |
+| in her | within a tick's flight and 20 pixels | `BackInto` |
+| a client's wait for the server | 60 ticks in her | `WaitMost` |
+| ended near her | 200 pixels | `LandedNear` |
+
+What the fifth and the tenth are, one player in the world (read off the game's own defaults
+in the rig; her life with the mod's 1.2 in Legends):
+
+| | Classic | Expert |
+|---|---|---|
+| a hand | 120 of 600 | 312 of 1560 |
+| a hand in Legends | 180 of 900 | 468 of 2340 |
+| the Queen Slime | 1800 of 18000 | 2880 of 28800 |
+| the Queen Slime in Legends (where she throws it) | 2160 of 21600 | 3456 of 34560 |
+
+### 5. Five readings
+
+1. *"skeleton hands"*: Skeletron's two hands. Not Skeletron Prime's four arms, and no
+   skeleton's.
+2. *"1/5 max hand HP"*: a fifth of that hand's own full life, flat, taken from the hand, on
+   top of the parry's blow. Not from his head.
+3. **When a hand can be parried is mine**: only while it is swung. A hand hanging by him
+   hurts by touch too, and cannot be parried: five parries of one that only hangs there
+   would break it in the time of one swing.
+4. *"crystal core boomerang"*: the core she throws in Legends. In a world that is not a
+   Legends one she never throws it. *"returning it to her"*: straight back, from wherever it
+   was parried.
+5. *"shredding her by 1/10 hp"*: a tenth of her full life, not of what she has left; flat,
+   whatever her armour; once, as it gets into her.
+
+### 6. What the 1.4.4 assembly says (read, each of them, before it was leaned on)
+
+- **A hand's AI** (`NPC.VanillaAI_Inner`, its style 12; the state is `ai[2]`, `ai[0]` its
+  side, `ai[1]` its head's place among the NPCs):
+  - its head gone or not his: the hand ends itself (at once off a server; on one, once
+    `ai[2]`, raised by 10 a tick, is over 50);
+  - **0 and 3, hanging by him**: `ai[3]` counts up by 1 a tick (1.5 in Expert) to 300, then
+    `ai[2]` goes up by one. Its place: its middle 200 pixels to its side of his middle, its
+    top 230 under his top. **What takes it away from that place is held**, from the first
+    tick, to 8 across and 3 up or down. **What takes it toward it is only added to**, 0.07
+    across and 0.04 up or down a tick, with no limit; in Expert the whole of that is done
+    twice a tick. While he spins (his `ai[1]` not 0) the place is 120 to his side and 100
+    over his top, the holds 8 and 6 (10 together at the very most), the gains 0.1 and 0.07,
+    and nothing is counted;
+  - **1, drawn up**: until its top is 200 over his; then `TargetClosest`, `ai[2]` is 2, and
+    its speed is 18 a tick (21 in Expert) at its target;
+  - **2, the swing down**: over (to 3) the tick its top is under its target's top, or it is
+    going up;
+  - **4, drawn out**: until its middle is 500 to the side of his; then 5, at 17 a tick (22);
+  - **5, the sweep**: over (to 0) the tick its middle has passed its target's middle the way
+    it is going.
+
+  So a swing leaves a hand at the swing's speed for the tick its state changes, and after
+  that for as long as that speed takes it toward its place and not away. In the rig's
+  Classic fight a swing down is at 18 on the tick it is called over and 6.9 on the next.
+- **`Projectile.Update` forgets `netUpdate` at the start of every update**, before the AI
+  (`netUpdate = false`, between the sound delay and the immunity counts), and looks at it
+  only at the end, on its owner's machine: `if (netUpdate2) netUpdate = true`, then, if
+  `netUpdate`, the message (27) is sent and `netUpdate2` cleared (or, with `netSpam` at 60,
+  `netUpdate2` is set for the next update). So **a `netUpdate` asked for outside the
+  projectile's own update is never sent**: from a player's update, another projectile's, an
+  item's `Shoot`, a packet. `netUpdate2` is what is kept. The game does it so itself:
+  `Player.ItemCheck_CheckFishingBobbers` sets `netUpdate2` on a bobber it reels in, and
+  `GolfState.ResetGolfBall` on a ball it moves. Section 8.
+- **`NPC.UpdateNPC_Inner` does not**: an NPC's `netUpdate` is left alone until the end of
+  its update (`UpdateNetworkCode`, then cleared), so one asked for from anywhere is sent.
+- **`Projectile.NewProjectile`** calls `ProjectileLoader.OnSpawn` just before it sends the
+  new projectile (27), so what `OnSpawn` changes is in that first message.
+- **`MessageBuffer.GetData`, a projectile's sync (27)**: one that is already there is given
+  its place, its speed, its damage and its `ai` first, and its own extra reading last
+  (`ProjectileLoader.ReceiveExtraAI`). A server takes none from a client for a type that is
+  hostile.
+- **`Projectile.Kill`**: only its owner's machine tells the others it is ended (29), and
+  every machine's `OnKill` runs last. The core's owner is the server.
+- **A hand's place among the NPCs**, as the game's own `NPC.AI` makes them in the rig: the
+  one a clap puts on the player's right (`ai[0]` -1) before the other.
+  **`Player.Update_NPCCollision`** goes through the NPCs from the first to the last, and
+  asks of each, before it looks at whether the player is in their moment of safety or
+  whether the two touch, `CombinedHooks.CanNPCHitPlayer`: the NPC's own side
+  (`NPCLoader.CanHitPlayer`), and only if that says yes the player's
+  (`PlayerLoader.CanBeHitByNPC`).
+- Already read, and leaned on again: `NPCLoader.NPCAI` runs `PostAI` whether or not a
+  `PreAI` said no (§16.41); `NPC.StrikeNPC` takes exactly the damage it is given (§16.33).
+
+### 7. Verified
+
+- **Compiled** against the 1.4.4 assemblies, from the device's own source with these changes
+  on it: 0 errors, the baseline 10 warnings.
+- **A new rig, `TurnedRig.cs`** (`PAD_TURNED=1`; `PAD_TURNED_MODE=expert` for an Expert
+  world; the mod's classes as compiled). Every `ModPlayer` (38), `GlobalNPC` (44) and
+  `GlobalProjectile` (8) of the mod is loaded and registered with the game's own loaders in
+  the order the game loads them, the core is registered as a projectile of the game's, the
+  tables are resized, the lookups and the hook lists built, and every `SetStaticDefaults`
+  run. Skeletron is made by `NPC.NewNPC` and his own AI makes his hands; what runs each tick
+  is the game's `NPC.AI` (every hook, then vanilla's AI, then every hook),
+  `NPCLoader.CanHitPlayer`, `PlayerLoader.CanBeHitByNPC`, `NPC.StrikeNPC` and `checkDead`,
+  and `Projectile.AI`. What stands in: the player's update (the parry's count, the game's
+  question of each enemy on them, the parry's look round), the moving of what an AI has
+  given a speed, and a projectile's sync flags round its AI, as section 6 has them.
+  **195 of 195 in a Classic world, and 195 of 195 in an Expert one.** What they show
+  (Classic's figures; Expert's beside them where they differ):
+  - of vanilla's 514 kinds that hurt by touch: 353 light, 62 heavy (35 worms, 3 the mod
+    speaks for), 25 giants, 74 never (it was 61 and 75);
+  - **Skeletron, not in Legends** (head 4400, hands 600; Expert 8800 and 1560): his arrival
+    is 328 ticks and nothing of his can touch the player in it; hanging, a hand is "not
+    now"; the swing down parried on tick 417 at 18 a tick (Expert: tick 774, at 21, after
+    two sweeps let by): the blow (5: an Iron Broadsword against its armour) and 120 (312),
+    its state 3, thrown at 15 a tick, 141 pixels by the measure, harmless 45 ticks, not
+    staggered, the other hand as it was; then a hand hanging by him again; the sweep parried
+    at 17 (22), its state 0 after; **a hand hanging by him that the player walks into with a
+    parry up is not parried, and touches them**; the fifth parry of one hand breaks it, and
+    he and the other go on; a parry begun too late for the arc meets it on the body; vanilla
+    calls the swing down over with the hand still on the player at the swing's speed, and a
+    parry first active on the tick after meets it there in its state 3; let through, the
+    swing lands and costs the hand nothing;
+  - **in Legends** (head 6600, hands 900; Expert 13200 and 2340): a swing of vanilla's
+    between his moves, parried the same for 180 (468);
+  - **the clap**: let through it lands as the move's clock reads 107; its hands can be
+    parried from 96 to 107 and not before or after; a parry begun on 98 facing right meets
+    the right hand a tick before it would land: the blow and a fifth off it, nothing off the
+    left, neither touches, both thrown to 210 pixels either side, vanilla's again the tick
+    the move is over; facing left the left one pays; in the lock nothing is turned;
+    **a parry first active on the very tick it lands, facing either way: met on the body,
+    no touch, the one in front pays** (section 8);
+  - **the smash**: can be parried from 78 until down; met two ticks before it would land, at
+    28 a tick; both thrown back up, neither lands (the lowest either gets is 53 pixels over
+    the player's head) or touches for the rest of the move; the same on the very tick it
+    lands, facing either way;
+  - **a server**: no word taken of a hand it has not had in a swing; told of a parry in the
+    smash, exactly a fifth, both out of the move, a second word nothing; what it sends of a
+    hand is what a client reads, and a client moves it as told and takes no life itself;
+    **vanilla's swing over 8 ticks ago there, slowed and hanging: the word still taken**, a
+    fifth, thrown, its state left alone; none taken 31 ticks after the swing's last tick;
+    the clap shut 5 ticks ago: taken, both out of what is left of the move;
+  - **what is shown** (run with the game taken for one with a window; nothing looked at):
+    the clap's bang shakes the screen by 10 let through and is left out parried (4.5: the
+    parry's own); his last hand alone in a clap, broken by its fifth: no bang; on a client
+    whose player has just parried a hand of the smash the hands come down before the
+    server's word and nothing of the blow is shown; his head gone with both hands out of a
+    move: nothing left held;
+  - **the core** (her life 21600 in Legends, 31 armour; Expert 34560): let through it goes
+    out 991 pixels and is back in 231 ticks, 7 of them on the player; parried on its way out
+    81 pixels from the player, 424 from her: turned, harmless, not to be parried again;
+    straight back, nearer every tick, 16 then 17 and one more each tick; into her 17 ticks
+    on for exactly 2160 (3456); the parrier marked; she catches it and goes on; met on its
+    way back from the far side of a player who faces it: the same, through them, harmless;
+    with 11800 left the tenth takes her under half and her wings come once she has caught
+    it; with less than a tenth left her death begins, her life held at one; her gone on its
+    way: ended, nothing struck; outside Legends, thrown anyway: 1800 of 18000 (2880 of
+    28800);
+  - **the core, two machines**: the server told: turned, whose parry kept, and **sent from
+    its next update, once** (14 bytes with every global's); a client reads it and flies it
+    into her, takes no life, and waits there two seconds on; **on the machine that parried
+    it, the server's word 6 ticks later leaves it where that machine has it** (the rig had
+    put it 143 pixels off, as the game would) and it goes on from there; a second word
+    would be taken as the server has it; **never answered, it waits a second in her and is
+    let go on as it was, where a core nobody parried is on that tick**; the server's own
+    gets there: the tenth, and ended.
+- **The other rigs on the same build**: the Meat Hook's 173 of 173 (one more than §16.41: a
+  let-go told to the hook from outside its update is sent from its next one, by
+  `Projectile.Update`'s own count of its messages, 0 to 4; with the line taken out again
+  for a run, 0 to 0, and that check alone fails); the whole of the default 465 of 465; the
+  universal parry's stub harness (`Parry.cs` whole, against stubs) 320 passed, 0 failed.
+- **The device's copies staged again before delivery** and compared byte for byte with what
+  each change was made from.
+- **Read through by me, not by another.**
+
+**Not seen in the game: any of it. Not heard: any of its sounds. Not tried with anyone else
+in the world.**
+
+### 8. Found on the way, and put right before delivery
+
+All of them by reading the code and the assembly again after the rig first passed whole;
+each has its checks in the rig now.
+
+- **A parry first active on the very tick a clap or a smash lands, facing left, took the
+  hit.** Both hands are on the player that tick; the game asks the right-hand one first; it
+  is behind a player facing left, so it hit, and the left one was parried a moment after.
+  One tick in the eight a parry is active, one way round. Now the hand a parry does not
+  face cannot touch them if the other is about to be turned aside this tick
+  (`ParryPlayer.AboutToTurn`, which is `CanBeHitByNPC`'s own test, taken out of it unchanged
+  into `OnBody` and asked a tick early; `LegendsSkeletronHand.CanHitPlayer`). Run in the rig
+  on the build before the change: failed facing left for both moves; after: passes both
+  ways.
+- **A server would have refused most parries of a hand.** It is told of one by the machine
+  that made it, a round trip after the hand it has was where that machine saw it; a swing is
+  met at its end, and a clap on its last tick or two. So a server takes the word for a swing
+  that was over no more than 30 ticks ago (`Late`, less than the 45 a hand is harmless, so
+  no swing is paid for twice). The Golem's fist has the same weakness and has not been
+  touched: its punch is long, and a word of it is seldom late.
+- **A parried clap still went off.** The head sounds the clap's bang and shakes the screen
+  by the clock, whatever the hands did. `LegendsSkeletronHand.Broken` now.
+- **On the machine that parried it, the core would have jumped back** when the server's word
+  came: the game puts a projectile where the server has it before the mod reads its own
+  part, and the server's core was turned later. It keeps its own place now.
+- **A client's core waiting in her was undone after a second even when the server had said
+  it was turned** (a line slower than that). It waits for the server now; only a parry the
+  server never answered is undone.
+- **The server would never have sent the turned core**, and four older things were never
+  sent either. `Turned` asked with `netUpdate`, from a packet: section 6 has why that is
+  forgotten. `netUpdate2` now. The same mistake, found by looking for it everywhere a
+  projectile of the mod's asks to be sent (24 places: this one and four more are asked from
+  outside the projectile's own update; a sixth, the gravestone's, is in `OnSpawn`, which the
+  game runs before it sends a new projectile at all), in what was delivered before:
+
+  | where | asked from | what was never sent, with others in the world |
+  |---|---|---|
+  | `IronFlowHoldout.Begin` (§16.26) | the item's `Shoot` | which cut or parry the sword is in: on other machines it only ever hung |
+  | `ColdCall.Shoot` | the item's `Shoot` | the staff held up longer by the next cast |
+  | `DonaLanceThrown.Deflect` (§16.30) | a parry | the lance knocked away: other machines flew it on as if nobody had parried it, until it planted |
+  | `MeatHook_Hook.TurnBack` by `LetGo` (§16.41) | the gun's update | a second right click letting go: the enemy stayed held for everyone until the hook was home |
+
+  One line each. Nothing changes with one machine. RELEASE_TODO's entries on the parry and
+  on the Meat Hook with two machines had taken the first and the fourth for sent; they say
+  so now.
+
+And one of my own notes: an earlier reading had the hanging state holding a hand to 8 across
+and 3 up or down "from its first tick". It holds only what takes the hand away from its
+place (section 6). The code's rule never leaned on more than that; its comments say it as it
+is.
+
+### 9. Added without being asked
+
+- In the clap and the smash the other hand goes back with the one parried, and loses
+  nothing; neither can touch the parrier.
+- The bang and the heave of a blow a parry has broken are left out.
+- A parried hand is harmless for 45 ticks, to everyone and to the town's people.
+- The core is harmless on its way back, to the town's people too; the parrier is marked for
+  her; the tenth can bring her wings or her death.
+- What both look and sound like (section 3).
+- `/parry` on a hand says what a parry does to it, or that it is not in a swing.
+- The four lines of section 8's table, in things this request did not name.
+
+### 10. Still as it was, or left
+
+- **No tip says any of it.** The tips are the user's.
+- **A hand hanging by him cannot be parried**, though it hurts by touch (reading 3).
+- **A hanging hand flying at more than 11 a tick can be**, swing or no swing: one racing
+  back to its place by him. Not met in 900 ticks of an Expert fight traced in the rig.
+- **Skeletron Prime's arms** are parts of a boss by the rules, and not parried.
+- **With others in the world**, reasoned and run in pieces, never with two machines: the
+  parrying machine's hand goes on as it was until the server's word comes (as every enemy's
+  push does), and in a smash the hands may touch down there, silently, before they are
+  thrown back up; another player's machine may still show a clap's bang if that word reaches
+  it after its own hands have met; if the server ends a returning core within 200 pixels of
+  her for another reason (she stopped waiting), a client shows it going into her; a core
+  parried so near her that it is in her the same tick is ended before it is ever sent as
+  turned, and only the parrying machine shows it going in.
+- **Her core's look.** "Crystal breaks off" is shards and a sound; her core is not lost,
+  and she throws it again.
+- **The way back through a door held one frame for 3.7 seconds** (section 1): RELEASE_TODO.
+- **The cloud's copy of the source is compared with the device's by bytes from now on**,
+  every file, before anything is built: by size it had missed thirteen of the user's edits.
+
+---
+
+## 16.43 Later in session 7: Foigh, the Swordsman: his road and the first phase of his fight; the Empty Hall walled, roofed and lit as an arena
+
+The user:
+
+> Added Foigh the swordsman textures in lore, make his bossfight:
+>
+> Moveset Inspiration: Margit the fell omen, Radagon, Heolstor the Nightlord
+>
+> Spawn animation:
+> Screen fades and cinematics walks to 20 tiles away from him.
+> He from afar, pans to him, hes not facing you, he turns around; dialogue:
+> "Thank you, stranger. My gratitude upon you for aiding this.|.|.|. completion. My vengeance is served." (...)
+> "Your dedication for me showed much strength|,| dexterity|,|.|.|. You truly are a warrior|.|.|." (...)
+> "Such spirit in you|.|.|. Would you hold your weapon tight for one last task?" (...)
+> He pulls out his sword, swing it up and it ramps onto his back (in dragging stance)
+> "I desire|.|.|. A warrior's death."  (Ready)
+> Fades back to player.
+> 3 Phase: 100- 66, 66- 30, 30-0
+>
+> HP: 150000, 240000, 360000 legends: x1.5
+> Sword damage: phase 1: 100, 130,150
+> phase 2, 3:  150, 200, 230
+> x1.5 legends (armor piercing)
+> Throwing dagger damage: 100 armor piercing
+>
+> Phase 1:  Auto skip dialouge box:
+> While not attacking:
+> {
+> Walks slowly, drags the swords on the ground to the player,
+> Will 2/5 chance swing sword at hard projectiles like bullets or arrows completelyy parrying them(like how player parry).
+> 3/5 chance to dodge magic projectiles/flying melee by flash stepping infront or up(use smart AI)
+> 3/5 Parry players true melee swings (even holdout swings), knocking player back(cc bypass)
+> 1/2 chance parrying projectiles (non melee holdout) will comeback at player as hostile but break on tile.
+> }
+>
+> Within melee range:
+> Swing combo1: winds hand with sword up: Down, up,  pierce, jump back a distance.
+> Swing combo2: Jump in parabol onto player with sword pointing at player, on hit, turn to other moves, on no hit, sword stuck in ground, takes 2 secs to pull out.
+> Swing combo 3: Struck down hard (2x damage), turn body, and spin a circle, sword spin around the body (3d)., throw throwing knife. 1 and 2 using bottom hand.
+> Swing combo 4: Jump up and throw the sword at player, (player bound to be ccbypassed by sword and gets knocked out for 1s.) Falls down, runs to sword and grab it and double swing around the body 3d.
+>
+> Not within melee range:
+> Move set 1:Throw fast throwing daggers. once in a while in succession of 3 interval of 20 (like margit the fell omen)
+> Move set 2: Flash steps onto the player to behiind(give 0.5s of reaction time )and swings sword up , and flash steps back to first position
+>
+> Player drinks health potion:
+> Immediately flash steps and grabs the player by the neck, throw player up and with the other hand with sword, pierce up to the player, holding that position and swing his arm, throwing the player ragdoll.
+>
+> Lets just make the first phase first
+>
+> Take your time, make it beautiful, make it epic, make it elden ring
+
+And while it was being built:
+
+> add any effect if needed, any textures, shaders or particles. Decide whats best, im gettins some shut eyes. Take the 3 characters inspiration very closely
+
+> the fight will happen in the long hall subworld, so for now, js make him work with flat tiles. fix the subworld to have 5 tile thick gray brick wall on both edges and a ceiling 36 tile thick. Add gray stone wall no platform and torches  and tiki torch lamps that is well lit for an arena type subworld
+
+**Read as.** A new boss, Foigh, drawn from the seven pictures the user put in
+`Content/NPCs/Foigh`: the road up to the fight exactly as written (the four lines are the
+user's own words, kept as written), and the first of three phases, with every move, chance and
+number in the list. The second and third phases are not asked for yet. He is to work on flat
+ground, in the Empty Hall, which is to be shut in (walls five thick, a ceiling thirty-six
+thick), backed with stone wall, without platforms, and lit with torches and Tiki Torches.
+**The user was asleep from early on: every open choice was taken here, and section 5 lists
+all of them.**
+
+### 1. The device, read first
+
+Before anything was written the device's source was staged whole and compared with the
+cloud's copy by bytes, every file (§16.42's rule). What was new was his art, in
+`Content/NPCs/Foigh`: seven pictures of his pieces, `Swordman_Head.png` 24x24,
+`SwordsmanBoss_Torso.png` 24x27, `SwordsmanBoss_TopArmf.png` 18x26,
+`SwordsmanBoss_BotArm.png` 12x18, `SwordsmanBoss_TopLeg.png` 16x23,
+`SwordsmanBoss_BotLeg.png` 16x19 and `SwordsmanBluntSide.png` 90x90 (pixel art at 2x, six
+colours); a picture of the whole of him beside a figure the height of a player
+(`SwordsmanBossRef.png`, 100x80, which nothing in the mod asks for); and two aseprite files.
+The pieces have alpha that is all or nothing and clean transparent pixels. From the same
+evening there is also `Content/NPCs/Dioltas/SwordsmanBoss.aseprite` (2481 bytes, not the
+same bytes as the one in `Foigh`), in a folder of its own that nothing in the mod asks for.
+**None of it is touched, moved or renamed.**
+
+**At the end of this work the device could not be reached**: asked five times over the
+last part of it, and five times more through the night, fifty minutes apart, the answer
+each time was that the computer was not connected. It answered at 04:07 UTC on the 6th,
+with the user back: see the end of section 7.
+
+### 2. What there was
+
+- **The art** is seven separate pieces, not a sheet: a head, a torso, two arms, two legs and
+  the sword. It faces left. He is 54 px tall on his canvas; the sword is 88 px from grip to
+  point, on the diagonal of its own picture, with a clean edge and a dull one.
+- **The lore plan** (`PAD_Lore_Planning.md` §9, under the working name Clanmaster): a knight
+  who deflects, dodges and parries; an optional boss after the Moon Lord; the end of his
+  fight is to be a choice (kill him, which is what he asks for, or spare him and be given
+  his sword; that the killing is the Blade of Mors's is proposed there, not decided). Not
+  built here: it belongs to the end of the third phase.
+- **What the mod already had and he uses:** the cinematic (bars, lean, fade, hold), the
+  dialogue (lines with beats in them, answers, a scene that holds the player), the boss
+  name plate that a boss can start itself, the yellow star for what goes through any shield,
+  the parry (and an enemy's own answer to being parried), the stagger and its riposte, the
+  ragdoll, the particles, the ribbon drawer for a blade's trail, the ground finder 'Dame'
+  Quilt's walk-up uses.
+
+### 3. What was built
+
+**Thirteen new files in `Content/NPCs/Foigh`, one in the root, four changed.**
+
+| file | what it is |
+|---|---|
+| `FoighRig.cs` | where everything is on his art (measured off the PNGs and the aseprite layers), and the sums that put seven pieces together for any way he holds himself: lean, nod, each arm and leg from its joint, which hand has the sword and where it points, how far he is turned to the eye. No game in it: it is run outside the game to draw him |
+| `FoighTrack.cs` | a movement as poses at moments, eased between |
+| `FoighMoves.cs` | every movement he has, as tracks and sums, and the ticks things happen at |
+| `Foigh.cs` | the NPC: numbers, moves, what is sent with him, the words a player's machine sends the server, the AI's one tick, `/foigh`'s call |
+| `Foigh.Scene.cs` | the road |
+| `Foigh.Fight.cs` | the fight |
+| `Foigh.React.cs` | what he does about what is sent at him, and `FoighMark` (a shot's verdict, kept on the shot) |
+| `Foigh.Draw.cs` | drawing him, the blade's trail, the ghosts of a flash step, and every spark, dust and sound |
+| `FoighPlayers.cs` | the player's side: the walk up (`FoighScenePlayer`), and being held, thrown or shoved (`FoighGripPlayer`) |
+| `FoighDagger.cs`, `.png` | his throwing knife (the picture is a stand-in, section 5) |
+| `FoighSwordThrown.cs` | his sword, thrown, and standing in the ground |
+| `FoighReturned.cs` | a shot of a player's on its way back to them |
+| `FoighCommand.cs` (root) | `/foigh`, `/foigh gone` |
+| `PisAndDag.cs` | one packet more (`PADPacket.Foigh`) |
+| `Content/UI/Dialogue.cs` | `Dialogue.Aside`: a line that goes by itself and holds nobody |
+| `Localization/en-US_Mods.PisAndDag.hjson` | his name, his three projectiles' names, five death lines |
+| `Content/Subworlds/EmptyHall.cs` | the hall as an arena (below) |
+
+**He is drawn from the pieces, not a sheet.** Each piece turns about its own joint. When he
+turns about (the spin in the third and fourth moves, the turn on the road) the whole of him
+is drawn narrower across, and the sword shorter as it points at the eye or away: a sprite
+batch cannot do either to one picture, so those pictures go through a view of their own, and
+only then. The blade that is drawn is the blade that hits: both ask the same pose of the
+same tick.
+
+**The road** (`Foigh.Scene.cs`, `FoighScenePlayer`). He stands with his back to whoever has
+come, the sword in the ground beside him. On the player's machine the picture fades (30
+ticks); under the black they are put down 28 tiles behind him, facing him, with nothing in
+their hands and nothing able to touch them; it comes back up (36), and they walk to 20 tiles
+at half a walk's pace. The camera goes over to him (54 ticks); he looks back over his
+shoulder, and turns round (112). Three lines, each with the one answer "...". He reaches
+back, takes the sword out of the ground, swings it up over his head and lets it down behind
+him into the stance he fights from (108). The fourth line, and "Ready". His name comes up
+under him ("Foigh", and his title with it, "The Swordsman") and goes to the bar; the picture
+fades to black, the camera is put back on the player under it, and it comes back up on them
+(3.5 s after Ready).
+He begins to walk. Nothing can land on him until then. The server waits for the player's
+three words (walked up, talked, ready) and not for ever (25 s, 90 s, 90 s): a player who
+never answers is not a world stopped. If the player it is for dies or leaves on the road, he
+is gone.
+
+**The fight** (`Foigh.Fight.cs`). He does nothing by touch. All of it is the sword, a knife
+or a hand, worked out on each machine against its own player as the mod does everywhere.
+
+| | what | ticks |
+|---|---|---|
+| walking | at them at 1.15 px a tick (a player walks at 3), the dull side of the sword dragged behind him, sparks off its point; to rest about 54 px off them. Between moves, 26 to 70 ticks of it (18 to 34 after his sword has been turned aside) | |
+| one | wound up over his head; the cut down (lands at 40), the cut up (58), turns to face them again, the thrust with a lunge of about 74 px (lands about 89), held, and a leap back with the sword coming round after him, which cuts too | 150 |
+| two | down into his knees (18), a leap onto them, point first, aimed a third of the way ahead of where they are going (34 to 56 in the air by how far). On them: 12 ticks, then straight on, 3 in 5 into the first move from its second cut, 2 in 5 into twice round. On nothing: the sword is in the ground 120 ticks (two seconds; he pulls at it twice and has it at the third), and 34 more to be back in his stance | |
+| three | the bottom hand: wound up and held, the blow down for twice the sword (lands at 51); the whole of him round once with the sword out at arm's length (20; it cuts behind him and in front); a knife off the top hand; back to his stance | 138 |
+| four | a jump of ten tiles; the arm drawn back; the sword thrown at where they will be, at 24 px a tick, wearing the yellow star: the sword's damage, and whoever it goes through is down, not theirs to move, for a second after they land; it stands in the ground. He comes down, runs to it (8.6 px a tick), takes it, goes round twice with it (36), and settles | about 160 |
+| knives | from further off: one (30 ticks, out of his hand at 13) or, 22 times in 100, three, twenty apart (70 ticks, at 13, 33 and 53). After three, 40 times in 100, he comes after them with the leap | |
+| behind | a flash step to 58 px behind them (7 ticks, nothing can land on him); half a second with the blade low under them; the cut up (lands at 31); a flash step back to where he stood | 52 and two steps |
+
+What he does next is by where they are (600 picks each in the rig): within 150 px and no
+more than about five tiles over or four under him, one of the four sword moves (3 : 3 : 2 :
+2); well over his head, knives, the fourth move or the leap (4 : 2.5 : 2); anywhere else,
+knives or the step behind (5.5 : 2.5), and the leap as well within 30 tiles (2). The move he
+did last is a quarter as likely.
+
+**What is sent at him, while he walks** (`Foigh.React.cs`). Decided on the machine of the
+player whose shot or swing it is, where the game decides whether any hit of theirs lands;
+rolled once for each shot, a little before it gets to him, so that his sword is up, or he is
+gone, when it does.
+
+- **A swing of theirs** (a sword swung; anything held out and swung: a spear, a whip, a
+  sword of the mod's own): 3 in 5 he meets it. It does not land; they are thrown back about
+  ten tiles (eight if they hold toward him), their feet not theirs for 14 ticks, whatever
+  shield they have, and the star says so. A swing he has met is met for the rest of that
+  swing.
+- **A hard shot** (ranged or thrown, and solid by the parry's own count: an arrow, a dart, a
+  knife, a bullet that stops at the first thing it hits): 2 in 5 he strikes it out of the
+  air, and half of those go back at whoever sent them, as the same thing to look at, for the
+  knife's 100 through armour, broken on the first tile they meet, and able to be parried in
+  their turn.
+- **Anything else thrown** (a spell, a sword's light, a boomerang, fire, a rocket, a bullet
+  that goes through things): 3 in 5 he is not there when it lands. A flash step to in front
+  of them and straight into the first or third move (three times in four, if they are on the
+  ground, there is room, and nothing else of theirs is on its way to that place), or up over
+  it and down on them with the leap.
+- **What fights for them** (a minion, a sentry, and what those shoot) lands.
+- In the middle of a move of his own he answers nothing: that is when to hit him.
+
+**The one who drank.** A healing potion drunk within a hundred tiles of him, known by the
+wait for the next one beginning. If he is walking (or throwing a knife, or at the tail of a
+move) he comes at once: a flash step to beside them, the bottom hand to their throat (the
+star; 10 ticks), held there at arm's length (40; he is not much taller than they are, and
+their feet are a pixel or two off the ground), thrown up as the sword comes up (16), the
+sword up through them about six tiles over the ground, held there (30), and flung off it as
+a ragdoll, about 28 tiles, down a second after they land. One blow in it, as the sword goes through: the sword's damage, through
+armour, that nothing dodges and no earlier hit's grace stops. If he is in the middle of
+something longer he keeps it in mind for two seconds and no more. **The hand can be got out
+of the way of**: a run in good boots (7 px a tick) or a jump as he comes, and it closes on
+nothing, and he is 40 ticks getting over it. Walking away is not enough.
+
+**His sword turned aside.** His cuts can be parried (not the thrown sword, not the hand):
+he is thrown back and reels 44 ticks; every third time he is down on a knee for two
+seconds, open to the riposte (three times the blow). A knife and a shot sent back are
+broken by a parry.
+
+**How it ends, for now.** A blow that would kill him leaves him on 1: he goes down slowly
+onto a knee, the sword still behind him where it dragged, his head down; he fades, and is
+gone (2.5 s). Nothing is dropped and nothing is announced. With nobody left alive to fight
+he stands 2.5 seconds and is gone.
+
+**The Empty Hall** (`EmptyHall.cs`, layout 4). The same 400 by 320 tiles, the same forty
+rows of floor. Now: a ceiling of Gray Brick 36 rows thick (of those that can be seen) and a
+wall of it 5 columns thick at each end, with brick on past every edge, so the hall between
+them is 307 tiles long and 161 high; no platform anywhere; the door on the floor against the
+left wall. Behind all of it Stone Wall, laid as masonry: a dado of Gray Brick three rows
+high, a rail of Stone Slab, pilasters of Stone Slab three wide every twelve columns (and one
+against each end wall) up to a capital under a frieze of Gray Brick, a course of Stone Slab
+every twenty-four rows, and the Stone between patched here and there with brick (a fifth of
+it). Lit: a torch on every pilaster every twelve rows from just over a head, a torch up the
+middle of every bay six rows out of step with those, one more on each at the head of the
+wall, and a Tiki Torch on the floor in the middle of every bay but the two at the ends (a
+torch low on the wall there instead: the left one is where the door is and the dead come
+back, and the right one is kept the same; the lowest torch of the pilaster against the left
+wall is right over the door). 744 torches and 24 Tiki Torches. A new layout number, so the
+next door makes the hall again from nothing (`EmptyHall.4.wld`); the older files are left
+where they are.
+
+### 4. The numbers
+
+| | Classic | Expert | Master | in Legends |
+|---|---|---|---|---|
+| life | 150,000 | 240,000 | 360,000 | half as much again: 225,000 / 360,000 / 540,000 |
+| the sword, over 66 in a hundred of his life | 100 | 130 | 150 | 150 / 195 / 225 |
+| the sword, from 66 down | 150 | 200 | 230 | 225 / 300 / 345 |
+| the blow down in the third move | twice the sword | | | |
+| a knife; a shot sent back | 100 | 100 | 100 | 100 |
+
+All of it through armour, and varied the way the game varies any hit (15 in a hundred either
+way). Defence 40 (none was given). His life is not grown by how many are in the world.
+The stages are his life over 66 in a hundred, from there to over 30, and from 30 down: only
+the sword's damage follows them yet.
+
+How far a blow carries a player who stands still (measured in the rig): a cut about seven
+tiles, the thrust thirteen, the blow down twelve, a knife four, his meeting of their swing
+ten, the thrown sword thirteen, the fling off the sword twenty-eight.
+
+### 5. Choices taken while the user slept
+
+1. **The second and third phases are not built**, as asked. The first phase's moves run the
+   whole of his life; from 66 in a hundred down the sword does the later phases' damage.
+2. **"Phase 1: Auto skip dialouge box:" has no words after it.** A box that goes by itself
+   and holds nobody was built (`Dialogue.Aside`) and its line left empty
+   (`FirstPhaseLine` in `Foigh.Scene.cs`): put words there and they come up as the fight
+   begins. None were made up.
+3. **The answers under his first three lines are "..."** (the "(...)" in the list), and
+   "Ready" under the fourth.
+4. **"He pulls out his sword"** is out of the ground: it stands in the ground beside him
+   while he waits.
+5. **His name** on the plate and the bar is "Foigh", his title "The Swordsman". His face
+   and name show on the dialogue from his first line ("Foigh, the Swordsman" on its tab):
+   he is somebody they have been helping.
+6. **Music**: none on the road; in the fight the other soundtrack's second boss theme
+   (`FightMusic` in `Foigh.Fight.cs`, one line to change).
+7. **Nothing is dropped, and there is no ending yet** (section 3). No flag is kept that he
+   was beaten; he is not in Boss Checklist. The lore plan's choice at the end is not built.
+8. **He is not put in the hall by anything yet.** `/foigh` puts him down 46 tiles ahead of
+   whoever types it (26 at the least; behind them if there is no room ahead), and his road
+   starts by itself. Put down by another mod's menu he takes the nearest player and does
+   the same.
+9. **Reactions only while he walks** ("While not attacking"), and what counts as which kind
+   of shot (section 3). A bullet that goes through things, and a rocket, are stepped out of
+   the way of, not struck.
+10. **Defence 40**; the knocks and throws in section 4; his walk and the rests between moves.
+11. **Added to the list:** the leap back at the end of the first move cuts; after a leap
+    that lands he goes straight on (as "on hit, turn to other moves" asks) into one of two
+    things; the leap is also used from the middle distance and after three knives; before
+    the thrust he turns to face them again.
+12. **From the three named**, by what their pages list (read again at the end of the
+    work; the list asks for each of these already, and each was built to be known for
+    whose it is). Margit: a dagger thrown, or two, and a jumping stab after them (his
+    Dagger Toss and Jump: here one knife or three, and after three the leap, 40 times in
+    100); the slow overhead held before it falls (his Delayed Overhead Strike: the wind
+    and hold of the first move and of the third); a cut made while leaping backwards (his
+    Retreating Slash: the end of the first move). Radagon: gone, and there again with a
+    blow at once (his Teleport: the step to in front of them and straight into the first
+    or third move); the left arm drawn back and lunged at them, and the weapon into
+    whoever it caught (his Grab: the bottom hand, and the sword up through them); a leap,
+    and a weapon thrown from the top of it (his Golden Spear Throw: the fourth move);
+    blows that break the ground (the ground heaving under the blow down). Heolstor: behind
+    his target in a step, and the blow from there (his Backstab: the step behind them); a
+    charged pounce that ends with the sword in the ground (his Winding Thrust: the leap,
+    and the sword stuck there); the plunge from overhead (the step up, and down on them);
+    dashes that close a gap in a blink (every flash step). **From none of them:** the pale
+    ones of himself left along a step, which are mine.
+13. **Effects** are the mod's own particles and pictures (sparks, dust in the ground's own
+    colour, the ground heaving under a blow, wind along a thrust, blood, the ring of a
+    parry, a ribbon behind the blade). **No shader was added**: tModLoader does not build
+    them and they cannot be built here. **One picture was made**, the knife (10x26, six
+    colours of his sword's own, the same dark outline): a stand-in, in
+    `PlaceholderTextures.md`.
+14. **The hall:** the user's size and floor kept; "gray stone wall" read as Stone Wall
+    behind everything, with Gray Brick and Stone Slab worked into it so it is not one flat
+    sheet; lights on a lattice so no part is dim.
+
+### 6. What the 1.4.4 assembly says (read, each of them, before it was leaned on)
+
+- **The game does not scale an NPC whose damage is 0.** `NPC.ScaleStats` returns before
+  anything (unless `NPCID.Sets.NeedsExpertScaling` says otherwise), and
+  `ApplyDifficultyAndPlayerScaling` is called from inside what it skips. So his life is set
+  in `SetDefaults`, for the world as it is.
+- **`Collision.TileCollision` looks one tile past where a thing is.** Asked directly: a box
+  his size flush against a wall, going into it at 16 px a tick, is stopped; at 16.1 it is
+  let 16 px into the wall (a second column of the wall is looked at, and its answer
+  overwrites the first's). The game's own NPCs fall at 10 at the most; its projectiles take
+  a fast move in steps of 16. He never moves faster than 15.5 along or up and down
+  (`Foigh.MaxSpeed`): whatever a move asks for is held to that at the end of his tick. Only
+  the thrust asks for more (78 px over eight ticks, 17.5 at its fastest), and so carries him
+  about 74.
+- **`Projectile.Damage`** asks the mods (`CanBeHitByProjectile`) before it has looked at
+  whether shot and NPC touch, at the NPC's wait for that player, or at the owner's reach:
+  those are looked at in the hook, as the game is about to. What a hit sets after it: the
+  id's wait, the shot's own, ten ticks of the owner's on the NPC, and, for what is swung as
+  a sword is (`usesOwnerMeleeHitCD`), the owner's own wait for that NPC.
+- **A swing of an item** (`Player.ItemCheck_MeleeHitNPCs`, `ProcessHitAgainstNPC`) is
+  stopped for an NPC by the player's own wait for it (`meleeNPCHitCooldown`,
+  `SetMeleeHitCooldown`), not by `npc.immune`; `CanCollideWithPlayerMeleeAttack` is asked
+  every tick of the swing until then.
+- **`Player.Hurt`** with all of the defence ignored (`scalingArmorPenetration` 1), a slot of
+  its own for a hit that must land whatever came before, `dodgeable` false for one nothing
+  dodges.
+- **A boss's potion.** `NPC.DoDeathEvents_DropBossPotionsAndHearts` asks the mod for the
+  potion's type and then makes that item whatever the answer; `Item.NewItem` of type 0
+  makes an active item of nothing (asked in the rig: slot 0, active, type 0, stack 9). The
+  loot block is cleared before that point. Nothing of the kind is wanted from him, so his
+  death goes by `PADGlobalNPC.GivesNothing` (PreKill false): no items, no hearts, no line
+  in the chat.
+- **`NPC.NewNPC`** sets `target` to what it is given before `OnSpawn` runs: he is put down
+  for the player `/foigh` names.
+- **`NPCID.Sets.SpecificDebuffImmunity[type]`** is made for every NPC, a mod's too, when the
+  sets are made: writing to it in `SetStaticDefaults` is safe.
+- **Music.** A mod NPC's `Music` of 0 or more, at `SceneEffectPriority.BossLow`, is taken
+  before the game's own boss themes: 0 is silence on the road.
+- **A torch** is framed standing if there is something solid under it, else to a solid tile
+  on its left, else its right, else on the wall behind (`WorldGen.CheckTorch`). **A Tiki
+  Torch gives its light from all three of its tiles** (asked of the game's own light
+  scanner in the rig: each (1, 0.97, 0.85); a torch (1, 0.95, 0.8)).
+- **`Spawn_DescendFromDefaultSpace`** stops at any tile that is not a platform, a torch
+  included: no light stands in the three columns the game looks down for the hall's spawn.
+
+### 7. Verified
+
+**Compiled** against the 1.4.4 assemblies: 0 errors, the baseline 10 warnings.
+
+**The hall, in the rig** (the game's own world save and load): 482 of 482 checks, the hall's
+among them, on the build that is delivered. (On the build before it, which differs from it
+by a comment and one capital letter, it was run four times. The first time one check
+failed, and it was not one of the hall's: the one that listens from another thread for the
+lines the game writes while a passage is made heard 414 of them where it hears about 600,
+and so missed a step. The three runs after it passed whole. Read as the rig's ear and not
+the mod; nothing was changed for it.) The rigs of §16.41 and §16.42 on the same build: 189
+of 189 and 211 of 211. The shell tile by tile; a wall behind every cell and none elsewhere (Stone 54.2
+in a hundred, Gray Brick 16.5, Stone Slab 29.3); the registers; every light framed as the
+game frames one that is lit, and the same either side of the middle; nowhere further than 6
+tiles from a flame by the game's own count of light (0.57 of a torch's), nowhere on the
+floor further than 4 (0.69); a bomb's blast leaves the lights; the spawn clear. Drawn from
+the rig's dump with the game's own tile and wall pictures and that light, and looked at.
+
+**Foigh, in a rig of his own** (`PAD_FOIGH=1`: the game's `NPC.NewNPC`, `NPC.UpdateNPC`
+whole with its tile collision, `Projectile.Update` whole with every hook on the way to a
+hit, `Player.Hurt` whole, `Player.ItemCheck_MeleeHitNPCs` for a swing; the mod's classes as
+compiled, every mod player, global NPC and global projectile loaded as the game loads them;
+what stands in is the rest of a player's update, with the mod players' hooks called in the
+game's order, and anything drawn or heard): 133 checks of his own, all passing, on the build
+that is delivered.
+
+- Life and sword by world, all twelve; nothing by touch.
+- The road end to end on the player's side (put down 28 tiles behind him under the black,
+  the walk at 1.6 px a tick to 20.2 tiles, the turn in 166 ticks, the sword in his hand at
+  tick 19 of drawing it, 3.5 s from Ready to his first step), the server's waits with no
+  word from anybody, and the player dead on the road.
+- Every move begun by hand: its ticks, when each blow lands and for how much, with a
+  defence of 0 and of 100 (the same). The leap 40 times of 40 on a standing player; the
+  sword two seconds in the ground at one who walks off. The picks by place, 600 each.
+- 400 shots of each kind: bullets 178 struck and 85 of those sent back; arrows 154 and 71;
+  throwing knives 167 and 100; a spell 239 stepped out of the way of (178 to in front, 61
+  up); a sword's light 219; rockets 244; a minion's 60 landed of 60; 40 bullets of 40
+  landed while he threw a knife. 400 swings of an iron sword: 235 met, each throwing the
+  player back; 200 thrusts of a spear: 111 met.
+- The potion: the whole of it, one blow; again; the run and the jump that get out of it;
+  the walk that does not; kept two seconds and no more; nothing for a mana potion or for
+  one drunk 106 tiles off.
+- Parried three times: reel, reel, knee; the riposte three times the blow. The thrown sword
+  through a parry; a knife broken by one.
+- His end; struck down with a player in his hand (they are let go of); nobody left; what is
+  sent with him read back the same.
+- With the player in a corner: no move takes him into the wall. Dropped from sixty tiles:
+  on the floor, not through it.
+- **Six whole fights of four minutes** in a hall as long as his, against a player who
+  stands, closes, backs off, jumps over him, shoots six kinds of thing, swings, parries,
+  stands in each corner and drinks: nothing thrown, every move of the fight gone through
+  (636 walks, 100 of the first move, 101 leaps, 64 of the third, 30 of the fourth, 263 knife
+  throws, 282 flash steps, 100 steps behind, 23 shots struck, 8 swings met, 27 grabs that
+  closed and 15 that did not, 5 reels, 1 knee), never in a wall, never under the floor,
+  never walking without his sword, never stuck. That player gets out of the way of nothing
+  on purpose, and was hit 116 to 124 times in each four minutes, for 12,300 to 13,100 in
+  all (Classic, his first stage): a measure of how much he throws, not of how hard he is.
+
+**Seen**: the rig writes out, tick by tick, the draw lists his own drawing makes (the pose
+he is shown in, his ghosts, the sword in the ground or in the air) with the player's box
+and what is thrown; they were drawn with his own pictures, as a sprite batch draws them,
+and looked at: the road, each move, the step behind, the potion, a shot struck, a step up
+and the plunge, a swing met, the knee, the end.
+
+**Read through by me, not by another.**
+
+**Not seen in the game: any of it. Not heard: any of its sounds. The lines of the dialogue
+have never been on a screen** (the dialogue needs a font; the rig has none, so the road's
+talk was run from the server's side). **The trail behind the blade, the narrowing as he
+turns, and the star's outline are drawn through code that has never run.** Not tried with
+anyone else in the world.
+
+**Delivered on the 6th, a little after 04:07 UTC**, once the device answered (until then
+the files were in the chat only, marked as not yet written and not to be saved from there).
+Before anything was written: the mod's folder was listed whole, and no source file in it
+had been touched since the evening's comparison by bytes (the newest of them was written by
+§16.42's delivery, and each is the size it was); the eight files this changes were staged
+again and are, by bytes, what this was built on; the fourteen new ones were not there; the
+seven pieces of his art and the two pictures the blade's trail is drawn with
+(`Content/Graphics/Smear.png`, `SoftLine.png`) were. Then all twenty-two were written in one
+call, staged again and compared by bytes with what was sent.
+
+### 8. Found on the way, and put right before delivery
+
+All of these were in what I had written, and were found by running it.
+
+- **His life would have been 150,000 in every world.** It was set where the game never asks
+  (section 6). Set in `SetDefaults` now; all twelve checked.
+- **He could be put into a wall, and could have fallen through a floor.** The thrust's
+  lunge peaks at over 16 px a tick, and with a player in a corner it took him two tiles
+  into the wall; he was let fall at 18 (section 6). Now nothing of his goes over 15.5.
+- **A swing he met was not met for the rest of the swing** in the game's own terms: I had
+  set the NPC's wait, which the game no longer uses for a swing. And a spear he had met
+  could land a few ticks later in the same thrust. Both are the rest of the swing now.
+- **For one tick after he decided to step out of the way he could still be hit**, and for
+  one tick after he arrived he could not. Whether anything can land on him goes with the
+  move now.
+- **His first line would have come the tick he finished turning**, not a moment after: the
+  scene was asked with the clock of the part of the road just ended.
+- **A knife fell short of anyone more than about forty tiles off** (it dropped after a
+  while). It flies level now, however far, and is gone at the first tile.
+- **A player on his sword could be let go of inside a wall.** Held, they are kept out of
+  anything solid.
+- **What a potion's type of none makes** (section 6): he gives nothing by the mod's own way
+  instead.
+- **The throws were far too long**: his meeting of a swing threw a player forty tiles, the
+  thrust twenty, the fling thirty-nine. Section 4 has what they are now.
+- **His end**: he swung the sword up over his head on the way to his knee. He goes down
+  with it behind him now.
+- **A second flash step straight out of the first** made no sound and left no dust: a move
+  begun again is new now, on every machine.
+- **The hall's two ends were dim** (nine tiles from a flame by the light's count): a
+  pilaster against each end wall with its torches, and a torch in the middle of each end
+  bay. And its floor: I had counted a Tiki Torch's light from its head only.
+
+### 9. Added without being asked
+
+- `/foigh` and `/foigh gone` (in RELEASE_TODO, to remove).
+- `Dialogue.Aside` (choice 2). It changes nothing for any dialogue that does not use it.
+- The server's waits on the road.
+- That a shot he strikes can come back parryable; that his own cuts can be parried.
+- The pilasters, rails, courses and patches of the hall's wall.
+
+### 10. Still as it was, or left
+
+- **Phases two and three, and the ending.** Nothing at 66 or at 30 but the sword's damage.
+- **No tip, no bestiary entry, no Boss Checklist line, no flag that he was beaten.**
+- **Only flat ground**, as asked: he does not step up a block or walk a slope (he carries
+  his own weight and the game's slope code is skipped for that).
+- **The door in the hall is not shut during the fight**, and there is no box round it: the
+  hall's walls are the box.
+- **With others in the world**: written for it (the server moves him, each machine works
+  his sword against its own player, a player's machine tells the server what he did about
+  their shot), and never run with two machines. Subworlds are single player, so the hall
+  is not where that will first be met.
+- **'Dame' Quilt's `BossLoot` sets her potion to none**, which by section 6 makes 5 to 15
+  of an item of no type where she falls (made in the rig by the game's own call; what the
+  game then does with such an item was not looked into, and it has not been seen in play).
+  Hers was not touched here. The game makes it straight after asking her for its type, and
+  no hook of hers runs after that, so it wants a few lines elsewhere: say if it should be
+  mended.
+- **The lore plan still calls him the Clanmaster** (§9 there). That file is the user's and
+  was not changed.
+- The offers of §16.42 and before stand as they were.

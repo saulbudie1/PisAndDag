@@ -560,36 +560,107 @@ namespace PisAndDag
         /// and gets its full size. Worked back, this returns vanilla's own 5 by 2 for
         /// all three vanilla sizes and 8 by 3 here.
         /// </summary>
+        internal static Point MapGrid(int tilesX, int tilesY)
+        {
+            int columns = tilesX / Main.textureMaxWidth;
+            int rows = tilesY / Main.textureMaxHeight;
+
+            int spareX = tilesX - columns * Main.textureMaxWidth;
+            int spareY = tilesY - rows * Main.textureMaxHeight;
+
+            return new Point(
+                Math.Max(VanillaMapTargetX, spareX <= LastColumnWidth ? columns + 1 : columns + 2),
+                Math.Max(VanillaMapTargetY, spareY <= LastRowHeight ? rows + 1 : rows + 2));
+        }
+
+        /// <summary>
+        /// The grid is made the size the world wants (<see cref="MapGrid"/>), here and now,
+        /// before the world is cleared: empty, as the game starts with it, and the game fills
+        /// it as it draws the map (Main.checkMap).
+        ///
+        /// A grid with the last world's map in it is only ever made bigger, never smaller.
+        /// The targets in it serve a smaller world as they are: the game draws over the ones
+        /// that world reaches and leaves the rest alone (Main.DrawToMap, DrawMap), as it does
+        /// with its own five columns in a world that fills three; and they are there still
+        /// for the next world as big. A door out of a Grand world and back so keeps its
+        /// fourteen. When the grid does have to grow under targets, they are let go of
+        /// (<see cref="LetGo"/>): the last column and the last row of a grid are made short
+        /// (Main.checkMap), and would be short in the wrong place in a bigger one.
+        /// </summary>
         private static void FitMapTargets()
         {
             if (Main.dedServ || Main.instance == null)
                 return;
 
-            int columns = Main.maxTilesX / Main.textureMaxWidth;
-            int rows = Main.maxTilesY / Main.textureMaxHeight;
+            Point grid = MapGrid(Main.maxTilesX, Main.maxTilesY);
+            RenderTarget2D[,] old = Main.instance.mapTarget;
 
-            int spareX = Main.maxTilesX - columns * Main.textureMaxWidth;
-            int spareY = Main.maxTilesY - rows * Main.textureMaxHeight;
+            if (Holds(old))
+                grid = new Point(Math.Max(grid.X, Main.mapTargetX), Math.Max(grid.Y, Main.mapTargetY));
 
-            int gridX = Math.Max(VanillaMapTargetX, spareX <= LastColumnWidth ? columns + 1 : columns + 2);
-            int gridY = Math.Max(VanillaMapTargetY, spareY <= LastRowHeight ? rows + 1 : rows + 2);
-
-            if (gridX == Main.mapTargetX && gridY == Main.mapTargetY)
+            if (grid.X == Main.mapTargetX && grid.Y == Main.mapTargetY)
                 return;
 
-            if (Main.instance.mapTarget != null)
+            Main.instance.mapTarget = new RenderTarget2D[grid.X, grid.Y];
+            Main.initMap = new bool[grid.X, grid.Y];
+            Main.mapWasContentLost = new bool[grid.X, grid.Y];
+            Main.mapTargetX = grid.X;
+            Main.mapTargetY = grid.Y;
+
+            LetGo(old);
+
+            log?.Info($"Extra Large world size: map render grid set to {grid.X} x {grid.Y}.");
+        }
+
+        /// <summary>
+        /// The render targets of a grid that had to grow are disposed of, by the main thread
+        /// and no other. A world is cleared on whichever thread is loading or making it,
+        /// which is seldom the main one, and tModLoader's FNA throws at a texture disposed
+        /// of from any other (ThreadCheck, in FNA3D_AddDisposeTexture); nor does it free one
+        /// that is simply dropped (GraphicsResource's finaliser is empty there). So off the
+        /// main thread they are handed to it, and are gone by the end of its next update
+        /// (Main.QueueMainThreadAction, run by Main.Update).
+        /// </summary>
+        private static void LetGo(RenderTarget2D[,] old)
+        {
+            if (!Holds(old))
+                return;
+
+            if (Program.IsMainThread)
+                DisposeOf(old);
+            else
+                Main.QueueMainThreadAction(() => DisposeOf(old));
+        }
+
+        /// <summary>There is a render target in the grid: a map has been drawn into it.</summary>
+        private static bool Holds(RenderTarget2D[,] grid)
+        {
+            if (grid == null)
+                return false;
+
+            foreach (RenderTarget2D target in grid)
             {
-                foreach (RenderTarget2D target in Main.instance.mapTarget)
-                    target?.Dispose();
+                if (target != null)
+                    return true;
             }
 
-            Main.instance.mapTarget = new RenderTarget2D[gridX, gridY];
-            Main.initMap = new bool[gridX, gridY];
-            Main.mapWasContentLost = new bool[gridX, gridY];
-            Main.mapTargetX = gridX;
-            Main.mapTargetY = gridY;
+            return false;
+        }
 
-            log?.Info($"Extra Large world size: map render grid set to {gridX} x {gridY}.");
+        /// <summary>Each by itself: one that will not go does not keep the rest.</summary>
+        private static void DisposeOf(RenderTarget2D[,] targets)
+        {
+            foreach (RenderTarget2D target in targets)
+            {
+                try
+                {
+                    target?.Dispose();
+                }
+                catch (Exception e)
+                {
+                    log?.Warn("Extra Large world size: a map render target of the last world's would not be disposed of. " + e);
+                }
+            }
         }
 
         // -------------------------------------------------------------- the structures

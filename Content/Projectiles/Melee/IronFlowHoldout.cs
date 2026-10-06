@@ -80,10 +80,10 @@ namespace PisAndDag.Content.Projectiles.Melee
         /// <summary>The fastest a cut may carry its owner, pixels a tick.</summary>
         private const float StepSpeedCap = 4f;
 
-        private static readonly Color Pink = new Color(252, 109, 202);
-        private static readonly Color Pale = new Color(255, 186, 206);
-        private static readonly Color Dusk = new Color(56, 30, 96);
-        private static readonly Color[] Sparks = { new Color(252, 109, 202), new Color(255, 186, 206), new Color(184, 211, 222) };
+        private static readonly Color Pink = new Color(245, 147, 86);
+        private static readonly Color Pale = new Color(247, 190, 119);
+        private static readonly Color Dusk = new Color(148, 71, 30);
+        private static readonly Color[] Sparks = { new Color(252, 183, 109), new Color(255, 209, 130), new Color(217, 211, 165) };
 
         private static Asset<Texture2D> smear;
         private static Asset<Texture2D> line;
@@ -196,7 +196,12 @@ namespace PisAndDag.Content.Projectiles.Melee
             Projectile.ai[0] = count * 8 + (int)move;
             Projectile.ai[1] = ticks;
             Projectile.ai[2] = facing;
-            Projectile.netUpdate = true;
+
+            // Sent from the end of the sword's next update. Not netUpdate: the item tells it
+            // this from the player's own update, and the game forgets that one at the start
+            // of every update of a projectile, before it looks (Projectile.Update). This is
+            // the one the game itself sets from outside one (a fishing bobber, reeled in).
+            Projectile.netUpdate2 = true;
 
             seen = Projectile.ai[0];
             Start();
@@ -480,7 +485,7 @@ namespace PisAndDag.Content.Projectiles.Melee
                 float a = MathHelper.ToRadians(IronFlowMoves.Blade(move, p));
                 Vector2 at = VisusGrip.ToWorld(player, HandAt(move, p)) - Main.screenPosition;
 
-                Color light = new Color(255, 170, 225, 0) * (0.3f * (1f - i / 4f) * fade);
+                Color light = new Color(255, 218, 170, 0) * (0.3f * (1f - i / 4f) * fade);
 
                 IronFlowLayer.Place(VisusGrip.ToWorldAngle(player, a), flip, out float turn, out Vector2 origin, out SpriteEffects effects);
                 Main.EntitySpriteDraw(texture, at, null, light, turn, origin, 1f, effects, 0);

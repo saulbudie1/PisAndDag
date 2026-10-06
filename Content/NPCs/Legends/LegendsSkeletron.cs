@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PisAndDag.Content.Combat;
 using PisAndDag.Content.PADplayer;
 using PisAndDag.Content.Particles;
 using ReLogic.Content;
@@ -221,6 +222,13 @@ namespace PisAndDag.Content.NPCs.Legends
         /// <summary>Whether this machine has shown the hands' blow in the smash under way: the first hand down shows it for both.</summary>
         internal bool smashStruck;
 
+        /// <summary>
+        /// The move (its <see cref="serial"/>) a parry broke the hands' blow in, where the
+        /// world is decided: kept here as well as on the hands, because the hand that was
+        /// parried may not have lived through it (LegendsSkeletronHand.Break, Broken).
+        /// </summary>
+        internal int brokenIn = -1;
+
         /// <summary>The last stage of the move under way this machine has made a sound for.</summary>
         private int heard;
 
@@ -427,12 +435,17 @@ namespace PisAndDag.Content.NPCs.Legends
                 if (heard < 2 && moveTimer >= ClapReach + ClapLock + ClapShut)
                 {
                     heard = 2;
-                    Impact(mark, 10f, 22);
 
-                    for (int i = 0; i < 26; i++)
+                    // Not of a clap a parry has broken: the hands never met.
+                    if (!LegendsSkeletronHand.Broken(npc))
                     {
-                        Dust.NewDustPerfect(mark + Main.rand.NextVector2Circular(20f, 30f), DustID.Bone,
-                            Main.rand.NextVector2Circular(6f, 6f), 0, default, Main.rand.NextFloat(1f, 1.6f));
+                        Impact(mark, 10f, 22);
+
+                        for (int i = 0; i < 26; i++)
+                        {
+                            Dust.NewDustPerfect(mark + Main.rand.NextVector2Circular(20f, 30f), DustID.Bone,
+                                Main.rand.NextVector2Circular(6f, 6f), 0, default, Main.rand.NextFloat(1f, 1.6f));
+                        }
                     }
                 }
             }
@@ -1098,6 +1111,12 @@ namespace PisAndDag.Content.NPCs.Legends
     /// (LegendsSkeletron: the clap and the smash), played from their head's move and clock.
     /// Given back to vanilla after, idle, their swing counted from nothing. While they are
     /// out further than their arms reach, the arms are drawn out to meet them (FillArm).
+    ///
+    /// A hand parried in the blow of one of those moves (SkeletronHandParry, which asks
+    /// <see cref="InMove"/> and <see cref="Striking"/>) is out of the move: it is thrown
+    /// back, and this moves it no more until the move is over. The other goes with it, and
+    /// what the blow would have shown and sounded as it landed is left out
+    /// (<see cref="Broken"/>).
     /// </summary>
     public class LegendsSkeletronHand : GlobalNPC
     {
@@ -1138,6 +1157,105 @@ namespace PisAndDag.Content.NPCs.Legends
             return head.active && head.type == NPCID.SkeletronHead ? head : null;
         }
 
+        /// <summary>
+        /// Whether a move of Legends has this hand (its head's clap or smash), and which: the
+        /// head's count of its moves. Read off the head, as every machine has it.
+        /// </summary>
+        internal static bool InMove(NPC hand, out int serial)
+        {
+            serial = -1;
+
+            if (!PADWorld.Legends)
+                return false;
+
+            NPC head = HeadOf(hand);
+
+            if (head == null || !head.TryGetGlobalNPC(out LegendsSkeletron state))
+                return false;
+
+            if (state.move != LegendsSkeletron.Move.Clap && state.move != LegendsSkeletron.Move.Smash)
+                return false;
+
+            serial = state.serial;
+            return true;
+        }
+
+        /// <summary>
+        /// Whether that move is in its blow for this hand: the clap as the hands shut, the
+        /// smash as they come down and until this one is down. Not their way to their places,
+        /// the wait there, their coming together over the player, or anything after.
+        /// </summary>
+        internal static bool Striking(NPC hand)
+        {
+            if (!PADWorld.Legends)
+                return false;
+
+            NPC head = HeadOf(hand);
+
+            if (head == null || !head.TryGetGlobalNPC(out LegendsSkeletron state))
+                return false;
+
+            int t = state.moveTimer;
+
+            switch (state.move)
+            {
+                case LegendsSkeletron.Move.Clap:
+                    return t >= LegendsSkeletron.ClapReach + LegendsSkeletron.ClapLock
+                        && t < LegendsSkeletron.ClapReach + LegendsSkeletron.ClapLock + LegendsSkeletron.ClapShut;
+
+                case LegendsSkeletron.Move.Smash:
+                    return t >= LegendsSkeletron.SmashJoined && t < LegendsSkeletron.SmashJoined + LegendsSkeletron.SmashDrop
+                        && !(hand.TryGetGlobalNPC(out LegendsSkeletronHand own) && own.landed);
+
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// A hand of his has been parried in the blow of the move that has it, where the world
+        /// is decided: its head keeps that too (the hand may be broken by it).
+        /// </summary>
+        internal static void Break(NPC hand)
+        {
+            NPC head = HeadOf(hand);
+
+            if (head != null && head.TryGetGlobalNPC(out LegendsSkeletron state))
+                state.brokenIn = state.serial;
+        }
+
+        /// <summary>
+        /// Whether a parry has broken the blow of the move that has this head's hands, as this
+        /// machine knows it: his head was told so (<see cref="Break"/>), a hand of his is out
+        /// of the move for it, or one was turned aside by this machine's own player a moment
+        /// ago (a client knows of its own player's parry before the server has said what came
+        /// of it, and the hands go on as they were until then). What the blow would have
+        /// shown and sounded is left out. Nothing on a server.
+        /// </summary>
+        internal static bool Broken(NPC head)
+        {
+            if (Main.dedServ || head == null)
+                return false;
+
+            if (head.TryGetGlobalNPC(out LegendsSkeletron state) && state.brokenIn == state.serial)
+                return true;
+
+            ParryPlayer parry = Main.LocalPlayer.GetModPlayer<ParryPlayer>();
+
+            for (int i = 0; i < Main.maxNPCs; i++)
+            {
+                NPC hand = Main.npc[i];
+
+                if (!hand.active || hand.type != NPCID.SkeletronHand || (int)hand.ai[1] != head.whoAmI)
+                    continue;
+
+                if (SkeletronHandParry.Spent(hand) || parry.Spares(hand))
+                    return true;
+            }
+
+            return false;
+        }
+
         public override bool PreAI(NPC npc)
         {
             if (!PADWorld.Legends)
@@ -1171,6 +1289,10 @@ namespace PisAndDag.Content.NPCs.Legends
                 landed = false;
                 floorY = float.PositiveInfinity;
             }
+
+            // Parried out of this move: thrown back, and no further part in it (SkeletronHandParry moves it).
+            if (SkeletronHandParry.Spent(npc))
+                return false;
 
             if (state.move == LegendsSkeletron.Move.Clap)
                 Clap(npc, head, state);
@@ -1300,7 +1422,9 @@ namespace PisAndDag.Content.NPCs.Legends
         /// </summary>
         private void Landing(NPC npc, float x, LegendsSkeletron state)
         {
-            if (Main.dedServ)
+            // Nothing of a smash a parry has broken: on the machine that parried it, the hands
+            // may come down before the server has thrown them back.
+            if (Main.dedServ || Broken(HeadOf(npc)))
                 return;
 
             float half = npc.width * 0.5f;
@@ -1329,7 +1453,7 @@ namespace PisAndDag.Content.NPCs.Legends
         }
 
         /// <summary>The other hand on the same head, or null.</summary>
-        private static NPC Sibling(NPC hand)
+        internal static NPC Sibling(NPC hand)
         {
             for (int i = 0; i < Main.maxNPCs; i++)
             {
@@ -1346,11 +1470,29 @@ namespace PisAndDag.Content.NPCs.Legends
         /// Harmless on the way to their places and while they wait there: the blow is the
         /// clap, and in the smash their meeting and the fall, not the hands passing through
         /// the player to get into position.
+        ///
+        /// And the two strike as one: with one of them turned aside by this machine's
+        /// player's parry, the other cannot touch that player either, for as long as the
+        /// first cannot. Asked here, of what that machine itself knows, so that it holds
+        /// from the tick of the parry, before the server has said the blow is broken. And
+        /// on that tick itself, whichever of the two the game asks first: with both on the
+        /// player at once, the one their parry does not face (and so is not about to turn
+        /// aside) cannot touch them if the other is about to be turned aside.
         /// </summary>
         public override bool CanHitPlayer(NPC npc, Player target, ref int cooldownSlot)
         {
             if (!PADWorld.Legends || !held)
                 return true;
+
+            NPC other = Sibling(npc);
+
+            if (other != null)
+            {
+                ParryPlayer parry = target.GetModPlayer<ParryPlayer>();
+
+                if (parry.Spares(other) || (parry.AboutToTurn(other) && !parry.AboutToTurn(npc)))
+                    return false;
+            }
 
             NPC head = HeadOf(npc);
             LegendsSkeletron state = head?.GetGlobalNPC<LegendsSkeletron>();

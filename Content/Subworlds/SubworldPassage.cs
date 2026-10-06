@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -24,15 +25,16 @@ namespace PisAndDag.Content.Subworlds
     /// <summary>
     /// Going through a door: out of the world into a subworld, or back.
     ///
-    /// The screen goes to black with the player held; then the world loaded is left the way
+    /// The screen goes to black with the player held, and with the black, from the first of
+    /// it, come a picture and a tip (SubworldLoading); then the world loaded is left the way
     /// the game's own Save and Exit leaves it (the same calls, in the same order, so it and
     /// the player are saved by the game's own code and every system is told the world is
     /// going), the other world's file is made if this is the first time it is gone to
     /// (SubworldKeeper.Make), and the other world is entered the way the game enters one picked
     /// from its list (WorldGen.playWorld). Nothing of the menu is seen meanwhile: the black
-    /// stays up, and on it a picture, a tip and a bar that fills as the game says its saving
-    /// and loading go (SubworldLoading). Then the player is put down in front of the door on
-    /// the other side and the world comes back up.
+    /// stays up with the picture and the tip on it, and a bar that fills as the game's saving
+    /// and loading go. Then the player is put down in front of the door on the other side
+    /// and the world comes back up.
     ///
     /// The player is the same player all the way: never read back from their file. What the
     /// game keeps outside a player while one is played it puts away on the way out of a
@@ -49,6 +51,15 @@ namespace PisAndDag.Content.Subworlds
     /// MapHelper.SaveMap); at the menu that is harmless, but here the next world is loaded
     /// at once, into the same tiles and the same map. So the leaving waits for a save in
     /// flight to finish, twice over (<see cref="saveLocks"/>).
+    ///
+    /// One thing of that save is left out. Each time a player is saved, tModLoader first
+    /// zips the player's file and every map they have into its backup of the day, squeezed
+    /// as hard as its zip library can: with the map of a great world among them that is
+    /// four seconds, each way through a door, with nothing to show for them. The save a
+    /// passage leaves a world by goes without it (<see cref="LeaveOutTheBackup"/>). The
+    /// player's file, the game's own .bak of it, the maps and the world are written as
+    /// ever, and so is tModLoader's backup of the world; the player's backup of the day is
+    /// made again by the next save that is not a passage's (the autosave, Save and Exit).
     ///
     /// If the place cannot be made, the world is loaded again and the player stands where
     /// they stood, with a line; client.log has why. If a world will not load at all, the
@@ -137,6 +148,46 @@ namespace PisAndDag.Content.Subworlds
         /// </summary>
         private static object[] saveLocks = Array.Empty<object>();
 
+        /// <summary>
+        /// tModLoader's backups of the day are all made by one method of its own
+        /// (BackupIO.RunArchiving: a player's from Player.SavePlayerFile_Write, by way of
+        /// BackupIO.Player.ArchivePlayer; a world's from WorldFile.InternalSaveWorld). The
+        /// detour on it (<see cref="LeaveOutTheBackup"/>) is on if this is true, and
+        /// <see cref="playerBackups"/> is then the folder the players' backups go to
+        /// (BackupIO.Player.PlayerBackupDir), which is how a player's is told from a
+        /// world's. All of it is tModLoader's own and none of it public, so it is found by
+        /// name (<see cref="HookTheBackup"/>): if any of it is not as it was, there is no
+        /// detour, client.log has a line saying so, and a passage's save backs the player up
+        /// as any other does.
+        /// </summary>
+        private static bool backupHeld;
+        private static string playerBackups;
+
+        /// <summary>The save this passage left the world by had the player's backup left out of it. Set by the saving thread; for client.log.</summary>
+        private static volatile bool backupLeftOut;
+
+        /// <summary>
+        /// How a passage went as the main thread saw it, for one line in client.log when it
+        /// is over (<see cref="Tell"/>): for each stage the frames drawn in it, the seconds
+        /// they took, the longest wait for one, and how long the garbage collector held
+        /// every thread meanwhile (the runtime's own count: GC.GetTotalPauseDuration); what
+        /// the frame the door was tried on spent putting the picture and the tip up; and
+        /// what the frame the world was left on spent leaving it, and then loading the next
+        /// passage's picture. The clock runs from the door being tried. tModLoader's log
+        /// already has when the game began each step of its saving and loading; nothing in
+        /// it says what the screen did meanwhile, and a passage that stutters is otherwise
+        /// only to be guessed at.
+        /// </summary>
+        private static readonly System.Diagnostics.Stopwatch passed = new();
+        private static readonly int[] drawn = new int[(int)Stage.In + 1];
+        private static readonly double[] spent = new double[(int)Stage.In + 1];
+        private static readonly double[] worst = new double[(int)Stage.In + 1];
+        private static readonly double[] held = new double[(int)Stage.In + 1];
+        private static double lastFrame;
+        private static double lastHeld;
+        private static double opening;
+        private static double leaving;
+
         /// <summary>Between the first tick of the black and the last of the world's return.</summary>
         public static bool Travelling => stage != Stage.None;
 
@@ -167,6 +218,90 @@ namespace PisAndDag.Content.Subworlds
                 : world != null ? new[] { world }
                 : map != null ? new[] { map }
                 : Array.Empty<object>();
+
+            HookTheBackup();
+        }
+
+        /// <summary>
+        /// Puts the detour on tModLoader's maker of backups (<see cref="backupHeld"/>). On
+        /// RunArchiving, and not on BackupIO.Player.ArchivePlayer, which is nearer and is
+        /// the player's alone: that one is a few lines, small enough for the runtime to
+        /// compile into the method that calls it, and where it has, a detour on it is never
+        /// reached. (Tried, with the runtime's settings as tModLoader leaves them, which
+        /// are .NET 8's own: a detour put on ArchivePlayer after a player had been saved
+        /// 180 times did not run once in the 121 saves after. RunArchiving has a try in it,
+        /// which this runtime does not compile into a caller, and a detour put on it as
+        /// late, and after 480 saves, ran every time.) tModLoader takes the detour off when
+        /// the mod is unloaded.
+        /// </summary>
+        private void HookTheBackup()
+        {
+            backupHeld = false;
+            playerBackups = null;
+
+            const string Longer = " A door's passage will back the player up as any other save does, and be some seconds the longer for it.";
+
+            try
+            {
+                const BindingFlags Hidden = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
+
+                Type backups = typeof(Mod).Assembly.GetType("Terraria.ModLoader.BackupIO");
+                MethodInfo run = backups?.GetMethod("RunArchiving", Hidden);
+                string folder = backups?.GetNestedType("Player", BindingFlags.Public | BindingFlags.NonPublic)?.GetField("PlayerBackupDir", Hidden)?.GetValue(null) as string;
+
+                if (run == null || string.IsNullOrEmpty(folder) || !TakesWhatItTook(run))
+                {
+                    Mod.Logger.Warn("Subworlds: tModLoader's backup of a player is not where it was (BackupIO.RunArchiving, BackupIO.Player.PlayerBackupDir)." + Longer);
+                    return;
+                }
+
+                playerBackups = folder;
+
+                MonoModHooks.Add(run, (Action<Action<Delegate, bool, string, string, string>, Delegate, bool, string, string, string>)LeaveOutTheBackup);
+
+                backupHeld = true;
+            }
+            catch (Exception e)
+            {
+                backupHeld = false;
+                Mod.Logger.Warn("Subworlds: no detour could be put on tModLoader's backup of a player (BackupIO.RunArchiving)." + Longer, e);
+            }
+        }
+
+        /// <summary>
+        /// RunArchiving as it was when this was written: given what is to write into the zip
+        /// (a delegate), whether the save is in the cloud, the folder the zip goes to, the
+        /// name to give it, and the path of the file saved; giving nothing back.
+        /// </summary>
+        private static bool TakesWhatItTook(MethodInfo run)
+        {
+            ParameterInfo[] takes = run.GetParameters();
+
+            return run.ReturnType == typeof(void) && takes.Length == 5
+                && typeof(Delegate).IsAssignableFrom(takes[0].ParameterType)
+                && takes[1].ParameterType == typeof(bool)
+                && takes[2].ParameterType == typeof(string)
+                && takes[3].ParameterType == typeof(string)
+                && takes[4].ParameterType == typeof(string);
+        }
+
+        /// <summary>
+        /// tModLoader is about to make a backup of the day: of a player's file and maps, or
+        /// of a world's file. The player's, in the save a passage leaves a world by, is not
+        /// made (the notes over this class say why, and what is saved all the same); any
+        /// other is made as ever. This runs on whichever thread is saving. The first of
+        /// what it is given is tModLoader's own delegate, typed as any delegate: the type it
+        /// is declared as names a class of its zip library, which a mod has no call to know.
+        /// </summary>
+        private static void LeaveOutTheBackup(Action<Delegate, bool, string, string, string> orig, Delegate write, bool isCloudSave, string dir, string name, string path)
+        {
+            if (stage == Stage.Saving && dir != null && dir == playerBackups)
+            {
+                backupLeftOut = true;
+                return;
+            }
+
+            orig(write, isCloudSave, dir, name, path);
         }
 
         public override void Unload()
@@ -175,6 +310,9 @@ namespace PisAndDag.Content.Subworlds
                 Main.OnPostDraw -= AfterEverything;
 
             saveLocks = Array.Empty<object>();
+            backupHeld = false;
+            playerBackups = null;
+            backupLeftOut = false;
             kept = null;
             keptOf = null;
             SubworldLoading.Unload();
@@ -184,6 +322,7 @@ namespace PisAndDag.Content.Subworlds
         private static void Forget()
         {
             stage = Stage.None;
+            passed.Reset();
             ticks = 0;
             blackFrames = 0;
             lostFrames = 0;
@@ -282,6 +421,21 @@ namespace PisAndDag.Content.Subworlds
             lostFrames = 0;
             stage = Stage.Out;
 
+            Array.Clear(drawn);
+            Array.Clear(spent);
+            Array.Clear(worst);
+            Array.Clear(held);
+            lastFrame = 0.0;
+            lastHeld = GC.GetTotalPauseDuration().TotalSeconds;
+            opening = 0.0;
+            leaving = 0.0;
+            backupLeftOut = false;
+            passed.Restart();
+
+            // The picture and a tip are up from this frame on, with the first of the black.
+            SubworldLoading.Open();
+            opening = passed.Elapsed.TotalSeconds;
+
             SoundEngine.PlaySound(SoundID.DoorOpen, heardAt);
         }
 
@@ -351,6 +505,7 @@ namespace PisAndDag.Content.Subworlds
                     {
                         bool line = turnedBack;
 
+                        Tell();
                         Forget();
 
                         if (line)
@@ -395,9 +550,86 @@ namespace PisAndDag.Content.Subworlds
             if (black > 0f)
                 Draw(black, (float)gameTime.ElapsedGameTime.TotalSeconds);
 
+            Frame();
+
             if (leave)
                 Go();
         }
+
+        /// <summary>
+        /// A frame has been drawn: one more for the stage the passage is in, and the wait
+        /// since the frame before is that stage's too, with whatever of it the garbage
+        /// collector took.
+        /// </summary>
+        private static void Frame()
+        {
+            Stage now = stage;
+
+            if (now == Stage.None || !passed.IsRunning)
+                return;
+
+            double at = passed.Elapsed.TotalSeconds;
+            double waited = at - lastFrame;
+            double collecting = GC.GetTotalPauseDuration().TotalSeconds;
+
+            lastFrame = at;
+            drawn[(int)now]++;
+            spent[(int)now] += waited;
+            held[(int)now] += collecting - lastHeld;
+            lastHeld = collecting;
+
+            if (waited > worst[(int)now])
+                worst[(int)now] = waited;
+        }
+
+        /// <summary>The passage went through and is over: how it went, in one line of client.log.</summary>
+        private static void Tell()
+        {
+            if (!passed.IsRunning)
+                return;
+
+            passed.Stop();
+
+            try
+            {
+                ModContent.GetInstance<SubworldPassage>().Mod.Logger.Info(Account());
+            }
+            catch (Exception)
+            {
+                // Only a line in a log.
+            }
+        }
+
+        /// <summary>
+        /// The line: where to, how long, and for each stage its frames, their seconds, the
+        /// longest wait for one, and how long the garbage collector held the game in it;
+        /// what the two frames that do the passage's own work spent on it; and whether
+        /// tModLoader's backup of the player was left out of the saving.
+        /// </summary>
+        internal static string Account()
+        {
+            return "Subworlds: through the door to " + (toward != null ? toward.FullName : "the world") + " in " + Seconds(passed.Elapsed.TotalSeconds) + " s. "
+                + "Frames drawn, the longest wait for one, and the garbage collector's share of the time: going to black, " + Frames(Stage.Out)
+                + "; saving, " + Frames(Stage.Saving)
+                + "; loading, " + Frames(Stage.Loading)
+                + "; coming back up, " + Frames(Stage.In)
+                + ". The frame the door was tried on spent " + Milliseconds(opening) + " ms putting the picture and the tip up. "
+                + "The frame the world was left on spent " + Milliseconds(leaving) + " ms leaving it, and then "
+                + Milliseconds(SubworldLoading.PictureTook) + " ms loading the next picture. "
+                + (backupLeftOut ? "tModLoader's backup of the player was left out of the saving."
+                    : backupHeld ? "tModLoader's backup of the player was not left out of the saving: the detour for it is on, and was not run."
+                    : "tModLoader's backup of the player was made in the saving: there is no detour to leave it out.");
+        }
+
+        private static string Frames(Stage of)
+        {
+            return drawn[(int)of].ToString(CultureInfo.InvariantCulture) + " in " + Seconds(spent[(int)of]) + " s, "
+                + Milliseconds(worst[(int)of]) + " ms, " + Milliseconds(held[(int)of]) + " ms";
+        }
+
+        private static string Seconds(double value) => value.ToString("0.00", CultureInfo.InvariantCulture);
+
+        private static string Milliseconds(double value) => (value * 1000.0).ToString("0", CultureInfo.InvariantCulture);
 
         /// <summary>
         /// What this frame makes of the passage: how black the screen is, and whether this is
@@ -467,12 +699,13 @@ namespace PisAndDag.Content.Subworlds
         }
 
         /// <summary>
-        /// The black, over the whole window, and on it while the game saves and loads a
-        /// picture, a tip and a bar (SubworldLoading), which go again while the place
-        /// settles. Measured by what is being drawn into and not by Main.screenWidth and
-        /// screenHeight: at the menu the game leaves those two divided by the interface's
-        /// scale (Main.PreDrawMenu), and a black of that size would stop short of the right
-        /// and the bottom at any scale over 100%.
+        /// The black, over the whole window, and on it a picture, a tip and a bar
+        /// (SubworldLoading): they come with the black, from the first frame of it, stay
+        /// while the game saves and loads, and go again while the place settles. Measured
+        /// by what is being drawn into and not by Main.screenWidth and screenHeight: at the
+        /// menu the game leaves those two divided by the interface's scale
+        /// (Main.PreDrawMenu), and a black of that size would stop short of the right and
+        /// the bottom at any scale over 100%.
         /// </summary>
         private static void Draw(float black, float seconds)
         {
@@ -488,6 +721,13 @@ namespace PisAndDag.Content.Subworlds
 
                 switch (stage)
                 {
+                    case Stage.None:
+                    case Stage.Out:
+                        // As strong as the black: up with it as the world goes down, and,
+                        // if the passage is let go of part way, gone with it again.
+                        SubworldLoading.Draw(spriteBatch, window, SubworldLoading.Phase.Leaving, black, seconds);
+                        break;
+
                     case Stage.Saving:
                         SubworldLoading.Draw(spriteBatch, window, SubworldLoading.Phase.Saving, 1f, seconds);
                         break;
@@ -533,6 +773,9 @@ namespace PisAndDag.Content.Subworlds
                 Monitor.Exit(saving);
             }
 
+            double began = passed.Elapsed.TotalSeconds;
+            bool left = false;
+
             try
             {
                 Tidy();
@@ -544,9 +787,11 @@ namespace PisAndDag.Content.Subworlds
                 keptOf = Main.LocalPlayer;
                 KeepPowers(Main.LocalPlayer);
 
-                // The bar is shared between the saving and the loading by the two worlds' sizes.
+                // The bar is shared between the saving and the loading by the two worlds'
+                // sizes, and by whether tModLoader's backup of the player is in the saving.
                 SubworldLoading.Begin((long)Main.maxTilesX * Main.maxTilesY,
-                    toward != null ? (long)toward.Width * toward.Height : (long)world.WorldSizeX * world.WorldSizeY);
+                    toward != null ? (long)toward.Width * toward.Height : (long)world.WorldSizeX * world.WorldSizeY,
+                    !backupHeld);
 
                 stage = Stage.Saving;
 
@@ -557,6 +802,9 @@ namespace PisAndDag.Content.Subworlds
                 Main.gameMenu = true;
 
                 WorldGen.SaveAndQuit(Saved);
+
+                left = true;
+                leaving = passed.Elapsed.TotalSeconds - began;
             }
             catch (Exception e)
             {
@@ -571,6 +819,14 @@ namespace PisAndDag.Content.Subworlds
                 keptOf = null;
                 Forget();
             }
+
+            // The saving is another thread's from here, and this one has only to draw what is
+            // up already: what the passage after this one will put up is made ready now, its
+            // picture loaded, where the wait for it is no one's. Outside the try above, and
+            // after it: nothing that goes wrong here is a leaving that failed (and nothing
+            // does: it keeps its own faults).
+            if (left)
+                SubworldLoading.WorldLeft();
         }
 
         /// <summary>Whatever is open over the game is shut, and the player off any hook or rope: none of it goes through a door.</summary>
@@ -677,6 +933,8 @@ namespace PisAndDag.Content.Subworlds
                 Forget();
                 return;
             }
+
+            SubworldLoading.Arrive();
 
             if (arrive.X >= 0 && SubworldDoor.StandsAt(arrive.X, arrive.Y))
             {
@@ -802,8 +1060,17 @@ namespace PisAndDag.Content.Subworlds
 
         public override void OnEnterWorld()
         {
-            if (Player.whoAmI == Main.myPlayer && !Main.dedServ)
-                SubworldPassage.Arrived(Player);
+            if (Player.whoAmI != Main.myPlayer || Main.dedServ)
+                return;
+
+            SubworldPassage.Arrived(Player);
+
+            // What the first door tried here will put on the screen is made ready now, so
+            // that the door's own frame has nothing to find or load. (A passage's arrival
+            // finds a picture held already: it is loaded as the world is left.) Not with
+            // others in the world: there the door stays shut.
+            if (Main.netMode == NetmodeID.SinglePlayer)
+                SubworldLoading.WorldEntered();
         }
     }
 }

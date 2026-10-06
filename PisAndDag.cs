@@ -41,6 +41,12 @@ namespace PisAndDag
         /// thing goes with the thing; the parry's blow is a hit like any other.
         /// </summary>
         Parry,
+
+        /// <summary>
+        /// Client to server: something of a player's that Foigh answers (they have walked up,
+        /// answered him, drunk a potion, been landed on, swung or shot at him). See Foigh.Tell.
+        /// </summary>
+        Foigh,
     }
 
     // Please read https://github.com/tModLoader/tModLoader/wiki/Basic-tModLoader-Modding-Guide#mod-skeleton-contents for more information about the various files in a mod.
@@ -101,6 +107,10 @@ namespace PisAndDag
 
                 case PADPacket.Parry:
                     Content.Combat.Parry.HandlePacket(reader, whoAmI);
+                    break;
+
+                case PADPacket.Foigh:
+                    Content.NPCs.Foigh.Foigh.HandlePacket(reader, whoAmI);
                     break;
 
                 default:

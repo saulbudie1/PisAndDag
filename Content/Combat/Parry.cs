@@ -38,6 +38,11 @@ namespace PisAndDag.Content.Combat
     /// weapon's stagger is its own: thrown back the way it came and left spinning, its
     /// state for having been hit, open to the riposte while it spins.
     ///
+    /// What the mod speaks for may answer a parry in its own way instead (what
+    /// <see cref="AddNPC"/> and <see cref="AddProjectile"/> are given): the Golem's fist and
+    /// the Queen Slime's core are sent back into them, a hand of Skeletron's is thrown back
+    /// and loses a fifth of its life (<see cref="Take"/>).
+    ///
     /// WHO DECIDES. The machine of the player who parried, as it decides everything else that
     /// hits them. In multiplayer it tells the server what it turned aside (PADPacket.Parry);
     /// the server does it to the thing and has everyone else see the spark.
@@ -531,6 +536,34 @@ namespace PisAndDag.Content.Combat
             packet.Send(to, ignore);
         }
 
+        // ---- what a parry costs by a rule of the thing's own -------------------------------------
+
+        /// <summary>
+        /// A flat loss of life, armour or no, and whether or not anything else can hurt it then
+        /// (NPC.StrikeNPC asks neither): what a parry costs something by a rule of its own (a
+        /// hand of Skeletron's a fifth of its life, the Queen Slime a tenth of hers when her own
+        /// core is sent back into her). Made where the world is decided, and sent to everyone;
+        /// nothing anywhere else.
+        /// </summary>
+        internal static void Take(NPC npc, int life, int direction)
+        {
+            if (Main.netMode == NetmodeID.MultiplayerClient || !npc.active || npc.life <= 0 || life <= 0)
+                return;
+
+            NPC.HitInfo hit = new NPC.HitInfo
+            {
+                Damage = life,
+                HitDirection = direction,
+                Knockback = 0f,
+                DamageType = DamageClass.Default,
+            };
+
+            npc.StrikeNPC(hit, false, true);
+
+            if (Main.netMode == NetmodeID.Server)
+                NetMessage.SendStrikeNPC(npc, hit);
+        }
+
         // ---- the spark -------------------------------------------------------------------------
 
         /// <summary>
@@ -982,7 +1015,8 @@ namespace PisAndDag.Content.Combat
         /// <summary>
         /// Vanilla asks this of every hostile NPC every tick, before it has looked at whether
         /// the two are touching (Player.Update_NPCCollision): so that is looked at here, as
-        /// vanilla is about to. It has already asked the NPC's own side (CanHitPlayer).
+        /// vanilla is about to (<see cref="OnBody"/>). It has already asked the NPC's own side
+        /// (CanHitPlayer).
         /// </summary>
         public override bool CanBeHitByNPC(NPC npc, ref int cooldownSlot)
         {
@@ -992,26 +1026,7 @@ namespace PisAndDag.Content.Combat
             if (Spared(npc))
                 return false;
 
-            if (!Active)
-                return true;
-
-            ParryClass kind = Parry.Of(npc);
-
-            if (kind == ParryClass.Never || !Faces(npc.Center - npc.velocity))
-                return true;
-
-            // Walked into, not come at; one the game leaves this player alone by; a touch nothing dodges.
-            if ((npc.velocity == Vector2.Zero && !Parry.FlyingWeapon(npc)) || Player.npcTypeNoAggro[npc.type] || !npc.IsDamageDodgeable())
-                return true;
-
-            Rectangle body = Player.Hitbox;
-            Rectangle its = new Rectangle((int)(npc.position.X + npc.netOffset.X), (int)(npc.position.Y + npc.netOffset.Y), npc.width, npc.height);
-
-            int slot = cooldownSlot;
-            float damage = 1f;
-            NPC.GetMeleeCollisionData(body, npc.whoAmI, ref slot, ref damage, ref its);
-
-            if (!body.Intersects(its))
+            if (!OnBody(npc, cooldownSlot, out ParryClass kind, out Rectangle its))
                 return true;
 
             if (kind == ParryClass.Giant)
@@ -1025,6 +1040,53 @@ namespace PisAndDag.Content.Combat
 
             Turn(npc, Vector2.Clamp(Player.Center + new Vector2(facing * 10f, 0f), corner, far));
             return false;
+        }
+
+        /// <summary>
+        /// Whether this NPC is on the player this tick with a parry of theirs active that
+        /// answers it: one that can be parried (or a giant), come at them from ahead of the
+        /// line behind them, and touching them as the game has its body for a touch
+        /// (<paramref name="its"/>). What a parry does to it is <paramref name="kind"/>.
+        /// </summary>
+        private bool OnBody(NPC npc, int cooldownSlot, out ParryClass kind, out Rectangle its)
+        {
+            kind = ParryClass.Never;
+            its = default;
+
+            if (!Active)
+                return false;
+
+            kind = Parry.Of(npc);
+
+            if (kind == ParryClass.Never || !Faces(npc.Center - npc.velocity))
+                return false;
+
+            // Walked into, not come at; one the game leaves this player alone by; a touch nothing dodges.
+            if ((npc.velocity == Vector2.Zero && !Parry.FlyingWeapon(npc)) || Player.npcTypeNoAggro[npc.type] || !npc.IsDamageDodgeable())
+                return false;
+
+            Rectangle body = Player.Hitbox;
+            its = new Rectangle((int)(npc.position.X + npc.netOffset.X), (int)(npc.position.Y + npc.netOffset.Y), npc.width, npc.height);
+
+            int slot = cooldownSlot;
+            float damage = 1f;
+            NPC.GetMeleeCollisionData(body, npc.whoAmI, ref slot, ref damage, ref its);
+
+            return body.Intersects(its);
+        }
+
+        /// <summary>
+        /// Whether this machine's player's parry is about to turn this NPC aside on their body
+        /// this tick: what vanilla's asking of it comes to (<see cref="CanBeHitByNPC"/>), known
+        /// before it is asked. For a blow that is two things' as one (Skeletron's hands in his
+        /// clap and his smash), where the one the parry does not face is asked about the other:
+        /// the game asks them in the order it keeps them, and that may be the wrong one first.
+        /// The NPC's own side (CanHitPlayer) is not asked here, so that two may ask this of
+        /// each other.
+        /// </summary>
+        public bool AboutToTurn(NPC npc)
+        {
+            return Player.whoAmI == Main.myPlayer && !Spared(npc) && OnBody(npc, -1, out ParryClass kind, out _) && kind != ParryClass.Giant;
         }
     }
 }
