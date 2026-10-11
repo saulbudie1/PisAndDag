@@ -9,35 +9,41 @@ using Terraria.ModLoader;
 namespace PisAndDag.Content.Subworlds
 {
     /// <summary>
-    /// The first place: a long hall of Gray Brick, shut on every side, and lit. An arena.
+    /// The first place: a hall of Gray Brick, shut on every side, and lit. An arena.
     ///
-    /// 400 by 320 tiles, of which 317 by 237 can be seen (Subworld: the edges). Of what can
+    /// 264 by 207 tiles, of which 181 by 124 can be seen (Subworld: the edges). Of what can
     /// be seen: the ground is the last forty rows, the ceiling the first thirty-six, and a
     /// wall five columns thick stands at each end, all Gray Brick; what is left between them
-    /// is the hall, 307 tiles long and 161 high, with no platform in it and nothing to stand
-    /// on but its floor. The brick runs on past every edge that can be seen, so a screen
-    /// wider than the hall sees no end to it. No music. The door back stands on the floor
-    /// against the left wall.
+    /// is the hall, 171 tiles long and 48 high (fourteen bays, and two panels of wall one
+    /// over the other), with no platform in it and nothing to stand on but its floor. The
+    /// brick runs on past every edge that can be seen. No music. The door back stands on
+    /// the floor against the left wall.
     ///
     /// BEHIND IT ALL is Stone Wall, laid as masonry and not as one flat sheet: a dado of Gray
     /// Brick three rows high along the floor, a rail of Stone Slab over it, pilasters of
-    /// Stone Slab three wide from the rail to a capital under the frieze (one every twelve
-    /// columns from the hall's middle, and one against the wall at each end), a frieze of
-    /// Gray Brick under the ceiling with its own rail, a course of Stone Slab every
-    /// twenty-four rows up the height of it, and the Stone between them patched here and
-    /// there with brick.
+    /// Stone Slab three wide from the rail to a capital under the frieze (fifteen of them,
+    /// twelve columns apart, the first and the last against the two walls), a frieze of
+    /// Gray Brick under the ceiling with its own rail, a course of Stone Slab across the
+    /// bays where one panel ends and the next begins (twenty-four rows up: twenty rows of
+    /// wall under it and twenty over), and the Stone between them patched here and there
+    /// with brick. The door, three tall, stands in the dado: that band is counted into the
+    /// lower panel.
     ///
     /// LIT, since a wall behind everything keeps the sky's light out: a torch on every
     /// pilaster every twelve rows from the first row over a head, a torch in the middle of
     /// every bay between two pilasters six rows out of step with those, one more on each of
     /// them under the rail at the head of the wall, and a Tiki Torch standing on the floor in
-    /// the middle of every bay but the two at the ends (at the left one the door is, and
-    /// whoever comes back to life here stands; the right one is kept the same: those two
-    /// have a torch low on the wall instead). Light falls off by about a tenth a tile,
-    /// along and up added together, and a Tiki Torch gives its light from all three of its
-    /// tiles: nowhere in the hall is further than six tiles from a flame by that count (a
-    /// little over half a torch's light), and nowhere on the floor further than four (seven
-    /// tenths).
+    /// the middle of every bay. Light falls off by about a tenth a tile, along and up added
+    /// together, and a Tiki Torch gives its light from all three of its tiles: nowhere in
+    /// the hall is further than six tiles from a flame by that count (a little over half a
+    /// torch's light), but for the one column against each end wall, where it is seven
+    /// between two torches of the pilaster there; and nowhere on the floor further than four
+    /// (seven tenths).
+    ///
+    /// AT FOIGH'S END (Foigh.End) he stands under the fourth pilaster from the end wall
+    /// (<see cref="EndColumn"/>) and his roar puts out every flame in the hall but the
+    /// ones up that pilaster; they are lit again when it is over, and whenever the hall is
+    /// loaded (<see cref="EmptyHallFlames"/>).
     /// </summary>
     public class EmptyHall : Subworld
     {
@@ -53,35 +59,49 @@ namespace PisAndDag.Content.Subworlds
         /// <summary>From the middle of one pilaster to the middle of the next.</summary>
         public const int Bay = 12;
 
+        /// <summary>
+        /// The hall's length: this many bays, with a pilaster against the wall at each end of
+        /// them. (Nine is the least, for a place two hundred columns wide: SubworldKeeper.Least.)
+        /// </summary>
+        public const int Bays = 14;
+
+        /// <summary>
+        /// Its height: this many panels of wall one over the other, each this many rows. The
+        /// band along the floor that the door stands in is counted into the lowest of them.
+        /// (Two is the least: with one, the place would be 183 rows high, under the two
+        /// hundred a place has to be. SubworldKeeper.Least.)
+        /// </summary>
+        public const int Panels = 2;
+        public const int PanelRows = 24;
+
+        /// <summary>The hall itself, between its two walls and between its floor and its ceiling: columns, and rows.</summary>
+        public const int Long = Bays * Bay + 3;
+        public const int High = Panels * PanelRows;
+
         /// <summary>Up the wall, a torch on a pilaster every this many rows; the ones between the pilasters half of it out of step.</summary>
         public const int TorchRise = 12;
 
         /// <summary>The lowest torches on the pilasters: this many rows over the row that is stood in (so, over a head).</summary>
         public const int TorchFirst = 3;
 
-        /// <summary>In the two bays at the ends, with no Tiki Torch, the torch low on the wall: as high as a Tiki Torch's head.</summary>
-        public const int TorchLow = 2;
-
         /// <summary>Under the head of the wall no torch stands nearer than this to the one at its head.</summary>
         private const int TorchHeadGap = 4;
 
-        /// <summary>A pilaster counted from the middle is left out if it would stand nearer than this to the one against an end wall.</summary>
-        private const int EndBayLeast = 8;
-
         private const int DadoRows = 3;
         private const int FriezeRows = 2;
-        private const int CourseEvery = 24;
 
-        public override int Width => 400;
+        /// <summary>What can be seen of it, and the edges the game keeps out of sight (Subworld: the edges).</summary>
+        public override int Width => Margin + WallThick + Long + WallThick + FarMargin;
 
-        public override int Height => 320;
+        public override int Height => Margin + CeilingThick + High + FloorThick + FarMargin;
 
         /// <summary>
-        /// 4. The first was 250 rows high with ground three thick; the second, the same
+        /// 5. The first was 250 rows high with ground three thick; the second, the same
         /// height with ground twenty-six thick; the third, 320 high with ground forty thick
-        /// under open sky.
+        /// under open sky; the fourth, that size shut in and lit, its hall 307 long and 161
+        /// high.
         /// </summary>
-        public override int Layout => 4;
+        public override int Layout => 5;
 
         /// <summary>The row the floor's top is: what is stood on.</summary>
         private int Floor => Bottom - FloorThick + 1;
@@ -93,13 +113,10 @@ namespace PisAndDag.Content.Subworlds
         private int Inside => Left + WallThick;
         private int InsideEnd => Right - WallThick;
 
-        /// <summary>The middle column of the hall: a pilaster stands on it, and the rest are counted from it both ways.</summary>
-        private int Middle => (Inside + InsideEnd) / 2;
-
         /// <summary>
-        /// The middle column of every pilaster, left to right: one against each end wall
-        /// (three wide as the rest are, so its middle is a column in from the wall), and
-        /// between them every twelfth column from the hall's middle.
+        /// The middle column of every pilaster, left to right: the first against the left
+        /// wall (three wide as the rest are, so its middle is a column in from the wall), the
+        /// rest a bay apart, and the last against the right wall.
         /// </summary>
         private int[] pilasters;
 
@@ -108,21 +125,12 @@ namespace PisAndDag.Content.Subworlds
             if (pilasters != null)
                 return pilasters;
 
-            var list = new List<int>();
-            int first = Inside + 1;
-            int last = InsideEnd - 1;
+            int[] list = new int[Bays + 1];
 
-            list.Add(first);
+            for (int i = 0; i <= Bays; i++)
+                list[i] = Inside + 1 + i * Bay;
 
-            for (int x = first + EndBayLeast; x <= last - EndBayLeast; x++)
-            {
-                if ((x - Middle) % Bay == 0)
-                    list.Add(x);
-            }
-
-            list.Add(last);
-
-            return pilasters = list.ToArray();
+            return pilasters = list;
         }
 
         /// <summary>Against the left wall, on the floor.</summary>
@@ -158,7 +166,6 @@ namespace PisAndDag.Content.Subworlds
         private void Masonry()
         {
             int top = Ceiling + 1;
-            int high = Floor - top;
 
             for (int x = Inside; x <= InsideEnd; x++)
             {
@@ -177,8 +184,8 @@ namespace PisAndDag.Content.Subworlds
                         wall = WallID.StoneSlab;
                     else if (off <= 1 || (down == FriezeRows + 1 && off <= 2))
                         wall = WallID.StoneSlab;                                   // a pilaster, and its capital a tile wider
-                    else if ((up - DadoRows) % CourseEvery == 0 && up < high - FriezeRows - 4)
-                        wall = WallID.StoneSlab;                                   // a course across the bays
+                    else if (up % PanelRows == 0)
+                        wall = WallID.StoneSlab;                                   // a course across the bays, where the next panel begins
                     else
                         wall = Patched(x, y) ? WallID.GrayBrick : WallID.Stone;
 
@@ -248,14 +255,10 @@ namespace PisAndDag.Content.Subworlds
 
                 Column(bay, TorchFirst + TorchRise / 2);
 
-                // A flame on the floor in the middle of a bay: not in the two at the ends
-                // (the left one is where the door is and where the dead come back; the
-                // right one is kept the same). Those have one low on their wall instead,
-                // as high as a Tiki Torch's head is.
-                if (i == 0 || i + 2 == on.Length)
-                    Torch(bay, Floor - 1 - TorchLow);
-                else
-                    Stand(TileID.Lamps, bay, Floor - 3, 1, 3);
+                // And a flame on the floor in the middle of the bay. In the one at the left
+                // end that is four columns from where the dead come back, and six from the
+                // door.
+                Stand(TileID.Lamps, bay, Floor - 3, 1, 3);
             }
         }
 
@@ -296,6 +299,145 @@ namespace PisAndDag.Content.Subworlds
             tile.TileType = TileID.Torches;
             tile.TileFrameX = 0;
             tile.TileFrameY = 0;
+        }
+
+        // ============================================================
+        // FOIGH'S END (Foigh.End)
+        // ============================================================
+
+        /// <summary>
+        /// The pilaster Foigh goes to at his end: by request "the 4th columm at the end of the
+        /// hall", counted from the end wall, the one against it the first (the door is at the
+        /// other end): the fourth from the right.
+        /// </summary>
+        public const int EndPilaster = Bays - 3;
+
+        /// <summary>Which way is down the hall from its end: toward the door.</summary>
+        public const int DownTheHall = -1;
+
+        /// <summary>The middle column of that pilaster.</summary>
+        public int EndColumnX => Pilasters()[EndPilaster];
+
+        /// <summary>The loaded world is the hall, and this is it.</summary>
+        public static bool Here(out EmptyHall hall)
+        {
+            hall = Current as EmptyHall;
+            return hall != null;
+        }
+
+        /// <summary>Where Foigh stands at his end: the ground between his feet, on the floor under that pilaster. False anywhere but the hall.</summary>
+        public static bool EndColumn(out Vector2 feet)
+        {
+            feet = default;
+
+            if (!Here(out EmptyHall hall))
+                return false;
+
+            feet = new Vector2((hall.EndColumnX + 0.5f) * 16f, hall.Floor * 16f);
+            return true;
+        }
+
+        /// <summary>A lamp's sheet is three tiles of eighteen pixels to a style; a torch's unlit frames are its lit ones moved this far along, a lamp's this far.</summary>
+        private const int LampTall = 54;
+        private const int TorchOff = 66;
+        private const int LampOff = 18;
+
+        /// <summary>Every flame in the hall, as the tile it is known by: each torch, and each Tiki Torch (or any lamp) by its top tile.</summary>
+        public void Flames(List<Point> into)
+        {
+            for (int x = Inside; x <= InsideEnd; x++)
+            {
+                for (int y = Ceiling + 1; y < Floor; y++)
+                {
+                    Tile tile = Main.tile[x, y];
+
+                    if (!tile.HasTile)
+                        continue;
+
+                    if (tile.TileType == TileID.Torches || (tile.TileType == TileID.Lamps && tile.TileFrameY % LampTall == 0))
+                        into.Add(new Point(x, y));
+                }
+            }
+        }
+
+        /// <summary>Whether the flame at this tile (a torch, or a lamp's top tile) is lit: a torch in the first half of its frames, a lamp in its first column (as the game lights them).</summary>
+        public static bool Lit(Point at)
+        {
+            if (!WorldGen.InWorld(at.X, at.Y))
+                return false;
+
+            Tile tile = Main.tile[at.X, at.Y];
+
+            if (!tile.HasTile)
+                return false;
+
+            if (tile.TileType == TileID.Torches)
+                return tile.TileFrameX < TorchOff;
+
+            if (tile.TileType == TileID.Lamps)
+                return tile.TileFrameX < LampOff;
+
+            return false;
+        }
+
+        /// <summary>The flame at this tile lit, or put out, as a switch does it: a torch's frame into the half it is wanted in; each of a lamp's three tiles into its lit or unlit column.</summary>
+        public static void SetLit(Point at, bool lit)
+        {
+            if (!WorldGen.InWorld(at.X, at.Y + 2))
+                return;
+
+            Tile tile = Main.tile[at.X, at.Y];
+
+            if (!tile.HasTile)
+                return;
+
+            if (tile.TileType == TileID.Torches)
+            {
+                int frame = tile.TileFrameX % TorchOff;
+
+                tile.TileFrameX = (short)(lit ? frame : frame + TorchOff);
+                return;
+            }
+
+            if (tile.TileType != TileID.Lamps)
+                return;
+
+            for (int y = 0; y < 3; y++)
+            {
+                Tile part = Main.tile[at.X, at.Y + y];
+
+                if (part.HasTile && part.TileType == TileID.Lamps)
+                    part.TileFrameX = (short)(lit ? 0 : LampOff);
+            }
+        }
+
+        /// <summary>Every flame of the hall lit again, if the loaded world is it.</summary>
+        public static void RelightHere()
+        {
+            if (!Here(out EmptyHall hall))
+                return;
+
+            var all = new List<Point>();
+            hall.Flames(all);
+
+            foreach (Point at in all)
+            {
+                if (!Lit(at))
+                    SetLit(at, true);
+            }
+        }
+    }
+
+    /// <summary>
+    /// The hall's flames, lit whenever it is loaded: Foigh's roar puts them out at his end
+    /// (Foigh.End), and a place is kept as it was left (SubworldKeeper), so a hall left in the
+    /// dark, or saved with him half way through his end, would be dark the next time.
+    /// </summary>
+    public class EmptyHallFlames : ModSystem
+    {
+        public override void PostWorldLoad()
+        {
+            EmptyHall.RelightHere();
         }
     }
 }

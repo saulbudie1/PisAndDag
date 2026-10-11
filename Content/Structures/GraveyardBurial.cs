@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using PisAndDag.Content.Subworlds;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ID;
@@ -12,6 +13,10 @@ namespace PisAndDag.Content.Structures
     /// calls on the server and on every client, and tModLoader's Kill hook
     /// sits inside it — so each copy of the count moves together with no
     /// packet of its own. Saved with the world by GraveyardZone.
+    ///
+    /// A death in one of the world's places (a subworld) is counted with the
+    /// rest, and counted apart as well (GraveyardZone.Elsewhere): it leaves
+    /// no stone, so it is not one of the deaths the graveyard buries.
     ///
     /// Also says one line, once: after the world's first death, the player
     /// who came back is told that something should have noticed (Lore Bible
@@ -33,6 +38,9 @@ namespace PisAndDag.Content.Structures
         public override void Kill(double damage, int hitDirection, bool pvp, PlayerDeathReason damageSource)
         {
             GraveyardZone.Deaths++;
+
+            if (Subworld.Active)
+                GraveyardZone.Elsewhere++;
         }
 
         /// <summary>
@@ -66,7 +74,8 @@ namespace PisAndDag.Content.Structures
     /// Vanilla drops a tombstone where you fall. The first death in the world
     /// is buried in the graveyard instead — the open grave is filled and the
     /// stone set on it. Every death after that is vanilla, and the count
-    /// keeps going.
+    /// keeps going. A death in one of the world's places leaves no stone and
+    /// is none of these: the first that does leave one is the one buried.
     ///
     /// Player.DropTombstone runs in singleplayer and on the server, never on a
     /// client — so this runs where the count is authoritative. The stone is a
@@ -100,13 +109,19 @@ namespace PisAndDag.Content.Structures
             if (Main.netMode == NetmodeID.MultiplayerClient)
                 return;
 
-            if (!GraveyardZone.HasGraves || GraveyardZone.Deaths > Buried)
+            // The deaths that left a stone: all of them but those in the world's places.
+            if (!GraveyardZone.HasGraves || GraveyardZone.Deaths - GraveyardZone.Elsewhere > Buried)
                 return;
 
             // A stone that is not a death's. Kill has already run for this
             // death (it sits before DropTombstone in KillMe), so the count
-            // above includes it, and the owner is already dead.
-            if (!Main.player.IndexInRange(projectile.owner) || !Main.player[projectile.owner].dead)
+            // above includes it, and whoever died is already dead. Who
+            // that is, the game says in the stone's first ai slot; its
+            // owner is the machine that threw it (Main.myPlayer), which
+            // on a server is nobody's player and is never dead.
+            int who = (int)projectile.ai[0];
+
+            if (!Main.player.IndexInRange(who) || !Main.player[who].dead)
                 return;
 
             if (!FindPlot(out int x, out int y))

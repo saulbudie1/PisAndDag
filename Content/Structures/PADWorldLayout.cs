@@ -1565,6 +1565,10 @@ namespace PisAndDag.Content.Structures
 
             // Last, once the ground in front of the Mile is what it will be.
             Insert(tasks, "Final Cleanup", new MileSignsPass("PAD Mile Signs", 5f), before: true);
+
+            // The way down to the ball, from the ground between the beach and the Dungeon: as late as
+            // these, so that nothing made after it is put in its way (TheWayDownPass).
+            Insert(tasks, "Final Cleanup", new TheWayDownPass("PAD The Way Down", 60f), before: true);
         }
 
         /// <summary>Beside the named vanilla pass, or nowhere at all, loudly.</summary>

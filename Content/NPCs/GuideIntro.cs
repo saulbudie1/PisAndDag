@@ -235,6 +235,11 @@ namespace PisAndDag.Content.NPCs
             if (Main.netMode == NetmodeID.MultiplayerClient || !Pending)
                 return;
 
+            // Owed in the world, it is owed in the world's other places too (a subworld has
+            // the world's flags), and is not paid there: the Guide is the world's.
+            if (Subworlds.Subworld.Active)
+                return;
+
             if (Now == Beat.None)
             {
                 foreach (Player player in Main.ActivePlayers)

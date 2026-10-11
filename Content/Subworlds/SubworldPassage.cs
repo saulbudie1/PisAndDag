@@ -36,6 +36,8 @@ namespace PisAndDag.Content.Subworlds
     /// and loading go. Then the player is put down in front of the door on the other side
     /// and the world comes back up.
     ///
+    /// The world's flags go through the door too, both ways (SubworldFlags, SubworldKeeper).
+    ///
     /// The player is the same player all the way: never read back from their file. What the
     /// game keeps outside a player while one is played it puts away on the way out of a
     /// world, and on the way into one sets from what the player's file held when it was
@@ -780,8 +782,12 @@ namespace PisAndDag.Content.Subworlds
             {
                 Tidy();
 
+                // The flags go with whoever goes: into a place in memory, and back to the
+                // world by the file a place leaves it (which the saving writes again).
                 if (toward != null)
                     SubworldKeeper.Remember();
+                else
+                    SubworldKeeper.HandBack();
 
                 kept = Take();
                 keptOf = Main.LocalPlayer;

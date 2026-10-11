@@ -22,7 +22,8 @@ namespace PisAndDag.Content.NPCs.Foigh
     ///           well past a whole turn.
     ///
     /// What cannot be half done (which hand has the sword, which edge leads, whether it is
-    /// behind him, whether he is in the air) changes at its pose's own tick.
+    /// behind him or held up under his head, whether he is in the air) changes at its
+    /// pose's own tick.
     ///
     /// Sampled at any time, whole ticks or between them (the trail of the blade is the blade
     /// at times between ticks). Nothing here touches the game.
@@ -53,6 +54,13 @@ namespace PisAndDag.Content.NPCs.Foigh
         public FoighTrack(FoighRig.Pose from)
         {
             now = new Node { Tick = 0f, Pose = from };
+            nodes.Add(now);
+        }
+
+        /// <summary>The same, beginning at a tick of its own: for the rest of a movement whose beginning is worked out some other way.</summary>
+        public FoighTrack(FoighRig.Pose from, float tick)
+        {
+            now = new Node { Tick = tick, Pose = from };
             nodes.Add(now);
         }
 
@@ -87,6 +95,9 @@ namespace PisAndDag.Content.NPCs.Foigh
 
         public FoighTrack Sword(float degrees) { now.Pose.Sword = degrees * Rad; return this; }
         public FoighTrack Reach(float share) { now.Pose.Reach = share; return this; }
+
+        /// <summary>The sword fed forward through the hand that has it, by this many pixels: the hand is that far from its grip toward its point.</summary>
+        public FoighTrack Slide(float pixels) { now.Pose.Slide = pixels; return this; }
         public FoighTrack Rise(float pixels) { now.Pose.Rise = pixels; return this; }
         public FoighTrack Turn(float share) { now.Pose.Turn = share; return this; }
         public FoighTrack HeadTurn(float share) { now.Pose.HeadTurn = share; return this; }
@@ -101,7 +112,17 @@ namespace PisAndDag.Content.NPCs.Foigh
         public FoighTrack Clean(bool clockwise) { now.Pose.CleanClockwise = clockwise; return this; }
 
         public FoighTrack Behind(bool behind) { now.Pose.Behind = behind; return this; }
+
+        /// <summary>From this pose on: the sword held up against him, over his body and under his head (or not).</summary>
+        public FoighTrack UnderHead(bool under) { now.Pose.UnderHead = under; return this; }
         public FoighTrack Air(bool air) { now.Pose.Air = air; return this; }
+
+        /// <summary>
+        /// His other hand put on the sword's handle, as this pose stands: said last, after
+        /// everything else of the pose, because it is worked out from where the rest of him
+        /// is (FoighRig.HandOnBlade). Where the handle is out of that arm's reach, nothing.
+        /// </summary>
+        public FoighTrack BothHands() { FoighRig.HandOnBlade(ref now.Pose, true); return this; }
 
         /// <summary>The pose at this time, in ticks: before the first pose it is the first, after the last the last.</summary>
         public FoighRig.Pose Sample(float tick)
@@ -148,6 +169,7 @@ namespace PisAndDag.Content.NPCs.Foigh
             pose.FarLeg = MathHelper.Lerp(a.FarLeg, b.FarLeg, t);
             pose.Sword = MathHelper.Lerp(a.Sword, b.Sword, t);
             pose.Reach = MathHelper.Lerp(a.Reach, b.Reach, t);
+            pose.Slide = MathHelper.Lerp(a.Slide, b.Slide, t);
             pose.Rise = MathHelper.Lerp(a.Rise, b.Rise, t);
             pose.Turn = MathHelper.Lerp(a.Turn, b.Turn, t);
             pose.HeadTurn = MathHelper.Lerp(a.HeadTurn, b.HeadTurn, t);

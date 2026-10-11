@@ -139,6 +139,15 @@ namespace PisAndDag.Content.Combat
         // and the view punches in and eases back. Everything is shaped by the voice: in
         // over three ticks, held while fading a little, let go over the last eighteen.
         // The rings outlive the voice and finish going out on their own.
+        //
+        // Two things a roar can be asked to be besides. Rimmed: each ring's fainter band,
+        // the one outside the torn one, is drawn in a colour instead of black, as thin and
+        // as clear as the black one (Foigh's red and black). Drawn in: the whole of it the
+        // other way about, as a roar played backward would be.
+        // The rings come in from off the screen to the one roaring and are gone into
+        // them, the last of them as the voice ends; the voice swells and is cut off; the
+        // shake swells with it; the view creeps in, most of all just before the end; and
+        // there is no kick. The rings are all in by the end of the voice.
 
         private static int roarAge = -1;
         private static int roarLength;
@@ -149,12 +158,30 @@ namespace PisAndDag.Content.Combat
         private static int roarNpc = -1;
         private static int roarNpcType = -1;
 
+        /// <summary>The colour of the rings' fainter band; or none, all of it black.</summary>
+        private static Color? roarRim;
+
+        /// <summary>Drawn in, not out (the class says how).</summary>
+        private static bool roarInward;
+
         /// <summary>
         /// One ring: a smoky band of dark bunched into lumps, torn into wisps along the
         /// radius at both edges, the outer ones longer. White with alpha, so it is drawn
         /// black with <c>Color.Black * dark</c>. Asked for at load, never made here.
         /// </summary>
         private static Asset<Texture2D> ring;
+
+        /// <summary>
+        /// The ring again with its colour multiplied by its own alpha, for drawing it in a
+        /// colour (a rim). The overlay's blending takes a picture's colour as already
+        /// multiplied by its alpha, and the ring's own is white all over, the clear parts as
+        /// well: drawn in black that is all the same, but in a colour the whole square it is
+        /// drawn on would be that colour, not the ring alone. Made from the ring the first
+        /// time a rim is drawn, on the main thread, as the pool is; none if the ring cannot be
+        /// read back, and a rim is then drawn black.
+        /// </summary>
+        private static Texture2D litRing;
+        private static bool litRingTried;
 
         /// <summary>Where the middle of the band sits in the ring's texture, as a share of its half-width.</summary>
         private const float RingBand = 0.78f;
@@ -293,13 +320,16 @@ namespace PisAndDag.Content.Combat
         ///
         /// Called once, on every client that should see it (the NPC's AI runs on all of
         /// them); a new roar replaces one still going.
+        ///
+        /// <paramref name="rim"/> rims it in a colour, and <paramref name="inward"/> draws
+        /// it in rather than out (the class says how). Neither, as every roar was before.
         /// </summary>
-        public static void Roar(NPC npc, int length = 80, float strength = 1f, SoundStyle? sound = null, bool quiet = false)
+        public static void Roar(NPC npc, int length = 80, float strength = 1f, SoundStyle? sound = null, bool quiet = false, Color? rim = null, bool inward = false)
         {
             if (Main.dedServ || npc == null || !npc.active)
                 return;
 
-            if (StartRoar(npc.Center, Math.Max(npc.width, npc.height) * 0.45f, length, strength, sound, quiet))
+            if (StartRoar(npc.Center, Math.Max(npc.width, npc.height) * 0.45f, length, strength, sound, quiet, rim, inward))
             {
                 roarNpc = npc.whoAmI;
                 roarNpcType = npc.type;
@@ -307,12 +337,12 @@ namespace PisAndDag.Content.Combat
         }
 
         /// <summary>A roar from a point in the world rather than from an NPC.</summary>
-        public static void Roar(Vector2 at, int length = 80, float strength = 1f, SoundStyle? sound = null, bool quiet = false)
+        public static void Roar(Vector2 at, int length = 80, float strength = 1f, SoundStyle? sound = null, bool quiet = false, Color? rim = null, bool inward = false)
         {
             if (Main.dedServ)
                 return;
 
-            StartRoar(at, 40f, length, strength, sound, quiet);
+            StartRoar(at, 40f, length, strength, sound, quiet, rim, inward);
         }
 
         /// <summary>Whether a roar is on, rings and all.</summary>
@@ -323,7 +353,7 @@ namespace PisAndDag.Content.Combat
         public const float RoarFar = 2600f;
 
         /// <summary>True if the roar is on screen: false for one too far off to be felt.</summary>
-        private static bool StartRoar(Vector2 at, float start, int length, float strength, SoundStyle? sound, bool quiet)
+        private static bool StartRoar(Vector2 at, float start, int length, float strength, SoundStyle? sound, bool quiet, Color? rim, bool inward)
         {
             if (!quiet)
                 SoundEngine.PlaySound(sound ?? SoundID.Roar, at);
@@ -344,17 +374,25 @@ namespace PisAndDag.Content.Combat
             roarAge = 0;
             roarNpc = -1;
             roarNpcType = -1;
+            roarRim = rim;
+            roarInward = inward;
 
             return true;
         }
 
-        /// <summary>The voice: 0 to 1, in over three ticks, sagging a third while held, out over the last eighteen.</summary>
+        /// <summary>
+        /// The voice: 0 to 1, in over three ticks, sagging a third while held, out over the
+        /// last eighteen. Drawn in, the same backward: in over the first eighteen, swelling
+        /// by a third, and cut off over the last three.
+        /// </summary>
         private static float Voice()
         {
             if (roarAge < 0 || roarAge >= roarLength)
                 return 0f;
 
-            return Math.Min(1f, roarAge / 3f) * Level(roarAge);
+            int age = roarInward ? roarLength - 1 - roarAge : roarAge;
+
+            return Math.Min(1f, age / 3f) * Level(age);
         }
 
         /// <summary>
@@ -401,8 +439,9 @@ namespace PisAndDag.Content.Combat
 
             Vector2 shake = new Vector2(x, y) * (RoarShake * roarStrength * voice);
 
-            // The kick: down hard on the first tick, and rung out.
-            if (roarAge < 36)
+            // The kick: down hard on the first tick, and rung out. (Not drawn in: whatever
+            // it is drawn in to gives the kick, when it lets go.)
+            if (roarAge < 36 && !roarInward)
                 shake.Y += RoarKick * roarStrength * (float)Math.Exp(-roarAge / 5f) * (float)Math.Cos(roarAge * 0.85f);
 
             return shake;
@@ -415,7 +454,11 @@ namespace PisAndDag.Content.Combat
 
             if (roarAge >= 0)
             {
-                float punch = RoarPunch * Math.Min(1f, roarAge / 4f) * (float)Math.Exp(-Math.Max(0, roarAge - 4) / 12f);
+                // Drawn in, the punch the other way about too: creeping in, most of all
+                // just before the voice ends, and gone with it.
+                int age = roarInward ? roarLength - roarAge : roarAge;
+                float punch = age < 0 ? 0f : RoarPunch * Math.Min(1f, age / 4f) * (float)Math.Exp(-Math.Max(0, age - 4) / 12f);
+
                 zoom *= 1f + roarStrength * (punch + 0.02f * Voice());
             }
 
@@ -552,11 +595,53 @@ namespace PisAndDag.Content.Combat
             Texture2D oldPool = pool;
             pool = null;
 
+            Texture2D oldLit = litRing;
+            litRing = null;
+            litRingTried = false;
+
             // The ring belongs to the mod's assets, which dispose it themselves.
             ring = null;
 
             if (oldPool != null)
                 Main.QueueMainThreadAction(() => oldPool.Dispose());
+
+            if (oldLit != null)
+                Main.QueueMainThreadAction(() => oldLit.Dispose());
+        }
+
+        /// <summary>The ring with its colour multiplied by its alpha (<see cref="litRing"/>), made from the ring the first time it is asked for; null if that cannot be done.</summary>
+        private static Texture2D LitRing(Texture2D white)
+        {
+            if (litRing != null && !litRing.IsDisposed)
+                return litRing;
+
+            if (litRingTried)
+                return null;
+
+            litRingTried = true;
+
+            try
+            {
+                Color[] data = new Color[white.Width * white.Height];
+                white.GetData(data);
+
+                for (int i = 0; i < data.Length; i++)
+                {
+                    int a = data[i].A;
+                    data[i] = new Color(a, a, a, a);
+                }
+
+                litRing = new Texture2D(Main.graphics.GraphicsDevice, white.Width, white.Height);
+                litRing.SetData(data);
+            }
+            catch
+            {
+                // A texture the graphics device will not read back is not worth the game:
+                // the rims are drawn black, as every roar's are.
+                litRing = null;
+            }
+
+            return litRing;
         }
 
         /// <summary>A world left mid-roar, mid-lean or mid-cover does not take any of them into the next one.</summary>
@@ -614,22 +699,36 @@ namespace PisAndDag.Content.Combat
 
             for (int k = 0; k * RoarWaveEvery <= roarLength - RoarLastWave; k++)
             {
-                int age = roarAge - k * RoarWaveEvery;
+                // Drawn in, the k-th ring from the end comes in to be gone into the one
+                // roaring as the voice is that far from its end; one that would have had to
+                // set out before the roar began is not there at all (it would be seen first
+                // halfway in).
+                int born = roarInward ? roarLength - k * RoarWaveEvery - RoarWaveLife : k * RoarWaveEvery;
+
+                if (born < 0)
+                    break;
+
+                int age = roarAge - born;
 
                 if (age < 0 || age > RoarWaveLife)
                     continue;
 
-                float u = age / (float)RoarWaveLife;
+                // How far along its way it is as a ring going out: drawn in, the way back.
+                int along = roarInward ? RoarWaveLife - age : age;
+                float u = along / (float)RoarWaveLife;
 
                 // Off the body slowly, then faster and faster: most of the reach is covered
-                // at the end, in a rush.
+                // at the end, in a rush. (Drawn in: in from far off in a rush, and slower
+                // and slower into the body.)
                 float rush = ((float)Math.Exp(RoarRush * u) - 1f) / rushAll;
                 float radius = (from + (RoarReach - from) * rush) * zoom;
 
                 // As loud as the voice was when it went out; in over two ticks, thinning
                 // over the last part of its way, by when it is mostly off the screen.
+                // (Drawn in: as loud as the voice will be when it is gone into them; seen
+                // first faintly far out, and gone into them over two ticks.)
                 float dark = RoarRingDark * roarStrength * Level(k * RoarWaveEvery)
-                    * Math.Min(1f, age / 2f) * (1f - Smooth((u - 0.6f) / 0.4f));
+                    * Math.Min(1f, along / 2f) * (1f - Smooth((u - 0.6f) / 0.4f));
 
                 if (k == 0)
                     dark *= 1.3f;
@@ -648,7 +747,18 @@ namespace PisAndDag.Content.Combat
                 spriteBatch.Draw(texture, centre, null, Color.Black * Math.Min(1f, dark), turn,
                     texture.Size() * 0.5f, scale, SpriteEffects.None, 0f);
 
-                spriteBatch.Draw(texture, centre, null, Color.Black * Math.Min(1f, dark * RoarEchoDark), turn + 2.1f,
+                // Rimmed: the fainter band in the rim's colour, as clear as it is in black,
+                // from the ring with its colour multiplied by its alpha (LitRing).
+                Texture2D echoTexture = texture;
+                Color echo = Color.Black;
+
+                if (roarRim is Color rim && LitRing(texture) is Texture2D lit)
+                {
+                    echoTexture = lit;
+                    echo = rim;
+                }
+
+                spriteBatch.Draw(echoTexture, centre, null, echo * Math.Min(1f, dark * RoarEchoDark), turn + 2.1f,
                     texture.Size() * 0.5f, scale * RoarEchoOut, SpriteEffects.FlipHorizontally, 0f);
             }
         }

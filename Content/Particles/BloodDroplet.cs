@@ -18,6 +18,11 @@ namespace PisAndDag.Content.Particles
         private Color initialColor;
         private float spin;
 
+        /// <summary>A falling droplet's speed across kept each tick; the speed down it gains each tick; and the fastest it falls.</summary>
+        public const float Drag = 0.965f;
+        public const float Gravity = 0.42f;
+        public const float FallsAtMost = 18f;
+
         /// <summary>
         /// False makes the droplet hang in the air and coast to a stop instead of falling.
         /// Used by the charge aura, where blood should drift outward rather than rain down.
@@ -60,13 +65,38 @@ namespace PisAndDag.Content.Particles
             }
         }
 
+        /// <summary>
+        /// A falling droplet from <paramref name="from"/>, going <paramref name="velocity"/>:
+        /// the ticks it takes to come down to <paramref name="ground"/> (a height), and where
+        /// it is then (<paramref name="at"/>), moved by its speed and then its speed changed
+        /// each tick, as the handler and Update have it. No more than <paramref name="most"/>
+        /// ticks, and where it is after those.
+        /// </summary>
+        public static int Fall(Vector2 from, Vector2 velocity, float ground, int most, out Vector2 at)
+        {
+            at = from;
+
+            for (int ticks = 1; ticks <= most; ticks++)
+            {
+                at += velocity;
+
+                if (at.Y >= ground)
+                    return ticks;
+
+                velocity.X *= Drag;
+                velocity.Y = MathHelper.Clamp(velocity.Y + Gravity, -FallsAtMost, FallsAtMost);
+            }
+
+            return most;
+        }
+
         public override void Update()
         {
             if (AffectedByGravity)
             {
                 // Air drag sideways, gravity down, terminal velocity so streaks stay sane.
-                Velocity.X *= 0.965f;
-                Velocity.Y = MathHelper.Clamp(Velocity.Y + 0.42f, -18f, 18f);
+                Velocity.X *= Drag;
+                Velocity.Y = MathHelper.Clamp(Velocity.Y + Gravity, -FallsAtMost, FallsAtMost);
             }
             else
             {

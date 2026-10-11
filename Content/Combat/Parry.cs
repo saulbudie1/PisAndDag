@@ -641,7 +641,11 @@ namespace PisAndDag.Content.Combat
     ///
     /// A hit the mod works out itself, which vanilla never asks about (a lance, a body run
     /// at them), asks here before it lands: <see cref="MeetsLine"/>, <see cref="MeetsBox"/>,
-    /// <see cref="Takes"/>, and <see cref="Spares"/> for the ticks after.
+    /// <see cref="Takes"/>, <see cref="TakesLine"/>, and <see cref="Spares"/> for the ticks
+    /// after. A shot that comes too fast to be met after a parry's wind-up (by the time the
+    /// wind is over it has come four tiles, and the eye has only just seen it arrive) may say
+    /// so, and is then turned aside by a parry begun and not yet over its active ticks
+    /// (<see cref="Up"/>): Foigh's cuts that are not his sword in his hand.
     /// </summary>
     public class ParryPlayer : ModPlayer
     {
@@ -690,6 +694,13 @@ namespace PisAndDag.Content.Combat
 
         /// <summary>It turns things aside this tick.</summary>
         public bool Active => elapsed >= timing.Startup && elapsed < timing.Startup + timing.Active;
+
+        /// <summary>
+        /// Begun, and not yet past its active ticks: winding, or active. What turns aside a
+        /// shot that says it comes too fast for the wind (<see cref="Takes"/>,
+        /// <see cref="TakesLine"/>).
+        /// </summary>
+        public bool Up => elapsed >= 0 && elapsed < timing.Startup + timing.Active;
 
         /// <summary>How many things this parry has turned aside.</summary>
         public int Landed { get; private set; }
@@ -990,13 +1001,32 @@ namespace PisAndDag.Content.Combat
         /// <summary>
         /// A shot whose hit the mod works out, about to land on this player from
         /// <paramref name="from"/>: parried, and true, if a parry is active and it can be.
+        /// <paramref name="winding"/>: one that comes too fast to be met after the wind is
+        /// turned aside by a parry that is still winding as well (<see cref="Up"/>).
         /// </summary>
-        public bool Takes(Projectile projectile, Vector2 from)
+        public bool Takes(Projectile projectile, Vector2 from, bool winding = false)
         {
-            if (Player.whoAmI != Main.myPlayer || !Active || !Parry.Can(projectile) || !Faces(from))
+            if (Player.whoAmI != Main.myPlayer || !(winding ? Up : Active) || !Parry.Can(projectile) || !Faces(from))
                 return false;
 
             Turn(projectile, projectile.Center);
+            return true;
+        }
+
+        /// <summary>
+        /// A shot that is a line about to open through this player (a cut out of the ground),
+        /// from <paramref name="from"/> to <paramref name="to"/>: parried, and true, if a
+        /// parry is up as <see cref="Takes"/> asks and it can be, whichever way they face (it
+        /// lies through them: it is the moment that has to be right, not the way they look,
+        /// as with Foigh's late cut). Met where it comes nearest their middle.
+        /// </summary>
+        public bool TakesLine(Projectile projectile, Vector2 from, Vector2 to, bool winding = false)
+        {
+            if (Player.whoAmI != Main.myPlayer || !(winding ? Up : Active) || !Parry.Can(projectile))
+                return false;
+
+            Nearest(Player.Center, from, to - from, out Vector2 met);
+            Turn(projectile, OnArc(met));
             return true;
         }
 

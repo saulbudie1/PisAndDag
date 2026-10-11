@@ -115,6 +115,9 @@ namespace PisAndDag.Content.NPCs
         /// <summary>The update a riposte landed on it, for the one who landed it (<see cref="Punch"/>).</summary>
         private uint ripostedAt = uint.MaxValue;
 
+        /// <summary>Its life as this machine's last tick left it (<see cref="HitEffect"/>).</summary>
+        private int lifeSeen;
+
         public bool Staggered => staggerTicks > 0;
 
         /// <summary>Reeling from a parry: the next hit on it is a riposte.</summary>
@@ -165,6 +168,19 @@ namespace PisAndDag.Content.NPCs
             reelTicks = Math.Max(reelTicks, ticks);
             held = hold;
             parries = 0;
+            npc.netUpdate = true;
+        }
+
+        /// <summary>
+        /// Over, where the world is decided, for one that has gone on to something no hit
+        /// can reach (Foigh, stopped for a passage): it is open to no riposte any more.
+        /// </summary>
+        public void Wake(NPC npc)
+        {
+            if (reelTicks <= 0)
+                return;
+
+            reelTicks = 0;
             npc.netUpdate = true;
         }
 
@@ -282,6 +298,8 @@ namespace PisAndDag.Content.NPCs
             if (deaf > 0)
                 deaf--;
 
+            lifeSeen = npc.life;
+
             bool reeling = reelTicks > 0;
 
             if (reeling)
@@ -362,7 +380,9 @@ namespace PisAndDag.Content.NPCs
         /// <summary>
         /// A hit has landed (NPC.StrikeNPC calls this on every machine the hit is done on,
         /// after the life and the knockback). If it was reeling, that was the riposte: it
-        /// wakes, here and now.
+        /// wakes, here and now. Not for the look of a hit alone, which the game also calls
+        /// this for with no strike behind it (a javelin stuck in it, every half second:
+        /// Projectile.AI, 1.4.4): only a hit that has taken life from it, or ended it.
         /// </summary>
         public override void HitEffect(NPC npc, NPC.HitInfo hit)
         {
@@ -370,6 +390,9 @@ namespace PisAndDag.Content.NPCs
             PADStaggerNPC state = whole.GetGlobalNPC<PADStaggerNPC>();
 
             if (state.reelTicks <= 0)
+                return;
+
+            if (whole.life >= state.lifeSeen && !hit.InstantKill)
                 return;
 
             state.reelTicks = 0;

@@ -84,7 +84,7 @@ namespace PisAndDag.Content.UI
         /// <summary>TalkPanel.png is 36×36 with 12px ends, so the middle 12px stretch.</summary>
         private const int SliceEnd = 12;
 
-        private const int FadeTicks = 12;
+        internal const int FadeTicks = 12;
 
         // ============================================================
         // THE CAMERA
@@ -598,7 +598,7 @@ namespace PisAndDag.Content.UI
         /// </summary>
         public const char Pause = '|';
 
-        private const int PauseTicks = 30;
+        internal const int PauseTicks = 30;
 
         /// <summary>Where the beats fall, counted in the line's non-space characters, which wrapping does not move.</summary>
         private static readonly List<int> pauses = new();

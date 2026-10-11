@@ -278,6 +278,17 @@ Items: {
 			'It was made to hold what had stopped moving.'
 			'''
 	}
+
+	FoighsRustSideSword: {
+		DisplayName: Foigh's Rust Side Sword
+		Tooltip:
+			'''
+			Ignores all defense
+			Right click shoots up to three slashes.
+			Hold Enter for 3 seconds, standing, to drench it in blood
+			'The rusted side was used on one man, for centuries.'
+			'''
+	}
 }
 
 Buffs: {
@@ -335,6 +346,40 @@ Buffs: {
 		DisplayName: Boss Active
 		Description: You cannot build, mine or leave until the fight is over
 	}
+
+	UltraBleeding1: {
+		DisplayName: Ultra Bleeding I
+		Description: Bleeding out, 12 life a second. Life does not regenerate
+	}
+
+	UltraBleeding2: {
+		DisplayName: Ultra Bleeding II
+		Description: Bleeding out, 24 life a second. Life does not regenerate
+	}
+
+	UltraBleeding3: {
+		DisplayName: Ultra Bleeding III
+		Description: Bleeding out, 36 life a second. Life does not regenerate
+	}
+
+	UltraBleedingGeneric: {
+		DisplayName: Ultra Bleeding
+		Description: Bleeding out, 200 life a second
+	}
+
+	BloodDrenchedSword: {
+		DisplayName: Blood Drenched Sword
+		Description:
+			'''
+			Sword damage +75%, defense +60%, speed +25%, max life -40%
+			Its blows bleed enemies for 200 life a second
+			'''
+	}
+
+	DriedBlood: {
+		DisplayName: Dried Blood
+		Description: The sword cannot be drenched again yet
+	}
 }
 
 DeathText: {
@@ -350,7 +395,14 @@ DeathText: {
 	FoighDagger: "{0} did not see the knife leave his hand."
 	FoighSwordThrown: "{0} was where the sword came down."
 	FoighSpitted: "{0} drank, and was lifted off the ground."
+	FoighHeld: "{0} was held close while the sword took its time."
+	FoighLate: "{0} was cut a moment after the sword had gone by."
+	FoighSmite: "{0} was sent back down."
 	FoighReturned: "{0} was given back what they sent."
+	FoighBled: "{0} bled with the sword."
+	FoighSlash: "{0} was cut by a sword that was nowhere near."
+	FoighHook: "{0} came when the chain was pulled."
+	FoighLine: "{0} saw where the cut would be, and stood there."
 }
 
 Tiles: {
@@ -399,6 +451,12 @@ Projectiles: {
 	FoighDagger.DisplayName: Throwing Knife
 	FoighSwordThrown.DisplayName: Sword
 	FoighReturned.DisplayName: Returned Shot
+	FoighSlash.DisplayName: Flying Slash
+	FoighHook.DisplayName: Meat Hook
+	FoighLine.DisplayName: Straight Cut
+	RustSideSlash.DisplayName: Rust Side Slash
+	RustSideLine.DisplayName: Rust Side Line
+	RustSideHoldout.DisplayName: Rust Side Holdout
 }
 
 NPCs: {

@@ -34,6 +34,12 @@ namespace PisAndDag.Content.Subworlds
     /// they came through (<see cref="Home"/>, <see cref="HomeDoor"/>): in memory only. A
     /// game left from inside a subworld comes back in the world, at its own spawn.
     ///
+    /// A place has its world's flags, and what is done in one is done in the world
+    /// (SubworldFlags, which says what they are). Into a place they go in memory, with
+    /// whoever goes (<see cref="Remember"/>). Back, they go by a file beside the place's,
+    /// written whenever the place is saved (<see cref="FlagsFile"/>) and read whenever the
+    /// world is loaded, so that a game left from inside a place loses nothing either.
+    ///
     /// Single player only, for now: nothing here is sent to anybody.
     /// </summary>
     public class SubworldKeeper : ModSystem
@@ -43,8 +49,25 @@ namespace PisAndDag.Content.Subworlds
 
         private const string Folder = "PisAndDag_Subworlds";
 
-        /// <summary>The smallest a place can be: its unseen edges, and something between them.</summary>
-        private const int Least = 150;
+        /// <summary>
+        /// Beside a world's places: the flags as they were in whichever place was saved
+        /// last, for the world to take up when it is next loaded. Each writing of it has a
+        /// mark of its own, and the world keeps the mark of the last one it took
+        /// (<see cref="TakenKey"/>, in the world's own file): the same writing is not taken
+        /// twice, and one the world took and then was not saved with is taken again.
+        /// </summary>
+        private const string FlagsFile = "Flags.dat";
+        private const string MarkKey = "PADMark";
+        private const string TakenKey = "PADPlaceFlagsTaken";
+
+        /// <summary>
+        /// The smallest a place can be, each way. The game takes two hundred off a world's
+        /// width, and off its height, for where a Teleportation Potion may put whoever
+        /// drinks one (Player.TeleportationPotion, 1.4.4: maxTilesX less 200 across, and
+        /// Main.UnderworldLayer, which is maxTilesY less 200, down), and gives what is left
+        /// to its random as a range: less than nothing there, and it throws.
+        /// </summary>
+        private const int Least = 200;
 
         /// <summary>Rows from a subworld's bottom edge to its surface line, and to its rock line: both under anything that can be seen.</summary>
         private const int SurfaceFromBottom = 35;
@@ -67,16 +90,21 @@ namespace PisAndDag.Content.Subworlds
         internal static Point16 HomeDoor = new Point16(-1, -1);
 
         /// <summary>
-        /// What that world had become when it was left: in Legends, and with flight unlocked.
-        /// A place is the same world in this much, so what a player carries behaves there as
-        /// it does at home (<see cref="Remember"/>). Nothing else of the world's progress
-        /// comes along, and nothing done in a place goes back.
+        /// The flags of the world that was left, as they stood when it was (SubworldFlags):
+        /// for the place gone to (<see cref="Remember"/>), until it has them.
         /// </summary>
-        internal static bool HomeLegends;
-        internal static bool HomeFlight;
+        private static TagCompound carried;
 
-        /// <summary>In a subworld come into from a world where flight was unlocked.</summary>
-        internal static bool FlightFromHome => Current != null && Home != null && HomeFlight;
+        /// <summary>
+        /// In a place: its flags are its world's (it was come into from its world, and
+        /// given them). Only then are they written out for the world to take back: a place
+        /// that was not given them (its file as it is first made, or one come into some
+        /// other way than from its world) has nothing of the world's to hand it.
+        /// </summary>
+        private static bool given;
+
+        /// <summary>In a world: the mark of the last writing of its places' flags it took.</summary>
+        private static string taken;
 
         /// <summary>Set by hand (/subworld rules): the rules of subworlds are off until the game is closed, for building in one.</summary>
         internal static bool RulesLifted;
@@ -116,6 +144,8 @@ namespace PisAndDag.Content.Subworlds
 
             Current = null;
             RulesLifted = false;
+            given = false;
+            taken = null;
             ForgetHome();
         }
 
@@ -123,15 +153,13 @@ namespace PisAndDag.Content.Subworlds
         {
             Home = null;
             HomeDoor = new Point16(-1, -1);
-            HomeLegends = false;
-            HomeFlight = false;
+            carried = null;
         }
 
-        /// <summary>The world is about to be left for a place: what it has become, kept for there. Asked in the world, before it is saved.</summary>
+        /// <summary>The world is about to be left for a place: its flags, kept for there. Asked in the world, before it is saved.</summary>
         internal static void Remember()
         {
-            HomeLegends = PADWorld.Legends;
-            HomeFlight = PADWorld.FlightUnlocked;
+            carried = SubworldFlags.Take();
         }
 
         // ---- which place this is ---------------------------------------------------------------
@@ -140,35 +168,146 @@ namespace PisAndDag.Content.Subworlds
         public override void ClearWorld()
         {
             Current = null;
+            given = false;
+            taken = null;
         }
 
         public override void SaveWorldData(TagCompound tag)
         {
             if (Current != null)
+            {
                 tag[SaveKey] = Current.FullName;
+
+                // Whenever a place is saved, its flags are left for its world.
+                HandBack();
+            }
+            else if (taken != null)
+            {
+                tag[TakenKey] = taken;
+            }
         }
 
         public override void LoadWorldData(TagCompound tag)
         {
             Current = tag.ContainsKey(SaveKey) ? Find(tag.GetString(SaveKey)) : null;
+            taken = tag.ContainsKey(TakenKey) ? tag.GetString(TakenKey) : null;
         }
 
         /// <summary>
-        /// After every system has read the world's file. A subworld come into from a world is
-        /// that world in what was kept of it (the mod's own flag is put in place of the
-        /// file's; flight is asked for where it is read, PADWorld.FlightUnlocked). A world
-        /// has nothing behind it to go back to.
+        /// After every system has read the world's file. A subworld come into from a world
+        /// has that world's flags, in place of its own file's. A world takes up what its
+        /// places left for it, and has nothing behind it to go back to.
         /// </summary>
         public override void PostWorldLoad()
         {
             if (Current == null)
             {
                 ForgetHome();
+                TakeBack();
                 return;
             }
 
-            if (Home != null)
-                PADWorld.Legends = HomeLegends;
+            if (Home == null)
+                return;
+
+            // Given once, as the place is first come into. Loaded again from inside (the
+            // game's own "load backup"), the place's file has them already, with whatever
+            // has been done here since: those are not put back to what the world had.
+            if (carried != null)
+            {
+                SubworldFlags.Give(carried, true);
+                carried = null;
+            }
+
+            given = true;
+        }
+
+        // ---- what a place hands back to its world ----------------------------------------------
+
+        /// <summary>The folder a world keeps its places in. Asked while the world is the one loaded.</summary>
+        private static string FolderFor(WorldFileData world)
+        {
+            string id = world.UseGuidAsMapName ? world.UniqueId.ToString() : Main.worldID.ToString();
+
+            return Path.Combine(Main.WorldPath, Folder, id);
+        }
+
+        /// <summary>
+        /// In a place that has its world's flags: they are written beside its file as they
+        /// stand, under a mark of their own, whole or not at all (to another name first,
+        /// then put in the file's place). Asked whenever the place is saved, and once more
+        /// as it is left by its door. Whatever goes wrong is the place's loss of this one
+        /// writing and no more: client.log has it.
+        /// </summary>
+        internal static void HandBack()
+        {
+            if (Current == null || !given)
+                return;
+
+            try
+            {
+                string folder = Path.GetDirectoryName(Main.ActiveWorldFileData?.Path);
+
+                if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
+                    return;
+
+                TagCompound flags = SubworldFlags.Take();
+
+                flags[MarkKey] = Guid.NewGuid().ToString("N");
+
+                string path = Path.Combine(folder, FlagsFile);
+                string fresh = path + ".new";
+
+                lock (handing)
+                {
+                    TagIO.ToFile(flags, fresh, true);
+                    File.Move(fresh, path, true);
+                }
+            }
+            catch (Exception e)
+            {
+                ModContent.GetInstance<SubworldKeeper>().Mod.Logger.Warn("Subworlds: could not leave the place's flags for its world.", e);
+            }
+        }
+
+        private static readonly object handing = new();
+
+        /// <summary>
+        /// In a world just loaded: what its places left for it, if it has not had it, is
+        /// taken up (SubworldFlags.Give, which only ever adds to a world). The mark of it is
+        /// saved with the world from then on.
+        /// </summary>
+        private static void TakeBack()
+        {
+            try
+            {
+                WorldFileData world = Main.ActiveWorldFileData;
+
+                if (world == null)
+                    return;
+
+                string path = Path.Combine(FolderFor(world), FlagsFile);
+
+                if (!File.Exists(path))
+                    return;
+
+                TagCompound flags;
+
+                lock (handing)
+                    flags = TagIO.FromFile(path, true);
+
+                string mark = flags.ContainsKey(MarkKey) ? flags.GetString(MarkKey) : null;
+
+                if (string.IsNullOrEmpty(mark) || mark == taken)
+                    return;
+
+                SubworldFlags.Give(flags, false);
+                taken = mark;
+            }
+            catch (Exception e)
+            {
+                ModContent.GetInstance<SubworldKeeper>().Mod.Logger.Warn("Subworlds: could not read what the world's places left for it.", e);
+            }
         }
 
         // ---- its file --------------------------------------------------------------------------
@@ -180,10 +319,9 @@ namespace PisAndDag.Content.Subworlds
         /// </summary>
         internal static string PathFor(Subworld place, WorldFileData world)
         {
-            string id = world.UseGuidAsMapName ? world.UniqueId.ToString() : Main.worldID.ToString();
             string name = place.Layout > 1 ? place.Name + "." + place.Layout : place.Name;
 
-            return Path.Combine(Main.WorldPath, Folder, id, name + ".wld");
+            return Path.Combine(FolderFor(world), name + ".wld");
         }
 
         /// <summary>

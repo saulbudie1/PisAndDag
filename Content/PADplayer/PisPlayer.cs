@@ -472,15 +472,18 @@ namespace PisAndDag.Content.PADplayer
         /// Wings, the booster and flying mounts are all inert until the Empress of Light
         /// falls; after that they work, but on the leash below. Written every frame rather
         /// than latched, so the flag can never survive into a world where it is not earned.
+        ///
+        /// And taken away again, for everybody, for as long as Foigh is there in his third
+        /// phase with wings cut (Foigh.WingsCut): the same flag, so the same things stop.
         /// </summary>
         public override void ResetEffects()
         {
-            AllowedWings = PADWorld.FlightUnlocked;
+            AllowedWings = PADWorld.FlightUnlocked && !NPCs.Foigh.Foigh.WingsCut;
         }
 
         public override void UpdateDead()
         {
-            AllowedWings = PADWorld.FlightUnlocked;
+            AllowedWings = PADWorld.FlightUnlocked && !NPCs.Foigh.Foigh.WingsCut;
             ChloBreakCombo();
         }
 
@@ -490,9 +493,23 @@ namespace PisAndDag.Content.PADplayer
         /// PostUpdateMiscEffects rather than PostUpdateEquips, because every accessory
         /// bonus has landed by then — Calamity applies its own flight multiplier in this
         /// same hook, and capping ahead of those would leave the ceiling behind.
+        ///
+        /// And, while Foigh is there with wings cut, takes what is left of them: a pair
+        /// with no time on it is still wings to the game, which lets a player glide down
+        /// on them with jump held and go faster through the air for having them
+        /// (Player.Update: both ask only whether wings are worn). Cut off, they are not
+        /// worn at all as far as moving goes. The booster with them: its rockets without
+        /// end and its higher jump. Here, after the game has gone over what is worn and
+        /// before it moves anybody by it.
         /// </summary>
         public override void PostUpdateMiscEffects()
         {
+            if (NPCs.Foigh.Foigh.WingsCut)
+            {
+                Player.wingsLogic = 0;
+                Player.empressBrooch = false;
+            }
+
             if (!AllowedWings || Player.wingTimeMax <= 0)
                 return;
 

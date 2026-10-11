@@ -19,6 +19,11 @@ namespace PisAndDag.Content.NPCs.Foigh
     ///   SwordsmanBoss_TopLeg.png    16x23   at (50, 57)   the near leg
     ///   SwordsmanBoss_BotLeg.png    16x19   at (44, 61)   the far leg
     ///   SwordsmanBluntSide.png      90x90   the sword on the diagonal, point up and right
+    ///   SwordsmanSharpSide.png      90x90   the same sword from his second phase on: a stand-in,
+    ///                                       made from the blunt side by recolouring its blade
+    ///   SwordsmanBloodSide.png      90x90   the same sword from the passage into his third phase
+    ///                                       on, bloodied: a stand-in, made from the sharp side by
+    ///                                       recolouring its blade
     ///
     /// His soles are on the canvas's last row (79), and the middle of him is column 54. The
     /// art faces LEFT (the toes of both boots are on the left). Each limb is one piece: an
@@ -69,6 +74,15 @@ namespace PisAndDag.Content.NPCs.Foigh
             "Swordman_Head",
             "SwordsmanBluntSide",
         };
+
+        /// <summary>
+        /// The sword's sharp side, and its bloodied one: the same size as its blunt one and
+        /// the grip in the same place on them, so that they are drawn by the same numbers.
+        /// And the stone he sharpens it with, ten by six, held by its middle.
+        /// </summary>
+        public const string SharpSword = "SwordsmanSharpSide";
+        public const string BloodSword = "SwordsmanBloodSide";
+        public const string Whetstone = "FoighWhetstone";
 
         /// <summary>Each picture's size, in pixels.</summary>
         public static readonly Point[] Sizes =
@@ -124,6 +138,9 @@ namespace PisAndDag.Content.NPCs.Foigh
         /// <summary>The crown of his head, from the neck: where a line over his head sits.</summary>
         public static readonly Vector2 Crown = new Vector2(1f, -21f);
 
+        /// <summary>His mouth, from the neck, with the head level (Swordman_Head.png: the lip is at column 6, row 18).</summary>
+        public static readonly Vector2 Mouth = new Vector2(7f, -2f);
+
         // ---- the sword -----------------------------------------------------------------------
 
         /// <summary>Along the blade from the middle of the grip: to the point, to the guard, to the end of the pommel.</summary>
@@ -177,8 +194,23 @@ namespace PisAndDag.Content.NPCs.Foigh
             /// <summary>The sword's length as seen, 1 all of it: less when it points toward the eye or away.</summary>
             public float Reach;
 
+            /// <summary>
+            /// The sword fed forward through the hand that has it: the hand is on it this
+            /// many pixels from its grip toward its point (past <see cref="GripToGuard"/>,
+            /// on the blade itself). 0 by its grip, as it is everywhere but where he turns
+            /// it on himself.
+            /// </summary>
+            public float Slide;
+
             /// <summary>The sword is behind him, whichever hand has it.</summary>
             public bool Behind;
+
+            /// <summary>
+            /// The sword is held up against him: over his body and his arms and under his
+            /// head, whichever hand has it. For a sword stood upright before him with his
+            /// head bowed to it.
+            /// </summary>
+            public bool UnderHead;
 
             /// <summary>
             /// The whole of him seen turning about his own middle: 1 side on, 0 edge on, and past
@@ -246,6 +278,7 @@ namespace PisAndDag.Content.NPCs.Foigh
             public Vector2 NeckAt;
             public Vector2 EyeAt;
             public Vector2 CrownAt;
+            public Vector2 MouthAt;
 
             /// <summary>
             /// The sword: its grip, the way the blade points (a world angle, clockwise from +x,
@@ -319,9 +352,12 @@ namespace PisAndDag.Content.NPCs.Foigh
             float headTurn = pose.Lean + pose.Nod;
 
             bool held = pose.Hand == 1 || pose.Hand == 2;
-            Vector2 grip = pose.Hand == 2 ? Vector2.Lerp(farFist, nearFist, pose.Pass) : Vector2.Lerp(nearFist, farFist, pose.Pass);
             float reach = pose.Reach <= 0f ? 1f : pose.Reach;
             Vector2 along = new Vector2((float)Math.Cos(pose.Sword), (float)Math.Sin(pose.Sword));
+
+            // The grip is where the hand is, unless the sword has been fed forward through it.
+            Vector2 grip = (pose.Hand == 2 ? Vector2.Lerp(farFist, nearFist, pose.Pass) : Vector2.Lerp(nearFist, farFist, pose.Pass))
+                - along * (pose.Slide * reach);
 
             Frame frame = new Frame
             {
@@ -331,6 +367,7 @@ namespace PisAndDag.Content.NPCs.Foigh
                 NeckAt = Seen(neck, feet, d, wide),
                 EyeAt = Seen(neck + Turned(Eye, headTurn), feet, d, wide),
                 CrownAt = Seen(neck + Turned(Crown, headTurn), feet, d, wide),
+                MouthAt = Seen(neck + Turned(Mouth, headTurn), feet, d, wide),
                 HasSword = held,
                 Grip = Seen(grip, feet, d, wide),
                 Guard = Seen(grip + along * (GripToGuard * reach), feet, d, wide),
@@ -345,8 +382,9 @@ namespace PisAndDag.Content.NPCs.Foigh
                 return frame;
 
             // The sword: behind everything in the far hand or when it is behind him, over
-            // everything in the near hand.
-            bool swordFirst = held && (pose.Behind || pose.Hand == 2);
+            // everything in the near hand; or, held up against him, under his head alone.
+            bool swordUnderHead = held && pose.UnderHead;
+            bool swordFirst = held && !swordUnderHead && (pose.Behind || pose.Hand == 2);
 
             if (swordFirst)
                 parts.Add(SwordPart(World(grip, feet, d), frame.Blade, d > 0 ? pose.CleanClockwise : !pose.CleanClockwise, reach));
@@ -356,6 +394,9 @@ namespace PisAndDag.Content.NPCs.Foigh
             parts.Add(Limb(NearLeg, hips + NearHip, pose.NearLeg - NearLegRest, feet, d));
             parts.Add(Piece(Torso, hips, pose.Lean, feet, d));
             parts.Add(Limb(NearArm, nearShoulder, pose.NearArm - NearArmRest, feet, d));
+
+            if (swordUnderHead)
+                parts.Add(SwordPart(World(grip, feet, d), frame.Blade, d > 0 ? pose.CleanClockwise : !pose.CleanClockwise, reach));
 
             // His head alone, turning: narrower across, about the neck.
             Part head = Piece(Head, neck, looks == d ? headTurn : -headTurn, feet, looks);
@@ -370,7 +411,7 @@ namespace PisAndDag.Content.NPCs.Foigh
 
             parts.Add(head);
 
-            if (held && !swordFirst)
+            if (held && !swordFirst && !swordUnderHead)
                 parts.Add(SwordPart(World(grip, feet, d), frame.Blade, d > 0 ? pose.CleanClockwise : !pose.CleanClockwise, reach));
 
             return frame;
@@ -382,6 +423,9 @@ namespace PisAndDag.Content.NPCs.Foigh
         /// which side of the blade, in the world, the clean edge is on.
         /// </summary>
         public static Part LooseSword(Vector2 grip, float blade, bool cleanClockwise) => SwordPart(grip, blade, cleanClockwise, 1f);
+
+        /// <summary>The same, seen this much of its length (1 all of it: less, pointing toward the eye or away; as Pose.Reach).</summary>
+        public static Part LooseSword(Vector2 grip, float blade, bool cleanClockwise, float reach) => SwordPart(grip, blade, cleanClockwise, reach <= 0f ? 1f : reach);
 
         private static Vector2 World(Vector2 local, Vector2 feet, int d) => feet + new Vector2(d * local.X, local.Y);
 
@@ -400,6 +444,215 @@ namespace PisAndDag.Content.NPCs.Foigh
             Vector2 fist = shoulder + Down(far ? pose.FarArm : pose.NearArm) * (far ? FarArmLength : NearArmLength);
 
             return -fist.Y;
+        }
+
+        /// <summary>
+        /// Where the hand that has the sword is for this pose, from the ground between his
+        /// feet, facing right, side on.
+        /// </summary>
+        public static Vector2 FistAt(in Pose pose)
+        {
+            Vector2 hips = new Vector2(0f, -HipsOver(pose));
+            bool far = pose.Hand == 2;
+            Vector2 shoulder = hips + Turned(far ? FarShoulder : NearShoulder, pose.Lean);
+
+            return shoulder + Down(far ? pose.FarArm : pose.NearArm) * (far ? FarArmLength : NearArmLength);
+        }
+
+        /// <summary>How far the sword's point is from the hand that has it, as seen: all of it from its grip, less what has been fed through the hand (Pose.Slide), shorter seen end on (Pose.Reach).</summary>
+        public static float FistToTip(in Pose pose)
+        {
+            return (GripToTip - pose.Slide) * (pose.Reach <= 0f ? 1f : pose.Reach);
+        }
+
+        /// <summary>Where the sword's point is for this pose, from the ground between his feet, facing right, side on.</summary>
+        public static Vector2 PointAt(in Pose pose)
+        {
+            return FistAt(pose) + new Vector2((float)Math.Cos(pose.Sword), (float)Math.Sin(pose.Sword)) * FistToTip(pose);
+        }
+
+        /// <summary>
+        /// The pose with its sword's point kept at this place (from the ground between his
+        /// feet, facing right): for a sword that is stuck in something while the rest of him
+        /// moves. The arm that has it is turned, the least it can be and by no more than a
+        /// quarter turn either way, until its fist is a sword's length from the point, and
+        /// the blade is pointed at it. Where no turn of the arm gets the fist there (he has
+        /// moved too far off it, or too near), the arm is turned as near to it as it gets and
+        /// the blade still pointed at the place: the point is then on the same line, a little
+        /// short of it or past it, as a sword pulled at or leant on is. False only for a pose
+        /// with no sword in it.
+        /// </summary>
+        public static bool Plant(ref Pose pose, Vector2 point)
+        {
+            if (pose.Hand == 0)
+                return false;
+
+            bool far = pose.Hand == 2;
+            float length = FistToTip(pose);
+            float arm = far ? pose.FarArm : pose.NearArm;
+
+            Pose probe = pose;
+
+            // How much further than a sword's length the fist is from the point, the arm turned by this much.
+            float Off(float by)
+            {
+                if (far)
+                    probe.FarArm = arm + by;
+                else
+                    probe.NearArm = arm + by;
+
+                return Vector2.Distance(FistAt(probe), point) - length;
+            }
+
+            const float step = MathHelper.Pi / 180f;
+            const int most = 90;
+
+            float here = Off(0f);
+            float turn = 0f;
+            bool found = Math.Abs(here) < 0.01f;
+
+            for (int i = 1; i <= most && !found; i++)
+            {
+                for (int side = -1; side <= 1 && !found; side += 2)
+                {
+                    float from = side * (i - 1) * step;
+                    float to = side * i * step;
+                    float a = Off(from);
+                    float b = Off(to);
+
+                    if ((a > 0f) == (b > 0f))
+                        continue;
+
+                    // Between these two the fist is at the right distance: halved down to it.
+                    for (int k = 0; k < 16; k++)
+                    {
+                        float mid = (from + to) * 0.5f;
+                        float m = Off(mid);
+
+                        if ((m > 0f) == (a > 0f))
+                        {
+                            from = mid;
+                            a = m;
+                        }
+                        else
+                        {
+                            to = mid;
+                        }
+                    }
+
+                    turn = (from + to) * 0.5f;
+                    found = true;
+                }
+            }
+
+            if (!found)
+            {
+                // No turn of the arm does it: the turn that comes nearest.
+                float best = Math.Abs(here);
+
+                for (int i = -most; i <= most; i++)
+                {
+                    float off = Math.Abs(Off(i * step));
+
+                    if (off < best)
+                    {
+                        best = off;
+                        turn = i * step;
+                    }
+                }
+            }
+
+            if (far)
+                pose.FarArm = arm + turn;
+            else
+                pose.NearArm = arm + turn;
+
+            Vector2 along = point - FistAt(pose);
+
+            // The same turn of the circle the blade was on, so that nothing spins round to get there.
+            pose.Sword = FoighTrack.Nearest((float)Math.Atan2(along.Y, along.X), pose.Sword);
+            return true;
+        }
+
+        /// <summary>
+        /// The pose with his other hand on the sword: the arm that does not have it is turned
+        /// until its fist is on the line the sword lies along. There are two such places, or
+        /// none: the one nearer the point, for a hand on the blade; or, for a hand on the
+        /// hilt (<paramref name="hilt"/>), the one nearer the hand that has the sword. False,
+        /// and the pose left as it was, if the sword's line is nowhere within that arm's reach.
+        /// </summary>
+        public static bool HandOnBlade(ref Pose pose, bool hilt = false)
+        {
+            if (pose.Hand == 0)
+                return false;
+
+            // The other arm: the far one when the near hand has the sword.
+            bool far = pose.Hand != 2;
+
+            Vector2 hips = new Vector2(0f, -HipsOver(pose));
+            Vector2 shoulder = hips + Turned(far ? FarShoulder : NearShoulder, pose.Lean);
+            float arm = far ? FarArmLength : NearArmLength;
+
+            Vector2 along = new Vector2((float)Math.Cos(pose.Sword), (float)Math.Sin(pose.Sword));
+            Vector2 from = FistAt(pose) - shoulder;
+
+            // Along the sword from its grip, the two places an arm's length from the shoulder.
+            float half = Vector2.Dot(from, along);
+            float under = half * half - from.LengthSquared() + arm * arm;
+
+            if (under < 0f)
+                return false;
+
+            float root = (float)Math.Sqrt(under);
+            float further = -half + root;
+            float nearer = -half - root;
+
+            // On the blade, the one further along it toward the point. On the hilt,
+            // whichever of the two is the nearer the grip.
+            float at = hilt && Math.Abs(nearer) < Math.Abs(further) ? nearer : further;
+
+            Vector2 reach = from + along * at;
+
+            // A limb's own angle: from straight down, forward positive. The short way from where it was.
+            float turned = (float)Math.Atan2(reach.X, reach.Y);
+
+            if (far)
+                pose.FarArm = FoighTrack.Nearest(turned, pose.FarArm);
+            else
+                pose.NearArm = FoighTrack.Nearest(turned, pose.NearArm);
+
+            return true;
+        }
+
+        /// <summary>
+        /// The pose with his other arm turned straight at the nearest place of the sword's
+        /// line: for where that line is just out of the arm's reach (HandOnBlade says so),
+        /// and the hand is to be as near it as an arm's length gets it.
+        /// </summary>
+        public static void HandNear(ref Pose pose)
+        {
+            if (pose.Hand == 0)
+                return;
+
+            bool far = pose.Hand != 2;
+
+            Vector2 hips = new Vector2(0f, -HipsOver(pose));
+            Vector2 shoulder = hips + Turned(far ? FarShoulder : NearShoulder, pose.Lean);
+            Vector2 along = new Vector2((float)Math.Cos(pose.Sword), (float)Math.Sin(pose.Sword));
+            Vector2 from = FistAt(pose) - shoulder;
+
+            // From the shoulder to the sword's line, the short way.
+            Vector2 foot = from - along * Vector2.Dot(from, along);
+
+            if (foot.LengthSquared() < 0.0001f)
+                return;
+
+            float turned = (float)Math.Atan2(foot.X, foot.Y);
+
+            if (far)
+                pose.FarArm = FoighTrack.Nearest(turned, pose.FarArm);
+            else
+                pose.NearArm = FoighTrack.Nearest(turned, pose.NearArm);
         }
 
         /// <summary>
@@ -432,7 +685,7 @@ namespace PisAndDag.Content.NPCs.Foigh
             if (s <= 0f)
                 return false;
 
-            float dip = Dip(FistOver(pose), pose.Reach);
+            float dip = Dip(FistOver(pose), FistToTip(pose) / GripToTip);
 
             if (s <= (float)Math.Sin(dip) + 0.0001f)
                 return false;

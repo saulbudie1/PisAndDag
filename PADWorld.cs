@@ -10,6 +10,11 @@ namespace PisAndDag
     /// World-scoped state for PisAndDag. Lives in the root namespace, so anything in the
     /// mod can read <c>PADWorld.Legends</c> without a using directive — every other
     /// namespace here sits underneath PisAndDag.
+    ///
+    /// A world's places (subworlds) have these as the world has them, and what is set in
+    /// one is set in the world: a flag added here that a place should have is listed in
+    /// Content/Subworlds/SubworldFlags as well. The two at the end, which say what the
+    /// world's own ground is like, are not: a place has none of it.
     /// </summary>
     public class PADWorld : ModSystem
     {
@@ -27,10 +32,10 @@ namespace PisAndDag
         /// those players kill her a second time to get something they had already earned
         /// would be the wrong answer.
         ///
-        /// In a subworld it is as it was in the world that was left for it (SubworldKeeper): a
-        /// place has no Empress of its own to have beaten.
+        /// In a subworld it is as it is in the world the place belongs to: the flag itself is
+        /// the world's there, like every other (SubworldFlags).
         /// </summary>
-        public static bool FlightUnlocked => NPC.downedEmpressOfLight || Content.Subworlds.SubworldKeeper.FlightFromHome;
+        public static bool FlightUnlocked => NPC.downedEmpressOfLight;
 
         /// <summary>
         /// Whether the unlock has been announced in chat.

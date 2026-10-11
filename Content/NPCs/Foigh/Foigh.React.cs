@@ -22,7 +22,11 @@ namespace PisAndDag.Content.NPCs.Foigh
     ///                          three times in five he is not there, a flash step to in front of
     ///                          them or up over it and down on them.
     ///
-    /// What is called up to fight for them (a minion, a sentry, and what those shoot) lands.
+    /// IN HIS SECOND PHASE, by request, each of those three is two times in three (and of
+    /// the shots struck, still half go back).
+    ///
+    /// What is called up to fight for them (a minion, a sentry, and what those shoot) is
+    /// answered by itself (Foigh.Called).
     ///
     /// WHO DECIDES. The machine of the player whose shot or swing it is, as the game decides
     /// there whether any hit of theirs lands (Projectile.Damage and Player.ItemCheck run for
@@ -39,6 +43,9 @@ namespace PisAndDag.Content.NPCs.Foigh
             /// <summary>Nothing he answers: it lands.</summary>
             None,
 
+            /// <summary>What is called up to fight for them, and what that shoots: answered by itself (Foigh.Called).</summary>
+            Called,
+
             /// <summary>Held and swung.</summary>
             Held,
 
@@ -53,6 +60,27 @@ namespace PisAndDag.Content.NPCs.Foigh
         private const int SwingsMet = 3;
         private const int ShotsStruck = 2;
         private const int ShotsDodged = 3;
+
+        /// <summary>In his second phase, by request, every one of the three: this many times in this many.</summary>
+        private const int SecondAnswers = 2;
+        private const int SecondOf = 3;
+
+        /// <summary>And in his third, by request ("Bump his parries to 4/5", "4 in 5 parries is phase 3").</summary>
+        private const int ThirdAnswers = 4;
+        private const int ThirdOf = 5;
+
+        /// <summary>
+        /// Whether he answers one thing sent at him, rolled now: so many times in five, as
+        /// that kind of thing is answered in his first phase; or, in his second, two times
+        /// in three whatever it is.
+        /// </summary>
+        private bool Answers(int ofFive)
+        {
+            if (phase >= 3)
+                return Main.rand.Next(ThirdOf) < ThirdAnswers;
+
+            return phase >= 2 ? Main.rand.Next(SecondOf) < SecondAnswers : Main.rand.Next(5) < ofFive;
+        }
 
         /// <summary>How many ticks before a shot gets to him he starts to do something about it: the sword up, or gone.</summary>
         private const int GuardLead = 5;
@@ -83,7 +111,7 @@ namespace PisAndDag.Content.NPCs.Foigh
 
             // What fights for them, and what that shoots.
             if (p.minion || p.sentry || ProjectileID.Sets.MinionShot[p.type] || ProjectileID.Sets.SentryShot[p.type])
-                return Shot.None;
+                return Shot.Called;
 
             if (ProjectileID.Sets.IsAWhip[p.type])
                 return Shot.Held;
@@ -116,7 +144,8 @@ namespace PisAndDag.Content.NPCs.Foigh
         /// </summary>
         private void React()
         {
-            if (!CanReact)
+            // A stream is answered whole, a second at a time, as it gets to him (Foigh.Hold).
+            if (!CanReact || Streaming)
                 return;
 
             Player me = Main.LocalPlayer;
@@ -127,6 +156,11 @@ namespace PisAndDag.Content.NPCs.Foigh
             foreach (Projectile p in Main.ActiveProjectiles)
             {
                 if (p.owner != Main.myPlayer)
+                    continue;
+
+                // From his second phase, what they hold out and keep up is read as that
+                // (Foigh.Reach), not stepped out of the way of the moment it is there.
+                if (phase >= 2 && me.heldProj == p.whoAmI)
                     continue;
 
                 Shot kind = Kind(p);
@@ -152,7 +186,7 @@ namespace PisAndDag.Content.NPCs.Foigh
         {
             if (kind == Shot.Hard)
             {
-                bool struckOut = Main.rand.Next(5) < ShotsStruck;
+                bool struckOut = Answers(ShotsStruck);
 
                 mark.Set(NPC, struckOut ? FoighMark.Struck : FoighMark.Lands, struckOut && Main.rand.NextBool());
 
@@ -162,7 +196,7 @@ namespace PisAndDag.Content.NPCs.Foigh
                 return;
             }
 
-            bool dodged = Main.rand.Next(5) < ShotsDodged;
+            bool dodged = Answers(ShotsDodged);
 
             mark.Set(NPC, dodged ? FoighMark.Dodged : FoighMark.Lands, false);
 
@@ -212,11 +246,73 @@ namespace PisAndDag.Content.NPCs.Foigh
             if (!Fighting || projectile.owner != Main.myPlayer || Main.dedServ)
                 return null;
 
+            FoighMark mark = projectile.GetGlobalProjectile<FoighMark>();
+
+            if (mark.Dead)
+                return false;
+
+            // Nothing is decided of a thing before it is on him.
+            if (!WouldHit(projectile))
+                return null;
+
+            // Broken, down on a knee, or his sword just thrown aside: it lands (for what the cap allows).
+            if (Unguarded)
+                return null;
+
             Shot kind = Kind(projectile);
+
+            // What is called up to fight for them is answered by itself (Foigh.Called): it is
+            // no part of what keeps coming, and turned aside it owes nothing to his posture.
+            if (kind == Shot.Called)
+            {
+                if (CalledTurned(projectile, mark))
+                    return false;
+
+                return null;
+            }
+
+            // From his second phase every hit of theirs that would land is counted, for
+            // whether it is something that keeps coming.
+            bool counted = phase >= 2 && kind != Shot.None;
+
+            if (counted)
+                Press();
+
+            // More than can be taken from him now: turned aside, whatever it is (Foigh.Hold).
+            if (Capped)
+            {
+                Deflect(projectile, mark, false);
+                return false;
+            }
+
+            // What keeps coming is answered whole, a second at a time, in whatever move
+            // he is in; and while he runs at them behind his sword, all of it, wherever
+            // it comes at him from: it is whoever he runs at that the sword is up
+            // against. (One who stands behind him then has his back.)
+            if (counted)
+            {
+                bool run = State == Move.Charge && (Main.LocalPlayer.Center.X - NPC.Center.X) * facing >= 0f;
+
+                if (run)
+                {
+                    Deflect(projectile, mark, false);
+                    return false;
+                }
+
+                if (Streaming && StreamHeld())
+                {
+                    Deflect(projectile, mark, true);
+                    return false;
+                }
+
+                // Through, for this second of it.
+                if (Streaming)
+                    return null;
+            }
 
             if (kind == Shot.Held)
             {
-                if (!CanReact || !WouldHit(projectile) || Main.rand.Next(5) >= SwingsMet)
+                if (!CanReact || !Answers(SwingsMet))
                     return null;
 
                 // The rest of this swing is through with him: as if it had landed, and for no
@@ -226,15 +322,7 @@ namespace PisAndDag.Content.NPCs.Foigh
                 return false;
             }
 
-            if (kind != Shot.Hard)
-                return null;
-
-            FoighMark mark = projectile.GetGlobalProjectile<FoighMark>();
-
-            if (mark.Dead)
-                return false;
-
-            if (!CanReact || !WouldHit(projectile))
+            if (kind != Shot.Hard || !CanReact)
                 return null;
 
             // On him with no roll made: it came from too near for one to be made ahead of it.
@@ -263,14 +351,21 @@ namespace PisAndDag.Content.NPCs.Foigh
         /// </summary>
         public override bool? CanCollideWithPlayerMeleeAttack(Player player, Item item, Rectangle meleeAttackHitbox)
         {
-            if (Main.dedServ || player.whoAmI != Main.myPlayer || !CanReact)
+            if (Main.dedServ || player.whoAmI != Main.myPlayer || !Fighting)
+                return null;
+
+            // More than can be taken from him now is met whatever he is doing (Foigh.Hold);
+            // anything else only while he is free to meet it.
+            bool capped = Capped;
+
+            if (!capped && !CanReact)
                 return null;
 
             // On him, and nothing between them: what the game is about to ask.
             if (!meleeAttackHitbox.Intersects(NPC.Hitbox) || (!NPC.noTileCollide && !player.CanHit(NPC)))
                 return null;
 
-            if (Main.rand.Next(5) >= SwingsMet)
+            if (!capped && !Answers(SwingsMet))
                 return null;
 
             // The rest of this swing is through with him, as if it had landed: the player's
@@ -334,9 +429,10 @@ namespace PisAndDag.Content.NPCs.Foigh
         /// <summary>
         /// He is made immune to this projectile as if it had just hit him, the way
         /// Projectile.Damage makes what it hits (1.4.4): by its own id's timer, by its own
-        /// timer for each NPC, or the owner's ten ticks on the NPC, and the owner's own wait
-        /// for what is swung as a sword is; and for no less than <paramref name="least"/>
-        /// ticks. Never shortens a wait already running.
+        /// timer for each NPC (the Stardust Dragon by its head's, all of it: Foigh.Called), or
+        /// the owner's ten ticks on the NPC, and the owner's own wait for what is swung as a
+        /// sword is; and for no less than <paramref name="least"/> ticks. Never shortens a
+        /// wait already running.
         /// </summary>
         private static void ShareShot(NPC npc, Projectile projectile, int least)
         {
@@ -356,11 +452,12 @@ namespace PisAndDag.Content.NPCs.Foigh
             }
             else if (projectile.usesLocalNPCImmunity && projectile.localNPCHitCooldown != -2)
             {
-                int wait = projectile.localNPCImmunity[i];
+                int[] own = HitsBy(projectile);
+                int wait = own[i];
 
                 // -1 is until the projectile is gone: nothing is longer.
                 if (wait != -1)
-                    projectile.localNPCImmunity[i] = projectile.localNPCHitCooldown == -1 ? -1 : Math.Max(wait, Math.Max(projectile.localNPCHitCooldown, least));
+                    own[i] = projectile.localNPCHitCooldown == -1 ? -1 : Math.Max(wait, Math.Max(projectile.localNPCHitCooldown, least));
             }
             else if (projectile.owner >= 0 && projectile.owner < npc.immune.Length)
             {
@@ -393,6 +490,9 @@ namespace PisAndDag.Content.NPCs.Foigh
             me.GetModPlayer<FoighGripPlayer>().Shove(new Vector2(away * ThrownBack.X, ThrownBack.Y), ThrownTicks);
             me.PIS().BumpScreenShake(5f, 10);
 
+            // Met is not missed (Foigh.Reach).
+            swingLanded = true;
+
             Tell(Word.Clash);
         }
 
@@ -421,7 +521,7 @@ namespace PisAndDag.Content.NPCs.Foigh
             Go(Move.Guard);
         }
 
-        private void Guard()
+        private void Guard(Player target)
         {
             Fall();
             NPC.velocity.X *= 0.7f;
@@ -431,6 +531,15 @@ namespace PisAndDag.Content.NPCs.Foigh
 
             // What he was going to do next, he still is.
             rest--;
+
+            // Kept in it by something that goes on coming (Foigh.Hold), he does not wait
+            // for it to stop: his next move is begun from here, and what is turned aside
+            // goes on being turned aside while he makes it.
+            if (rest <= 0 && Pressed && grounded && target != null)
+            {
+                Choose(target);
+                return;
+            }
 
             if (now >= M.GuardTicks)
                 Go(Move.Walk);
@@ -442,8 +551,12 @@ namespace PisAndDag.Content.NPCs.Foigh
             if (Math.Abs(by.Center.X - NPC.Center.X) > 6f)
                 Face(by.Center.X > NPC.Center.X ? 1 : -1);
 
-            // They are thrown back: he comes on after them sooner.
-            rest = Math.Min(rest, 26);
+            // They are thrown back: he comes on after them sooner. But not out of the
+            // second or two he takes after a move from up close in his second phase, which
+            // was asked for as a wait between his attacks: that he waits out.
+            if (!waitingOut)
+                rest = Math.Min(rest, 26);
+
             Go(Move.Clash);
         }
 
@@ -487,6 +600,7 @@ namespace PisAndDag.Content.NPCs.Foigh
                 Move next = Main.rand.NextBool() ? Move.One : Move.Three;
 
                 last = next;
+                close = phase >= 2;
                 FlashTo(ahead, next);
                 return;
             }

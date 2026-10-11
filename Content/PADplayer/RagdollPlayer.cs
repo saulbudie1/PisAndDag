@@ -111,6 +111,16 @@ namespace PisAndDag.Content.PADplayer
         /// <summary>True from the hit until the player is standing again.</summary>
         public bool Ragdolled => stage != None;
 
+        /// <summary>True while the throw still has them in the air.</summary>
+        public bool Flung => stage == Airborne;
+
+        /// <summary>
+        /// The fastest the game let them fall this tick, as it stood before the throw took
+        /// the limit off (PostUpdateRunSpeeds): what the limit is lifted from, tick by tick.
+        /// For anything that works out where a thrown player is going (Foigh.Ahead).
+        /// </summary>
+        public float FallLimit { get; private set; }
+
         /// <summary>
         /// Throws the player. The velocity is written as given; the style says how the
         /// body turns on the way; <paramref name="lie"/> is how long it stays down after
@@ -215,6 +225,7 @@ namespace PisAndDag.Content.PADplayer
             // No terminal velocity on the way down. Vanilla clamps the fall to
             // maxFallSpeed every tick, which turned a downward throw into a drift and
             // the bounce off the floor into nothing. What threw you sets the speed.
+            FallLimit = Player.maxFallSpeed;
             Player.maxFallSpeed = Math.Max(Player.maxFallSpeed, Math.Abs(Player.velocity.Y) + 1f);
         }
 
@@ -396,6 +407,17 @@ namespace PisAndDag.Content.PADplayer
             angle = MathHelper.Lerp(from, 0f, t * t * (3f - 2f * t));
 
             if (--left <= 0)
+                Stand();
+        }
+
+        /// <summary>
+        /// On their feet at once, whatever of this was going on or still to come: for a cut,
+        /// where the player is put down somewhere else and is to be standing there. Only the
+        /// owning client, as with a throw.
+        /// </summary>
+        public void StandNow()
+        {
+            if (Player.whoAmI == Main.myPlayer)
                 Stand();
         }
 

@@ -145,6 +145,13 @@ into the rock in every direction.
   grows on it.
 - **One shaft down into it**, cut, not natural, entering the shell from above. That is how
   the player gets in and it is the first thing that says somebody was here before them.
+- **A way down to it from the surface**, by request (PADWorkFlow §16.60): one narrow,
+  ragged cave from the ground between the beach and the Dungeon to the top of the shaft,
+  made to be walked down, with torches on its floor, dirt wall behind it near the surface,
+  rock wall in patches under that and the Ball's own wall near it. About two fifths of the
+  way down it comes out level into a hall of Gray Brick, a pyramid's hall made smaller,
+  with the Unmarked Door standing in it. The shaft is still the one way in: the cave ends
+  where the shaft begins.
 - **It does not throw a V to the surface at hardmode.** Every other seed in the world
   does; this one is two thousand tiles down and it stays down. Its spread is the arms
   growing — longer, more of them, sideways and downward through the rock — and it never
@@ -325,6 +332,7 @@ Everything horizontal in vanilla is decided inside the **Reset** pass — `dunge
 | 8 | *after* `Micro Biomes` | **PAD Wasted Mile** | goblin siege works |
 | 9 | *after* `Micro Biomes` | **Grace** | *[not written]* the capital, and the shaft down to whatever the Shimmer roll gave |
 | 10 | *before* `Final Cleanup` | **PAD Grace Cleanup** | strips the growth off the plain and off the Cleared Ground, leaving the stumps, and leaving what stands inside a living tree |
+| 11 | *before* `Final Cleanup`, the mod's last | **PAD The Way Down** | a cave from the ground between the beach and the Dungeon down to the top of the Ball's shaft, with a hall partway down and the Unmarked Door in it; see §4, The Ball |
 
 All three set pieces run **after `Gem Caves`**, which is the last pass that carves caverns
 at scale, and every one of them registers itself with `GenVars.structures` on the way out.

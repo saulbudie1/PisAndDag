@@ -16,10 +16,13 @@ namespace PisAndDag.Content.Subworlds
     /// anybody goes there, where its door stands. Any class of this kind in the mod is
     /// found and kept by itself, like an item or a tile.
     ///
-    /// What is true of every one of them, whatever it is (SubworldRules, SubworldScene):
-    /// nothing in it can be broken or built; nothing spawns; the clock stands still, at a
-    /// quarter past eight in the morning; all of it is lit as the surface is; and there is
-    /// no music unless it names some.
+    /// What is true of every one of them, whatever it is (SubworldRules, SubworldScene,
+    /// SubworldFlags): nothing in it can be broken or built; nobody who dies in it leaves
+    /// a grave; nothing spawns; the clock stands still, at a quarter past eight in the
+    /// morning; all of it is lit as the surface is; a player weighs at any height in it
+    /// what they weigh on its ground; there is no music unless it names some; and its
+    /// flags are its world's, hard mode and every boss beaten among them, so that what is
+    /// done in it is done in the world.
     ///
     /// THE EDGES. The game keeps a player 41 tiles in from a world's left and top edges and
     /// 42 from its right and bottom ones, and the camera with them, so that much of every

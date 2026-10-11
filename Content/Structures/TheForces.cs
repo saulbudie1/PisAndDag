@@ -27,6 +27,10 @@ namespace PisAndDag.Content.Structures
     /// Vanilla never gives the player more than three together and never arranges them.
     ///
     /// See PAD_World_Plan.md §4.
+    ///
+    /// By request, there is a way down to it from the surface after all (TheWayDownPass): a
+    /// narrow cave from the ground between the beach and the Dungeon to the top of the shaft,
+    /// with a hall and the door partway down. Its own record has the request word for word.
     /// </summary>
     public class TheBallPass : GenPass
     {
@@ -139,9 +143,21 @@ namespace PisAndDag.Content.Structures
 
         public static void Remember(Point at) => Centre = at;
 
+        /// <summary>
+        /// The top of the shaft, the one way in: the column it was begun in and the row it was
+        /// begun at. Where the way down from the surface comes to it (TheWayDownPass). Not saved:
+        /// in a world made before it was kept, the shaft is found again off the tiles.
+        /// </summary>
+        public static Point ShaftTop { get; private set; }
+
+        /// <summary>How far the outer surface reaches from the middle at its farthest, and a little more: the way down keeps outside it.</summary>
+        public static int ShellReach { get; private set; }
+
         public static void Forget()
         {
             Centre = Point.Zero;
+            ShaftTop = Point.Zero;
+            ShellReach = 0;
             shell = null;
             hollow = null;
         }
@@ -223,6 +239,7 @@ namespace PisAndDag.Content.Structures
             vents.Clear();
             shell = new Rim(Radius, ShellRough, 5);
             hollow = new Rim(Hollow, HollowRough, 6);
+            ShellReach = (int)Math.Ceiling(shell.Widest) + 4;
 
             ushort stone = Layout.BallStone;
             ushort wall = Layout.BallWall;
@@ -650,6 +667,8 @@ namespace PisAndDag.Content.Structures
         {
             int half = 3;
             int x = cx + WorldGen.genRand.Next(-40, 41);
+
+            ShaftTop = new Point(x, cy - (int)shell.Widest - 40);
 
             for (int y = cy - (int)shell.Widest - 40; y < cy; y++)
             {

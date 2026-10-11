@@ -23,6 +23,7 @@
 | **Greatbow of a Pilgrim** | Ranged | **textures in, code to write** |
 | Iron Flow | Melee | built; never run in game (below) |
 | Meat Hook | Ranged | built; never run in game (below) |
+| Foigh's Rust Side Sword | Melee | built; run once in the game (below); a lore item too (§3) |
 
 ---
 
@@ -392,6 +393,152 @@ be knocked back (a Paladin, a Target Dummy). Every NPC of the mod's own drags yo
 
 ---
 
+## Foigh's Rust Side Sword
+
+What finishing Foigh gives (PAD_NPC_Plan, his end): his sword's rusted side, a weapon of its
+own. 600 melee damage through all defense, used again for as long as the button is held. Its
+picture is still a stand-in, a copy of your `SwordsmanBluntSide.png` (PlaceholderTextures.md).
+No source but Finish. Its rarity is the mod's own, Blasphemous Crimson (below, The mod's own
+rarities). The whole record is PADWorkFlow §16.57 to §16.59, and §16.61 for its rarity
+(§16.55 for the stand-in it was).
+
+### Files
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Melee/FoighsRustSideSword.cs` + `.png` (90 by 90, a copy of yours) | `FoighsRustSideSword` | The item. Hits nothing itself; tells the sword in the hand what to do, and is in use exactly as long as that takes |
+| `Content/Projectiles/Melee/RustSideHoldout.cs` | `RustSideHoldout`, `RustSidePose`, `RustSideLayer` | The sword in the hand while it is the item held: the weapon. The cuts, the air, the leap and the drive, the focus, what it hits, how it looks and sounds; drawn in the hand |
+| `Content/Projectiles/Melee/RustSideMoves.cs` | `RustSideMoves`, `RustSideState` | Every pose of every move, as curves; nothing of the game in it |
+| `Content/Projectiles/Melee/RustSideSlash.cs` | `RustSideSlash` | A slash let go of in the air |
+| `Content/Projectiles/Melee/RustSideLine.cs` | `RustSideLine` | A straight cut out of the ground, from the drive |
+| `Content/Buffs/BloodDrenchedSword.cs` + `.png`, `DriedBlood.png` | `BloodDrenchedSword`, `DriedBlood`, `BloodDrenchedPlayer` | The blood, its wait, and Enter |
+| `Content/Buffs/UltraBleedingGeneric.cs` (its picture `UltraBleeding3.png`) | `UltraBleedingGeneric`, `UltraBleedingNPC` | Ultra Bleeding on an enemy: the life it takes, the blood out of it |
+| `Content/NPCs/Foigh/SwordsmanBloodSide.png` (yours) | | The sword while it is drenched |
+
+### In the hand
+
+Held and not in use, it lies on the shoulder: the hand before the chest, the blade up and back
+over it.
+
+**Left click**, for as long as it is held: five cuts in turn, each from where the last left the
+blade, each carrying you so far (exactly, standing still; added to a walk or a run).
+
+| Cut | Ticks | Carries you |
+|---|---|---|
+| Up: drawn back and down behind, up through the front to over the head | 22 | 1 tile |
+| Down: down through the front to low before the feet | 22 | half a tile |
+| Round: a turn and a quarter, the arm along the blade, left trailing behind | 33 | none |
+| The smash: raised behind the head in both hands, held, brought down into the ground | 35 | 1.5 tiles |
+| The thrust: drawn back to the hip, driven straight ahead | 28 | 2 tiles |
+
+Each cut hits each enemy once. Left more than 40 ticks, the chain starts over. The ticks are at
+the item's own speed; faster, all of them shorter.
+
+**The aim**: with an enemy within eight tiles that you can see, each cut is made at it (of
+several, the one nearest the cursor). You face it; under it or in it, the cursor's way still. A
+step stops six pixels short of it, so you are never carried into it, past it or out from under
+it: under a boss, not at all. The thrust is turned at the nearest of it, straight up at a boss
+over your head. With nobody near, the cursor's way, each step whole.
+
+**Right click**, held or pressed again: up to three in the air, then nothing until the ground.
+Up off the ground, a roll forward and a cut at the cursor that lets a slash go; a little higher,
+another roll and a rising cut; two rolls and a cut from far back, the great slash. They hang
+while they cut. The blade does no damage in the air; the slashes do: 1.5 times the sword's
+damage, 1.5 and 3.
+
+**A slash** goes straight on through everything, tiles too, for 2.5 seconds at the most, hitting
+each enemy again every 7 ticks while it is in it: 76 px tall at 14 px a tick, the great one 120
+at 11. Pale; red with its black while the sword is drenched.
+
+### The blood
+
+**Enter**, held 3 seconds standing on the ground with nothing under way: the sword upright
+before the face, the player held still, the red coming up the blade. Let go of, or off the
+ground, and it is over with nothing. While the sword is held and could be drenched, Enter does
+not open the chat.
+
+| Blood Drenched Sword, 2 minutes | |
+|---|---|
+| the sword's damage | 1.75 times (1,050) |
+| defense | 1.6 times |
+| most life | three fifths |
+| speed | 1.25 times: using any item, running, the jump |
+| debuffs | every one the Nurse would take, taken as it begins |
+| every blow of the sword | the enemy bleeding (Ultra Bleeding): 200 life a second, five seconds from the last blow |
+
+When it ends, however it ends, **Dried Blood**: 2 minutes before it can be had again. It cannot
+be clicked off, the Nurse cannot take it, and death does not.
+
+Drenched, the sword is his bloodied one, burning black and red; its slashes are red; every blow
+of it, of its red slashes and of its straight cuts leaves the enemy bleeding, blood spewing down
+out of it; and the chain is **up, down, the smash and the leap**: at the nearest enemy in sight
+within 40 tiles (10 tiles toward the cursor with none), a roll over and a cut down onto it, or,
+with it over your head and you under it, straight up at it. The button still held as it ends:
+down onto the point if in the air, then **the drive**: the sword into the ground, 70 ticks held
+still, and twelve straight cuts out of the ground within fifteen tiles over its first 36 ticks,
+every other one through an enemy there, each the drenched sword's whole damage, through
+everything.
+
+### A lore piece
+
+Nothing of its own against what flies: its owner kept to the ground (by request, PADWorkFlow
+§16.59). A Lore Item (§3), as the Blade of Mors is: always a favourite, taken back out of the
+trash and out of a chest, one to a player, a place on the Lore Codex's shelf, no prefix ever
+(one already on it goes at the next load), and worth nothing, so that no shop takes it. Its
+verses, with Shift held, are in §3.
+
+### Against the Zenith
+
+Damage a second, a player with nothing on, the button held at a still enemy (PADWorkFlow §16.57
+to §16.59 have how, and the sums), as measured on §16.59's build. The Zenith here is the mod's,
+at 150 damage (below, The game's own items):
+
+| | 40 by 56 | 160 by 160 | 40 by 56, 80 defense |
+|---|---|---|---|
+| the Zenith, 150 | 3,217 | 4,417 | 2,342 |
+| the Zenith, the game's 190 (§16.58) | 4,074 | 5,593 | 3,192 |
+| the chain | 1,342 | 1,342 | 1,332 |
+| the air | 3,341 | 4,471 | the same |
+| drenched, the chain with the leap and the drive, and the bleeding | 5,300 | 5,908 | the same |
+| drenched, the air, and the bleeding | 7,340 | 9,474 | the same |
+
+The chain works out at 1,337 whatever the size or defense (five cuts of 600 every 140 ticks, 4
+in 100 crits). The bleeding adds its 200 a second to all that the drenched sword does. The
+Zenith used under the blood (its speed only): 4,032 (5,106 at 190).
+
+### Open
+
+- Run in the game once (§16.58's picture: the dive that never found the ground, mended); the
+  aim, the bleeding, the wider ring, the lore piece and its rarity not yet. Never heard, never
+  tried with a second player.
+- No source but Finish.
+- Its picture is a copy of `SwordsmanBluntSide.png`; the two buff icons are stand-ins.
+- A player struck in PvP is not bled, and the chain's aim looks for enemies only.
+- The numbers that are mine, the readings to confirm and what was added without being asked:
+  RELEASE_TODO.
+
+## The game's own items
+
+`Content/Items/VanillaBalance.cs`: the game's items with this mod's numbers, put on after the
+game's own (PSItem stays as it is).
+
+| item | the game's | here |
+|---|---|---|
+| Zenith | 190 damage | 150 damage, nothing else of it changed (PADWorkFlow §16.59) |
+
+## The mod's own rarities
+
+`Content/Rarities/BlasphemousCrimson.cs` (PADWorkFlow §16.61). To the game a rarity is one
+colour; a name in these is drawn by hand in the tooltip (`RampedNames`, through
+`MagicColours.Ramped`), each row of each letter in its own colour, and shows the one colour
+wherever the game can show only one (the name that rises from an item picked up).
+
+| rarity | the letters, top to bottom | their outline, bottom to top | the one colour | items |
+|---|---|---|---|---|
+| Blasphemous Crimson | #641e07, #431938, #7b0a31 | #c42727, #d13d62, #c40808 | #d13d62 | Foigh's Rust Side Sword, for now the only one (yours) |
+
+---
+
 # 2 · Consumables
 
 `Content/Items/Ranged` for ammunition; elsewhere by type.
@@ -428,6 +575,7 @@ verses, ≤ 60 characters each, verse 1 what it is, verse 2 who held it, verse 3
 | Pouch of Berries | built, sprite redraw outstanding |
 | Lore Lock (system) | built |
 | Game Changing Orb | built |
+| Foigh's Rust Side Sword | a weapon (§1); a lore item since §16.59 |
 
 ## Greatbow of a Pilgrim — text
 
@@ -445,6 +593,20 @@ The bow is a weapon, not a lore item, but it carries lore text. All proposals.
 > The man who carried it spent it on one animal.
 > The wood is not from here.
 > Nobody asked him and he is still walking.
+
+## Foigh's Rust Side Sword — text
+
+Built (PADWorkFlow §16.59). **Flavour**, the tooltip's last line since §16.57:
+
+> `'The rusted side was used on one man, for years.'`
+
+**Verses**, mine, from PAD_Lore_Planning §9 and his fight:
+
+> A sword twice the height of the man who dragged it.
+> He stood on the ground and asked the same of others.
+> Who drew blood first, the rust does not say.
+
+What it is, who held it, and the gap: who began it, which §9.3 keeps open.
 
 ---
 

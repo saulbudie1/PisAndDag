@@ -21,6 +21,8 @@ namespace PisAndDag.Content.Structures
     ///   Mors Monument         a Blade of Mors in Stone tile anywhere
     ///   Blood Shrine          a chest holding the Orb, the Orb placed as a tile, or
     ///                         Legends already on (the Orb was broken, so it was here)
+    ///   The Way Down          its own record (WayDownState), saved with the world; made
+    ///                         last, so that it keeps off a graveyard made just before it
     /// Anything this places is also written to a ledger saved with the world, so a
     /// structure the player has since dismantled is not put back a second time.
     ///
@@ -39,6 +41,7 @@ namespace PisAndDag.Content.Structures
         public const string Graveyard = "Shoreline Graveyard";
         public const string Monument = "Mors Monument";
         public const string Shrine = "Blood Shrine";
+        public const string WayDown = "The Way Down";
 
         public override void ClearWorld() => placed.Clear();
 
@@ -59,6 +62,8 @@ namespace PisAndDag.Content.Structures
         // ---- presence -----------------------------------------------------------------
 
         public static bool HasGraveyard() => placed.Contains(Graveyard) || GraveyardZone.Exists;
+
+        public static bool HasWayDown() => placed.Contains(WayDown) || WayDownState.Made;
 
         public static bool HasMonument()
         {
@@ -151,6 +156,16 @@ namespace PisAndDag.Content.Structures
                 anything |= Apply(new GraveyardPass("PisAndDag: Shoreline Graveyard", 80.0), Graveyard, report);
             }
 
+            // Last: it keeps off whatever the passes above have just made.
+            if (HasWayDown())
+            {
+                report.Add(WayDown + ": present.");
+            }
+            else
+            {
+                anything |= MakeWayDown(report);
+            }
+
             if (anything)
                 ReframeWorld();
 
@@ -170,6 +185,32 @@ namespace PisAndDag.Content.Structures
             {
                 ModContent.GetInstance<PisAndDag>().Logger.Error("Structure update failed for " + name, e);
                 report.Add(name + ": failed, see the log.");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// The way down finds its own way, and finds none rather than cut through anything
+        /// (TheWayDownPass.Make): only a way made is put in the ledger.
+        /// </summary>
+        private static bool MakeWayDown(List<string> report)
+        {
+            try
+            {
+                if (!TheWayDownPass.Make(new GenerationProgress()))
+                {
+                    report.Add(WayDown + ": no way could be found that keeps clear of everything and can be walked down; see the log.");
+                    return false;
+                }
+
+                placed.Add(WayDown);
+                report.Add(WayDown + ": placed.");
+                return true;
+            }
+            catch (System.Exception e)
+            {
+                ModContent.GetInstance<PisAndDag>().Logger.Error("Structure update failed for " + WayDown, e);
+                report.Add(WayDown + ": failed, see the log.");
                 return false;
             }
         }

@@ -2727,8 +2727,17 @@ namespace PisAndDag.Content.Structures
         /// <summary>
         /// Every player death in this world, from the first. Saved, and never
         /// reset: the burials stop after the first few, the count does not.
+        /// A death in one of the world's places (a subworld) is a death in the
+        /// world: the count is the same there (SubworldFlags).
         /// </summary>
         public static int Deaths;
+
+        /// <summary>
+        /// How many of those were in one of the world's places, where nobody
+        /// leaves a stone (SubworldRules). Saved with the count, so that the
+        /// burying goes by the deaths that left one (GraveyardBurial).
+        /// </summary>
+        public static int Elsewhere;
 
         public static bool Exists => Right > Left && Bottom > Top;
 
@@ -2769,11 +2778,15 @@ namespace PisAndDag.Content.Structures
             GraveLeft = GraveRight = CrownY = -1;
             OpenGraveX = OpenGraveY = -1;
             Deaths = 0;
+            Elsewhere = 0;
         }
 
         public override void SaveWorldData(Terraria.ModLoader.IO.TagCompound tag)
         {
             tag["GraveyardDeaths"] = Deaths;
+
+            if (Elsewhere > 0)
+                tag["GraveyardElsewhere"] = Elsewhere;
 
             if (!Exists)
                 return;
@@ -2792,6 +2805,7 @@ namespace PisAndDag.Content.Structures
         public override void LoadWorldData(Terraria.ModLoader.IO.TagCompound tag)
         {
             Deaths = tag.ContainsKey("GraveyardDeaths") ? tag.GetInt("GraveyardDeaths") : 0;
+            Elsewhere = tag.ContainsKey("GraveyardElsewhere") ? tag.GetInt("GraveyardElsewhere") : 0;
 
             if (!tag.ContainsKey("GraveyardLeft"))
                 return;
@@ -2825,6 +2839,7 @@ namespace PisAndDag.Content.Structures
             writer.Write(OpenGraveX);
             writer.Write(OpenGraveY);
             writer.Write(Deaths);
+            writer.Write(Elsewhere);
         }
 
         public override void NetReceive(System.IO.BinaryReader reader)
@@ -2839,6 +2854,7 @@ namespace PisAndDag.Content.Structures
             OpenGraveX = reader.ReadInt32();
             OpenGraveY = reader.ReadInt32();
             Deaths = reader.ReadInt32();
+            Elsewhere = reader.ReadInt32();
         }
     }
 

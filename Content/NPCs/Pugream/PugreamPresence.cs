@@ -268,6 +268,11 @@ namespace PisAndDag.Content.NPCs.Pugream
             if (Main.netMode == NetmodeID.MultiplayerClient)
                 return;
 
+            // His shore is the world's. One of the world's other places (a subworld) has the
+            // world's story and no sea: he is not looked for there.
+            if (Subworlds.Subworld.Active)
+                return;
+
             if (Main.GameUpdateCount % CheckEvery != 0)
                 return;
 

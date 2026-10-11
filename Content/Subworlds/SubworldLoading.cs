@@ -48,7 +48,14 @@ namespace PisAndDag.Content.Subworlds
     /// one title for all of them (Tips.VanillaTitle). Two of the game's are left out, as
     /// untrue with this mod in (<see cref="NotHere"/>). Like the picture, they are found
     /// ahead (as a world is entered, and as one is left), so that a door's own frame has
-    /// only to turn to one.
+    /// only to turn to one. One turned to with the key is up whole on the frame the key goes
+    /// down, by request ("it tips dont load right away when i pressed E"). Their words are
+    /// drawn as faint as the rest is while it comes and goes, and never darker: the game's
+    /// own way of drawing words (ChatManager) gives each piece of them the hover text's
+    /// pulse and makes it whole again (TextSnippet.GetVisibleColor, ChatManager.WaveColor),
+    /// so that words given at a fifth of their strength came out dark and near enough
+    /// solid, and a tip seemed not to be there yet; they are drawn in the colours given
+    /// instead (<see cref="Words"/>).
     ///
     /// THE BAR goes by the clock, and is kept honest by the game's own word. A passage is
     /// eleven steps the game takes in one order, six of leaving a world and five of
@@ -153,9 +160,6 @@ namespace PisAndDag.Content.Subworlds
         private static Asset<Texture2D> edges;
 
         // ---- how it looks ----------------------------------------------------------------------
-
-        /// <summary>Seconds a tip turned to takes to come up. The first of a passage does not: it is up with the rest.</summary>
-        private const float TipComeUp = 0.2f;
 
         /// <summary>How fast the bar closes on where it should be: this much of the way a second, near enough.</summary>
         private const float BarRate = 7f;
@@ -343,9 +347,6 @@ namespace PisAndDag.Content.Subworlds
         /// <summary>The tip that is up, worded and ready.</summary>
         private static string title = "";
         private static string text = "";
-
-        /// <summary>Seconds the tip that is up has been up.</summary>
-        private static float tipAge;
 
         /// <summary>How much of it all shows, 0 to 1.</summary>
         private static float shown;
@@ -606,9 +607,6 @@ namespace PisAndDag.Content.Subworlds
                     Gather();
 
                 Turn();
-
-                // The first tip is not behind the rest: it is up with it.
-                tipAge = TipComeUp;
             }
             catch (Exception e)
             {
@@ -763,8 +761,6 @@ namespace PisAndDag.Content.Subworlds
         /// <summary>Turns to the next tip: one of the game's one time in <see cref="GameTipOneIn"/>, else the mod's next.</summary>
         private static void Turn()
         {
-            tipAge = 0f;
-
             if (games.Count > 0 && (own.Count == 0 || dice.Next(GameTipOneIn) == 0))
             {
                 LocalizedText tip = games[dice.Next(games.Count)];
@@ -1104,9 +1100,7 @@ namespace PisAndDag.Content.Subworlds
                 if (shown <= 0f)
                     return;
 
-                tipAge += seconds;
-
-                Paint(spriteBatch, new Frame(window.Width, window.Height, Main.SettingDontScaleMainMenuUp), shown, Math.Min(1f, tipAge / TipComeUp));
+                Paint(spriteBatch, new Frame(window.Width, window.Height, Main.SettingDontScaleMainMenuUp), shown);
             }
             catch (Exception e)
             {
@@ -1114,7 +1108,7 @@ namespace PisAndDag.Content.Subworlds
             }
         }
 
-        private static void Paint(SpriteBatch spriteBatch, Frame frame, float all, float tip)
+        private static void Paint(SpriteBatch spriteBatch, Frame frame, float all)
         {
             // ---- the picture, and its edges over it ----
             if (art != null && art.IsLoaded)
@@ -1146,12 +1140,11 @@ namespace PisAndDag.Content.Subworlds
             // ---- the tip: a title, and what it has to say under it, every line ending at the same edge ----
             if (title.Length > 0 || text.Length > 0)
             {
-                float alpha = all * tip;
-                Color shade = Color.Black * (alpha * 0.8f);
+                Color shade = Color.Black * (all * 0.8f);
 
                 // Wrapped by the game's own hand, which knows a key's picture from a word. It asks for the width at no scale.
                 List<List<TextSnippet>> rows = text.Length > 0
-                    ? Utils.WordwrapStringSmart(text, TextColour * alpha, small, Math.Max(1, (int)(frame.TextWide / scale)), MostLines)
+                    ? Utils.WordwrapStringSmart(text, TextColour * all, small, Math.Max(1, (int)(frame.TextWide / scale)), MostLines)
                     : new List<List<TextSnippet>>();
 
                 float gap = line * 0.3f;
@@ -1168,8 +1161,7 @@ namespace PisAndDag.Content.Subworlds
                 {
                     float wide = ChatManager.GetStringSize(big, title, new Vector2(titleScale)).X;
 
-                    ChatManager.DrawColorCodedStringWithShadow(spriteBatch, big, title, new Vector2(frame.Right - wide, top),
-                        TitleColour * alpha, shade, 0f, Vector2.Zero, new Vector2(titleScale), -1f, spread);
+                    Words(spriteBatch, big, title, new Vector2(frame.Right - wide, top), TitleColour * all, shade, Vector2.Zero, new Vector2(titleScale), spread);
                 }
 
                 float y = top + titleLine + gap;
@@ -1183,8 +1175,7 @@ namespace PisAndDag.Content.Subworlds
                     TextSnippet[] snippets = row.ToArray();
                     float wide = ChatManager.GetStringSize(small, snippets, new Vector2(scale)).X;
 
-                    ChatManager.DrawColorCodedStringWithShadow(spriteBatch, small, snippets, new Vector2(frame.Right - wide, y), 0f,
-                        TextColour * alpha, shade, Vector2.Zero, new Vector2(scale), out _, -1f, spread);
+                    Words(spriteBatch, small, snippets, new Vector2(frame.Right - wide, y), TextColour * all, shade, Vector2.Zero, new Vector2(scale), spread);
 
                     y += line;
                 }
@@ -1204,13 +1195,11 @@ namespace PisAndDag.Content.Subworlds
                 string letter = NextTip.ToString();
                 float letterWide = small.MeasureString(letter).X;
 
-                ChatManager.DrawColorCodedStringWithShadow(spriteBatch, small, letter,
-                    new Vector2(box.X + box.Width * 0.5f, box.Y + box.Height * 0.5f), foot, footShade, 0f,
-                    new Vector2(letterWide * 0.5f, small.LineSpacing * CapMiddle), new Vector2(scale * 0.78f), -1f, spread);
+                Words(spriteBatch, small, letter, new Vector2(box.X + box.Width * 0.5f, box.Y + box.Height * 0.5f), foot, footShade,
+                    new Vector2(letterWide * 0.5f, small.LineSpacing * CapMiddle), new Vector2(scale * 0.78f), spread);
 
-                ChatManager.DrawColorCodedStringWithShadow(spriteBatch, small, next,
-                    new Vector2(box.Right + between, frame.Foot - line * CapMiddle), foot, footShade, 0f,
-                    Vector2.Zero, new Vector2(scale), -1f, spread);
+                Words(spriteBatch, small, next, new Vector2(box.Right + between, frame.Foot - line * CapMiddle), foot, footShade,
+                    Vector2.Zero, new Vector2(scale), spread);
             }
 
             // ---- the bar: a line with a mark at each end, as much of it filled as is done, and a mark where that stops ----
@@ -1233,6 +1222,27 @@ namespace PisAndDag.Content.Subworlds
                 spriteBatch.Draw(pixel, new Rectangle(left, middle - frame.Thick / 2, filled, frame.Thick), bright);
                 spriteBatch.Draw(pixel, new Rectangle(left + filled - frame.Thin, middle - frame.Mark / 2, frame.Thin, frame.Mark), bright);
             }
+        }
+
+        /// <summary>
+        /// Words as the game's own hand lays them out (ChatManager), a shadow under them, in
+        /// <paramref name="colour"/> just as it is given: the game's own draw would give each
+        /// piece the hover text's pulse and make it whole again (TextSnippet.GetVisibleColor),
+        /// so that words given faint came out dark.
+        /// </summary>
+        private static void Words(SpriteBatch spriteBatch, DynamicSpriteFont font, TextSnippet[] snippets, Vector2 at, Color colour, Color shade, Vector2 origin, Vector2 scale, float spread)
+        {
+            ChatManager.DrawColorCodedStringShadow(spriteBatch, font, snippets, at, shade, 0f, origin, scale, -1f, spread);
+            ChatManager.DrawColorCodedString(spriteBatch, font, snippets, at, colour, 0f, origin, scale, out _, -1f, true);
+        }
+
+        /// <summary>The same, of words not yet laid out: as the game's own draw of a string lays them out (ChatManager.DrawColorCodedStringWithShadow).</summary>
+        private static void Words(SpriteBatch spriteBatch, DynamicSpriteFont font, string words, Vector2 at, Color colour, Color shade, Vector2 origin, Vector2 scale, float spread)
+        {
+            TextSnippet[] snippets = ChatManager.ParseMessage(words, colour).ToArray();
+
+            ChatManager.ConvertNormalSnippets(snippets);
+            Words(spriteBatch, font, snippets, at, colour, shade, origin, scale, spread);
         }
 
         /// <summary>The four sides of a box, inside its bounds.</summary>

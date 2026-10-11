@@ -190,6 +190,12 @@ namespace PisAndDag.Content.NPCs.Mors
         /// </summary>
         public static Vector2 MonumentSpot()
         {
+            // The hill is on the world's own ground. One of the world's other places (a
+            // subworld) has none of it, and the sum below cannot even be worked in a world
+            // under 652 tiles wide (MorsMonumentPass.CenterX throws): nowhere.
+            if (Subworlds.Subworld.Active)
+                return Vector2.Zero;
+
             int centre = MorsMonumentPass.CenterX;
             int roof = (int)Main.UnderworldLayer;
             int floor = Main.maxTilesY - 6;
@@ -340,6 +346,12 @@ namespace PisAndDag.Content.NPCs.Mors
         {
             // The server puts him there; clients receive him.
             if (Main.netMode == NetmodeID.MultiplayerClient)
+                return;
+
+            // His places are on the world's own ground. One of the world's other places (a
+            // subworld) has the world's story, flag for flag, and none of that ground: he is
+            // not looked for there, and the story does not move on there.
+            if (Subworlds.Subworld.Active)
                 return;
 
             if (Main.GameUpdateCount % CheckEvery != 0)

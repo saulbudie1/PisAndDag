@@ -11,6 +11,13 @@ namespace PisAndDag
     ///   /foigh          puts him down for whoever typed it: on level ground forty-six tiles
     ///                   ahead of them, his back to them, his sword in the ground. His road
     ///                   starts by itself from there.
+    ///   /foigh second   leaves him two thirds of his life, less one: his second phase begins
+    ///                   as it does in the fight, from wherever he is in it.
+    ///   /foigh third    leaves him three tenths of his life, less one: his third phase
+    ///                   begins as it does in the fight. From his first phase, without his
+    ///                   second's passage: he is taken to be in his second already.
+    ///   /foigh end      his end begins, as a blow that would have killed him begins it
+    ///                   (Foigh.End), from wherever he is in the fight.
     ///   /foigh gone     takes him away again, and his sword and knives with him.
     ///
     /// A World command: run where the world is decided, the server in multiplayer, so it works
@@ -24,9 +31,9 @@ namespace PisAndDag
 
         public override string Command => "foigh";
 
-        public override string Usage => "/foigh [gone]";
+        public override string Usage => "/foigh [second|third|end|gone]";
 
-        public override string Description => "Foigh, the Swordsman: put him down ahead of you, or take him away.";
+        public override string Description => "Foigh, the Swordsman: put him down ahead of you, take him to his second phase, his third or his end, or take him away.";
 
         public override void Action(CommandCaller caller, string input, string[] args)
         {
@@ -45,6 +52,30 @@ namespace PisAndDag
                     }
 
                     caller.Reply("Somebody is standing a way off, with his back to you.", Done);
+                    return;
+                }
+
+                case "second":
+                {
+                    string refused = Content.NPCs.Foigh.Foigh.ToSecond();
+
+                    caller.Reply(refused ?? "Two thirds of his life are left him, less one.", refused != null ? Color.OrangeRed : Done);
+                    return;
+                }
+
+                case "third":
+                {
+                    string refused = Content.NPCs.Foigh.Foigh.ToThird();
+
+                    caller.Reply(refused ?? "Three tenths of his life are left him, less one.", refused != null ? Color.OrangeRed : Done);
+                    return;
+                }
+
+                case "end":
+                {
+                    string refused = Content.NPCs.Foigh.Foigh.ToEnd();
+
+                    caller.Reply(refused ?? "He is at the end of it.", refused != null ? Color.OrangeRed : Done);
                     return;
                 }
 

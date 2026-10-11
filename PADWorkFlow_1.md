@@ -8059,3 +8059,6304 @@ All of these were in what I had written, and were found by running it.
 - **The lore plan still calls him the Clanmaster** (§9 there). That file is the user's and
   was not changed.
 - The offers of §16.42 and before stand as they were.
+
+---
+
+## 16.44 Later in session 7: the Empty Hall cut down to fourteen bays by two panels; Foigh's leap higher the further off; his passage into the second phase
+
+Asked, in one message, after §16.43 had been built and played:
+
+> no need to do gifs anymore,  Make the arena:  7.5 segment tall right?(wall segment), make
+> it 2 segment tall only(count also the door height tall, now it is many about 30 segment
+> wide(wall talking), make it only 14  segments. so it is smaller, the ground and edge walls
+> and ceiling stays the same thickness.
+>
+> For the swordsman phase 1:
+> His 2nd move jump can be higher either range from the height that was to 3x, depending on
+> distance.
+>
+> Transition phase 2:
+> Fades, cinematic, player teleport 70 tiles away, camera in the pans and zoom to him: He
+> takes the knee with his sword to the ground,  look down and spit out blood in 4 with
+> interval: 1s, 0.4s,0.3s.
+> Turns up
+> "Your skills are|.|.|. exceedingly well honed. I can feel it!"(...)
+> "You have earned my sharp side of the blade|.|.|.!"(...)
+> Pulls sword out, points upwards
+> He pulls out a sharpening stone, swipes his sword and has particles effects of his sword
+> being shiny and un dent.
+> "Let this foolish old man's flame rage once more"
+> fades to you
+
+**The GIFs.** Nine moving pictures of §16.43's nine stills had been asked for after it.
+They were made in the workspace (04:19 to 04:30 UTC on the 6th) and are not wanted any
+more, by this message's first words: none of them is in the mod's folder, and two of the
+nine are of the hall as it no longer is.
+
+Nothing was asked back. Every reading taken is in section 2, so that a wrong one can be
+named.
+
+### 1. The device, read first
+
+- A little before 05:00 UTC on the 6th the mod's folder was listed (its root, and `Content`
+  with everything under it: 612 entries). It was as §16.43's delivery left it: every source
+  file the size and the time that delivery gave it, nothing new, nothing gone. No sharp
+  side of the sword among his pictures (`SwordsmanBluntSide.png` and its `.aseprite` only).
+- `client.log` was staged and read whole (838 lines). It is of a build of §16.43's code
+  made on the device: 0 errors, 10 warnings, the mod loaded. One passage: `Subworlds:
+  through the door to PisAndDag/EmptyHall in 12.13 s`, at 12:18:49 by the device's clock,
+  and the game then autosaved in the hall until at least 12:58. Nothing thrown that names
+  the mod. What was done in those forty minutes the log does not say; the message that
+  followed asks for a smaller hall and a higher leap and reports nothing broken.
+- Before anything was written to the device it was all read again: the last paragraph of
+  section 6.
+
+### 2. Readings
+
+1. *"segment ... (wall segment)"*: one cell of the masonry behind the hall, which is the
+   only thing in it that repeats: twelve columns from the middle of one pilaster to the
+   middle of the next, twenty-four rows from one course of Stone Slab to the next. The old
+   hall was 307 by 161: 25.5 such cells long and 6.7 high, for the "about 30" and "7.5" of
+   the message.
+2. *"only 14 segments"*: fourteen bays, with a pilaster against the wall at each end as
+   before: 14 x 12 + 3 = **171 columns**.
+3. *"2 segment tall only (count also the door height tall"*: two cells from the floor to
+   the ceiling, **48 rows**, the band along the floor that the door stands in (the dado)
+   counted into the lower one, not added under it.
+4. *"the ground and edge walls and ceiling stays the same thickness"*: 40 rows, 5 columns
+   and 36 rows of Gray Brick, of what can be seen, as they were.
+5. *"the height that was"*: what the leap reached onto a player beside him, 75 px (4.7
+   tiles). Section 3 has what it did before at each distance; it was not one height.
+6. *"to 3x, depending on distance"*: 225 px (14.1 tiles) onto a player as far off as he
+   leaps from by choice (30 tiles), and evenly between.
+7. *"Transition phase 2"*: at 66 in a hundred of his life, where §16.43 has the second of
+   his three stages begin.
+8. *"Fades, cinematic"*: the picture to black, and the bars, as on his road.
+9. *"player teleport 70 tiles away"*: under the black, 70 tiles from him along the ground.
+   On the side of him they are on; on his other side if there is no ground that far off on
+   theirs; nearer, two tiles at a time and no nearer than 30, if there is none on either.
+10. *"camera in the pans and zoom to him"*: the picture comes back on the player where they
+    now stand; then the camera goes over to him (1.6 s) and leans in.
+11. *"He takes the knee with his sword to the ground, look down"*: on one knee, the sword's
+    point driven into the ground ahead of him, both hands on it, his head down. He is
+    already so when the picture comes back: going down happens under the black.
+12. *"spit out blood in 4 with interval: 1s, 0.4s,0.3s"*: four times, the second a second
+    after the first, the third 0.4 s after that, the fourth 0.3 s after that.
+13. *"Turns up"*: he raises his head.
+14. *"(...)"*: the one answer under a line, written "...", as on the road. The third line
+    has none after it: it comes up, stays a little once all of it is there, and goes by
+    itself.
+15. *"Pulls sword out, points upwards"*: out of the ground as he stands, and up at the sky,
+    held there.
+16. *"pulls out a sharpening stone, swipes his sword"*: the bottom hand to his belt and back
+    with a stone; the sword held level before him; one pass, the sword drawn back through
+    the stone from the guard to the point.
+17. *"particles effects of his sword being shiny and un dent"*: sparks and grit off the
+    stone; behind the stone the blade is its sharp side (another picture, section 3); then
+    a light runs up it twice, with glints along it.
+18. *"fades to you"*: the picture to black on him, the camera put back on the player under
+    it, and back up. Then he walks.
+
+Not in the message, and so not built: anything he does in his second phase that he did not
+do in his first.
+
+### 3. What was built
+
+**The hall** (`Content/Subworlds/EmptyHall.cs`). The place is 264 by 207 tiles, of which
+181 by 124 can be seen; the hall inside its brick is **171 long and 48 high**. Ground 40,
+ceiling 36, a wall of 5 at each end: unchanged. Behind it the same masonry, fewer cells of
+it: fifteen pilasters twelve columns apart, the first and the last against the two walls;
+from the floor up, three rows of dado, the rail, twenty rows of wall, the course of Stone
+Slab at row 24, twenty rows of wall, the rail, two rows of frieze. Lit on the same
+lattice: a torch on every pilaster every twelve rows from three rows over a head, a column
+of them up the middle of every bay six rows out of step, one more of each under the upper
+rail: **131 torches** (744 before). And a **Tiki Torch in the middle of every bay, 14**:
+the two end bays had a torch low on the wall instead, and in a hall this low that left
+their floor a tile darker than the rest (section 7). Its size is worked out from the
+numbers at the head of the file (`Bays` and `Panels`, the cell's twelve by twenty-four,
+and the three thicknesses), so another size is those numbers and nothing else.
+
+`Layout` is 5, so its file is `EmptyHall.5.wld` and a world's next passage lays it out
+afresh. The four older files stay beside it, unread (the mod deletes nothing).
+
+**At 207 rows the place is seven over the least the game can take**, and that least was
+set too low in the mod: `SubworldKeeper.Least` said a place could be 150 each way. The
+game takes 200 off a world's width and off its height for where a Teleportation Potion
+may put whoever drinks one, and gives what is left to its random as a range, which throws
+on less than nothing (section 5). `Least` is 200 now, so a place under that is refused
+where it is made, as one under 150 was, and not found out by a potion. Said at the hall's
+own numbers too: two panels and nine bays are the least it can be.
+
+**A player's weight in a place** (`SubworldRules.cs`, `SubworldRulesPlayer.PreUpdateBuffs`).
+A consequence of the lower hall, not asked for, and not avoidable: the game makes a player
+lighter near a world's top, by rows counted from its surface line (section 5), and a place
+puts that line near its bottom so that all of it is lit as open air. In the hall as it was
+that band lay in the brick over it. In this one **the top twelve rows of the hall are in
+it**: under the ceiling a player weighed 0.59 of what they do on the floor. The share the
+game takes off is put back, the first thing a mod is asked after the game has taken it and
+before anything has been moved by it. It holds in every place, not the hall alone. A
+gravity of nothing (webbed, Distorted) stays nothing. He is not touched by any of this: he
+carries his own weight.
+
+**The leap** (`Foigh.Fight.cs`: `LeapHeight`, `LeapHigher`, `LeapFurthest`, `LeapOver`,
+`LeapHigh`, `LeapOff`, `Launch`). Before, how long it took was set by how far off they
+were (34 to 56 ticks), and how high it went followed from that: 75 px onto anyone within
+19 tiles, then steeply up, to 186 px at 30. Now how high it goes is set by how far off
+they are, and how long it takes follows:
+
+| they are off him | it tops out at | in the air | before: height, time |
+|---|---|---|---|
+| beside him | 75 px (4.7 tiles) | 33 ticks | 75 px, 34 |
+| 40 px | 87.5 px (5.5) | 36 | 75, 34 |
+| 150 px (9 tiles) | 122 px (7.6) | 42 | 75, 34 |
+| 240 px (15) | 150 px (9.4) | 47 | 75, 34 |
+| 300 px (19) | 169 px (10.5) | 50 | 75, 34 |
+| 400 px (25) | 200 px (12.5) | 54 | 127, 44 |
+| 480 px (30) | 225 px (14.1) | 57 | 186, 53 |
+| further (only after three knives, or out of a step up) | 225 px | 57 | 208, 56 |
+
+(Ticks as sent with him; he is seen in the air up to three more, for the tick he leaves
+on and the one he lands on. The "before" column is worked from §16.43's sum, not run
+again.) His weight is the same as ever, so a higher leap is a longer one: within 19 tiles
+it is up to half as long again in the air as it was. Onto a player who is over him it goes
+at least a tile and a half over their feet, up to the same 225 px. The speed he leaves the
+ground at is never over what tiles can stop (15.457 px in the first tick at the most; they
+stop 15.5).
+
+**The passage into his second phase** (`Foigh.Passage.cs`, new; `Foigh.cs`, `.Fight`,
+`.Draw`, `FoighMoves.cs`, `FoighRig.cs`, `FoighPlayers.cs`). Five moves between the fight's
+and his end, in order: `Spent`, `Knee`, `Whet`, `Oath`, `Resume`.
+
+- *When.* On the server, the first tick his life is at 66 in a hundred or under, from
+  whatever he is doing: a move is cut short where it is, a player in his hand is let go
+  of, and from the air he comes down under the black. Only a flash step is finished (seven
+  ticks, and he is where it ends). Once, ever: `phase` goes from 1 to 2 and is sent with
+  him. Not from his end: a blow that takes him from over two thirds to nothing ends him
+  there.
+- *Spent*, 26 ticks. He rocks back and bows; the sword comes down on whichever side of him
+  it is on. On the player's machine the bars come in and the picture goes to black over 24
+  ticks. They are held from here to the end of it (`Cinematic.Hold`: nothing in their
+  hands, nothing able to land on them).
+- *Knee.* Under the black: what he had thrown is gone (his sword, his knives, a shot on
+  its way back), the sword is in his hands, he is on his knee, and (tick 3) the player is
+  put down 70 tiles off, on their feet, off any mount, hook or rope, facing him; he turns
+  to face where they now are. Black until tick 16, the picture back on the player by 46,
+  the camera off to him at 58 and on him at 154, leaning in to 1.3. Blood at ticks 180,
+  240, 264 and 282: eight drops each and thirteen the last, out of his mouth, each living
+  exactly as long as it takes to reach the ground, and every other one leaving a stain
+  that lies there two and a half to nearly four seconds. Each bends him further over the
+  sword. His head comes up over ticks 328 to 354. At 364 the first line, with "..." under
+  it; then the second, with "..." under it; that answer tells the server, and he goes on.
+  While he kneels **the sword does not move**: its point is 89 px ahead of him and 15 px
+  under the ground, and it is he who moves about it (`FoighRig.Plant` turns the arm that
+  has the sword until its fist is a sword's length from the point, and aims the blade at
+  it). He is drawn behind the tiles, so the ground hides what is in it.
+- *Whet*, 150 ticks. The point is out of the ground at 12 (dust, a small shake); up at the
+  sky from 36 to 54, 76 degrees from level, a glint at the point; down before him,
+  the bottom hand to his belt (64) and back with the stone (in his hand from 66 to 123);
+  the blade turned toward the eye (half its length seen) and the stone laid on it at the
+  guard (78); the sword drawn back through it to the point (90): sparks and grit where the
+  stone is on every one of those ticks, and **the blade behind the stone is the sharp
+  side**, all of it by tick 97. Held up (110), a light runs up the blade from guard to
+  point, and again 24 ticks after, with glints along it; the stone away (124); the sword
+  over and down behind him into the stance he fights from.
+- *Oath.* The third line, 12 ticks in. It has no answer: 80 ticks after all of it is
+  there, it goes down by itself and the server is told. The camera leans in a little more
+  (1.36).
+- *Resume*, 60 ticks. To black over 20 with the camera still on him, the camera put back
+  on the player under 14 of black, back up over 26; the player's feet are theirs again
+  half way up. Then he walks, with 70 ticks before his first move, as at the fight's
+  start.
+
+About nineteen seconds from his life crossing to his first step, with both answers given
+as soon as their lines are there (the lines take 3.2, 2.9 and 1.4 s to arrive: the bars in
+them are half a second each).
+
+Nothing lands on him from the first tick to the last. `Fighting` stays true through it, so
+the music goes on and a target who leaves the game is replaced by whoever is nearest, as
+in the fight. **Only the player he fights is moved, held and shown it**; to anyone else he
+is simply doing it, untouchable, and they are free. The server waits for the two answers
+90 seconds from his first line and for the third line 15, and then goes on by itself, so
+a player who never answers does not stop the fight for good.
+
+After it he is 70 tiles off, which is further than he leaps from: what he opens with is
+knives or the step behind. Nothing else of his fight is changed, because nothing else was
+given: **the second phase is the first phase's moves with the sharp side's picture and the
+damage §16.43 already had from 66 down** (150 / 200 / 230, half as much again in Legends).
+
+**The sharp side, and the stone.** Two new pictures, both stand-ins, both in
+PlaceholderTextures.md: `SwordsmanSharpSide.png`, which is `SwordsmanBluntSide.png` with
+the blade recoloured (pale on its lit half, darker on the other, a bright line along the
+edge; 420 pixels changed, the hilt and the first 22 px of blade untouched, the outline and
+the canvas the same, so it is drawn by the same numbers), and `FoighWhetstone.png`, ten by
+six. The sword in his hand, the sword thrown and the sword standing in the ground are all
+the sharp one from the stone on (`Foigh.SwordPicture`). `SwordsmanBluntSide.png` and its
+`.aseprite` were read and not written.
+
+**`/foigh second`** leaves him two thirds of his life less one, so the passage begins on
+his next tick as it does in the fight. For looking at it without taking 51,000 off him
+first. In RELEASE_TODO with the rest of `/foigh`, to go when the command goes.
+
+**Small things that changed with it.** `RagdollPlayer.StandNow` (a player put down
+somewhere else by a cut is on their feet there, not lying as they were thrown): used by
+the put-off, and by the road's walk up as well, which put a thrown player down still
+thrown. `FoighRig.Mouth` and `Frame.MouthAt` (where the blood comes from);
+`FoighRig.FistAt`, `PointAt`, `Plant`, `HandOnBlade` (a sword stuck in something while
+the rest of him moves; his other hand on the blade).
+
+### 4. The numbers
+
+Yours: 14 segments by 2; the three thicknesses; from the height that was to three times
+it; 70 tiles; four spits, 1 s, 0.4 s and 0.3 s apart; the three lines, word for word, and
+which of them are answered.
+
+Mine, each a constant at the head of `Foigh.Passage.cs`, beside the movement in
+`FoighMoves.cs`, or at the head of `Foigh.Fight.cs` for the leap: 75 px as "the height
+that was", and 30 tiles as where three times it is reached; that the leap clears a player
+over him by 24 px; every tick in section 3 (the fades, the 96 ticks of the camera's way
+over, the 26 between its arriving and the first spit, the look up, the 10 ticks before
+the first line, all of the whet, the 80 the third line lingers, the way back); the lean
+(1.3, then 1.36); how many drops, how fast and how wide; the least he will put a player
+off by (30 tiles); the server's waits (90 s and 15 s); a Tiki Torch in every bay.
+
+### 5. What the 1.4.4 assembly says
+
+Read in `tModLoader.dll` as IL before it was leaned on.
+
+- **`Player.Update` thins gravity by height.** After `PlayerLoader.PreUpdate` and before
+  the controls are read, for every player, on every machine: with `n = (maxTilesX / 4200)`
+  squared, the share is `(position.Y / 16 - (60 + 10n)) / (worldSurface / 6)`, held between
+  a quarter and one, and `gravity` is multiplied by it. (In a world of the upside down seed
+  it is over all of `worldSurface`, and held over a tenth.) `Player.Update` itself neither
+  reads nor writes `gravity` again before `PlayerLoader.PreUpdateBuffs`, which is called
+  for every player; its next reading of it is after `PostUpdateMiscEffects`. The only
+  other things in the game that write it set it to nothing: `UpdateBuffs`, straight after
+  that hook, for a webbed player; `Player.Teleport` for one gone through a portal; and a
+  Distorted one's is nothing before the thinning. So dividing the share out again in
+  `PreUpdateBuffs` puts back exactly what was taken, and leaves nothing as nothing.
+- In the hall: `n` is 0.004, the surface line is row 172 (`Height - 35`,
+  `SubworldKeeper.Make`), so a player is thinned with their top above row 88.7; the hall's
+  open rows are 77 to 124.
+- **`NPC.UpdateNPC_UpdateGravity` does the same to an NPC** unless its
+  `GravityIgnoresSpace` is set or it has no gravity at all. Nothing spawns in a
+  place and he has none of the game's, so nothing was done about it; an NPC ever put in a
+  place with the game's gravity will want that field set.
+- `WorldGen.clearWorld`, which the making of a place begins with, sets `remixWorld` false:
+  a place is never an upside down world, whatever the world it belongs to is.
+- `Player.TeleportationPotion` looks for somewhere to put the player at column `100 +
+  rand.Next(maxTilesX - 200)`, row `100 + rand.Next(Main.UnderworldLayer)`, and
+  `UnderworldLayer` is `maxTilesY - 200`. `UnifiedRandom.Next` throws on a range under
+  nothing. So a world under 200 tiles either way throws when one is drunk in it. In this
+  place the ranges are 64 and 7: columns 100 to 163 and rows 100 to 106, all inside the
+  hall.
+- `WorldGen.setWorldSize` cuts a world into sections of 200 by 150: this place is two by
+  two.
+- The game's forced least zoom keeps what is drawn within 1920 by 1200 px of world, 120 by
+  75 tiles: less than the 181 by 124 that can be seen here, so no screen sees past them.
+
+### 6. Verified
+
+Compiled against the real assemblies: **0 errors, the 10 warnings there have always
+been.** Then, on that build, one run after another:
+
+- **The whole rig of §16.35 to §16.43, 486 checks, all passing**, with the hall's own
+  rewritten for what it is now: the shell tile by tile; fourteen bays and two panels;
+  fifteen pilasters; a wall behind every cell and none elsewhere (Stone 49.3 in a hundred,
+  Gray Brick 22.2, Stone Slab 28.5); the registers; 131 torches and 14 Tiki Torches, each
+  framed as the game frames one that is lit, the same either side of the middle; by the
+  game's own count of light nowhere further than 6 tiles from a flame (0.57 of a torch's)
+  but in the one column against each end wall, where six cells are 7 from one (0.52), and
+  nowhere on the floor further than 4 (0.69); the door, the spawn, a bomb, a tombstone;
+  the file's name and the four older ones left alone. Drawn again from the rig's dump with
+  the game's own tile and wall pictures and that light, and looked at.
+- **A player's weight, by the game's own `Player.Update`** (new: `PAD_WEIGHT=1`, 16 checks).
+  The hall loaded by the game from its file; tModLoader's own ten mod players and all
+  forty of the mod's on a player as the game puts them; the whole of `Player.Update` run on
+  them, for a player who is not the machine's own. Left to itself (the place told it is not
+  one) the game gives 0.2367 a tick under the ceiling for its own 0.4, and a drop from the
+  ceiling to the floor takes 93 ticks. With the mod: 0.4 on every half row a head can be
+  on, 91 of them, to within 0.00000003; faster by the same 0.4 on each of the 25 ticks
+  before the game's most; on the floor in 86. Distorted: still nothing. Outside a place:
+  untouched. For the machine's own player the game's update cannot be run with no window
+  (it asks for the screen's filters in `UpdateBiomes`); the thinning and the hook are on
+  the path both kinds of player take. And in the same run **the game's own Teleportation
+  Potion, drunk 200 times in the hall**: on the floor, inside the hall and in nothing solid
+  every time, between columns 100 and 164.
+- **Foigh's rig, 185 checks of his own** (133 before), all passing. New in it: the leap's
+  height and time at eight distances and onto a player over him; the passage end to end
+  on the player's side (every number in section 3 is read off this: the trigger at 99,000
+  of 150,000 and not at 99,001, the fade, the hold, the put-off, the camera, his head, the
+  point's stillness to 0.009 px, each spit's drops and where they end, the lines as
+  written, the whet's ticks, how far along the stone has been against how much sharp side
+  shows, the sparks, the light, the way back, the damage after); the same with no screen
+  and no word from anybody (Knee 5764 ticks, Oath 900, and the fight goes on); begun 8.5
+  tiles up in a leap, with a player in his hand, with his sword in the ground and a knife
+  in the air, and between two places; the put-off in a hall 171 long from its middle and
+  from near each wall, and in a room 99 long (48 tiles, as far as there is); `/foigh
+  second` and its three refusals; what is sent with him read back the same, his phase with
+  it (47 bytes).
+- **Six whole fights of four minutes** as in §16.43, the last of them fought in his second
+  phase after the passage: nothing thrown, every move gone through, never in a wall or
+  under the floor. The player was hit 102 to 117 times in each of the first five (116 to
+  124 before) and 110 times for 14,387 in the sixth. **The leap landed on that player 38
+  times of 96; before, 73 of 101.** That player gets out of the way of nothing on purpose,
+  so this is the longer time in the air and nothing else: onto a player who stands still
+  it is still 40 of 40.
+- The rigs of §16.41 and §16.42 on the same build: 193 of 193 and 215 of 215.
+- **Seen**: the passage was written out by the rig tick by tick as his own drawing asks
+  for it (722 frames from the last cut of a move through to his walking again) and drawn
+  with his own pictures, the two new ones, the particles as dots and the fade; looked at
+  as sheets and close up: spent, the knee with each spit and the look up, the sword out
+  and up, the stone along it and the blade changing behind it, the light, the stance, the
+  way back.
+
+**Read through by me, not by another.**
+
+**Not seen in the game: any of this.** Not the hall at its new size, not the leap, not the
+passage, not either new picture on him. **Not heard: any of the passage's sounds.** The
+three lines have never been in the dialogue's box (the rig has no font: the answers were
+told by hand). The light up the blade is drawn through code that has never run. Not tried
+with anyone else in the world.
+
+**Delivered on the 6th at 06:37 UTC.** Before anything was written the mod's folder was
+listed again: each of `Content`'s 612 entries has the name, the size and the time it had
+before the work began, and nothing in the root or in `Localization` has been written since
+§16.43's delivery. Then every source file on the device was staged again and compared by
+bytes: 327 files
+(every `.cs`, the `.hjson`, `build.txt`, the project file, and the four notes). 308 are
+byte for byte the mirror's; the 17 this writes over (13 code files, 4 notes) are byte for
+byte what it was built on; `build.txt` and the project file, of which the mirror keeps no
+copy, are the size and time they have long been; `Foigh.Passage.cs` and the two new
+pictures were not there. Nothing of the user's had changed. Then all twenty were written
+in one call (14 code files, `Foigh.Passage.cs` new among them; the 2 new pictures; the 4
+notes), staged again and compared by bytes with what was sent. (This file was written
+once more straight after, and checked the same way: the hour in this paragraph had been
+put down before the writing, and was a few minutes out.)
+
+### 7. Found on the way, and put right before delivery
+
+All in what I had written for this, found by running it or by looking at it.
+
+- **The end bays' floor was a tile darker than the rest** once the hall was low (five
+  tiles from a flame, and seven at the wall): they had a torch low on the wall where the
+  other bays have a Tiki Torch. Every bay has the Tiki Torch now.
+- **On his knee the sword's hilt was across his face.** The sword is drawn behind him
+  there, his head against it.
+- **The planted sword's point moved 2.6 px when he looked up**: his arm was nearly in line
+  with the blade, so leaning back put the point out of reach. The pose has slack in it
+  now, he leans back less, and where no turn of the arm reaches, the point stays on the
+  blade's line.
+- **The stone got three quarters of the way up the blade and wandered off it.** The hand
+  with the stone is put on the blade's line now, from 9 to 94 hundredths of the way, and
+  off the point.
+- **Stopping, the sword jumped from ahead of him to behind him** when he was cut short in
+  the middle of a cut. It comes down on the side it is on.
+- **Cut short straight out of a flash step, he would have been left passing through
+  tiles** for as long as he knelt. Whether tiles stop him is settled before the passage is
+  looked for.
+- **The passage could have begun from his end**: a blow from over two thirds to nothing
+  would have had him get up off his last knee and kneel again. It begins from a move of
+  the fight only.
+- **The first leap I wrote changed his weight for the leap** (a lighter one to go higher in
+  the same time). Thrown out: his weight is one number, and the height that was is taken
+  as what it measured, 75 px, which needs no other.
+- **A player who becomes his after the picture is back was going to be thrown 70 tiles
+  with the picture up.** They are left where they stand.
+- **The rig's own**: its fights were run without the tick that lets a held moment go
+  (`Cinematic.Tick`, which the game calls first thing in every update), which did not
+  matter until a scene held the player: after the passage's checks the six fights ran with
+  the player held and untouchable, and only one kind of blow of his landed. Seen in the
+  count of what hit them. Every tick of the rig begins as the game's does now; the road's
+  checks pass with it as they did without.
+- Two sums that only my own picture maker used had been left in the mod's files
+  (`FoighMoves.Whetted`, `FoighRig.OffPoint`). Taken out.
+- **Older than this request, and mine: a place could be made too small for the game.**
+  `SubworldKeeper.Least` has been 150 since it was written; under 200 either way a
+  Teleportation Potion drunk there throws (sections 3 and 5). No place has ever been that
+  small: the hall was 400 by 250, then 400 by 320, and is 264 by 207. It is 200 now.
+
+### 8. Added without being asked
+
+- A player's weight in a place (section 3): the lower hall made it necessary.
+- The least size of a place raised from 150 to 200 (section 7).
+- A Tiki Torch in the two end bays.
+- The two stand-in pictures. The message asks for the sharp side and a stone; neither had
+  a picture.
+- `/foigh second`.
+- The server's waits in the passage, and that a late target is not moved.
+- `RagdollPlayer.StandNow`, and with it a thrown player stood up by the road's walk up.
+
+### 9. Still as it was, or left
+
+- **His second phase has no moves of its own.** Say what he does with the sharp side.
+- **The third phase and the ending**, as §16.43 left them: nothing at 30, and a knee, a
+  fade and nothing dropped at the end.
+- **The leap is easier to walk out from under** than it was (section 6). It is what was
+  asked for, at his weight. If it should be as hard to dodge as before and as high as now,
+  the way is a faster fall on the way down (a plunge), which is one number; not done.
+- **After the passage he is 70 tiles off** and opens with knives from off the screen, or
+  the step behind. Say if he should close the distance some other way first.
+- **In the hall the player may be put down against a wall or by the door**: wherever 70
+  tiles from him is.
+- **With others in the world** the passage is written for it and never run with two
+  machines: the server decides when, each machine runs the moves, the target's own machine
+  moves its player and tells the server the second answer and that the third line was read.
+  On a machine whose word of the knee comes more than a quarter of a second late the
+  picture is already back, and its player is then not moved.
+- The old halls' files, the offers of §16.43 and before, 'Dame' Quilt's `BossLoot`: as
+  they were.
+
+---
+
+## 16.45 Later in session 7: Foigh's kneel with the sword upright and both hands on it; nobody leaves a grave in a place; a place has its world's flags
+
+Asked, in three messages, after §16.44 had been built and played (the second and third
+came while the first was being worked on):
+
+> was more thinking about sword being perpendicular and hes holding on to it
+
+> player dont drop graves in sub worlds
+
+> Subworld uses the same flags as main world
+
+One thing was asked back, with a picture, because the first message has two readings that
+look nothing alike (section 2): the answer was **"A: driven in deep"**.
+
+### 1. The device, read first
+
+- At 06:48 UTC on the 6th, before anything was changed, the mod's folder was listed (its
+  root, `Content` with everything under it: 615 entries, and `Localization`). It was as
+  §16.44's delivery had left it eleven minutes before, file for file, by name, size and
+  time: nothing of the user's had changed, and that delivery had compared all 327 source
+  files with the mirror by bytes.
+- It was listed again at 07:56, at 08:06 and at 08:27 UTC, the last of them just before
+  the delivery: the same 615 entries each time, each with the size and the time it had at
+  06:48; nothing in the root or in `Localization` written since §16.44's delivery. At
+  08:06 the nineteen files this delivery writes over were staged and compared by bytes
+  with the copies the changes had been made on: the same, every one.
+- `client.log` was staged and read (1796 lines; the device's clock is eight hours ahead of
+  UTC). It is of a build of §16.44's code made on the device at 14:47 by that clock: **0
+  errors, 10 warnings**, the mod loaded. In a Grand world in Expert the hall was gone into
+  at 14:48 and left at 14:59; gone into again at 15:02 and left at 15:10; gone into a third
+  time at 15:43. At 15:46 the game saved the player by itself, with no world saved beside
+  it: by the assembly it saves a player from two places, its ten-minute autosave (those
+  were at 15:40 and 15:50) and a death. The log ends with the autosave of 15:50, in the
+  hall, the game still open. Nothing thrown that names the mod.
+
+### 2. Readings
+
+1. *"perpendicular"*: to the ground. The sword stands upright in it.
+2. *"hes holding on to it"*: both hands on it, as on something that is holding him up.
+3. **Which of two, asked.** The sword is 104 px from its pommel to its point and he is
+   about 54 px tall; on a knee his shoulders are 29 and 17 px over the ground and his arms
+   17.5 and 13 px long. So upright it is one of two things: **driven in until its handle
+   is at his chest**, both hands on the handle, most of the blade under the ground; or
+   **standing tall**, the point barely in, his hands on the blade and the hilt high over
+   his head. Both were drawn with his own pictures and shown side by side. Answer: *"A:
+   driven in deep"*, whose line was: *"Driven in until the handle is at his chest, both
+   hands on the handle. Only the top of the sword shows until he pulls it out."*
+4. *"until he pulls it out"* (the answer's own words) and §16.44's *"Pulls sword out,
+   points upwards"*: a sword in that deep cannot be lifted clear by him (its point would
+   leave the ground with its handle 88 px up, and his hand goes no higher than about 50).
+   Read as: he heaves at it, it comes up its own line as far as his arms take it, and then
+   he tears it out forward through the ground and has it up at the sky. Nobody asked for
+   the tearing: it is what the chosen kneel leaves (section 8).
+5. *"player dont drop graves"*: the tombstone the game throws where a player dies.
+6. *"in sub worlds"*: in any of them, and whether or not their rules have been lifted for
+   building (`/subworld rules`).
+7. *"flags"*: as the release list has had it under "What does not come through a door":
+   *hard mode, the bosses beaten and every other flag of the game's and the mod's*. Every
+   yes or no the game keeps about what a world has done, and the mod's own flags and the
+   counts and stages its stories are kept by (its files call those flags too: "part of the
+   world's timeline, like every other flag here").
+8. *"uses the same"*: one set of flags for a world and its places. They are the world's in
+   a place, **and what is set in a place is set in the world**: a boss beaten in the hall
+   is beaten. That second half is a reading; it is also what Subworld Library does, which
+   was read for reference when the mod's own places were written (§16.35): it copies them
+   out of whichever world is left and reads them into whichever is entered, and hard mode
+   into its subworlds only.
+9. **Not read as flags**: a world's secret seed (section 9, and an offer); its clock,
+   weather and whatever is going on in it; where anything is; the bestiary and kill counts;
+   Journey's powers.
+
+### 3. What was built
+
+**The kneel** (`FoighMoves.cs`: `KneeDown`, `Knee`, `Hold`; `FoighRig.cs`; `FoighTrack.cs`).
+The sword stands upright 19 px ahead of the ground between his feet, driven in until the
+middle of its handle is 36 px over the ground: at his chest, kneeling. 52 px of it are
+under the ground, which is 72 in a hundred of its blade; its guard is 20 px over the
+ground. His top hand has it by the middle of the handle and his other hand is on the
+handle under that; his body leans 30 degrees over it and his head is bowed past it. It is
+drawn against him: over his body and his arms and under his head (`Pose.UnderHead`, new:
+before, a sword was either behind all of him or in front of all of him). While he
+breathes, retches and looks up it is he who moves: the point stays where it is to a
+hundredth of a pixel, the blade is never more than 2 degrees off upright, and his other
+hand stays on the handle's own line, sliding between 5.7 and 10.5 px under the middle of
+the grip (the guard is at 16).
+
+**The sword out of it** (`FoighMoves.cs`: `WhetHeave`, `Drawn`, `Heaving`, `Whet`,
+`WhetOut`, `WhetBreaks`). Three parts where there were two:
+
+- *He sets himself* (ticks 0 to 10): his head, which was up at the player, goes down to
+  the sword and his back over it. Nothing comes.
+- *He heaves* (10 to 26): he comes up off his knee, shaking with it, and the sword comes
+  up the upright line it went in by, slowly and then faster, 9 px in all: as far as his
+  arms take it. Both hands are on the handle throughout; the lower one ends just over the
+  guard.
+- *He tears it out* (26 to 34): forward through the ground, both hands still on it. The
+  place where the blade enters the ground runs ahead of him from 19 px to 85, and the
+  point comes up out of it 98 px ahead of him at tick 34. From there it goes on up to the
+  sky as before (there by tick 46), at the speed it came out at: the two halves are eased
+  so that they meet at about 20 degrees a tick.
+
+The stone, the sharp side, the light and the stance are as they were, each 10 ticks
+later. **The whole of it is 160 ticks where it was 150.**
+
+**What shows it** (`Foigh.Passage.cs`: `PassageLooks`, `InGround`, `Plough`, `Heave`,
+`Quake`; `Foigh.Draw.cs`). As he sets himself, steel on stone, low. Through the heave,
+crumbs of dust where the blade goes in. As it gives: the dig, dust, a shake. Through the
+tear: each tile of the floor over the blade's way is heaved up as the blade goes under it,
+once, one after another (`LiftedTile`, which draws the tile lifted and moves nothing of
+the world), with sparks where the blade is in the ground; and where the point breaks out,
+more dust, sparks, the swing's sound and a harder shake. He is drawn behind the tiles, so
+that the ground hides what is in it, until the tick the point is out, which is worked out
+from the movement itself and not written down beside it.
+
+**No grave** (`SubworldRules.cs`: `NoGrave`). The game throws a tombstone from one place
+(`Player.DropTombstone`, the last thing a death does, on the machine the world is decided
+on); in a subworld that is stopped, by detour. Nothing else of a death is in it: the
+coins fall, the death is told, and the mod counts it.
+
+**The flags** (`SubworldFlags.cs`, new; `SubworldKeeper.cs`; `SubworldPassage.cs`).
+
+- *What they are.* **Both ways**, 78 flags: of the game's 66, every boss beaten (21), the
+  invasions, the two moons' bosses and the three tiers of the Old One's Army (13), who has
+  been saved (8), who has been let in and what has been bought and used (22), and the two
+  things done to a world once (an orb smashed, the party of doom). They are all of that
+  kind that the game writes into a world's file. Of the mod's 12: Legends, the Megashark
+  and the Abomanation beaten, the Shimmer, Grace unsealed, the Guide's word on Legends,
+  Mors's two lines said, and his errand asked, taken, dropped and returned. Five counts,
+  which only ever go up: deaths, deaths in a place, and the stages of Mors's, Pugream's
+  and the Dame's stories. And two lists: whose name the player has, and what has been
+  asked.
+- *Into a place only*: **hard mode** and which evil the world has (they are the world's
+  own doing: hard mode is the world changed, not a flag set, and nothing of the game's can
+  begin it in a place); the offerings on the Wasted Mile and the Guide's first words being
+  owed (changed nowhere but on the world's own ground).
+- *Into a place*, they go in memory with whoever goes: taken as the world is left, and
+  put in place of whatever the place's own file said once it has loaded.
+- *Back*, they go by a file: whenever a place is saved its flags are written beside it
+  (`Worlds/PisAndDag_Subworlds/[the world's id]/Flags.dat`, about a kilobyte), and
+  whenever the world is loaded it takes them up. So it is the same through the door, after
+  Save and Exit from inside a place, and after a crash there: what the place had when it
+  was last saved, the world has. Each writing has a mark of its own and the world keeps the
+  mark of the last one it took, in its own file: the same writing is not taken twice, and
+  one the world took and was then not saved with is taken again.
+- *What comes back only ever adds.* A flag set there is set here; a count that went up
+  there has gone up here; a name learnt there is known here. Nothing is taken off a world
+  by a place. This is so that nothing that goes wrong with that file can cost a world what
+  it has done; it also means that to put a flag out by hand it has to be done in the
+  world. And a place writes nothing for its world until it has been given its world's
+  flags: its file as it is first made has every flag out.
+- Flight had a carrying of its own before. It reads the Empress's flag again, and nothing
+  else.
+
+**What the stories do with it.** With the world's flags in a place, three things that are
+bound to the world's own ground would have gone looking for it there. Each now stands
+still in a place: Mors (`MorsPresence.PostUpdateNPCs`), Pugream
+(`PugreamPresence.PostUpdateNPCs`) and the Guide's first words
+(`GuideIntro.PostUpdateWorld`). The Dame's road already asks for a Grand world. Mors's was
+not a nicety: section 7. And the sum that finds his monument says nowhere in a place
+(`MorsPresence.MonumentSpot`), so that `/mors` typed there prints where his story stands
+and does not end in its own usage line.
+
+**Deaths** (`GraveyardPass.cs`: `GraveyardZone.Elsewhere`; `GraveyardBurial.cs`). A death
+in a place is one of the world's deaths now, since the count is one of the flags: the line
+after the world's first death comes there, and Mors is at the graveyard after. It leaves no
+stone, so it is also counted apart, and **the graveyard's one burial goes to the first
+death that leaves a stone**: a first death in the hall does not use it up.
+
+### 4. The numbers
+
+| | before (§16.44) | now |
+|---|---|---|
+| the sword on his knee | 32 degrees below level, drawn behind him | upright, its handle at his chest, drawn against him |
+| of its blade in the ground | a little over a quarter | 52 of 72 px |
+| out of the ground | loose at tick 12, level before him at 16 | set 10, heaved to 26 (9 px), torn out by 34 |
+| up at the sky | ticks 36 to 54 | 46 to 64 |
+| the stone on the blade | 78 to 90 | 88 to 100 |
+| the whole of it | 150 ticks | 160 |
+
+Mine, all of them but that it is upright, deep, and held by the handle in both hands.
+
+### 5. What the 1.4.4 assembly says
+
+- `Player.DropTombstone(long, NetworkText, int)` returns at once on a client, is called
+  from `Player.KillMe` and nowhere else, and throws the stone as a projectile whose owner
+  is `Main.myPlayer` and whose first ai slot is the dead player's number.
+  `Netplay.InitializeServer` sets `Main.myPlayer` to 255. tModLoader has a hook on it
+  (`On_Player.DropTombstone`).
+- `WorldFile.SaveWorldHeader` was read whole for what a world's file keeps: the list in
+  section 3 is every yes or no in it that is about what the world has done, with
+  `DD2Event.Save`'s three. Left out of the same file: the eight secret seeds, the clock,
+  the moon, rain, sandstorm, party and lantern night, invasions under way, the pillars
+  standing, what today is forced to be, ore tiers, backgrounds, the angler's day, and the
+  kill counts.
+- `WorldGen.clearWorld`, which the making of a place begins with, puts out hard mode, every
+  one of those flags (the Army's three through `DD2Event.ResetProgressEntirely`), **and
+  all eight secret seeds**; not which evil the world has.
+- `WorldFile.LoadWorld`: the world cleared; the file's header and tiles; then
+  `SystemLoader.OnWorldLoad`, then `WorldIO.Load` (every system's `LoadWorldData`), then
+  `SystemLoader.PostWorldLoad`, and only if the load did not fail. The flags are given and
+  taken up in that last one.
+- A yes or no goes into a tag through a serializer tModLoader registers as it loads its
+  own content (`TagSerializer.AddSerializer`): there in the game, and not in a rig that
+  has only the assembly (section 7).
+- `MorsMonumentPass.CenterX` is clamped between 326 and the world's width less 326, and
+  `Math.Clamp` throws when the first is the greater: in any world under 652 tiles wide.
+- A command of a mod's that throws is caught by tModLoader and answered with the command's
+  usage line in red (`CommandLoader.HandleCommand`): nothing in client.log.
+- Boss Checklist 2.2.4, which the device has on (its assembly, taken out of its mod file
+  and read; nothing of it is used): an entry counts as beaten when its own delegate says
+  so, and for the game's bosses that delegate reads the game's flag each time it is asked
+  (`NPC.downedSlimeKing` and the rest), with its "automatic checklist" setting on; or when
+  it has been marked by hand, which is a list of its own, kept per file, and not carried.
+
+### 6. Verified
+
+Compiled against the real assemblies: **0 errors, the 10 warnings there have always
+been.** Then, on that build, one run after another:
+
+- **The whole rig of §16.35 to §16.44, 489 checks, all passing** (486 before: that a yes
+  or no can be written into a tag there as in the game; that the making of a place leaves
+  nothing for its world; that the hall leaves its flags as it is saved and the world takes
+  them up).
+- **The flags and the graves, 47 checks of their own** (new: `PAD_FLAGS=1`), with the
+  world and the hall the game's own files, saved and loaded by the game's own code, and
+  the nine systems of the mod that keep a flag registered with the game as it registers
+  them. A world in hard mode with ten of the game's flags and five of the mod's set, three
+  deaths, its stories under way and a name known: in the hall, flag for flag the same,
+  none it did not have, and none of its seed or its ground. Mors's own sum for his
+  monument, asked there: nowhere; and the line `/mors` prints of him whole ("stage 1,
+  hardmode, owed monument, spot not found, graveyard none, deaths 3"). 120 turns of
+  Mors's, Pugream's, the Guide's and the Dame's own watches there with a player walking
+  by: nobody put down, no scene begun, no story moved on, and nobody taken away (one of
+  the kind their watches let go, stood 76 tiles off out of the player's sight, still
+  standing). The game's own `Player.DropTombstone` asked there twice (once with the rules
+  lifted, for a rich death's golden stone), and the game's own `Player.KillMe` run whole
+  on a player there: no stone, the death counted with the world's and apart. Nine things
+  then done in the hall and nine a place must not be able to do to its world tried by
+  hand; the hall saved; the world loaded: the first nine there, none of the second. Loaded
+  again unsaved: taken again. Saved, with a flag put out by hand, and loaded: not taken
+  again. A hall come into with nothing carried: writes nothing. That file with every flag
+  out and every count at nothing, then unreadable, then gone: the world as it was each
+  time. In the world, a death leaves its stone; a world whose only death was in a place
+  has its next one buried in the graveyard's open grave, 280 tiles from where they fell,
+  and the one after falls where they fell; and a first death whose stone is thrown as a
+  server throws it is buried all the same.
+- **Each of seven things put back as it was, one at a time, to see that this would have
+  caught it**: his monument's sum without its check (it throws: two checks fail); Mors's
+  watch without its check (the one standing is taken away); Pugream's without (the same);
+  the Guide's without (his first words begin); the grave's detour off (three checks fail);
+  the burial by all deaths (not buried); the dead read from the stone's owner (not buried
+  as a server throws it). Then the mod built again as it is, and everything above run on
+  that build.
+- **Foigh's rig, 195 checks of his own** (185 before), all passing: the kneel (upright to
+  2 degrees, its point straight under its grip and still to 0.01 px, 52.1 of 72 px under
+  the ground, the handle 35.9 px up, the other hand on its line to under 0.01 px and
+  between the grip and the guard, his head over it until he looks up); the heave (nothing
+  at tick 10, then up its own line to within 0.001 px, never back, 9 px by tick 26; both
+  hands on the handle; his hips from 9.7 to 13.2 px); the tear (the blade's way into the
+  ground running on from 18.9 to 85.2 px, never back; the point out 97.6 px ahead at tick
+  34; the other hand within 2.3 px of the handle to the end); the floor (each of the six
+  tiles over its way heaved once, in turn, none before it gives; 23 sparks; dust at both
+  ends; the screen shaken at both for a player 70 tiles off); drawn behind the tiles until
+  tick 34 and never under the ground after; and everything from the sky on as in §16.44,
+  ten ticks later.
+- **Six whole fights of four minutes**, the last in his second phase after the passage:
+  nothing thrown, every move gone through.
+- The rigs of §16.41 and §16.42, and a player's weight, on the same build: 91, 113 and 16
+  checks of their own, all passing (196, 218 and 121 with what every run begins with).
+- **Seen**: the passage written out by the rig tick by tick as his own drawing asks for it
+  (732 frames) and drawn with his own pictures, the dust and the heaved tiles with them;
+  looked at as sheets and close up: the kneel through each spit and the look up, the
+  setting, the heave, the tear with the floor coming up along it, the sky, and the rest of
+  it to the stance.
+
+**Read through by me, not by another.**
+
+**Not seen in the game: any of this.** Not the kneel on him, not the sword coming out, not
+a tile of the hall's floor heaved (the same thing is drawn under his other blows, which
+have been seen). Not heard: the sounds. No death in a place, and no door gone through with
+a flag set, on the device. Not tried with anyone else in the world: the burial's reading of
+who died is from the assembly and the rig.
+
+### 7. Found on the way, and put right before delivery
+
+- **Mors would have thrown in the hall.** In a hard mode world where his story is at its
+  second place, the flags alone say he belongs at his monument, and the sum that finds it
+  cannot be worked in a world under 652 tiles wide: it throws. Twice a second, for as long
+  as the player was in the hall. He is not looked for in a place.
+- **`/mors` typed in the hall would have ended in "Usage: /mors [again | 1]"**, in the
+  same world: it prints where his monument is, by the same sum, and tModLoader answers a
+  command that throws with its usage. Found on the last reading before delivery (the
+  check had been put on his watch alone). The sum itself says nowhere in a place now.
+- **A first death in a place would have used up the graveyard's burial**: the burial goes
+  to the world's first death, and the death in the hall would have been that, with no
+  stone to bury. Counted apart.
+- **By the assembly, on a server nobody would ever have been buried there** (older than
+  this request: the file was last written on the 14th of September): the burial looked for
+  the dead in the stone's owner, who on a server is the server's own player and is never
+  dead. It reads who died from the stone, where the game puts it.
+- **The passage's one shake never reached the player it was for** (§16.44's, and mine):
+  the fight's shake reaches 1100 px and they have just been put down 1120 px off. Whoever
+  has the camera on him gets it.
+- **The first way I had the sword come up** asked the arm to keep the hand on the sword's
+  line and let the height fall out of it; with his back as it is at the start of it the
+  line is out of the arm's reach. Thrown out before it was built: the point is moved up
+  the line and the arm follows, which is what keeps it still on his knee as well.
+- **The tear and the rise did not meet**: the blade came out of the ground at 28 degrees a
+  tick and went on up at 8. Eased so that they meet at about 20.
+- **The flags' file was first going to be written at every saving of a place, the making
+  of it included**, when every flag is out; and the world was going to take it up whole. A
+  game that ended between the making and the next saving would have told the world it had
+  done nothing. Not written until the place has been given its world's flags, and what
+  comes back only adds.
+- **Given once.** A place loaded again from inside (the game's own "load backup") would
+  have been given the world's flags as they were at the door a second time, over what had
+  been done since. They are given once, and after that the place's own file has them.
+- **The rig's own**: a yes or no could not be written into a tag in it (tModLoader's own
+  serializers are registered as it loads, which the rig does not do: registered by hand
+  now); its new part first saved the hall into the world's file and then failed to find
+  the world; and Foigh's part, run alone, found the world in Legends, because the world now
+  takes that back from its hall.
+
+### 8. Added without being asked
+
+- **How the sword comes out**, and that the passage is ten ticks longer for it.
+- The floor heaved along its way, the sparks, the dust, the two shakes.
+- **That what comes back from a place only adds to the world**, and the file it comes back
+  by.
+- Which things are taken into a place and not brought back.
+- `GraveyardZone.Elsewhere` and the burial going to the first death that leaves a stone.
+- The burial reading who died from the stone.
+- Mors, Pugream and the Guide's first words standing still in a place, and his monument's
+  sum saying nowhere there.
+- `FoighRig.Pose.UnderHead`, `FoighTrack.BothHands`, a track that begins at a tick of its
+  own.
+
+### 9. Still as it was, or left
+
+- **A place is never of its world's secret seed.** The game puts all eight out when it
+  clears a world to make a place in. So in a For the Worthy world the hall is not, and
+  whatever is fought there is as it would be without it. Not carried with the flags: each
+  changes the game in a great many places (For the Worthy is named in 81 of its methods,
+  the upside down one in 134), in a place nothing of the kind was laid out for, and none of
+  it can be looked at from here. Say if a place should have its world's seed.
+- **Not carried**: the bestiary, the kill counts (banners), Journey's powers that are a
+  world's, and other mods' flags.
+- **Hard mode begun in a place** (by a cheat: nothing of the game's does it) is not the
+  world's.
+- **A flag put out by hand in a place** is back the next time the place is gone to; put
+  out in the world, it stays out.
+- **A Mors or a Pugream stood in a place by his test command** (`/mors`, `/pugream`) stays
+  until the place is left (neither is saved with a world): their watches, which take away
+  one who is owed nowhere once nobody is looking, do nothing in a place.
+- **A game left from inside a place** still comes back in the world at its spawn, and the
+  world's clock still does not move while its player is in a place.
+- **His second phase has no moves of its own**; the third and the ending; what brings him
+  to the hall; the offers of §16.44 and before: as they were.
+
+---
+
+## 16.46 Later in session 7: Foigh's second phase: two answers in three, a walk from far off, a second or two between attacks up close, and the hand
+
+Asked, in one message, before §16.45 had been built on the device (its log there ends
+half an hour before that delivery):
+
+> for 2nd phase
+> bump every parry and dodge to 2/3
+> when far:
+> walks to you most of the time
+> he jumps up and leaps into the position more often
+> throws daggers more rarely
+>
+> Close move set: wait 1-2 sec in between attacks
+> 1. swings up runs up to player and big swing down, up, kneel down and grab and leap forwardsup(range 10 forward and 5 up blocks for 0.5s); if grab player by the neck: zooms, hold closer to body, sword pierce slowly, and point up diagonal
+> Add other moves but with greater speeds and ranges
+
+Nothing was asked back: it was twenty-five past midnight by the device's clock when it
+came. Every line of it that has more than one reading is in section 2 with the one taken,
+and everything nobody gave a number for is in section 4 as mine.
+
+### 1. The device, read first
+
+- At 16:23 UTC on the 6th, before anything was changed, the mod's folder was listed (its
+  root, `Content` with everything under it: 616 entries, and `Localization`). It was as
+  §16.45's delivery had left it at 08:28, file for file, by name, size and time: nothing of
+  the user's had changed, and that delivery had left every source file there the same as
+  the copy the work is done on, by bytes.
+- It was listed again at 17:44 UTC, before the delivery: the same 616 entries, each with
+  the size and the time it had at 16:23; nothing in the root or in `Localization` written
+  since 08:28. The ten files this delivery writes over were staged and compared by bytes
+  with the copies the changes had been made on: the same, every one.
+- `client.log` there was last written at 07:58 UTC (15:58 by the device's clock, which is
+  eight hours ahead), half an hour before §16.45 was delivered, and not since: neither
+  §16.45 nor any of this has been built on the device yet.
+
+### 2. Readings
+
+1. *"for 2nd phase"*: all of it is his second phase's. His first is as it was, to the
+   tick and to the roll (section 6).
+2. *"bump every parry and dodge to 2/3"*: the three chances of what he does about what is
+   sent at him while he walks. A swing of theirs met (it was 3 in 5), a hard shot struck
+   out of the air (2 in 5), anything else stepped out of the way of (3 in 5): each is two
+   times in three. Of the shots he strikes, half still go back: that is not a chance of
+   parrying or of dodging. Still only while he walks; what a minion does still lands.
+3. *"when far"*: where the sword does not reach them and they are not over his head (the
+   "anywhere else" row of his picks). Over his head he cannot walk to them: there only the
+   knife is made rarer.
+4. *"walks to you most of the time"*: most of what he picks from far off is to go on
+   walking at them (6 parts in 11; 6 in 8 where the leap does not reach), for 40 to 70
+   ticks, and then he thinks again.
+5. *"he jumps up and leaps into the position more often"*: his second move, the leap onto
+   them. 3 parts in 11 where it was 2 in 10, and tried from 40 tiles off where it was 30.
+6. *"throws daggers more rarely"*: 0.8 parts in 11 where it was 5.5 in 10; over his head
+   1.5 in 7 where it was 4 in 8.5.
+7. *"Close move set: wait 1-2 sec in between attacks"*: after a move he picked with them
+   in the sword's reach, 60 to 120 ticks of walking before his next. Between moves, not
+   between the blows inside one.
+8. *"1. swings up runs up to player and big swing down, up, kneel down and grab and leap
+   forwardsup"*: one move. The sword swung up over his head; a run at them with it up; a
+   blow down into the ground and a cut up; down on a knee; and a leap forward and up with
+   the bottom hand out.
+9. *"(range 10 forward and 5 up blocks for 0.5s)"*: the leap at its furthest. Ten tiles
+   along the ground and five up at the top of it, half a second from ground to ground. It
+   is **aimed**: at a player nearer than that it is the same leap smaller, so that the hand
+   comes down where they are (a leap of one size would go over the head of anyone standing
+   close). The other reading, a straight line to a point ten tiles on and five up, reached
+   in half a second and fallen from, was not built.
+10. *"if grab player by the neck"*: if the hand comes on them anywhere on the way. They
+    hang from it by the throat.
+11. *"zooms"*: the camera leans in on the two of them for as long as he has them.
+12. *"hold closer to body"*: he comes down with them at arm's length and pulls them in
+    against him.
+13. *"sword pierce slowly"*: he brings the sword over his shoulder to point at them and
+    pushes it through them over a second. One blow in it, the sword's, as its point goes
+    in.
+14. *"and point up diagonal"*: with them on it he raises it until it points up and ahead
+    of him, about half way between level and straight up, and holds it there.
+15. *"Add other moves but with greater speeds and ranges"*: the sword's four moves of his
+    first phase are his second's too, quicker and reaching further. No move was made up
+    for it but the one described.
+
+### 3. What was built
+
+**`Foigh.React.cs`**. One sum, `Answers`, in place of the four rolls: so many times in
+five as before in his first phase, two times in three in his second, whatever was sent.
+
+**`Foigh.Fight.cs`**, his picks (`Choose`). In his second phase, with them in reach (now
+200 px, as his moves reach further; no more than 84 px over him or 70 under, as before):
+the hand's move 3.5, the first 2, the third 2, the leap 1.5, the fourth 1.5. Over his
+head: knives 1.5, the fourth move 2.5, the leap 3. Anywhere else: walk on 6, the leap 3
+(within 40 tiles), the step behind them 1.2, a knife 0.8. Walking on is not a move: he
+stays as he is for 40 to 70 ticks and picks again, and what he did last is still what he
+did last. The move he did last is a quarter as likely, as before.
+
+**The wait** (`Rest`). A move picked from up close is marked as that when it is picked
+(and so is the first or third move he steps into out of the way of a spell); when it ends,
+he has 60 to 120 ticks to his next in place of what that move gave him before. Cut short
+by a parry, he has what a parry gives (18 to 30). A swing of theirs that he meets during
+that second or two does not cut it short (in any other wait it still brings his next move
+on within 26 ticks, as it always has): section 8.
+
+**Quicker and further** (`Tempo`, `Reach`). The clock of a move is a number sent with him
+(`NPC.ai[1]`); it went on by one each tick. In his second phase, in the sword's four moves
+on his feet (the first; the leap's crouch, its landing, and the sword torn out of the
+ground; the third, its turn and its knife; the fourth's crouch, his touching down, his
+taking the sword, twice round and its end), it goes on by a tick and a quarter. Every
+pose, cut, sound and step of those moves is read off that clock, so all of it is a quarter
+faster and nothing else about it changes: the blade that is drawn is still the blade that
+hits, worked out now from where the clock stood a tick ago to where it stands. Not
+quickened: anything in the air, which goes by his weight; the two seconds the sword is in
+the ground, which were asked for as two seconds; his run after the thrown sword, which is
+faster in its own way; the knives; the step behind them; the one who drank; the hand's
+own move. And each step of those four moves carries him a third further. A step that
+asks for more in a tick than the fastest he goes (15.5 px, so that tiles can always stop
+him) has what it could not be given carried into the ticks after, in his second phase
+only: section 7.
+
+With that: the leap back at the end of the first move is further and lower (7.6 px a tick
+back and 5.7 up, where it was 5.6 and 6.9), so that he is on the ground again before the
+quicker move is over; he runs after the thrown sword at 10.6 px a tick where it was 8.6.
+
+**The hand** (eight new moves in `Foigh.cs`; their ticks and poses in `FoighMoves.cs`):
+
+| | what | ticks |
+|---|---|---|
+| `Raise` | the sword swung up from where it drags to over his head, his eye lit | 16 |
+| `Rush` | at them with it up, to 9.5 px a tick, until they are within 84 px, or a wall stops him, or a second has gone. With them that near already he does not run | to 60 |
+| `Hew` | a step and the blow down into the ground ahead of him (the floor heaved, as under his third move's blow), a step and the cut up through whatever is there, the sword going on over his shoulder. The sword's damage each; a cut throws them about seven tiles. Both can be parried | 42 |
+| `Crouch` | down on a knee, the sword let down behind him, the bottom hand drawn back by his hip. He looks for them once as he goes down and does not turn again. From here he wears the yellow star | 18 |
+| `Spring` | off the knee at where they will be, the hand thrown out ahead of him. Whoever of his it comes on is in it | to 30 |
+| `Caught` | the rest of the way down with them, by his own weight; they are pulled in to his hand over five ticks from where it closed on them | until he lands |
+| `Pierce` | down. He turns his sword side away, brings the sword over his shoulder to point at them and pulls them in (18 ticks; the sword is seen short, pointing away from the eye); its point goes in (22: the one blow, through armour, whatever had just hit them); and it is pushed on through them, forward and a little up, for a second, until its guard is against them | 78 |
+| `Hoist` | raised until it points up and ahead of him, them on it by its guard and off their feet, his other hand letting go; held there, their weight on his arm | 46 |
+| `Fling` | off it as the one who drank is: back over his shoulder, over and down ahead of him. They are let go at tick 10, thrown as a ragdoll, and lie a second where they land | 40 |
+| `Miss` | the hand closed on nothing: down on a knee where he lands, a look at it, and up. Open for it | 40 |
+
+The camera is asked in (`Cinematic.Lean`, 1.4) on the machine of whoever is in his hand,
+every tick from the catch to the end of `Hoist`, and goes back out as he swings to throw
+them.
+
+**The leap** (`Leap`, `Spring`). Its weight is its own (0.711 px a tick, where his is
+0.55), so that at its furthest it is what was asked: 160 px forward and 80 up in 30 ticks.
+It is sent at where they will be when it comes down (seven tenths of where they are going
+allowed for), his feet 20 px short of that, since it is the hand that is to get there;
+half as high as it is long, never under 30 px, and over one who is over him by 20 px if
+that is within its five tiles; never shorter than 40 px. The hand is on them when his fist
+is within 26 px of their box, the same reach as the hand that takes the one who drank.
+
+**`Foigh.Draw.cs`**: the poses the new moves hand on to one another, each built from the
+one he is seen in as it begins; what each looks and sounds like; the blade's trail read
+off the quickened clock. **`Foigh.cs`**: the eight moves, the clock, and the camera asked
+for from the tick's end. **`Foigh.Passage.cs`**: one comment. **The localization**: one
+line, for whoever the slow sword kills.
+
+### 4. The numbers
+
+**Yours**: two times in three for each of the three answers; walking most of the time
+from far off, the leap more often, the knife more rarely; a second to two between attacks
+up close; what is in the hand's move and in what order; ten tiles forward, five up, half a
+second; the camera in, held close, the sword slowly through, and up on the diagonal;
+quicker and further for the rest.
+
+**Mine**, every one of them, in `Foigh.Fight.cs` under "NUMBERS OF HIS SECOND PHASE" and
+beside each movement in `FoighMoves.cs`:
+
+- the weights of section 3; 40 to 70 ticks of walking on;
+- **a quarter faster** (`SecondTempo` 1.25) and **a third further** (`SecondReach` 1.3):
+  "greater" is all that was said;
+- in reach at 200 px (150); the leap tried from 640 px (480); the leap back 7.6 and 5.7;
+  the run after the sword 10.6 and 0.75;
+- the run with the sword up: 9.5 px a tick, gained at 1.2; the blow begun within 84 px;
+  no longer than 60 ticks;
+- every tick of the hand's move (16, the run, 42, 18, the leap, the fall, 78, 46, 40; a
+  miss 40), and that the blow down and the cut up are each the sword's damage and not
+  twice it ("big" was taken for how it looks and what it does to the floor);
+- the leap's aim (0.7 of where they are going, 20 px short, at least 40 px, at least 30
+  px high, 20 px over one who is over him) and the hand's reach (26 px);
+- pulled in over 5 ticks; the camera at 1.4, gained at 7 in a hundred a tick;
+- the sword seen at 42 in a hundred of its length drawn back, pointing 23 degrees up from
+  level as it goes through and 50 degrees up raised; them on it a fifth of the way from
+  its guard to its point;
+- one blow in the piercing, the sword's (150 / 200 / 230 by the world, half as much again
+  in Legends), and its own line for a death by it.
+
+### 5. What the 1.4.4 assembly says
+
+- **`NPC.collideX`** is what the run ends on at a wall. `NPC.UpdateCollision` puts it and
+  `collideY` out, keeps the speed as `oldVelocity`, lets the tiles change the speed
+  (`ApplyTileCollision`), and `Collision_MoveWhileDry` sets `collideX` if the speed along
+  is no longer what it was. So it is set in the tick tiles stopped him and read in his
+  next.
+- Nothing else new is asked of the game. The blow of the piercing is the call the one who
+  drank is struck by (`Player.Hurt` with its own cooldown slot, not to be dodged, all of
+  their defence ignored: §16.43); the camera, the hold on a player and the star are the
+  mod's own.
+- A tick and a quarter is exact in the number the clock is kept in, so a clock stepped by
+  it gathers no error however long the move.
+
+### 6. Verified
+
+Compiled against the real assemblies: **0 errors, the 10 warnings there have always
+been.** Then, on that build, one run after another:
+
+- **Foigh's rig, 259 checks of his own** (195 before), all passing. The 195 are his road,
+  his first phase, the one who drank, the parry, his ends and the passage, and they pass
+  with the numbers they had: **his first phase is as it was**, to the roll.
+- **Its new part, his second phase, 63 checks.**
+  - *What is sent at him*: of 400 bullets 253 struck out of the air and 125 of those sent
+    back; arrows 265 and 130; throwing knives 260 and 116; of 3000 spells 2027 stepped out
+    of the way of (2 in 3 would be 2000; his first phase's 3 in 5, 1800); of 3000 swings
+    of an iron sword 2037 met. A minion's shot lands every time. In the middle of a move
+    of his own every bullet lands.
+  - *What he picks*, 600 times from each of six places: with them 100 px off and 180 px
+    off, the hand 203 and 195, the first move 117 and 116, the third 108 and 111, the leap
+    89 and 92, the fourth 83 and 86, every one of them marked as picked from up close; at
+    300 px, walking on 334, the leap 148, the step behind 71, a knife 47; at 560 px, 317,
+    166, 63, 54; at 700 px, past where he leaps from, walking on 441, behind 93, a knife
+    66; over his head, the leap 261, the fourth move 218, a knife 121. Walking on, he
+    thinks again 40 to 70 ticks later.
+  - *How long he waits*: after 80 moves picked from up close and played to their end
+    against a player who does nothing, 61 to 120 ticks, every one in 60 to 120 (the same
+    in his first phase: 37 to 61, as it was); after 120 picked from far off, never more
+    than 70; a swing of theirs met in the second or two leaves it as it was, 40 times of
+    40, and met in any other wait brings his next move on within 26 ticks, 41 of 41.
+  - *Quicker and further*: the first move 121 ticks where it was 151, its steps 158.6 px
+    (the 122 they are written as and a third more; his first phase's 117.9, as they
+    were), the two blows landing at the same moments of the move as before (40 and 90 of
+    its clock, where they were 40 and 89) for the sharp side's 150; the leap back 192 px
+    where it was 170, 32 px up where it was 47, and down again before the move is over. The third move 112 ticks where it was 139, its
+    step 39 px where it was 30, the blow down for twice the sword and the knife still
+    thrown. The leap: 16 ticks into his knees where it was 19, the air as it was, the two
+    seconds in the ground still 120 ticks, 28 to have the sword out where it was 34; onto a
+    player 600 px off, 225 px up and down 11 px short of their middle. The fourth: 14, 8,
+    7, 29 and 21 ticks where its parts were 17, 10, 8, 36 and 26; after the sword 0.75 px a
+    tick faster each tick where it was 0.6. Behind them and the knives as they were.
+  - *The hand, on a player who stands 150 px off and does nothing*: the sword up 17
+    ticks, the run 12, the blow down and the cut up 42, the knee 18, the leap 21, down
+    with them 7, the sword through 78, raised 46, flung 40. The run reaches 9.5 px a tick
+    and the blow begins 69 px from them. Two blows in all of it, through a defence of 100:
+    the blow down at tick 12 and the sword through them at tick 22 (the cut up finds them
+    still not to be hit). The star on him every tick from the knee to the landing and at
+    no other. From the knee on he does not turn. The camera asked in to 1.4 every tick he
+    has them, the ticks he changes move in too, and not before nor once he swings to throw
+    them. Held 140 ticks with nothing in their hands; as he takes hold of them, never moved
+    more than 9.8 px in a tick. Drawn back, 24 px of the blade are seen; over the next 60
+    ticks it comes out to its 72, never back, its point in them at the blow and still
+    through them at the end, their middle 12 to 18 px ahead of his, its guard 4 px from
+    their middle. Raised: 48 degrees up from level, its point 5.3 tiles over the ground,
+    them on it by its guard and 22 px off their feet. Let go at tick 10 of the swing,
+    thrown at 8.5 px a tick along and 4.5 up as a ragdoll, 24.8 tiles, down 120 ticks in
+    all; and 118 ticks before his next move. With no screen, where only the world is
+    decided, the same move from end to end and nobody in his hand after it.
+  - *The leap*: at a player 600 px off, 160 px forward, 80 px up, 30 ticks off the ground,
+    and nothing in his hand; never rising faster than tiles stop. At a player who stands:
+    from 30 px off (40 px forward, 30 up, 18 ticks) to 200 px (160, 80, 30) it has them,
+    and from 230 on it does not; it has one 60 px over the ground and 100 off, not one 200
+    px up; it has one who walks at him from 260 px. One who runs from the moment he goes
+    down, at 7 px a tick, is 326 px off when he lands; one who only walks away from 150
+    px, at 3, is 77 px off, and clear. With them gone round behind him while he is down he
+    does not turn, leaps the least there is at nothing, and is 40 ticks getting over it.
+  - *Turned aside and cut short*: the blow down met by a parry, he reels 44 ticks, nobody
+    is hurt, and he has 30 ticks to his next and not the longer wait; the hand goes
+    through a parry held up all the way; struck down with the sword through them, they
+    are let go of on their feet and the camera is no longer asked in; the one in his hand
+    dead, nobody is in it.
+  - *In a corner*: from 34 to 330 px off, with the player kept in the corner and with
+    them free to be carried and thrown: never into the wall, the player never left in it,
+    and he had them 91 times.
+- **Six whole fights of four minutes**, the last in his second phase after the passage:
+  nothing thrown, every move gone through, his second phase's eight among them (the hand
+  begun 13 times and closing on them 10); never in a wall or under the floor; in his
+  second phase he walked on 22 times and never went more than 119 ticks without thinking
+  again. The player was hit 70 times for 10,324 in those four minutes, where the five
+  fights of his first phase had 102 to 117 hits for 10,700 to 12,400.
+- **Each of sixteen things put wrong, one at a time, to see that the new part would have
+  caught it**: his first phase's chances used in his second; a wait from 40; a clock
+  stepped by 1.2; nothing carried past his fastest; the leap sent 11 tiles; put in his
+  hand at once; the camera asked for only where a move's looks are run; the wait cut
+  short by a swing met; walking on at 4 parts; no blow as the sword goes in; no star on
+  the way down; a blow down that cannot be parried; raised to 30 degrees; a fifth
+  further for a third; the leap tried from 30 tiles; knives at 4 over his head. Fifteen
+  were caught as the part stood. The one that was not, a fifth further, was let through
+  because the check asked the mod for its own number: the check names 1.3 now (and the
+  clock's 1.25), and catches it. Then the mod built again as it is, and everything here
+  run on that build.
+- The whole rig of §16.35 to §16.45, the flags and the graves, a player's weight, and the
+  rigs of §16.41 and §16.42, on the same build: 489, 152, 121, 196 and 218 checks, all
+  passing.
+- **Seen**: the hand's move written out by the rig tick by tick as his own drawing asks
+  for it (378 frames on a player who stands, 217 at one who runs) and drawn with his own
+  pictures, a box for the player: looked at as sheets and close up, every part of it from
+  the sword going up to the throw, and the miss. And the first and third moves as his
+  second phase has them, beside his first phase's.
+
+**Read through by me, not by another**: every changed line against the copies delivered
+last, and the whole of `Foigh.Fight.cs` again.
+
+**Not seen in the game: any of this.** Nothing of his second phase's fight has been on a
+screen, and nothing of it has been heard. Never run at all: the camera coming in on the
+two of them, and the player drawn over him while he has them. Not tried with a second
+machine.
+
+### 7. Found on the way, and put right before delivery
+
+- **Caught, they were put in his hand at once**: 30 px in one tick, from standing on the
+  ground to hanging in the air. They are pulled in to it over five ticks from where the
+  hand closed on them (never more than 9.8 px in a tick now).
+- **The camera started back out for a tick at each change of move.** What a move looks
+  like is not run in the tick he goes from one move to the next, and the camera is in
+  only while it is asked for: at the catch, at the landing and at the raising it would
+  have dipped and come back. It is asked for from the end of his tick, every tick.
+- **"A third further" was 9 in a hundred for the first move** (128 px where his first
+  phase goes 118, the 122 it is written as less what the limit takes). Its thrust is a
+  lunge of 78 px in 8 ticks; a third further and a quarter faster it asks for up to 30 px
+  in one tick, and he never goes faster than 15.5. What a step asks for beyond that is
+  carried into the ticks after: the lunge is 101 px, at his fastest for five ticks, and is
+  over within a tick of the thrust being out. All three steps: 158.6 px, a third more than
+  written. His first phase is left as it was (it loses 4 px of the same lunge to the same
+  limit, and always has).
+- **A swing of theirs that he met would have cut the second or two to 26 ticks**: a rule
+  of his first phase's (thrown back, he comes on after them sooner). Two times in three
+  now, that would have been most of the times anyone swung at him while he waited. The
+  wait that was asked for is waited out.
+- **The comment at the head of `Foigh.cs` said all of his first phase's moves but the last
+  were his second's too.** All of them are, the one who drank with them.
+- **The rig's own.** Four of its new checks expected the wrong thing and were corrected,
+  not the mod: how fast he gets after the thrown sword over a run too short to reach his
+  fastest; where the run with the sword up ends (within 84 px as he decides, 69 px by the
+  time that tick has moved him); the leap's sums, which were worked from where he was put
+  down and not from where he had got to; and a tuple that could not be named `Rest`. And
+  the old check that he is never seen walking 400 ticks at a stretch, which his second
+  phase outgrows on purpose (he walks on, and on again): in his second phase what is
+  checked is that he never walks more than two seconds without thinking again.
+
+### 8. Added without being asked
+
+- **Flung off the sword at the end**, as the one who drank is. Nothing was said of what
+  comes after "point up diagonal".
+- The blow down and the cut up **can be parried**; the hand cannot (the star), nor can it
+  be dodged by the game's own dodges. It can be got out of the way of: section 6.
+- He **does not turn once he is down on the knee**. One who has got behind him by then is
+  leaped away from.
+- A hand that closes on nothing costs him 40 ticks on a knee.
+- **A step's distance carried past his fastest**, in his second phase (section 7).
+- **The wait not cut short by a swing he meets** (section 7).
+- A step out of the way of a spell and into the sword counts as a move from up close: he
+  waits the second or two after it.
+- In reach at 200 px, the leap tried from 40 tiles, the leap back lower and further, the
+  run after the sword faster: so that "greater ranges" holds for what he picks from and
+  not only for the steps.
+- The step behind them kept among what he does from far off (1.2 in 11).
+- The line for a death on the slow sword: "{0} was held close while the sword took its
+  time."
+
+### 9. Still as it was, or left
+
+- **Not seen in the game: any of it**, and the sounds not heard (section 6).
+- **Nothing at 30 in a hundred of his life**; the ending; what he leaves; what brings him
+  to the hall; his first words of the fight: as they were.
+- **From 70 tiles off, after the passage, he mostly walks**: 1.15 px a tick, so about
+  seven seconds before the leap reaches them if they stand, with a step behind them or a
+  knife about one time in four that he thinks. That is what was asked for from far off; it
+  is also slower to begin than his first phase was. One number each (`WalkSpeed`, the
+  weights).
+- **The leap with the hand out is outrun by a run**: ten tiles in half a second is 5.3 px
+  a tick, and a player in any boots runs faster than that. Against the rig's player it has
+  one who stands within 12 tiles of him and one who comes at him; one who only walks away
+  from 150 px, without boots, gets clear narrowly (77 px from him as he lands). Those are
+  the numbers asked for; the star is on him for 18 ticks before he leaves the ground.
+- **A ceiling under five tiles** would end the leap where he touched it: he takes "not
+  moving up or down" for the ground, as in his other leaps. The hall is 48 high.
+- **The player is drawn over him** while he holds them, as the game draws any player over
+  any enemy: against him they hide a good part of him, and the sword is seen going in on
+  one side of them and coming out on the other.
+- **Two machines**: written as the rest of him is (the server says who is in the hand;
+  their own machine carries them, takes the blow and is shown the camera), and as untried.
+- The offers of §16.44 and §16.45: as they were.
+
+---
+
+## 16.47 Later in session 7: Foigh's second phase: four more moves of its own (the late cut, the mill, the cut up, and in the air)
+
+Asked, in three messages: the first two came while §16.46 was being delivered, the third
+after it.
+
+> Give like 3 other moves that is very gael, guts, margit, heolstor the nightlord vibe like attacks.
+
+> make it beautiful and the choice of creativity is yours, also make him also be able to attack flying, like he flash step and no gravity to strike you falling down or some bs
+
+> for phase 2 tho, to make it less repetitive of phase 1
+
+Nothing was asked back: the choice was given. What was going to be built was said in the
+chat before any of it was written (three moves and the one in the air, his second phase
+only, his first left as it is), and that is what was built, with the changes of section 7.
+Every reading taken is in section 2, and every number in it is mine: section 4.
+
+### 1. The device, read first
+
+- This began where §16.46's delivery ended: at 17:50 UTC on the 6th the ten files it wrote
+  were read back from the device and were the same, by bytes, as the copies the work is done
+  on.
+- At 18:56 UTC, while this was being written, the mod's folder was listed: its root,
+  `Content` with everything under it (616 entries, read whole) and `Localization`. It was as
+  that delivery had left it, file for file, by name, size and time. Nothing of the user's
+  had changed.
+- It was listed again at 20:22 and at 21:04 UTC, the second time just before the delivery:
+  the same 616 entries each time, each with the size and the time it had at 18:56; nothing
+  in the root or in `Localization` written since 17:50. At 21:04 the nine files this
+  delivery writes over were staged and compared by bytes with the copies the changes had
+  been made on: the same, every one. So were the five of his files it does not write.
+- `client.log` there was last written at 07:58 UTC (15:58 by the device's clock, which is
+  eight hours ahead), before §16.45 was delivered, and not since: **neither §16.45, §16.46
+  nor any of this has been built on the device yet.**
+
+### 2. Readings
+
+1. *"Give like 3 other moves"*: three more moves, built, not a list to choose from. They
+   were named in the chat first; nobody was there to pick, and the next message gave the
+   choice away.
+2. *"very gael, guts, margit, heolstor the nightlord vibe"*: taken for what those fights
+   have in common that his did not have yet. A cut that lands a beat after the swing looks
+   over (the late cut). A big sword kept turning while the man behind it walks you down (the
+   mill). The blade dragged along the ground and torn up through it, with a second blow owed
+   to whoever it lifts (the cut up). And being found in the air (in the air). Nothing of any
+   of them was copied: no move, name, number or picture of theirs.
+3. *"make it beautiful and the choice of creativity is yours"*: what each looks like is
+   mine. What that came to is in section 3 under each move; none of it has been on a screen
+   (section 8).
+4. *"also make him also be able to attack flying"*: a fourth thing, on top of the three. He
+   goes up after a player who is off the ground, or over his head.
+5. *"like he flash step and no gravity to strike you falling down"*: a flash step to beside
+   them; he hangs there with no weight while the sword goes up; and the blow sends them
+   down. Read as: it is the player who is struck down out of the air. (He falls after it
+   too.)
+6. *"or some bs"*: taken as leave for it not to be fair in the ordinary way. It wears the
+   yellow star (section 3, the star), and after his own cut up it lands whatever grace that
+   cut left them.
+7. *"for phase 2 tho"*: all four are his second phase's. **His first phase is as it was**,
+   to the roll (section 6).
+8. *"to make it less repetitive of phase 1"*: two things. The four are not his first phase's
+   moves done again. And what he picks up close changed so that his first phase's four are
+   the smaller part of it: they were 7 parts in 10.5 of what he did with them in reach, and
+   are 4 in 13.5.
+
+### 3. What was built
+
+Eleven new moves in `Foigh.cs` (`Poise`, `Wake`; `Level`, `Mill`, `MillEnd`; `Scrape`,
+`Upcut`; `Hang`, `Smite`, `Drop`, `Alight`), their ticks and poses in `FoighMoves.cs`, what
+they do in `Foigh.Fight.cs`, what they look and sound like in `Foigh.Draw.cs`. The step
+along the late cut's line and the step up into the air are his flash step, as it was. All
+damage in them is the sword's, once a blow (150 / 200 / 230 by the world in his second
+phase, half as much again in Legends), through armour.
+
+**The late cut.**
+
+| | what | ticks |
+|---|---|---|
+| `Poise` | sunk low, the sword drawn back level by his hip, looking at them. A light runs up the blade (tick 6), his eye lights, and a pale line lies from him through them to where he will stand: faint, half its strength by tick 16. He goes on facing them until he goes | 26 |
+| the step | gone along the line (three ticks gathered, four going, pale ones of him left along it), to 96 px past their middle, and never more than 720 px (45 tiles) from where he stood | 7 |
+| `Wake` | past them with his back to them, deep on his front leg, the sword out ahead of him and still. The line brightens, a brighter place running along it from where he was to where he is. At tick 20 **the whole line opens**: one cut of light along all of it, sparks off it, and whoever is on it is cut, and thrown the way he went. Then a flick of the blade where it is (27), he comes up looking back over his shoulder (31 to 44), and the sword goes over him and down behind (66) | 66 |
+
+The line is the way he went and 24 px more, past where he stands (where his sword is). It
+lies 24 px over the ground and is 18 px thick, so it has anyone whose feet are under 33 px
+off the ground as it opens. With less than 48 px of ground to stand on past where he is,
+there is no line: he lets it go. It can be turned aside, at the moment it opens and
+whichever way they face (it lies through them); it is the moment that has to be right.
+
+**The mill.**
+
+| | what | ticks |
+|---|---|---|
+| `Level` | the sword brought up over his head and down until it is level and pointing at them at arm's length (there by 14). He looks for them once more as it ends | 22 |
+| `Mill` | he comes on turning, the sword out, three times round (16 ticks a turn), up to 7.2 px a tick: 328 px (20.5 tiles) in the three. The sword cuts each time it comes round to behind him and each time it comes round to ahead: six cuts, each its own. He goes the way he set off and does not turn to one who gets past him | 48 |
+| `MillEnd` | out of the last turn, up off the ground (22 px) with the sword over his head in both hands, and down with it as he lands (tick 19): the floor heaved, as under his third move's blow, and 66 px further on. Then the sword up over him and down behind | 50 |
+
+All of it can be turned aside.
+
+**The cut up.**
+
+| | what | ticks |
+|---|---|---|
+| `Scrape` | at them at a run, bent into it, the sword dragged on the ground behind him in sparks: up to 9 px a tick, for 10 ticks at the least. Nearly on them (40 px) he stops running; the cut is begun with them within 72 px, or at a wall, or after a second. **The yellow star from here** | 10 to 60 |
+| `Upcut` | he gathers low over the hilt while the blade sinks into the ground behind him (to 7); tears it forward under himself and up out of the ground ahead of him (7 to 13, a step of 30 px; the floor's tiles heave over it one after another and break where the point comes out, 99 px ahead of him, at 12); and it goes on over his shoulder (20). **Whoever it lands on is thrown into the air**: 12.5 px a tick up and 1.5 on, as a ragdoll, about 12 tiles | 46, or 20 |
+| up after them | if somebody was thrown up, at tick 20 he is gone: a flash step to beside where they **will** be as his sword comes down, which is the top of it. He is there before they are, the sword going up over his head | 7, then 6 |
+| the blow | as below (in the air). **It lands on them whatever grace the cut left them**, and sends them down | 17 |
+
+With nobody thrown up the sword comes down behind him (46 ticks in all), and the star is
+gone a tick after it is over his shoulder.
+
+**In the air.**
+
+| | what | ticks |
+|---|---|---|
+| the step up | a flash step to beside where they will be as his sword comes down: 46 px from their middle on the side of them he is on (the other, with no room there), his feet 6 px under theirs (level with them, or 10 px over, with no room for that: they are stood on something; or 16 px under: their head is against a ceiling, and he is the taller by 8 px). **The yellow star from the moment he goes** | 7 |
+| `Hang` | there with no weight, his knees coming up, the sword going up over his head in both hands, a light running up it. He keeps to the place beside where they will be, at up to 9 px a tick, for the first half of it, and is still from tick 8 (after his own cut up: until the last two ticks) | 14 (6 after his own cut up) |
+| `Smite` | a last reach back (3), then the sword down through them (3 to 8) and on round under him and up behind, all the way round. No weight until it has come down. **Whoever it lands on is sent down**: 15 px a tick, as a ragdoll, and they lie 50 ticks where they stop | 17 |
+| `Drop`, `Alight` | he falls after it, the sword trailing up behind him, and lands into his knees | the fall, then 24 |
+
+That blow goes all the way round under him: its point passes 71 px under where his feet are.
+So with less than 76 px of air under him as it is to begin, it is **the mill's last blow**
+in its place, begun from where the sword is up: he leaves where he hangs at the speed that
+has him on the ground as the sword is, whatever height that is from, and it ends in the
+floor. It wears the star and sends them down as the other does.
+
+Where they will be is the game's own sum for a player (their weight onto their speed each
+tick, whichever way down is for them; no faster that way than they may fall, and a third of
+that for one who falls slowly; stopped by whatever tiles are in the way). So one who jumped
+is met **where they come down**, and one who is falling is waited for under where they are.
+One with a hook of theirs in something, or on a rope, is taken to stay where they hang. One
+stood on a ledge over his head is gone up to as well, onto the ledge beside them. With no
+room beside them at all he throws a knife.
+
+**The star.** The mod's own rule (PAD_NPC_Plan §2.7: a hit that goes through knockback
+resistance, shields or immunity frames is told, always the same way, "or it does not ship")
+decides this, not me. The cut up throws whoever it lands on whatever shield they have, and
+the blow that follows lands whatever grace they have: both wear the yellow star, from the
+run and from the step up, and so neither can be turned aside (nothing that wears it can).
+They can be got out of the way of: section 6 has what does and what does not. The late cut
+and the mill throw nobody: no star, and both can be turned aside.
+
+**What he picks** (`Choose`), in his second phase. With them in reach:
+
+| | weight | it was |
+|---|---|---|
+| the hand | 3 | 3.5 |
+| the mill | 3 | |
+| the cut up | 2 | |
+| the late cut | 1.5 | |
+| in the air, if they are off the ground | 3 | |
+| the first move, the third | 1.2 each | 2 each |
+| the leap, the fourth | 0.8 each | 1.5 each |
+
+Over his head: in the air 4.5 (within 720 px along and up), the leap 2.5, the fourth move 2,
+a knife 1 (it was the leap 3, the fourth 2.5, a knife 1.5). Anywhere else: walking on 9.5,
+the leap 4.5, the late cut 1.5 (within 39 tiles), the mill 1.2 (within 380 px), in the air
+2.5 if they are off the ground, the step behind 0.8, a knife 0.7 (it was walking on 6, the
+leap 3, behind 1.2, a knife 0.8). The late cut and the mill go along the ground: they are
+only picked at one who is about on it with him (no more than 84 px over him or 70 under, the
+sword's own band). From far off he still walks on a little more than half the time, still
+leaps about one time in four, and a knife is still the rarest thing he does. "Off the
+ground" is nothing solid within 64 px under their feet: a platform does not count as ground,
+so one stood on a platform can be gone up to.
+
+**The rest.** `Foigh.cs`: the eleven moves; one more word a player's machine sends the
+server ("his cut up has thrown me into the air"), which is what sends him up after them; the
+count of how long they are his to strike down; and the parry's own line about him, which
+names the two more that cannot be turned aside ("the cut up out of the ground", said so to
+tell it from the cut up in the hand's move, which can be). `Foigh.Passage.cs`: the light up
+the blade in two more moves, and the floor's heaving given a place to start from other than
+his knee. `Foigh.Draw.cs`, besides the looks: the blade kept out of the floor on the tick he
+lands with the mill's last blow (section 7). The localization: two lines, for whoever the
+late cut kills and whoever is sent down. `FoighRig.cs`, `FoighTrack.cs`, `FoighPlayers.cs`,
+`Foigh.React.cs` and `Foigh.Scene.cs` are not touched. No new picture, no new sound file, no
+shader.
+
+### 4. The numbers
+
+**Yours**: that there are three more and one in the air; that he steps up to them, hangs
+with no weight and strikes them down; that it is his second phase's; that his second phase
+should be less of his first.
+
+**Mine**, every one of them, in `Foigh.Fight.cs` under "NUMBERS OF HIS SECOND PHASE" and
+beside each movement in `FoighMoves.cs`:
+
+- every tick in the tables of section 3;
+- the late cut: 96 px past them, 720 px at the furthest, 24 px more than the way he went, 24
+  px over the ground, 18 px thick, no line under 48 px; the sword's damage, and thrown as
+  far as a cut throws;
+- the mill: three turns of 16 ticks, 7.2 px a tick gained at 1.2, begun within 380 px, off
+  the ground at 5.2 up and 3.2 on; six cuts and the blow, each the sword's damage and not
+  twice it;
+- the cut up: 9 px a tick gained at 1, at least 10 ticks and at most 60, stopped at 40 px,
+  begun at 72 px; thrown up at 12.5 and 1.5; 40 ticks down if nobody comes; theirs to strike
+  down for 90 ticks at the most;
+- in the air: off the ground at 64 px; within 720 px along and up; 46 px to their side and 6
+  px under (level, 10 px over or 16 px under where there is no room); 14 ticks hanging (6
+  after his own cut), 9 px a tick; sent down at 15 and 2; 50 ticks down; 76 px of air for
+  the blow that goes all the way round;
+- **that the cut up and the blow after it are two blows, each the sword's damage**: 300 /
+  400 / 460 by the world for the two, what his third move's blow down does in one. The
+  second cannot be got out of once the first has landed. Say if it should be less;
+- the weights.
+
+### 5. What the 1.4.4 assembly says
+
+- **A player's fall.** `Player.Update` begins by setting `maxFallSpeed` to 10 and `gravity`
+  to `Player.defaultGravity`; later it adds `gravity` to the speed down and holds it to
+  `maxFallSpeed`. Both are public fields, set every tick on every machine for every player,
+  so where a player will be can be worked out where the world is decided. The mod's ragdoll
+  lifts the limit each tick (its own `PostUpdateRunSpeeds`): one he threw up is worked out
+  with none.
+- **One who falls slowly** (a potion, an umbrella). After holding the speed down to
+  `maxFallSpeed`, `Player.Update` holds it to a third of that while `slowFall` is set and
+  they are not holding down (`TryingToHoverDown`), and to a tenth of it once it passes a
+  fifth while they hold up (`TryingToHoverUp`). Neither field is changed by that, so his sum
+  has those lines of its own. The same lines stand there a second time for one whose weight
+  has been turned over (`gravDir` at -1), with the signs the other way; the weight is added
+  as `gravity * gravDir`, and `Player.DryCollision` hands `gravDir` on to
+  `Collision.TileCollision`.
+- **A player going faster than a tile a tick** is moved in steps of a tile at the most, each
+  stopped by the tiles, and keeps the sum of the steps as their speed
+  (`Player.DryCollision`). The rig's player did not do that, and fell no faster than 10
+  whatever threw them: both are as the game's now (section 7).
+- **A hook.** `Player.grapCount` and `grappling[0]` are emptied at the end of every
+  `Player.Update`, and filled again by the hooks' own update, which comes after the
+  enemies': by the time he looks they say nothing. A hook that is in something is a
+  projectile of theirs with `aiStyle` 7 (`ProjAIStyleID.Hook`) and `ai[0]` at 2
+  (`Projectile.AI_007_GrapplingHooks` counts itself to its player only in that state).
+  `Player.pulley` is a rope.
+- **A blow with no knockback** leaves the player's speed alone: `Player.Hurt` writes the
+  knockback onto it only if it is not 0. So a throw asked for after the blow is not written
+  over.
+- **A line against a box** (`Collision.CheckAABBvLineCollision`) has no ends: a box beyond
+  the end of the line is not touched however thick the line is. That is why the late cut's
+  line is 24 px longer than the way he went (section 7).
+- `Collision.TileCollision(position, velocity, width, height, fallThrough, fall2, gravDir)`
+  gives back as much of a speed as tiles allow: it is what stops a player in the game and
+  what stops them in his sum. `Collision.SolidCollision` with three arguments takes no
+  notice of platforms.
+- **An enemy that lands.** `NPC.UpdateCollision` keeps the speed it had (`oldVelocity`),
+  clears `collideX` and `collideY`, lets `Collision.TileCollision` cut the speed to what was
+  left of the way to the tile, and `NPC.Collision_MoveWhileDry` sets `collideY` if the speed
+  down changed. So the tick after he touches a floor his speed down is not yet 0, which is
+  what he takes for standing: one tick late. `collideY` with a fall before it says it a tick
+  sooner (section 7, item 10). And if what stopped him was over him (`Collision.up`), his
+  speed is set to 0.01 down: an enemy does not creep up against a ceiling.
+
+### 6. Verified
+
+Compiled against the real assemblies: **0 errors, the 10 warnings there have always been.**
+Then, on that build, one run after another:
+
+- **Foigh's rig, 348 checks of his own** (259 before), all passing. His road, his first
+  phase, the one who drank, the parry, his ends, the passage and the hand's move print what
+  they printed for §16.46, line for line, but for the parry's own line about him and the
+  rolls of his second phase (what he picks there changed, so the dice fall differently after
+  it). **His first phase is as it was, to the roll**: its five whole fights have the same
+  count of hits and the same damage as before, to the point.
+- **Its new part, 78 checks.**
+  - *The late cut* (19). On a player 150 px off who stands: the crouch, 7 ticks gone, 66
+    past them. He ends 96 px past their middle, on the floor, his back to them. One blow, 20
+    ticks after he has stopped, through a defence of 100. The line is shown from tick 7 of
+    the crouch, up to half its strength; at 0.6 while he goes; from 0.62 to 0.93 while he
+    stands past them; and not once it has opened. Its ends are where he stood and 24 px past
+    where he stands, 24 px over the ground. The light up the blade from tick 6. No star.
+    **What gets out of it**: a jump as it opens (76 px up), a run on the way he went at 7 px
+    a tick (out past its end), a moment in which nothing hurts them. **What does not**:
+    walking, either way; a jump begun as he goes (they are down again). Feet 0 and 30 px off
+    the ground as it opens, cut; 36 and 60, not. From 60, 150, 400 and 620 px off he ends 96
+    px past them; from 700, 20 px past (720 px gone, the most there is); from 900 he stops
+    180 px short and it does not reach them. Met by a parry begun 5 to 12 ticks before it
+    opens, whichever way they face, and by none begun at another moment; parried, nobody is
+    hurt and he reels 44 ticks where he stands; three running, the third has him on a knee.
+    With a wall 12, 30, 60 and 140 px behind them he ends 1 to 31 px from the wall, never in
+    it, as little as 16 px short of their middle, and the line still lies through them: cut
+    each time. With under 48 px of ground ahead of him: the crouch, and he lets it go. With
+    no screen, where only the world is decided: the same path, and nobody hurt there (each
+    machine cuts its own player).
+  - *The mill* (12). From 200 px off: 22 ticks levelling, 48 turning, 50 for the blow. Up to
+    7.2 px a tick, 328 px in the three turns and 66 more in the blow; 22 px off the ground
+    at the highest and down as tick 19 begins, with the sword, which is never drawn under
+    the floor. No star; he does not turn in it; all of it can be turned aside. One who has
+    got round him by the time the sword is level is the way he comes. A player kept 60 px
+    ahead of him all the way, whom nothing spares, is cut as each turn ends (ticks 14, 30,
+    46) and by the blow; one kept 60 px behind, in the middle of each turn (6, 22, 38) and
+    not by the blow. Met by a parry as it comes round, he reels and nobody is hurt.
+  - *The cut up* (18). From 150 px off, on a player who stands: 14 ticks of the run, 20 of
+    the cut, 7 gone, 6 beside them, 17 for the blow, 18 falling, 24 down. The run reaches 9
+    px a tick and the cut begins 59 px from them. Two blows through a defence of 100: the
+    cut at tick 11 of it, the blow in the air at tick 7 of it. Thrown up at 1.5 and 12.5,
+    189 px off the ground at the highest; as the blow lands he is 46 px to their side with
+    his feet 6 px under theirs; sent down at 2 and 15, and down 83 ticks more. The blow
+    lands though the cut left them unable to be hurt, and they are his to strike only while
+    he is on his way to do it. No weight until the sword has come down. The star every tick
+    from the run to the end of the blow, the cut itself included, and never once he falls.
+    Drawn behind the tiles while the blade is under the ground, to tick 14, and not after;
+    the point 71 px under it at the deepest, never under it once the tiles no longer hide
+    it, never turning more than 58 degrees in a tick (it does not jump from one side of him
+    to the other). None of it can be turned aside: a parry held up through the run and the
+    cut turns nothing. At nobody: the sword comes down behind him in 46 ticks, the star gone
+    a tick after it is over his shoulder, and he goes up after nobody, not after one an
+    earlier cut had thrown. Begun from 30, 45, 62 and 90 px off he still runs 10 ticks at
+    the least and never goes through them. **What gets out of it**: a run from the moment he
+    sets off (7 px a tick), a run at him and a jump over him and well past, a moment in
+    which nothing hurts them. **What does not**: standing, walking off, a jump where they
+    stand, a slow jump over him, a run begun only once the blade is in the ground. Under a
+    ceiling six tiles up, with no air for the blow that goes all the way round, the one that
+    follows is the one that ends on the ground, it lands all the same, and he is never in
+    the stone.
+  - *In the air* (25). At a player on a rope 200 px up and 100 px off: 7 ticks gone, 14
+    hanging, 17 for the blow, 19 falling, 24 down. He arrives 46 px to the side of them he
+    was on, his feet 6 px under theirs; keeps within 0.4 px of one place until the sword has
+    come down, and is 30.6 px lower by the end of the blow, his weight his own again. One
+    blow, and they are sent down at 2 and 15. The star from the moment he goes to the end of
+    the blow and not as he falls; the light up the blade 13 ticks of the 14. **His sum of
+    where they will be, against where they are when it comes**: falling from 400 px and from
+    900 px, jumping from the floor, thrown up at 12.5, and stood on the floor, 0 px out 20
+    to 40 ticks on; jumping while walking on, 2.2 px; jumping and coming down within it, 3.8
+    px; falling slowly, falling slowly while holding down, and while holding up, 0 px (in 28
+    ticks one who only falls is 170 px lower, one who falls slowly 84, holding down 170,
+    holding up 39); with their weight turned over, falling up and thrown down, 0 px. A hook
+    of theirs in something, or a rope: taken to stay (a hook still on its way out does not
+    count). At one who is falling from 400 px he arrives 158 px under them, they fall to
+    him, and the blow lands with him 46 px to their side and 6 px under. One who cannot be
+    hurt as the blow comes (and was not thrown there by him) is not; one who is away at 14
+    px a tick once he has stopped following is out from under it; one who drifts at 3 px a
+    tick while he hangs is followed and struck. With 58 and 76 px of air under his feet it
+    is the mill's last blow, begun at its tick 9, leaving at 2.8 and 4.6 px a tick, down as
+    tick 19 begins with the sword never under the floor; with 90 px and more, the blow all
+    the way round. At one who jumped (58 px up as he goes) he is beside where they come
+    down, 1.6 px over the ground at the most, and the blow is the one on the ground. At one
+    stood on a ledge twelve tiles up he is up on it beside them, never in it. At one hanging
+    with their head against a ceiling fourteen tiles up, where there is no room for him with
+    his feet 6 px under theirs, he is up beside them all the same, lower: 46 px to their
+    side, his head 8 px under the ceiling and his feet 16 px under theirs, never in the
+    stone, and the blow lands. With stone to both sides of one who hangs up there he does
+    not go, and it is a knife. With no screen: the cut up with nobody's machine saying they
+    were thrown ends in the sword coming down; told so, he is up after them there too. Told
+    so while he is doing anything else, he takes no notice.
+  - *In a corner* (3): the four begun 344 times from 34 to 330 px off, with the player kept
+    in the corner and with them free to be thrown: never into the wall, the player never
+    left in the wall or the floor, nothing thrown.
+  - And the numbers of the four as they are written (1).
+- **What he picks**, 600 times from each of eleven places (six before). In reach: the mill
+  136, the hand 120, the cut up 101, the late cut 66, the first move 63, the third 47, the
+  fourth 37, the leap 30: his first phase's four 177 of the 600, and every one marked as
+  picked from up close. At 180 px the same shape (145, 117, 93, 68; 51, 45, 38 and 43). At
+  300 px: walking on 341, the leap 143, the late cut 40, the step behind 29, a knife 24, the
+  mill 23. At 560 px: 344, 153, the late cut 55, a knife 29, behind 19. At 700 px, past
+  where he leaps from: walking on 502, behind 52, a knife 46. 200 px over his head: in the
+  air 273, the leap 144, the fourth 119, a knife 64. In reach and 70 px off the ground: in
+  the air 112 among the rest; 40 px off it, never. 300 px off and 100 px up: walking on 321,
+  the leap 159, in the air 77. 800 px off and 200 up, and 760 px over his head: never in the
+  air (further than he goes). The mill's 23 at 300 px looked short of its weight (40 would
+  be even): sampled 20,000 times with each of three seeds it is 6.5 to 6.7 in a hundred,
+  where the weight is 6.6. Chance.
+- **Eight whole fights of four minutes** (six before), the last three in his second phase
+  after the passage, and the last of all against a player who is off the ground about half
+  the time (jumping where they stand, away from him in jumps, and up a rope): nothing
+  thrown, every move gone through, never in a wall or under the floor, the player never left
+  in a wall. In the three: the late cut begun 17 times and cutting them 16; the mill 22,
+  cutting them 21 times in its turns; the cut up 19, landing 17, and after each of those he
+  went up; up into the air 27 times in all, 17 after his own cut and 10 after one who was
+  off the ground by themselves; the blow all the way round 22 times, landing every one, and
+  the one that ends on the ground in its place 5 times. The longest he hung there 14 ticks,
+  fell 22, ran with the sword dragged 23. Walked on 94 times, never more than 118 ticks
+  without thinking again. The player was hit 67, 74 and 69 times for 10,285, 11,139 and
+  10,185 in those four minutes: §16.46's fight of his second phase had 70 hits for 10,324,
+  and the five of his first phase have 102 to 117 for 10,700 to 12,400.
+- **Each of fifty-six things put wrong, one at a time**, to see that the new part would have
+  caught it. The line no longer than the way he went; the parry only from the end they face;
+  turned to face them as he arrives; the line opening two ticks late; not to be turned aside
+  in the tick it opens; the mill's first cut left out; no least run before the cut up; the
+  run going through them; thrown up half as fast; the server not told who was thrown; the
+  blow in the air stopped by the cut's grace; up on the far side of them; kept to where they
+  are and not where they will be; the fall to the floor not timed to the sword; no star on
+  the blow that ends on the ground; that blow not sending them down; the late cut picked at
+  one over him; off the ground at one tile; the blade kept on the ground through the cut up;
+  theirs to strike forgotten when the blow is the one on the ground; no limit to their fall
+  in his sum; a hook not counted; the star off through the cut itself; the cut up at 5
+  parts; the line not brightening; up after one further up than he goes; following them to
+  the last tick; the blow on the ground never theirs; a line of no length allowed. Then: the
+  mill not to be turned aside; the blow out of the air to be; the mill at half its speed;
+  twice the hop; one height tried beside them; the blow all the way round whatever is under
+  him; his weight from the start of the blow; sent down at a third of it; the late cut at
+  twice the sword; the line shown short while he is sunk; the word heard in any move; an old
+  word kept; no light in the crouch; none in the air; the count never running down; no star
+  on the run; none while he hangs; none on the step up; the cut up's blow late and a tick
+  long; not looking for them as the sword comes level; not facing them through the crouch.
+  Forty-nine of those fifty were caught as the part stood. The one that was not, the star
+  off through the cut itself, was let through because the check looked at the run and at the
+  step up and not at the cut between them: it looks there now, and catches it. The other six
+  are the things mended late (section 7, items 10, 12 and 13), each put back: the sword's
+  point not kept out of the floor as he lands; slow fall left out of his sum, and then each
+  of its two keys; the fourth place beside them left out; the turn of their weight left out.
+  Each caught by the checks added with its mending. Then the mod built again as it is, and
+  everything here run on that build.
+- The whole rig of §16.35 to §16.45, the flags and the graves, a player's weight, and the
+  rigs of §16.41 and §16.42, on the same build: 489, 152, 121, 196 and 218 checks, all
+  passing.
+- **Seen**: the four written out by the rig tick by tick as his own drawing asks for them,
+  in nine scenes (the late cut on one who stands, jumped, and parried: 146, 146 and 291
+  frames; the mill, 167; the cut up with the blow after it, 195, and at nobody, 105; in the
+  air on a rope, 289, near the ground, 272, and at one who jumped, 282), and drawn with his
+  own pictures, a box for the player: looked at as sheets and close up. One fault was found
+  that way and not by the rig (section 7).
+
+**Read through by me, not by another**: every changed line against the copies delivered
+last.
+
+**Not seen in the game: any of this.** Section 8. Not tried with a second machine.
+
+### 7. What changed on the way
+
+1. **The star.** As first meant, none of the four wore it. The mod's own rule says a hit
+   that throws through shields or lands through immunity frames must: so the cut up and the
+   blow in the air wear it, and cannot be turned aside. (The late cut and the mill can.)
+2. **He struck where they had been.** As first written he stepped up to beside where a
+   player was, followed them, stopped and struck: one who was falling was 100 px lower by
+   then, and one his own cut had thrown up had risen 27 px past him. Now he goes to where
+   they will be as the sword comes down, by the game's own sum, and keeps to that place. The
+   rig's check for it: where he takes a falling, a jumping and a thrown player to be, 20 to
+   40 ticks on, against where they are when it comes.
+3. **The blow in the air went through the floor** when he hung near it (it goes all the way
+   round under him). Under 76 px of air it is the mill's last blow in its place, timed to
+   land with him.
+4. **The late cut did not reach one in a corner.** With their back to a wall he cannot get
+   past them, and ends a little short of their middle; the game's own line test has no ends,
+   so the line stopped short of them. It is 24 px longer than the way he went: where his
+   sword is.
+5. **The cut up's blade jumped from behind him to ahead of him** as it came forward (a blade
+   kept on the ground lies on one side of him or the other). It goes under the ground in
+   that move, drawn behind the tiles, and comes out ahead: nothing to keep on the ground
+   until it is out.
+6. **Under something low** the blow that follows the cut up is the one that ends on the
+   ground; it landed only if they could be hurt by then. They are his to strike with that
+   one all the same.
+7. **The rig's player**: falls as the game's does (10 at the most unless the mod lifts it),
+   and is moved in steps of a tile when faster than that. Without the second, one sent down
+   at 15 px a tick ended in the floor in the rig, and would not have in the game. Every
+   check that passed before passes with it.
+8. **What he picks** was tried and changed: the cut up 3 and the mill 2.5 up close became 2
+   and 3, when the cut up had landed on the rig's player 23 times of 24 in two fights (they
+   do nothing to avoid it; at 2 it is begun 12 times in the same two fights and lands 11);
+   from far off the leap 4 became 4.5 and the late cut and the mill 2 and 1.5 became 1.5 and
+   1.2, to keep walking over half and the leap about one in four, as your list of §16.46 has
+   them.
+9. **Checks of mine that were wrong** (the rig corrected, not the mod): a tick out in when
+   the line is first shown, in the parry's last tick, and in when he is drawn behind the
+   tiles; the gap as the cut begins measured after he had moved; the mill's parry begun a
+   tick too soon to be up; a run from the moment the blade goes into the ground taken to get
+   away (it does not), and a slow jump over him taken to (it does not).
+10. **The mill's last blow drew the sword under the floor for one tick.** Seen in the film
+    of the whole run, not by the rig. The tick the sword is down is the tick after he
+    touches the floor, and in that tick his speed still says he is falling (the game stops a
+    fall by cutting the speed to what was left of the way, not to nothing: section 5), so
+    the blade was not kept out of the floor: its point 24 px under it and drawn over the
+    tiles, then lying on the floor from the next tick. For that move he now takes the game's
+    own mark of the landing. The rig measures the point of the sword through that blow both
+    ways into it (out of the mill, and out of the air), and catches the fault put back.
+11. **In seven whole fights he never went up on his own**: the rig's player is seldom far
+    enough off the ground at the moment he thinks. An eighth was added against one who is
+    (section 6).
+12. **One who falls slowly was not in his sum.** I had written, for the release list, that
+    slow fall was in it, because he reads the player's own weight and the fastest they may
+    fall. Read in the game's code to make sure: it holds such a player's speed down in lines
+    of its own and changes neither number (section 5). His sum has those lines now; and the
+    turn of a player's weight, which is in the same lines and was not in it either.
+13. **No room beside one whose head is against a ceiling.** He is 8 px the taller. With his
+    feet anywhere from 6 px under theirs to over them his head was in the ceiling, on either
+    side of them, and it was a knife: for anyone hanging from a hook in a ceiling. A fourth
+    place is tried, 16 px under. (He does not rise from it against the ceiling: the game
+    sets the speed of an enemy that meets one to a hair downward. The blow lands from
+    there.)
+
+### 8. Not seen in the game
+
+Run in the rig on the game's own engine, and written out tick by tick and drawn outside the
+game with his own pictures and a box for the player. **Nothing of it has been on a screen,
+and no sound of it has been heard.** Never run at all: the line itself (three strips of
+`SoftLine`: a dark hair, a hair of light, a little light about it), the cut of light along
+it (`SlashStreak`, 30 ticks), him drawn behind the tiles while the blade is under them, and
+the star's outline on him in the moves that wear it. The sounds, picked by what they are and
+not by ear: `Item1` pitched down as he sinks, `Item37` with the light up the blade, `Item71`
+high and quiet as he arrives, `Item71` and `DD2_GhastlyGlaivePierce` as the line opens,
+`Item1` for the flick; `Item71` as the sword comes level, `DD2_MonkStaffSwing` at each turn
+and as he leaves the ground, the floor's `DD2_MonkStaffGroundImpact` and `Dig` under the
+last blow; `Item1` and `Tink` as the run begins and `Tink` every fourth tick of it, `Dig` as
+the blade goes in, `Item71` as it tears, `Dig` and `Item71` where it breaks out,
+`DD2_MonkStaffSwing` as they are thrown up; `Item71` for the blow in the air,
+`DD2_MonkStaffGroundImpact` as they are sent down, `Dig` as he lands.
+
+To look at first, in play:
+
+- **The cut up and the blow after it**: two blows that cannot be turned aside, the second
+  certain once the first has landed. Whether that is right for him is yours to say.
+- **The late cut throws you the way he went**, which is toward where he now stands: you end
+  beside him, and what he picks next is picked from up close. And **turned aside**, he reels
+  as he does from any parry, which is backward, and his back is to you: he comes back toward
+  you with the sword thrown up over him.
+- **One who hovers.** He takes a player in the air to be falling, as the game makes them
+  fall (slowly, if they fall slowly), unless a hook of theirs is in something or they are on
+  a rope. Anything that holds a player up otherwise (rocket boots held, a flying mount if
+  one is ever let fly) he will go under.
+- **One whose weight is turned over** (a potion). His sum of where they will be is right for
+  them. Nothing else of him has been thought through for it or run: what being thrown up or
+  sent down comes to for them, the ragdoll, where he hangs beside one who stands on a
+  ceiling.
+- **Beside one who only jumped** he hangs a pixel or two over the floor with his knees
+  coming up, as he does high in the air: 14 ticks of it. Drawn outside the game it reads; it
+  has not been seen in it.
+- The names are mine and are nowhere in the game: nothing shows a move's name.
+
+### 9. Added without being asked
+
+Everything in it was left to me, so this is only what goes past "three moves, and one in the
+air":
+
+- **Which can be turned aside**: the late cut and the mill can; the cut up and the blow in
+  the air cannot (the star). The late cut from whichever way they face.
+- **The blow after the cut up lands whatever grace the cut left them** (and only that blow,
+  and only while he is on his way to it).
+- **The mill's last blow in place of the blow in the air** when he is too near the ground
+  for it; and so he also meets one who only jumped, where they come down.
+- **Up to one stood over his head** as well as one in the air: onto a ledge or a platform
+  beside them.
+- **A hook or a rope** taken to hold them where they are; **a knife** when there is no room
+  beside them. One who falls slowly, or whose weight is turned over, worked out as the game
+  works them out; and beside one whose head is against a ceiling he comes in lower.
+- **What he picks**: his first phase's four made the smaller part of what he does up close
+  (the hand from 3.5 to 3, the first and third from 2 to 1.2, the leap and the fourth from
+  1.5 to 0.8); from far off, walking on from 6 to 9.5, the leap from 3 to 4.5, the step
+  behind from 1.2 to 0.8, a knife from 0.8 to 0.7, so that the shares your list of §16.46
+  asked for hold with two more things to choose from.
+- **At least 10 ticks of the run** before the cut up, however near they are, so that it is
+  seen and heard coming; and he stops short of them, and does not run through.
+- **He does not turn in the mill**, nor once the late cut's step is taken.
+- Two lines for a death: "{0} was cut a moment after the sword had gone by." and "{0} was
+  sent back down."
+- The word a player's machine sends the server, and the count that keeps a thrown player his
+  for a second and a half at the most. The word is heard only during a cut and forgotten as
+  the next one begins: one that came late would otherwise send him up after somebody his
+  next cut never touched.
+
+### 10. Still as it was, or left
+
+- **Not seen in the game: any of it**, and the sounds not heard (section 8).
+- **His first phase**, the road, the passage, the one who drank, what he does about what is
+  sent at him, and the hand's move: as they were.
+- **Nothing at 30 in a hundred of his life**; the ending; what he leaves; what brings him to
+  the hall; his first words of the fight: as they were.
+- **From 70 tiles off, after the passage, he still mostly walks**: beyond the 40 tiles he
+  leaps from, 9.5 times in 11 that he thinks. The late cut closes up to 45 tiles in one go,
+  but is only picked from within 39.
+- **The sword, the line and his steps take no notice of tiles**: the line lies through a
+  wall as it lies through the air, and the step along it goes to where there is ground to
+  stand on, through whatever is between. The step up into the air does look for room beside
+  them, and the blow there for the ground under him. In the hall there is nothing to stand
+  behind.
+- **Flat ground only**, as before.
+- **Two machines**: written as the rest of him is, and as untried. What this adds: a
+  player's machine tells the server that the cut threw them up, and the server sends him
+  after them; each machine cuts its own player with the line; and the server's sum of where
+  a player on another machine will be is made from what the game last sent of them, which
+  for one just thrown as a ragdoll is their own machine's doing a moment before.
+- The offers of §16.44 to §16.46: as they were.
+
+---
+
+## 16.48 Later in session 7: Foigh's third phase: the passage into it, the wound his sword leaves, the wings cut, the black and red sword; and where he takes a player in the air to be going, made the game's own sum
+
+Asked, after §16.47 was delivered:
+
+> For his third phase:
+>
+> Transition: fades into him shaking holding onto his sword
+> say some shit like gael, you can brief first before we continue
+> Raise the sword and seppuku himself, pull it out with blood spilling in tangientials of an arc.
+> Sword covered in blood
+> "The muscle hardens to rust, the sword bleeds with the body"
+> some other stuffs.
+>
+> His weapon now has Ultra Bleeding debuff
+>
+> He flash steps behind the player, pulls on their wings and server it, from now wings are disabled.
+> "Futile devices"
+>
+> Fadeds back to third phase with his sword having the black and red flame aura (check how the sword of maliketh black blade looks)
+>
+> Typeshit
+
+And, with a moving picture of that sword (600 by 338, 115 frames: a black blade held up,
+black smoke with red in it coming off it, and its cuts left hanging in the air as thin red
+lines with black beside them):
+
+> his sword will have this black and red smoke effect with slashed like that
+
+Three things were asked back before anything was written, and answered:
+
+- **The wings.** "Flight, until the fight ends": wings, the booster and flying mounts do
+  nothing while he is there in his third phase, and are theirs again when he is gone; the
+  wings stay in their slot and are only not drawn.
+- **Ultra Bleeding.** "Bleed out, stacking": each blow of his sword adds a wound, three at
+  the most, 12 life a second for each, and no life comes back by itself; the five seconds
+  begin again with each blow, and when they run out all of it stops.
+- **His lines.** Four, in this order: (1) "Ahh... blood. Mine. I had forgotten the taste of
+  it." (offered by me, picked; it has the one answer, "..."); (2) "The muscle hardens to
+  rust, the sword bleeds with the body" (the user's, to the letter; by itself); (3) "It is
+  fairer so." (offered by me, picked; by itself); (4) "Futile devices" (the user's, to the
+  letter; by itself). He says nothing while he turns the sword on himself, and the picture
+  goes at once after the fourth. The wound is called Ultra Bleeding; one who dies of it
+  "bled with the sword".
+
+While it was being finished three more messages came: "continue", twice, and
+
+> he can also throw a flying slash projectile too for one of the moves but make it a move set tho
+
+That one is **not in this section**: it is read as a move of his third phase's own that is a
+string of cuts, each throwing a slash, and it is the next thing built (§16.49). It was said
+so in the chat when it came.
+
+What I said I would also do, and did: mend his second phase's sum of where a player in the
+air will be, for one on wings (section 5). §16.47 said wings are off in this mod. That was
+wrong: they are off until the Empress of Light is down (`PADWorld.FlightUnlocked`), and his
+sum had flying on them wrong. Section 9 has both of §16.47's wrong statements.
+
+### 1. The device, read first
+
+- This began where §16.47's delivery ended: at 21:07 UTC on the 6th its files were read back
+  from the device and were the same, by bytes, as the copies the work is done on.
+- Before any of this was written the mod's folder was listed and the game's log read.
+  `client.log` there says §16.45, §16.46 and §16.47 were built on the device at 02:54 UTC on
+  the 7th (10:54 by the device's clock, which is eight hours ahead): **0 errors and 10
+  warnings, the same ten as here.** The hall was gone into at 02:55 and left at 04:47, an
+  hour and fifty-two minutes, and nothing was thrown by the mod in that time. What was seen
+  there has not been said.
+- At 11:00 UTC on the 7th, with this built and run, the folder was listed again: its root,
+  `Content` with everything under it (616 entries, read whole) and `Localization`. As
+  §16.47's delivery left it, file for file, by name, size and time. The log had not been
+  written since 04:47: **nothing of this section has been built there.**
+- At 11:02 UTC twenty-two files were staged and compared by bytes. The ten of his files and
+  the localization: the same as the copies delivered last. The four notes: the same as the
+  working copies. `PisPlayer.cs`, `RagdollPlayer.cs`, `FoighSwordThrown.cs` and
+  `FoighCommand.cs`: the same as the working copies but for this section's lines.
+  `PSItem.cs`, `FoighDagger.cs`, `FoighReturned.cs`, `Foigh.React.cs` and `Foigh.Scene.cs`,
+  which are not written: the same.
+- It was listed again at 11:25 UTC, just before the delivery: the same 616 entries, each
+  with the size and the time it had at 11:00; nothing in the root or in `Localization`
+  written since; the log as it was. None of the eight new files was there.
+- In the root there is `~$aceholderTextures.md`, 162 bytes, dated the 2nd: the mark a word
+  processor leaves beside a file it has open. Not mine; left alone.
+
+### 2. Readings
+
+1. *"fades into him shaking holding onto his sword"*: the picture goes to black as it does
+   at two thirds of his life, and comes back on him: on his feet, bent over his sword, which
+   is in the ground before him at a slant, both hands on its handle, all of him shaking. He
+   is not on his knee: that was the last passage's.
+2. *"say some shit like gael, you can brief first before we continue"*: a line of his before
+   he goes on, in the manner of that fight's (a man who has found blood and is pleased with
+   it). Offered, and picked: line 1. It waits for the player's one answer, as his line on
+   his knee does.
+3. *"Raise the sword and seppuku himself"*: the sword up at the sky in both hands, and then
+   through his own middle, to the guard. How it gets from the one to the other is mine
+   (section 3).
+4. *"pull it out with blood spilling in tangientials of an arc"*: torn out, swung up over
+   him and flicked down ahead; the blood leaves the blade along the way each part of it is
+   going at that tick (the tangent of its arc there), more of it from the point than from
+   near the hand because the point goes faster.
+5. *"Sword covered in blood"*: from when it goes through him the sword is another picture,
+   bloodied (a stand-in of mine, section 10).
+6. *"some other stuffs"*: leave to add. One more line (3), offered and picked; the coughs;
+   the look along the blade.
+7. *"His weapon now has Ultra Bleeding debuff"*: every blow of the sword that lands in his
+   third phase, held or thrown. Not his knives, nor a shot sent back.
+8. *"He flash steps behind the player, pulls on their wings and server it"*: his flash step,
+   to behind them; a hand on their wings, a pull, and the sword down between his hand and
+   their back ("server" read as sever).
+9. *"from now wings are disabled"*: from the tick of that cut, by the answer above, until he
+   is gone.
+10. *"Fadeds back to third phase with his sword having the black and red flame aura"*: to
+    black at once after his last line; under it he is back where he stood with the sword in
+    his hand; the picture comes back on the player, and the sword burns black and red from
+    there on.
+11. *"check how the sword of maliketh black blade looks"* and the picture sent after it:
+    looked at frame by frame. What was taken from it: a dark blade with a red glow close
+    about it, black smoke with a red edge rising off it, and cuts that stay in the air a
+    moment as a bright red line with black beside it. No picture, shape or number of that
+    game's was copied.
+12. *"Typeshit"*: the rest is mine to fill in the same manner. **Until its moves are given,
+    his third phase fights with his second phase's moves**: that was said in the chat before
+    it was built.
+
+### 3. What was built
+
+**The passage**, at three tenths of his life (`ThirdAt 0.30`), once. Seven parts; the ticks
+are sixtieths of a second, and each part's are counted from its own first.
+
+- **Spent** (26 ticks). As at two thirds: whatever he is doing he stops, nothing lands on
+  him from that tick, the player he fights is held and the bars come in, and the picture
+  goes to black. A player in his hand is let go of; a leap is finished first; between two
+  places of a flash step, the step.
+- **Shudder.** Under the black (tick 3) the player is stood sixteen tiles off him, on the
+  side they were on, and the camera is put on him; with no ground that far off on that side,
+  on his other side, and in a short room as far off as there is, never under eight tiles.
+  Black until tick 16, the picture back by 46. He is bent 24 degrees over the sword, which
+  is in the ground at 62 degrees from level with 42 px of its 72 px of blade under it; its
+  point stays where it is whatever the rest of him does. He shakes. Two coughs (ticks 76 and
+  104) jerk him down and put blood on the ground before him. His head comes up (124 to 148),
+  and at 156 his first line, which waits for its answer for as long as it takes (the server
+  gives up after 90 seconds and goes on).
+- **Gut** (162 ticks, not a word). He heaves the sword out of the ground (out at 30) and has
+  it up at the sky in both hands from 46 to 72, a light running up it. He tips it back over
+  his shoulder (82) and lets it forward through his hands until he has it by the blade,
+  level, its point at his own belly (92); his hands bleed on it. A breath (to 106), and it
+  is through him by 111, to the guard, 71 px of it out of his back; blood both ways; the
+  screen shakes. He sags over it.
+- **Bled.** Torn out by tick 17, blood with it; up over him (25) and flicked down ahead
+  (31), the blood leaving the blade as it goes and where it stops. The sword is its bloodied
+  picture from the tick it went in. He straightens, brings it up before him and looks along
+  it: line 2 at tick 82, by itself, staying 70 ticks once all of it is there. He lets the
+  sword down and looks up at them: line 3, no sooner than tick 298, staying 60. Then, by
+  himself, he is gone.
+- **Flash** (7 ticks), his flash step, to 42 px behind their middle: past them from where he
+  stood, facing their back; they have not turned. With a wall right behind them he stands on
+  his own side of them and their back is turned to him there; with no room on either side he
+  makes the cut from where he stands, and nobody is pulled. Where he stood is kept.
+- **Sever.** His bottom hand closes on their wings at tick 10, 9 px behind their back; they
+  are pulled back 4 px and tipped 11 degrees until the cut. The sword goes up (35) and comes
+  down all but upright at 40, into the ground 8 px behind their back, to the guard: blood
+  off it, its mark in the air, steel on stone, the screen shaken. **From the next tick
+  nobody flies.** At 44 he lets go of the sword, which stands where it went in; he comes
+  away from them 24 px with what he cut off in his other hand, held up (the picture of
+  whatever wings they wear, the item's own; with none on, nothing). Line 4 at tick 66, by
+  itself; 45 ticks after all of it is there the picture goes.
+- **Resume** (60 ticks). To black by tick 20, what he held let fall. Under it the sword is
+  in his hand again (20), he is back where he stood and the player is turned to face him
+  (24), and the sword takes (27). As the picture comes back (39) there are seven cuts
+  hanging in the air about him, red and black, with smoke and sparks. At 46 the player has
+  their feet again, and from his first step he can be hurt.
+
+With every line read as fast as it may be it is about 10.8 seconds; as played, reading at
+his pace, about 20.7.
+
+**His third phase.**
+
+- **The wound** (`Content/Buffs/UltraBleeding.cs`). Three buffs, as the mod's other debuffs
+  that come in strengths are: Ultra Bleeding I, II and III, "Bleeding out, 12 [24, 36] life
+  a second. Life does not regenerate". A blow of the sword that lands (`Land`, `Impale`, the
+  late cut's line, the thrown sword) makes it one more, up to three, and gives it the whole
+  five seconds again; five seconds with no blow and all of it is gone at once. It is the
+  game's own bleeding as far as life coming back goes (`Player.bleed`), with the life taken
+  through `UpdateBadLifeRegen`. One who dies of it is said to have "bled with the sword".
+  Five seconds in every difficulty. Each machine wounds its own player; the game tells the
+  others which buff they have.
+- **Nobody flies.** `Foigh.WingsCut` is true for as long as one of him is there in his third
+  phase with the cut made. `PisPlayer` reads it where it says whether flight is anybody's
+  (`AllowedWings`), so the mod's own rule for a player who may not fly does the rest: no
+  time on their wings or their booster (`PSItem`), and off a flying mount. Two things more,
+  found on the way (section 8): a pair of wings with no time on it is still wings to the
+  game, which lets a player glide down on them and go faster through the air for having
+  them; and the booster still gives rocket boots no end. While wings are cut they are not
+  worn at all as far as moving goes, nor is the booster (`PisPlayer.PostUpdateMiscEffects`).
+  The wings stay in their slot and are not drawn (`FoighScenePlayer.HideDrawLayers`).
+  **Everybody** loses flight while he is there, not only the one he cut: mine, section 11.
+- **The black and red.** The bloodied blade glows red, with a wide faint red about it and
+  tongues of soot on it (`DrawBurning`); black smoke with a red rim comes off it
+  (`BurnSmoke`, a new particle that wears `FlameSmoke.png`); a swing leaves a near black
+  sweep with a bright red line along the way the point went (`DrawTrail`, which in his third
+  phase goes from white to `TrailRed`); a blow that lands leaves a cross of red cuts with
+  black twins (`BloodSlash`, new, wearing `SlashStreak.png`); and the thrown sword burns the
+  same. No shader and no new picture but the stand-ins of section 10.
+- **What he fights with** is his second phase's, to the roll (`phase >= 2` everywhere it was
+  `phase == 2`). His blows land for what they did (150 a blow, Classic).
+
+**`/foigh third`**: three tenths of his life left him, less one, so that it begins on his
+next tick. In his first phase his second is passed over (the sword is its sharp side at
+once). Refused on the road, in the middle of a passage, with nobody there, and when it has
+happened.
+
+**The rig poses.** One new thing in `FoighRig`: `Pose.Slide`, the sword fed forward through
+the hand that has it by so many pixels, which is how he comes to hold it by the blade; and
+`HandNear`, the other arm turned straight at the nearest place of the sword's line where it
+cannot reach it. `FoighTrack` carries `Slide`. Nothing else of the rig changed, and no move
+of his first two phases reads either.
+
+### 4. The numbers
+
+**Yours**: that it happens; the shaking on the sword; a line first; the sword raised and
+turned on himself; the blood off the arc; the bloodied sword; your two lines, to the letter;
+Ultra Bleeding on the sword; the step behind, the pull, the cut, flight gone from then; the
+fade back; black and red, as in the picture. By your answers: flight gone for everything
+that flies until he is gone, wings left in their slot; a wound a blow, three at the most, 12
+life a second each, five seconds from the last blow, no life coming back; the order of the
+four lines and which of them wait; the name, the description and the death.
+
+**Mine**, every one: three tenths (it was already his third stage's line, `ThirdAt`);
+sixteen tiles and never under eight; every tick in section 3 and the degrees and pixels with
+them; the two coughs; the light up the blade; that he takes it by the blade and how far it
+is fed (78 px of 88, and 5 more back for the breath); 42 px behind them, 4 px and 11 degrees
+of pull, 24 px away after; the lean of the picture (1.3, 1.42 with the sword in him, 1.5
+behind them); how long each line stays (70, 60 and 45 ticks) and how long the server waits
+(90 s, 15 s and 10 s); every colour (`Blood`, `Clot`, `Soot`, `Cinder`, `BurnRed`,
+`BurnHot`, `TrailRed`) and count of drops, puffs and sparks; that the wounds are three buffs
+with I, II and III in their names and the life a second in what they say (asked for as one
+name and "Bleeding out. Life does not regenerate": the number was added so that the three
+can be told apart); that the wound is the same five seconds in every difficulty; and that
+knives leave none.
+
+### 5. Where he takes a player in the air to be going
+
+`Foigh.Ahead`, his second phase's (he steps up to beside a player off the ground, to where
+they will be as his sword comes down: §16.47), is written again from the game's own code,
+read in the 1.4.4 assembly, and held against the game itself: the rig now runs
+`Player.Update`, whole, on a player whose keys are held for them, asks him at every tick
+where they will be 5, 15, 30 and 45 ticks on, and compares.
+
+What that showed of the sum as §16.47 delivered it: right to the hair for one with no wings
+(a jump held, a jump let go); **wrong for every one of the game's 46 pairs of wings**, by 13
+to 21 px over 45 ticks with jump held (47 with down held as well, and 167 for the jetpack
+with up held). Two causes. In the tick a jump runs out the game sets their speed to a jump's
+and flies them by their wings in that same tick; the old sum let that tick go by. And the
+jetpack with up held spends its time twice as fast, the pairs that hover half as fast in one
+place; the old sum spent one a tick whatever they did.
+
+It is now the game's sum in the game's order, a tick at a time (`Player.Update` between its
+run speeds and its collision, `JumpMovement`, `CarpetMovement`, `WingMovement`,
+`DryCollision`): the jump; wings, each pair by its own numbers, flying, hovering and
+gliding, and how each spends its time; rocket boots, burst by burst; a flying carpet; a slow
+fall; weight turned over; one frozen in the air; one who jumps again of themselves as they
+land (a frog's leg); platforms, gone through with down held or the wrong way up; a ceiling;
+a speed over a tile a tick moved in steps as the game moves it; one he threw, who has no
+keys and no limit to their fall but a slow fall's; and the mod's own two rules for wings (no
+time on them where flight is not theirs, never more than a full pair's where it is). Three
+numbers the game settles early in a player's tick and changes or loses by the end of it
+(their weight before a slow fall lightens it, how fast and how long a jump goes, whether
+they fall slowly before a carpet takes that off) are read where the game has just settled
+them: `FoighAirPlayer.PostUpdateRunSpeeds`, new, in `FoighPlayers.cs`. `RagdollPlayer` keeps
+what the fall's limit was before a throw took it off (`FallLimit`), and says whether the
+throw still has them in the air (`Flung`).
+
+Against the game, 227 flights (every pair of wings four ways: jump held, up held too, down
+held too, jump let go of; and 43 others) and 249,736 askings: **out by 0.003 px at the
+worst.** Not made, and said so in its comment: how they go sideways (taken as it is now,
+until a wall: one who lets go of the keys slows and he overshoots; not measured); a mount
+that flies or hovers and a wall they slide down (taken to go on as they go); a hook or a
+rope (taken to stay where they hang); water, honey and shimmer; a jump begun in the air; a
+thrown body coming back off what it hits.
+
+He looks 30 ticks ahead at the most, so what the old sum had wrong came to about 8 px beside
+a player on wings: not much. It is right now, and one who has a frog's leg and holds jump is
+met where their next jump has them and not on the ground, which was the larger miss (up to
+about five tiles).
+
+### 6. What the 1.4.4 assembly says
+
+Read in the IL of the user's own `tModLoader.dll`, as always; the decompile at hand is 1.4.5
+and was not trusted.
+
+- `Player.JumpMovement`: with jump held and a jump going, their speed is set to `-jumpSpeed
+  * gravDir` every tick and the count goes down by one (not for a merman); with the key up
+  the jump is over and `releaseJump` and `rocketRelease` are set. A new jump from the ground
+  needs the key let go first, or `autoJump`; it clears `canRocket` and `rocketRelease` and
+  gives the jumps in the air back (`ExtraJumpLoader.RefreshJumps`).
+- `Player.Update`, in order after it: wings with no `wingsLogic` have no time;
+  `CarpetMovement`; `canRocket` set once they move slower up than a jump; their wings' time
+  given back on the ground only with the key let go, or as they jump again of themselves;
+  flight if `wingsLogic > 0`, jump held, time left, the jump over and they are moving (and
+  for wings 22, 28, 30, 32, 29, 33, 35, 37 and 45 with jump and down held whatever they are
+  doing); frozen, webbed or stoned, only their weight; else `WingMovement`, then rocket time
+  turned into wing time under wings (six ticks a burst), rocket time back on the ground (and
+  always with the booster), the next burst of rocket boots (ten ticks, only with
+  `rocketRelease`, no wing time and no jump in the air unused), and if no burst and no
+  flight: a slow fall (the weight divided by 3, or 10 with up held, **in place**), else a
+  glide (`wingsLogic > 0`, jump held and moving down the world: a third of the weight and of
+  the fall, by `ItemLoader.WingGlidingSpeeds`), else their weight. Then no faster than
+  `maxFallSpeed`, a third of it for a slow fall, a tenth with up held. Then, for wings 22,
+  28, 30, 31, 33, 35, 37 and 45 with jump and down held and time left, their speed times 0.9
+  (0.8 for 45, and 0.92 more for 37), and set to almost nothing between -2 and 1.
+- `Player.WingMovement`: the jetpack with up held is its own sum and spends 2 a tick; wings
+  22, 28, 30, 31, 37 and 45 with down held and neither left nor right spend half; the rest
+  1. With the booster their time is full again after every tick of it.
+- A glide and the faster going through the air on wings (`Player.Update`, before
+  `HorizontalMovement`) ask only whether `wingsLogic > 0`, not whether there is time on
+  them: **wings with no time still do both.**
+- `Player.DryCollision`: `fallThrough` is `controlDown`, and both it and `ignorePlats` are
+  true the wrong way up; over 16 px a tick they are moved in steps of 16; a ceiling ends the
+  jump (`Collision.up`).
+- `Player.UpdateJumpHeight`: the booster, a frog's leg and the Moon Lord's legs add to
+  `jumpSpeedBoost` there; `jumpSpeed` and `jumpHeight` are static, for whichever player was
+  moved last.
+- `PlayerLoader.PostUpdateRunSpeeds` is called after all of that is settled and before
+  `JumpMovement`; not for one on a pulley, on a hook or tongued.
+- `PlayerDeathReason.ByOther(int, int)` and its `CustomReason`; `PlayerDrawLayer.Hide()` and
+  `PlayerDrawLayers.Wings`; `ImageIO.ToRaw` (a pixel with no alpha is written as four zero
+  bytes and every other as it is: the mod's pictures are not premultiplied by the loader,
+  again).
+- The thinning of a player's weight near a world's top is taken off again in a place by the
+  mod already (`SubworldRulesPlayer`): in the hall there is none.
+
+### 7. Verified
+
+**Built** against the 1.4.4 assemblies: 0 errors, the same 10 warnings.
+
+**The whole rig, on the build that is delivered**, one run after another and none
+overlapping: 2,101 checks, all passed (the default run 489, the world's flags 152, weight
+121, Foigh 601, his third phase once more with its tally 210, his film 114, the Turned 218,
+the Meat Hook 196).
+
+- **The passage.** Every tick, distance and angle in section 3 is the rig's, read off him as
+  the game's own NPC update moves him: 74 checks of the passage and what hangs on it (the
+  server's waits, the middle of other moves, the rooms, the command), 15 of the wound and 7
+  of flight. Among them: nothing lands on him and the player is held from the first tick to
+  the last; the sword's point stays where it is in the ground while he shakes (0.01 px);
+  both hands on the handle (the other within 1.5 px of its line at the worst of a cough);
+  the sword fed 83 px of its 88 through his hands, its point within 2.2 px of his own
+  middle; in to the guard; bloodied from the tick it goes in; **no drop of blood ever under
+  the floor**; 42 px behind them, the hand on their wings 9 px behind their back, the cut 8
+  px behind it; flight shut from the tick after the cut; the sword left standing where it
+  went in; the item of the wings they wear in his hand; once only.
+- **With no screen and no word from anybody** the server's waits run out and the fight goes
+  on (Shudder 5556 ticks, Bled 1192, Sever 666). From the middle of anything: 6.8 tiles up
+  in a leap, a player in his hand, the sword thrown and a knife in the air, between the two
+  places of a flash step. Taken from over two thirds to a quarter of his life at a blow:
+  both passages, one after the other, with one tick of walking between.
+- **Where there is no room**: 16 tiles off in the hall; on his other side with a wall near;
+  12 tiles in a room of 27; behind them on his own side with a wall at their back; from
+  where he stands with none on either side, and nobody flies after it all the same.
+- **The wound**, by the game's own buffs and its own regeneration: 12, 24 and 36 life a
+  second; the five seconds begin again with each blow; gone at once when they run out, and
+  life comes back again after; the death's words; five seconds in Master as in Classic;
+  nothing put on the dead. Move by move: every blow of the sword leaves one in his third
+  phase, held or thrown; his knives none; nothing of his in his second.
+- **Flight**: the gate shut from the cut and open again within a few ticks of his going; not
+  opened for the dead; a second one of him in his second phase shuts nothing. And, with the
+  mod's own lock in the rig: a player with wings he has cut jumps exactly as high as one
+  with none on, does not glide, goes no faster through the air, and with the booster and
+  rocket boots has the boots' 63 ticks and no more.
+- **The sum** (section 5): 227 flights, 249,736 askings, 0.003 px.
+- **Ten whole fights of four minutes.** The eight of his first two phases: as §16.47's, to
+  the blow. Two in his third, one of them against a player who is off the ground a good part
+  of the time, wings on: he is still there, nothing thrown; 126 blows landed, the player
+  came to carry all three wounds, flight was never theirs, and his cut wings were said every
+  tick.
+- **Does his third phase land its blows as his second does?** Over 300 goes of each of seven
+  moves from the same seeds: his first move 608 against 607, the late cut 300 and 300, the
+  cut up 805 and 814, the hand 719 and 719, the thrown sword 306 and 318, knives 600 and
+  600; the mill 432 against 480. The mill again over 3000 goes: 4675 against 4817, three in
+  a hundred fewer. Nothing in his code tells the two phases apart where the mill cuts; the
+  burning sword asks for random numbers for its smoke, so the two runs part ways after the
+  first tick. Taken as chance, and said.
+- **Thirty changes made to the mod one at a time**, each built and run against the part of
+  the rig that should catch it. **Caught: 25** (in the sum: the jump's speed not set each
+  tick, the jetpack's and the hovering pairs' spending, a glide at a half, the cut wings
+  left as wings, the booster left on, the thrown body's limit, the jump in the air not given
+  back on landing, the slow fall not read, platforms, the ceiling, a rocket burst never
+  ending, the hover's slowing, the fall's limit not kept, the weight a tenth light; in the
+  passage: two wounds at the most, four seconds, ten life, a wound in his second phase, the
+  gate one update late, 60 px behind them, a letter off his line, 60 px of the sword fed
+  through, no wound from the thrown sword, 12 tiles off). **Not caught: 5**, each looked at:
+  the rule that wings which may not be flown by have no time on them (the rule that they
+  never have more than a full pair's covers it wherever the game's own wings are worn); a
+  carpet of 200 ticks for 300 and the booster's refilling left out (neither can show inside
+  the 45 ticks he is asked about); drops of blood that would live under two ticks made after
+  all (they are gone before they are drawn: nothing to see); and the tick the black lifts on
+  (a number of mine, which the rig reads from the code). One scenario was added to the rig
+  because of this: a player holding down as they come down onto a platform.
+
+**Read through by me, not by another**: every changed line against the copies delivered
+last. One thing found so: his burning trail reaches a little over eight ticks back along
+where his feet have been, and they were kept for eight; ten are kept now.
+
+**Not seen in the game: any of this.** Section 10. Not tried with a second machine.
+
+### 8. What changed on the way
+
+- **The sword was not to be seen for a quarter of a second** as he turned it on himself:
+  held out ahead of him point first it is seen end on. He takes it by the blade instead:
+  tipped back over his shoulder and let forward through his hands (`Pose.Slide`), so that
+  all of it is in the picture until it goes in.
+- **Blood under the ground.** The burst the mod already had (`BloodDroplet.SpawnBurst`) puts
+  drops where they are thrown from whatever is there, and a drop made for one tick was drawn
+  once under the floor. His blood is thrown by his own `Burst`, built on `Drop`, which makes
+  no drop that would live under two ticks. The rig holds every drop of the passage against
+  the floor: none under it.
+- **The cut behind them was staged four times.** The chop went through the player's box; the
+  wings in his hand were hidden behind the player; a hand kept on the planted sword hunched
+  him. As built: 42 px behind, the pull, an upright chop into the ground 8 px behind their
+  back, the sword left standing, a step away, what he cut off held up.
+- **His other hand came off the handle in a cough** by up to 2.7 px: the handle was just out
+  of that arm's reach. `HandNear` turns the arm at the nearest place of the sword's line; it
+  is 1.5 px short only at the worst of a cough.
+- **The rig could not run the game's own player.** `Player.Update` asks for two of
+  tModLoader's own players by name (its accessory slots, and what has been eaten for life
+  and mana); with those made first it runs with no window. Since this section the rig also
+  has the game's jumps in the air (it had none) and the mod's `PSItem` (it had no global
+  item), so that the wing rules are the real ones.
+- **With `PSItem` in, the rig showed that wings which may not be flown by still do two
+  things**: in a jump with such wings on a player came down 19 ticks at a third of a fall
+  with jump held, and went 5 px a tick sideways through the air against 3.1 with none on
+  (6.3 on wings that are theirs). That is the mod's rule from before him as the game leaves
+  it (section 6). For wings he has cut both are closed (section 3); before the Empress is
+  down it is as it was, and is in RELEASE_TODO.md.
+- **The wound's first second is 11 life, not 12**: what was on its way back to them is lost
+  first. Left.
+- The rig's own bookkeeping, twice: a tick counted one off after a loop had used a state's
+  first tick, and `HasCut` read between ticks is a tick ahead of the cut. No fault of the
+  code's.
+
+### 9. Two statements of §16.47 that were wrong
+
+1. *"wings and flying mounts are off in this mod"* (its section on a player in the air, and
+   RELEASE_TODO.md). They are off until the Empress of Light is down, and theirs after. His
+   sum did have wings in it, and had them wrong: section 5.
+2. *That a slow fall "changes neither gravity nor maxFallSpeed".* It divides
+   `Player.gravity` in place, in the tick it falls so (section 6). The old sum allowed for
+   that by a guess at whether it had happened; the new one reads the weight before it
+   happens.
+
+### 10. Not seen in the game
+
+None of it has been on a screen. The film of it here is the rig's own numbers drawn outside
+the game: his own pictures and the mod's particle pictures, blended as the game blends them,
+on a plain wall and floor, in full light, with a box for the player. What it cannot say: how
+any of it reads at the game's zoom, in the hall's light, behind and in front of real tiles;
+whether the black shows against a dark wall (on one, only its own red shows it); the sounds,
+picked by name and never heard (`Item71`, `Item1`, `Tink`, `Dig`, `DD2_MonkStaffSwing`,
+`DD2_GhastlyGlaivePierce`, `NPCHit1`, `Item20`); the camera; the panel.
+
+Stand-in pictures, in `PlaceholderTextures.md`: `SwordsmanBloodSide.png` (his sharp side
+reddened by a sum, not drawn) and `UltraBleeding1.png`, `2` and `3` (one drop, two and
+three). The wings in his hand are the wing item's own small picture, not the wings as worn:
+the game draws each pair as worn its own way, and that was not written again.
+
+### 11. Added without being asked
+
+- That **everybody** loses flight while he is there with wings cut, not only the player he
+  cut. One flag for the world, as the mod's own lock is. Say if it should be the one player.
+- That cut wings do not glide, do not quicken the air, and take the booster's rockets and
+  jump with them. "Disabled" was read as all of what wings do. Rocket boots by themselves, a
+  carpet and a jump in the air are not wings and are left.
+- That a player with no wings on has the cut made all the same (nothing in his hand), and
+  flight is shut for them too.
+- The coughs, the light up the blade, the hands bleeding on it, the look along it, the sword
+  left standing, the seven cuts in the air as the picture comes back.
+- `/foigh third`.
+- The sum of section 5 beyond wings (rockets, carpet, slow fall, a frog's leg and the rest).
+
+### 12. Still as it was, or left
+
+- His first two phases: the rig's eight four-minute fights in them come out as §16.47's did,
+  to the blow (the same number of hits and the same life taken in each of the eight).
+- `FoighCommand.cs` but for the one word; `Foigh.Scene.cs` and `Foigh.React.cs`, not
+  touched.
+- The mod's lock on wings before the Empress is down: as it was, gliding and all.
+- `DustFog.png` drawn flat where many puffs overlap in full light (known since §16.4x, in
+  "Found on the way, not fixed"): seen again in the film, left.
+- Not built: his third phase's own moves, but for the one asked for while this was being
+  finished (§16.49).
+
+---
+
+## 16.49 Later in session 7: Foigh's third phase: three cuts where he stands, each let go of as a flying slash that goes at the player wherever they are, the ceiling with it
+
+Asked, while §16.48 was being finished:
+
+> he can also throw a flying slash projectile too for one of the moves but make it a move set tho
+
+And, while this was being built:
+
+> remember the slash is multi directional so if ur on the ceiling it also hits you
+
+Nothing was asked back this time. Each of the two has a second reading that was **not**
+built (section 2): say if either was the one meant. The second message was answered in the
+chat as it came: every slash goes at the player wherever they are, the ceiling with it.
+
+### 1. The device, read first
+
+- This began where §16.48's delivery ended: at 11:27 UTC on the 7th its 25 files were read
+  back from the device and were the same, by bytes, as the copies the work is done on.
+- At about 12:25 UTC, with this written and run once, the mod's folder was listed: its root,
+  `Content` with everything under it (624 entries: the 616 of before and §16.48's eight new
+  files) and `Localization`. As §16.48's delivery left it, file for file, by name, size and
+  time. `client.log` there was last written at 04:47 UTC: **neither §16.48 nor this has been
+  built there.**
+- At 13:01 UTC, with this built and the whole rig run on it, the folder was listed again:
+  its root, `Content` (the same 624 entries, each with the size and the time it had at
+  12:25) and `Localization`; the log as it was. No `FoighSlash.cs` there.
+- At 13:02 UTC thirty-six files were staged and compared by bytes. The five of his files and
+  the localization that this section changes: the same as the copies delivered as §16.48.
+  The four notes: the same as the working copies. Twenty-six that are not written and that
+  the new file leans on (nine more of his files, `FoighCommand.cs`, `Utilities.cs`, the
+  parry's two, `UltraBleeding.cs`, `PisPlayer.cs`, `Strip.cs` with `SoftLine.png` and
+  `Smear.png`, seven of the particles' files and `Easing.cs`): the same as the copies the
+  work is done on.
+- It was listed again at 13:14 UTC, just before the delivery: the same 624 entries in
+  `Content`, each with the size and the time it had; nothing in the root or in
+  `Localization` written since §16.48's delivery; the log as it was.
+- `~$aceholderTextures.md` is still in the root (the mark a word processor leaves beside a
+  file it has open). Not mine; left alone.
+
+### 2. Readings
+
+1. *"he can also throw a flying slash projectile too"*: a cut of his sword that is let go of
+   and goes on through the air by itself: a projectile of the game's, a crescent of what his
+   sword burns with. "Too": beside the knives and the sword he throws already.
+2. *"for one of the moves"*: one move, and his third phase's: it was asked for while that
+   phase was being built, and it is made of that phase's black and red. His first two phases
+   never begin it.
+3. *"but make it a move set tho"*: that one move is a set: three cuts one after the other,
+   each letting one go. **The other reading**: several different moves that each throw one.
+   Not built: no other move of his third phase's own has been given.
+4. *"remember the slash is multi directional"*: each is sent whichever way the player is
+   from him: along the ground, up, down, back over his own head. **The other reading**: each
+   cut sends several at once, fanned out. Not built.
+5. *"so if ur on the ceiling it also hits you"*: one who hangs from the ceiling is cut at
+   there, and it lands. Held against a ceiling as high as the hall's, the player's head
+   against it (section 6).
+
+### 3. What was built
+
+**The three cuts** (`Move.Rend`; `Foigh.Rend` in `Foigh.Third.cs`; the movement is
+`FoighMoves.Rend`). His third phase's only. Where he stands, 160 ticks (2.67 s); ticks are
+sixtieths of a second from its first.
+
+| ticks | |
+|---|---|
+| 0 to 24 | the sword up over his head, and held from 16. At 10 he looks for them. At 12 **the blade flares**: black off the whole length of it at once, sparks, red, a light on its point |
+| 24 to 31 | **the first cut, down**, with a step of 20 px into it. Let go of at 30, as the blade comes down through level. The point is on the ground at 31 |
+| 31 to 71 | the sword rests where it came down, and he sinks over it. At 44 he looks for them |
+| 71 to 77 | **the second, up**, a step of 14 px. Let go of at 75, as the blade comes up through level; the sword goes on over his shoulder |
+| 77 to 115 | up over his head in both hands, and held from 107. At 89 he looks for them |
+| 115 to 122 | **the third, down with all of him**, a step of 22 px. Let go of at 122, as it lands: the great one |
+| 122 to 160 | the sword stays down until 140, and comes back to where he drags it |
+
+- **He looks for them before each cut** (ticks 10, 44 and 89), and comes round if they have
+  got behind him: seen turning, the sword with him, over 14 ticks, which are over before the
+  cut begins. In a cut he does not turn.
+- **The blade itself cuts** whoever is near enough to be cut by it, in each of the three
+  (after ticks 24, 71 and 115): the sword's whole blow and its wound, as any cut of his.
+  Turned aside by a parry there, he reels as from any cut of his sword, and nothing more is
+  let go of.
+- He gives himself 40 to 62 ticks before his next move.
+- **How often.** Never in his second phase. In his third, with them in his reach, it weighs
+  1.5 beside the 13.5 of what else he does there: one go in ten. From further off, wherever
+  they are, within 800 px of him by the straight line, 3.5: beside the 18.2 of what he does
+  along the ground, about one in six; beside the 10 of what he does about one who is over
+  his head, about one in four. Beyond 800 px, never. It is the last thing in each list he
+  rolls from, and weighs nothing in his second phase: what he rolls there is as it was, to
+  the number.
+
+**What he lets go of** (`FoighSlash.cs`: a projectile, with no picture of its own).
+
+- **A crescent across the way it goes**: 68 px from tip to tip, its tips 21 px behind its
+  foremost point, its body about 32 px deep behind its middle (it burns: 24 to 40). The
+  third: 88 px, 27.5 px, about 42 (31 to 52).
+- **12 px a tick for 80 ticks**: 948 px, 59 tiles. The third **9 px a tick for 100**: 891
+  px, 56 tiles. It comes over its first three ticks and thins away over its last fourteen;
+  it hurts, and can be turned aside, only while at least half of it is there: from its tick
+  2 to its tick 73 (93 for the third).
+- **Straight, whichever way it was sent**, through platforms and through players, and gone
+  against the first solid thing: a wall, a ceiling, the floor. What it was made of is let go
+  there (smoke, sparks, red). With him gone, or down, it thins away from that tick, is gone
+  14 ticks later, and hurts nobody.
+- **Half his sword's blow**, through armour, varied as the game varies any hit: in Classic
+  75 of the sword's 150 (64 to 86), in Expert 100, in Master 115, half as much again in
+  Legends. Once to a player. **And it leaves a wound**, as the sword does (Ultra Bleeding).
+  It throws one who stands still 6.3 tiles the way it was going. Of one it kills: "... was
+  cut by a sword that was nowhere near."
+- **What hurts is its leading edge**, the middle four fifths of it, 10 px thick; not the
+  body that streams off its back. Along level ground the first two hurt up to 69 px over it
+  (they are drawn to 70), the third up to 87 (drawn to 90).
+- **It can be jumped.** A jump as the game jumps, with nothing worn, tops at 98 px: it
+  clears the first two if the ground is left anywhere from 14 to 36 ticks before they
+  arrive, the third from 18 to 30.
+- **It can be turned aside** by a parry that faces it: it is gone where it was met. He does
+  not reel for it: it is not his sword in his hand. The three come 45 and 47 ticks apart and
+  the mod's parry is 42 from its first tick to its last, so each of the three can be
+  answered. One that has already cut a player is through them, and is not turned aside
+  after.
+- **Where each begins.** The first 60 px ahead of him and 36 px over the ground. The second
+  from the middle of the blade as he has it at that tick (57.8 px ahead, 63.9 high). The
+  third 84 px ahead, standing on the ground, its lower tip 2 px over it. With a wall where
+  one would begin, it is not made.
+- **Where each goes.** At their middle, with half of where they are going allowed for (as
+  his knives are thrown), and never so low that its lower tip would be under their feet: so
+  at one who stands on the ground he stands on it goes level, its lower tip 2 px clear of
+  that ground. Any way from straight down, round through ahead of him and straight up, to 45
+  degrees past straight up, back over his own head. One who is further round than that,
+  behind him and not over him, is not cut at: it goes level, the way he faces. (He has
+  looked for them before the cut.)
+- **Drawn** in six strips of the pictures his sword's trail is drawn with (`SoftLine.png`,
+  `Smear.png`): a wide faint red under everything, the body in soot with streaks in it and
+  red in the streaks, the edge bright red with a paler line in it; the body stands off
+  behind in tongues that do not hold still. Black smoke, red and sparks are left behind it
+  as it goes. No shader and no new picture.
+- **With more players than one** (written for it, never run so): it is the server's
+  projectile, as his knives are. Each machine flies its own copy of it by the same numbers,
+  counts its own ticks of it, and hurts its own player by it. One player's parry ends it for
+  everybody: the machine that parried tells the server, which ends its own and says so to
+  the rest, as with his knives.
+- **Heard**: `DD2_SonicBoomBladeSlash` as each leaves the blade, lower for the third;
+  `Item10` where one ends against something. The move itself: `Item71` as it begins and
+  before each cut, `Item74` for the flare, `Item37` as the sword comes up in both hands, his
+  sword's own knocks on the floor.
+
+**One line of English**, and a name: `DeathText.FoighSlash` and
+`Projectiles.FoighSlash.DisplayName` ("Flying Slash") in `en-US_Mods.PisAndDag.hjson`.
+
+### 4. The numbers
+
+**Yours**: that he throws a flying slash, in one of his moves; that the move is a set; that
+a slash goes any way, and finds one on the ceiling.
+
+**Mine**, every one: that the set is three cuts, and which three; 160 ticks and every tick
+in the table; the looks at 10, 44 and 89; the steps of 20, 14 and 22 px; the wait of 40 to
+62 ticks after; the weights (1.5 up close, 3.5 further off) and the 800 px; 68 px and 88 px
+from tip to tip, and every other measure of the crescent; 12 and 9 px a tick; 80 and 100
+ticks; three ticks to come and fourteen to go, and that it hurts while half of it is there;
+**half the sword's blow**; that it leaves a wound; the knock (5: 6.3 tiles); that it can be
+parried and jumped, and that a parry of it does nothing to him; where each begins; the half
+of where they are going; that the lower tip is kept over their feet; 135 degrees round from
+the way he faces and no further; every colour and count of puffs and sparks; the sounds; the
+death's line and the name.
+
+### 5. What the 1.4.4 assembly says
+
+Read in the IL of the user's own `tModLoader.dll`, as always.
+
+- `ModProjectile.OnKill(int timeLeft)` is the hook's name in 1.4.4.
+- `SoundID.DD2_SonicBoomBladeSlash`, `Item74`, `Item10`, `Item37` and `Item71` are there.
+- `Projectile.HandleMovement`: a projectile that stops at tiles is moved with `fallThrough`
+  true unless a hook says otherwise: it goes through platforms.
+- `Collision.CheckAABBvLineCollision` with a width is a box against a slanted rectangle:
+  half the width either side of the line, nothing past its ends. The hurting edge is six of
+  them.
+- `Projectile.Kill`: the end of a projectile is sent to the other machines only by the one
+  that owns it (the test of `owner` against `Main.myPlayer` is around the send). What he
+  lets go of is the server's.
+- `Player.DashMovement`: the game's dashes begin at 14.5, 16.9 and 21.9 px a tick (the last
+  is the one begun by `SolarDashStart`). Nothing in it is faster.
+- `Player.KillMe` asks `WorldGen.saveToonWhilePlaying` to save the player on another thread;
+  and `Player.Update` works out how much life a player may have from what they have eaten
+  for it (`ConsumedLifeCrystals`, `ConsumedLifeFruit`) every tick, whatever was written into
+  `statLifeMax`. Both matter only to the rig (section 7).
+
+### 6. Verified
+
+**Built** against the 1.4.4 assemblies: 0 errors, the same 10 warnings.
+
+**The whole rig, on the build that is delivered**, one run after another and none
+overlapping: 2,158 checks, all passed (the default run 489, the world's flags 152, weight
+121, Foigh 658, his third phase once more with its tally 210, his film 114, the Turned 218,
+the Meat Hook 196). Foigh's 658 are §16.48's 601 and 57 for this move.
+
+The 57, by what they hold. Every tick, distance and angle in section 3 is the rig's, read
+off him and off what he lets go of as the game's own updates move them (`NPC.UpdateNPC`,
+`Projectile.Update` with its tile collision, `Player.Hurt`, the game's buffs and life
+regeneration for the wound):
+
+- **The move**: three let go of, at ticks 30, 75 and 122, the third the great one; 45 and 47
+  ticks apart; the looks at 10, 44 and 89 with his 14 ticks of coming round over before each
+  cut; 56 px of steps; 40 to 62 ticks after; the flare at tick 12 (13 puffs of black where
+  the tick before made 1, 6 sparks, 5 of red, a light on the point).
+- **On one who stands 300 px off**: the first from 60 px ahead and 36 high, level; the
+  second from the middle of the blade (57.8 ahead, 63.9 high), 7.8 degrees under level; the
+  third from 84 ahead and 46 high, level. All three land, each inside the game's 15 in a
+  hundred of half the sword's 150 through a defence of 100, and leave 1, 2 and 3 wounds. In
+  Expert, Master and Master in Legends: half of 200, 230 and 345. Put into the move by hand
+  in his second phase: the same three blows and no wound.
+- **With no screen** (a server's tick): let go of at the same ticks; no particle made;
+  nobody hurt there.
+- **How often**, over 1,200 goes from each place: in his reach 118 (9.8 in a hundred; 10 by
+  its weight); 300 px off 215 (17.9; 16.1); 560 px off 203 (16.9; 16.1); 200 px over his
+  head 311 (25.9; 25.9); 900 px off never. In his second phase, over 600 from each: never.
+- **One alone**: straight for 80 ticks and 948 px, smoke behind it all the way; the third
+  100 ticks and 891 px. A third, two thirds and all of it over its first three ticks;
+  thinning from its tick 67 (87); hurting from 2 to 73 (93), and to be parried on exactly
+  those ticks.
+- **Against a wall, a ceiling and the floor**: gone there, with its puff at the wall.
+  **Through** a row of platforms. **He gone, and he down**: it thins away from that tick, is
+  gone 14 ticks later, and goes through one stood in its way without hurting them.
+- **What hurts against what is drawn**: 69 px over level ground against 70 drawn, 87 against
+  90. One whose leading edge has gone by a player, its body still on them: nothing. One that
+  comes at them edge first lands the tick its foremost point gets to them: from 4 px short
+  of their near side to 7 px into them, for every pixel of a tick's flight it might begin
+  from (the edge is 5 px thick either side of its line, and goes 12 px a tick).
+- **Jumped**, the player moved by the game's own `Player.Update` with the key held: 98.1 px
+  at the top, 51 ticks in the air; the first two cleared by leaving the ground 14 to 36
+  ticks before they arrive, the third 18 to 30.
+- **Parried**: each of the three by a parry begun as it arrives (three parries, each over
+  before the next), none lands, each gone where it was met, and he does not reel. With their
+  back to it: it lands. One whose tip only is on them, its foremost point never nearer their
+  middle than 57 px (the parry's own reach is 53): turned aside as it touches them; with no
+  parry, that tip lands. A parry that is up the tick after one has cut them, with it still
+  on them: nothing turned aside.
+- **Once**: one who goes along with it, its edge on them for all of its 80 ticks: cut once
+  and wounded once, though for 32 of those ticks they could be hurt again and it still hurt.
+- **Up close**: on one kept 70 px ahead of him the blade's own three cuts land, each the
+  sword's whole blow, at ticks 31, 72 and 122. The blade parried in its first cut: he reels,
+  and none of the three is let go of.
+- **Over him**: at one who hangs 200 px off and 230 up, straight over his head 260 up, and
+  60 px behind his back 300 up: each of the three goes up at them (61 to 111 degrees round
+  from the way he faces), its line through where it is sent to within 0.2 px, and all three
+  land. **And in a room as high as the hall** (a ceiling 48 rows, 768 px, over the floor),
+  the player's head against that ceiling: straight over him (722 px from him), 150 px to the
+  side (737) and 340 px to the side (798, as far as he begins them from): three of three
+  land each time.
+- **Under him**: he on a shelf six tiles over the floor and they on the floor beyond it: 34,
+  43 and 49 degrees under level, and all three land.
+- **Going somewhere**: at one carried up at 2.6 px a tick the line goes through where they
+  will be with half of that allowed for, and no nearer than 9.4 px to where they are or to
+  where all of it would have them.
+- **Behind him**: as the first is let go of, it goes level the way he faces. One who gets
+  behind him after the first: he has come round by the second, seen turning over 14 ticks,
+  and the second and third go at them there.
+- **A wall where the first would begin**: none is made, not even to be gone at once inside
+  it.
+- **Run into**: one who runs at it at 21.9 px a tick is cut from every half pixel they might
+  begin from, the third one too; the first speed at which anybody comes out the other side
+  between two looks is 31 px a tick.
+- **Thrown** by a blow of it: 6.3 tiles, the way it was going.
+- **Laid out to be drawn**, whichever way it goes: a crescent across its way, its foremost
+  point the projectile, nothing at its tips.
+
+**Ten whole fights of four minutes**, in a hall as long as his. The eight of his first two
+phases: as §16.48's, line for line (the same number of hits and the same life taken in
+each). The two in his third: he is still there, nothing thrown; hit 72 and 76 times (64 and
+62 before he had this move); he began the three cuts 22 times in the eight minutes; the
+player came to carry all three wounds, flight was never theirs. Run three times over: the
+same each time.
+
+**His third phase's wounds, move by move**: the three cuts let go of now among them (three
+blows, three wounds; put into them by hand in his second phase, three blows and none). Over
+40 goes: 120 land in his third phase.
+
+**Fifty-two changes made to the mod one at a time**, each built and run against this part of
+the rig. Forty-eight first: **43 caught** (of what he lets go of: its speed; how much of its
+edge hurts; the wound left out; a wound in his second phase; the whole of the sword's blow;
+the parry not asked as it touches; coming over one tick; going over seven; hurting from nine
+tenths; not going when he does; hurting with him gone; thirty ticks too long; through walls;
+no puff where it ends; no smoke behind it; parried while it does not hurt; not known to the
+parry at all; a narrower moon; twenty ticks short. Of the move: the first from the blade and
+the second not; the lower tip not kept over their feet; 60 degrees round for 135; nothing
+sent downward; no half of where they are going; never looking for them; a shorter wait
+after; no steps; three plain ones; 40 px ahead for 60; sent after one behind him; a flare of
+two puffs. Of what he picks: left out of what he does along the ground; begun in his second
+phase; the second cut's blade cutting nothing; the blade not to be turned aside; from 1,600
+px; 3.5 up close. And: not seen to come round; no flare; the second let go of a tick late;
+the first look four ticks late; a step of 40 px; the line for one it kills taken out of the
+English). **Five not caught**, each looked at:
+
+1. *A second look at where its edge was half a tick before.* Nothing could tell it from one
+   look. Measured (above), and the second look taken out of the mod.
+2. *The mark that it has cut this machine's player left unset.* A real hole in the rig: the
+   game's own time in which a hurt player cannot be hurt again hid it. Two checks added (the
+   one who goes along with it; the parry a tick after): caught on the next run.
+3. *The wall where one would begin not looked for.* The rig counted what was in the air a
+   tick later, and one made inside a wall is gone by then. It counts every one made now:
+   caught on the next run.
+4. *Its smoke and its blow asked for on a server too.* Nothing changes: the mod makes no
+   particle on a server, and a server has no player of its own to hurt. Left as written, as
+   his other shots have it.
+5. *The player's time of not being hurt not looked at before the blow.* Nothing changes: the
+   game's own `Player.Hurt` refuses one who cannot be hurt yet, seen in the rig (the blade's
+   three cuts up close, with a slash on them each time: three blows and no more). Left as
+   written, as his other shots have it.
+
+Four more after that, on what the new checks hold: the hurting edge 3 px thick for 10; one
+straight piece for six; the blow not stopped by the mark; the parry not stopped by it. **All
+four caught.**
+
+**The film** (the rig's numbers drawn outside the game): the wind and the flare, each of the
+three leaving the blade, their flight, one landing, each jumped, each parried, the three
+cuts up close, the three sent up at one who hangs 230 px over the ground, at one straight
+over his head, and at one whose head is against a ceiling as high as the hall's. Run with
+nothing thrown; looked at.
+
+**Read through by me, not by another**: every changed line against the copies delivered
+last, and the new file whole. Found so: that nothing held the three against a ceiling as
+high as the hall's, which is what was asked (the check and the film of it were added); and
+that the reason given for the second look at the edge was already met by one (section 7).
+
+**Not seen in the game: any of this**, nor anything of §16.48. Section 8. Not tried with a
+second machine.
+
+### 7. What changed on the way
+
+- **Ten ticks apart, the three could not be answered one by one**: a parry is 42 ticks from
+  its first to its last, a jump about 51 in the air. The cuts were spaced out: let go of at
+  30, 75 and 122.
+- **Drawn as a fan from one middle, the body was spokes.** It is swept straight back from
+  the edge along the way it goes, and its tongues are measured by the pixel along the edge,
+  so that a large one and a small one burn alike.
+- **The part that hurt reached past what is drawn**, at the tips. It is the edge alone now,
+  the middle four fifths of it, 10 px thick; the rig holds what hurts against what is drawn
+  (69 px against 70, 87 against 90).
+- **"multi directional" came while it was being built.** As first written each went level
+  along the ground, the way he faces. Each is now sent at them wherever they are; he begins
+  them at one who is over his head as well; how far off he begins them is by the straight
+  line; and he looks for them before the first as well as before the other two.
+- **Straight over his head** one who hangs low was not sent at: the first begins 60 px ahead
+  of him, so to it they are up and a little behind. The way round from ahead that one may be
+  sent went from 120 degrees to 135.
+- **A second look, at where the edge was half a tick before**, was written into what hurts,
+  so that nobody would be between two looks at it. With it taken out, as one of the changes
+  made to the mod one at a time (section 6), nothing in the rig could tell. Measured
+  instead: at 12 px a tick, with its tips trailing its middle, one who runs into it at the
+  game's fastest dash (21.9 px a tick) is cut wherever they began from, and nobody comes out
+  the other side of it under 31. The second look was removed.
+- **The rig's own**, none a fault of the mod's: bleeding counted as blows; the wait after
+  the move read 160 ticks late; the count of particles made with no screen; the flight's
+  length measured after it was gone; a wall put beyond its reach; one pinned inside his
+  guard for the third cut; a check on a wall where one would begin that could not see one
+  made and gone at once in the wall (it counts every one made now); the game's own player
+  given 100 life by the game's own update, killed by a changed mod's doubled blow, and saved
+  to a file on another thread, which ended the run (500 life now, and the scan stops at the
+  first loss); and the part of the rig that flies a player by the game's own update, run
+  after this one for the first time, finding flight shut: his word that wings are cut stands
+  for two of the game's updates, and that part does not count updates. It clears the word
+  first now.
+- **Four comments in the new file were made exact** after the read-through (what of its edge
+  hurts; why one look at it is enough; what a parry does to it with more players than one;
+  what becomes of it when he goes). The mod was built again and the whole rig run again on
+  that build: section 6's numbers are that run's.
+
+### 8. Not seen in the game
+
+None of it has been on a screen, and nothing of §16.48 has either: the device's log says
+neither has been built there. The film of it here is the rig's own numbers drawn outside the
+game with the mod's own pictures, blended as the game blends them, on a plain wall, in full
+light, with a box for the player: the wind and the flare, each of the three leaving the
+blade, their flight, one landing, each jumped, each parried, the three cuts up close, and
+the three sent up at one who hangs over the ground, at one straight over his head, and at
+one whose head is against a ceiling as high as the hall's.
+
+What that cannot say: how the crescent reads at the game's zoom and in the hall's light
+(against a dark wall soot is nothing, and what shows is the red about it and its edge);
+whether three in 2.7 seconds are too many or too few; whether half the sword's blow and a
+wound is too much for something thrown; the sounds, picked by name and never heard.
+
+### 9. Added without being asked
+
+- That a slash **can be parried** (it is gone; he does not reel) and **can be jumped**.
+- That it is **half the sword's blow** and **leaves a wound**.
+- That the blade itself cuts one who stands near enough in each of the three, as his other
+  cuts do, and can be parried there.
+- That he **flares the blade** before the first, and **looks for them again before each**
+  cut.
+- That one behind him, and not over him, is not cut at.
+- That half of where they are going is allowed for.
+- That it goes through platforms, is gone against the first solid thing, and goes when he
+  does.
+- The line for one it kills, and its name.
+
+### 10. Still as it was, or left
+
+- His first two phases: the rig's eight four-minute fights in them come out as §16.48's did,
+  line for line.
+- Everything else he fights with in his third phase is his second phase's still. No other
+  move of its own has been given.
+- `/foigh` has no word for this move: `/foigh third`, and he begins it about one move in six
+  from a little way off, one in four at one over his head. `/foigh gone` does not take what
+  he has let go of with him; it thins away by itself in a quarter of a second.
+- `PlaceholderTextures.md`: nothing added. The slash has no picture of its own.
+- `PAD_NPC_Plan.md` §5.1 and §5.2 were behind since §16.48 (no rows for `Foigh.Third.cs`,
+  the wound, the two particles and `FoighAirPlayer`; `/foigh third` missing; "Nothing
+  happens at 30% yet"): put right with this.
+
+---
+
+## 16.50 Later in session 7: Foigh is not cut down in seconds: a cap on what can be taken from him, a posture that breaks, the holding parry, the run behind it and the break-out; his third phase's defence and four answers in five
+
+Asked, after §16.49 had been built and fought on the device (an Expert world, with the
+Zenith and the Last Prism):
+
+> From 2nd phase onwards, he has a meat hook on his bottom hand..
+> in his animation he js pulls it out and doesnt mention it
+> He can jump super high
+> For his 3rd phase his defense is doubled
+> Bump his parries to 4/5
+> and he can do something so shit dont just shred him. suggestions? zenith and last prism lk shredding him tf out.(special parry? damage cap??/more flash step sudden cc bypass(0.2s recover time)?)
+> and he can start to run forward after parrying goes on for more than 2.5 secs
+>
+> His slashes are more frequent. like he has a move where he leap up, and turn his body and throw big slashes. Add more anti fly/hook ceiling attacks
+>
+> He also have his jump and plunge blade down attack from phase 1 but now instead of struggling to pull it out he plunge it deeper and it creates AOE slashes in a 10 tiles radius circle.
+>
+> His attacks in phase 3 must also be much faster and wilder and beast like, like maliketh the black blade.
+
+And then: "his second phase is basically a sekiro boss"; "we need more projectile on phase
+2-3, dead ass cuz player can js dodge by using hooks and rocket boots and wings"; "Make his
+AI actually smart and from software like and shi"; "take your time".
+
+Three rows of questions were asked back and answered, and after the third the laptop was
+left on for the night: no more was to be asked, and what was left open was mine to decide
+and to say. The answers that this section is built on:
+
+- What stops the shredding: **all three** of the holding parry, the flash-step break-out and
+  the damage cap.
+- From which phase, in the user's words: **"2.5s stuff, phase 2 onwards, 4 in 5 parries is
+  phase 3"**.
+- What opens him: **posture, like Sekiro** (what he turns aside wears at it, it comes back
+  when he is let alone, worn through he is broken for about 3 seconds, and a player's own
+  parries wear at it fastest).
+- The cap: **at most 0.8 in a hundred of his life a second** ("about 45 s each").
+- What breaking his posture gives: **banked damage** (what the cap would have let through
+  and was not dealt is kept, up to 5 seconds' worth, and can be dealt while he is broken).
+- **The cap in all three phases, the rest from the second**: his first phase's answers to
+  shots stay as they were.
+
+And while this was being tested: **"keep posture ui hidden"**. So his posture has no bar
+(section 7).
+
+It was told in the chat that this comes as three deliveries. **This is the first: what keeps
+him from being cut down, with his third phase's defence and answers.** The meat hook, the
+jump, the second phase's projectiles and what a hit of his does to a grapple and to wings
+are the second (§16.51). The third phase's speed and its new moves, and the rest of what was
+asked of how he thinks, are the third (§16.52). Nothing of those two is in this.
+
+### 1. The device, read first
+
+- At 16:54 UTC on the 7th, before anything was changed: the mod's folder was listed (its
+  root, `Content` with everything under it, 625 entries, and `Localization`) and was as
+  §16.49's delivery left it, file for file. `client.log` there: the mod was built at
+  16:13:47 to 16:14:02 UTC with 0 errors and the same 10 warnings; the world was an Expert
+  one; the player went into the hall at 16:14:56 and was still in it at 16:54. Nothing
+  thrown by the mod.
+- At 19:51 UTC, before anything was written: listed again, the same three ways. Nothing
+  added, gone or changed. `client.log` had not changed since 17:13:09 UTC, when the game was
+  shut down; the mod was last built there at 16:14. The seven files this writes over and the
+  three sets of notes were read back from the device and are, byte for byte, what §16.49
+  delivered; so are the files this leans on and does not change (`Foigh.Third.cs`,
+  `FoighPlayers.cs`, `FoighSlash.cs`, the localization).
+
+### 2. Readings
+
+1. *"he can do something so shit dont just shred him ... (special parry? damage cap??/more
+   flash step sudden cc bypass(0.2s recover time)?)"*: three things were offered and all
+   three were picked. The special parry is read as one answer for a whole stream of hits
+   (section 3.3); the damage cap as a most that can be taken from him in a second (3.1); the
+   flash step as a step out from under it to behind whoever is hitting him, with the yellow
+   star, and a cut that begins a fifth of a second after he lands (3.5).
+2. *"zenith and last prism"*: what they have in common is that one thing hits again and
+   again. Before this he rolled once for each thing sent at him, and only while he walked: a
+   blade of the Zenith that the roll let through went on cutting for as long as it was in
+   him, and a beam of the Last Prism was never rolled for at all (it does not travel: there
+   was nothing to see coming).
+3. *"he can start to run forward after parrying goes on for more than 2.5 secs"*: counted as
+   two and a half seconds in which he keeps turning something aside with no gap of half a
+   second. A second in which the stream is let through (one in three) ends the count, unless
+   he is at the cap, where everything is turned aside anyway. **The other reading, not
+   built**: two and a half seconds of being shot at, whatever he does about it. Say if that
+   was meant: it is one number (`PressGap`).
+4. *"For his 3rd phase his defense is doubled"*: 80 for 40.
+5. *"Bump his parries to 4/5"*, and *"4 in 5 parries is phase 3"*: in his third phase
+   everything he answers is answered four times in five: a swing met, a shot struck out of
+   the air, a spell stepped out of the way of, and the roll for a stream. His second phase
+   stays at two in three.
+6. *"his second phase is basically a sekiro boss"*, and the answer "posture, like Sekiro": a
+   posture of his own that is worn by what he turns aside and most by his own sword being
+   parried, and that breaks.
+7. *"about 45 s each"*: by the rate alone his first phase is no shorter than 42.5 seconds,
+   his second 45, his third 37.5. Each begins with two seconds' worth that can be taken at
+   once, so the very least is 40.5, 43 and 35.5.
+8. *"keep posture ui hidden"*: no bar is drawn. His posture is still there and still breaks;
+   it is seen when he goes down.
+
+### 3. What was built
+
+All of it is in one new file, `Foigh.Hold.cs`, and in the places of his other files that ask
+it.
+
+**3.1 The cap, in all three phases.**
+
+- No more than 8 thousandths of his life can be taken from him in a second: 1,200 in a
+  Classic world, 1,920 in Expert, 2,880 in Master (half as much again in Legends).
+- Two seconds' worth of that can be taken at once (2,400 / 3,840 / 5,760), so a hard blow
+  every other second lands whole.
+- With nothing left to take, he turns everything aside (a shot is struck out of the air, a
+  blade or a beam is through with him as if it had hit, a swing is met and its player thrown
+  back) **and goes on doing so until half a second's worth can be taken again**. So what
+  lands on him is a blow and not a trickle of ones: against something that hits far harder
+  than the cap, about two blows a second get through, each for no less than half a second's
+  worth.
+- What burns or bleeds him is not a hit and comes out of the same: it slows what comes back
+  for hits to take by as much as it takes. A burn that is more than the cap by itself is
+  given back down to the cap.
+- What could have been taken from him and was not is kept, up to five seconds' worth (6,000
+  / 9,600 / 14,400), and can be taken only while he is broken or down on a knee from a
+  parry.
+- It is worked out on the machine of whoever's hit it is (where the game works every hit of
+  a player's out): the hit is held to what can be taken (`ModifyIncomingHit`). Every machine
+  counts what strikes take from him as they land. Where the world is decided, anything taken
+  beyond what the cap allowed is his again a tick later: two machines' hits in the same
+  tick, or something that asks nobody.
+- Not counted: his life set by hand (`/foigh second`, `/foigh third`).
+- It begins again full after each passage, with nothing kept.
+
+**3.2 His posture, in all three phases. No bar: by request it is not shown.**
+
+- 0 to 100. What wears at it: what is shot at him and turned aside, **no more than 9 a
+  second in all** (each thing by how hard it hits, a sixtieth of its damage, no less than a
+  half and no more than 4; a shot struck out of the air by itself, 4); a swing met, 6; **his
+  own sword parried, 25**.
+- Let alone for a second and a half it comes back, 12 a second.
+- Worn through, he is **broken**: thrown back a step, down on a knee with the sword down for
+  3 seconds (180 ticks), answering nothing. The first blow on him is the riposte, as on
+  anything staggered (three times the blow); no blow gets him up; what was kept (3.1) can be
+  taken. Whoever he had hold of is let go. Then his posture is whole again, and nothing
+  wears at it for a second more.
+- Not while his sword is thrown (it waits until he has it again), and not between two places
+  (he is broken where he comes out of a flash step).
+- A passage stops him from being broken as from any move, and his posture is whole again for
+  his next phase.
+
+**3.3 The holding parry, from his second phase.**
+
+- On the machine of whoever shoots, every hit of theirs that would land on him is counted
+  (not what is called up to fight for them). Three with no more than 15 ticks between them,
+  so four a second or more, are **something that keeps coming**: a blade that passes through
+  him again and again, a beam, a magazine.
+- For that, one roll is made a second for all of it, not one for each hit: **two times in
+  three (four in five in his third phase) he turns the whole of it aside for that second, in
+  whatever move he is in.** The other seconds it lands (under the cap).
+- Of a second's hard shots held off (bullets, arrows, knives), **one goes back at whoever
+  sent them**, as a shot struck out of the air by itself may, while his sword is free for it
+  (walking, or with it up already).
+- No flash step out of the way of a spell is rolled while a stream is on him.
+- Every 8 ticks at the most the server is told what has been turned aside: his posture is
+  worn by it, and his sword goes up if he is free to put it up. Kept in his guard that way
+  with his next move due, he does not wait for the stream to stop: the move is begun from
+  the guard.
+- In his first phase none of this happens: every shot is answered by itself as before (and
+  whatever would take more than the cap is turned aside, 3.1).
+
+**3.4 The run behind it, from his second phase.**
+
+- Held at turning something aside for two and a half seconds (150 ticks, no gap of half a
+  second), and walking or with his sword up: he **runs at whoever it is with the sword up
+  across his front**, at his second phase's run (10.6 px a tick), and **nothing of theirs
+  lands on him while he runs**, whatever is rolled. (One who stands behind him then has his
+  back: what is theirs is answered as it would be otherwise.)
+- Within 92 px of them he cuts: **the blow down and the cut up** (and on into the hand's
+  leap) half the time, **his first move's three cuts** the other half. One who hangs over
+  his head he goes up after (the blow in the air). Under one who stands on something over
+  his head the run is over and he picks again at once.
+- Against a wall, or after three seconds, he walks again. The next run needs two and a half
+  seconds again from where the last one ended.
+
+**3.5 The break-out, from his second phase.**
+
+- Where the world is decided, what strikes have taken from him over the last second is kept.
+  At **5 thousandths of his life or more** (the cap is 8), no sooner than 6 seconds after
+  the last time, from any move on his feet with the sword in his hand and nobody in it: he
+  is gone, **a flash step to behind whoever he fights** (in front of them with no room
+  behind; not at all with none either side, and he tries again half a second later), and
+  **the cut up from there begins a fifth of a second after he lands** (his first phase's
+  waits half a second). It wears the yellow star from the moment he goes, no parry turns it,
+  and **he stays where it leaves him**: no step back.
+- One who is off the ground he goes up beside instead, and it is the blow in the air.
+- What lands on him while he is down (broken, on a knee, thrown back) is not counted: that
+  was theirs to land.
+
+**3.6 His third phase.** His defence is 80 for 40. Whatever is sent at him he answers four
+times in five.
+
+**3.7 And one thing found and mended on the way.** The game calls an NPC's hit effect for
+the look of a hit as well as for a hit: a javelin stuck in an enemy (Daybreak, the Bone
+Javelin, a Stardust Cell's shot) calls it every half second with no strike behind it. The
+parry's stagger woke at any such call: **an enemy staggered by a parry with a javelin in it
+got up within half a second and the riposte's flash was played with no riposte.**
+`PADStaggerNPC` now takes it for the riposte only if life was taken (or it was killed
+outright). This is every enemy the parry staggers, not only him.
+
+### 4. The numbers
+
+**Yours**: eight thousandths of his life a second; five seconds' worth kept, spent while he
+is broken; broken for about three seconds; two in three in his second phase and four in five
+in his third; two and a half seconds; a fifth of a second; the yellow star on the break-out;
+his third phase's defence doubled; the cap in all three phases and the rest from the second;
+no bar.
+
+**Mine, every one of the rest**: two seconds' worth at once; that he stays shut until half a
+second's worth can be taken; that a burn comes out of the same; posture 100, and what wears
+at it (9 a second from shots, 4, 6, 25), a second and a half before it comes back and 12 a
+second; that he is thrown back a step as he breaks; a second after it with nothing wearing
+at it; three hits no more than 15 ticks apart as a stream; a roll standing one second; one
+shot sent back in a second held; the server told every 8 ticks; a gap of half a second
+ending the count toward the run; the run's speed, its 92 px, its three seconds, and what it
+ends in; that nothing of theirs lands while he runs; the break-out at five thousandths in a
+second and no oftener than every six seconds; that what lands on him while he is down does
+not count toward it.
+
+All of them are constants at the head of their parts of `Foigh.Hold.cs` (`CapRate`,
+`FlowSeconds`, `BankSeconds`, `CapOpens`; `PostureStream`, `PostureStruck`, `PostureMet`,
+`PostureParried`, `PostureHolds`, `PostureBack`, `PostureDeaf`; `StreamAt`, `PressureEbbs`,
+`VerdictTicks`, `TellEvery`; `PressGap`, `ChargeAfter`, `ChargeReach`; `BreakoutAt`,
+`BreakoutEvery`, `BreakoutWait`), with `BrokenTicks` and `ChargeLongest` in `FoighMoves.cs`,
+`ThirdDefense` in `Foigh.cs` and `ThirdAnswers` in `Foigh.React.cs`.
+
+### 5. What the 1.4.4 assembly says
+
+Read in the IL of the game's own assembly for this:
+
+- `NPC.HitModifiers.SetMaxDamage(int)` keeps the smaller of what it is given and what it
+  had, and no less than 1; the damage of a hit is held to it last of all. So a hit can never
+  take nothing: with nothing left to take it takes 1, which is given back.
+- `NPC.StrikeNPC(HitInfo, ...)` calls `NPC.HitEffect(HitInfo)` on every machine the strike
+  is done on, after the life is taken. But `NPC.HitEffect(int, double, bool?)`, which the
+  game calls in many places for the look of a hit, builds a `HitInfo` out of the number it
+  is given and calls the same hooks. A javelin stuck in an NPC does it every 30 ticks
+  (`Projectile.AI_113`). So what a strike is said to have taken is believed only as far as
+  his life has gone down since the machine's last tick.
+- `Projectile.Damage` asks a mod whether a shot can hit an NPC **after** it has looked at
+  the shot's own wait for that NPC (`localNPCImmunity`, `perIDStaticNPCImmunity`) and at the
+  swing's wait, and **before** it looks at the NPC's wait for the shot's owner
+  (`NPC.immune`), at the owner's reach, and at whether the two touch. So when the mod is
+  asked, a blade that hit a moment ago is not asked about again until its own wait is over:
+  each time it is asked is one hit that would land.
+- A Last Prism beam (632) makes what it hits wait 5 ticks for its owner's next hit (the
+  game's own number for it, among those it has by type); a blade of the Zenith (933) waits
+  15 of its own updates, of which it has two a tick.
+- `NPC.UpdateNPC` does an NPC's burns before its AI in the same tick, and `NPC.lifeRegen` is
+  that tick's rate in halves of a point of life a second. A mod NPC's own hook for it is
+  called before the global ones, so what the globals add cannot be held down there: it is
+  counted afterwards instead, in his AI.
+- `Player.ItemCheck_MeleeHitNPCs` asks about a swing against an NPC only while the swing's
+  own wait for that NPC is over. So a swing that was met is not asked about again.
+- The Last Prism is one held projectile (633) that makes its own six beams, aims itself at
+  the mouse and goes when its player lets go or cannot hold it; the Zenith lets a blade go
+  every third of its swing, each with half the way to what is aimed at as its speed, the
+  third scattered. Both are run so in the rig (section 6).
+
+### 6. Verified
+
+- **The mod builds** against the 1.4.4 assemblies with 0 errors and the same 10 warnings.
+- **A new part of his rig** (`FoighBench.Hold.cs`, 111 checks) on the game's own engine:
+  blows that ask nobody (`NPC.SimpleStrikeNPC`, `NPC.StrikeNPC`), the game's own projectiles
+  flown and landed by `Projectile.Update`, its own swing of an item, Daybreak javelins stuck
+  in him as the game leaves them, the Last Prism as the game's own held projectile with its
+  six beams, the Zenith's blades let go as the item lets them go.
+  - The cap: a blow for 100,000 takes 2,400 (Classic); another in the same tick takes 1 and
+    it is his again a tick later; he is shut for 30 ticks; a blow for 5,000 every tick for
+    ten seconds takes 14,380 in all (14,400 is the most there could be); two blows worked
+    out before either landed take 4,800 and 2,400 of it is his again; a blow for 2,000 every
+    two seconds lands whole every time; what is kept grows to 6,000 and no further, and a
+    blow on him broken takes 8,400; a passage begins it full again.
+  - Burns: six Daybreak javelins (600 a second) take 2,700 in 280 ticks and in those ticks
+    only 2,800 comes back for hits where 5,600 would have; fourteen (1,400 a second) take
+    5,367, no more than the cap; the look of a hit they give off is counted as nothing.
+  - At the cap, 150 bullets for 5,000 each in five seconds: 10 land (2,400, then 600 or a
+    little more each), every other one is gone without landing. A swing at the cap is met in
+    the middle of a move of his. A minion's laser lands under the cap and is turned aside at
+    it.
+  - His posture: 6, 4, 25, and 9 a second from shots; 90 ticks, then 12 a second; broken a
+    tick after it is worn through, for 180 ticks; the riposte takes 2,940 for a blow of
+    1,000 and the next blow 980, and neither gets him up; 10 of 10 bullets land on him and a
+    swing cuts him; not with his sword thrown, not in a flash step; sent with him to the
+    half point (48 bytes of his own now).
+  - The holding parry: a bullet every four ticks for four minutes, pinned where he stands:
+    238 rolls and 144 of them held in his second phase (2 in 3 would be 159), 238 and 195 in
+    his third (4 in 5 would be 190); in a second held nothing lands, in a second let through
+    everything does; one shot goes back in each second held. Through his first move's three
+    cuts, three knives and his third phase's three cuts: with the roll held nothing lands. A
+    bullet every 15 ticks is a stream, one every 16 is not. In his first phase nothing is
+    counted.
+  - The run: 40 times of 40, 150 ticks after the first thing turned aside; none of the 360
+    bullets fired while he runs lands; from 73 px he cuts, the blow down and the cut up 15
+    times and his first move's three cuts 25. A wall, three seconds, a gap of 40 ticks, one
+    over his head, one on a ledge (and the next run 150 ticks after that one ended), and
+    never in his first phase.
+  - The break-out: the same tick as a blow that takes 780 of his 150,000; behind them 7
+    ticks later; the cut lands 13 ticks after that; a parry held up through it does not turn
+    it; he stays where it leaves him. Not again for 360 ticks; not in his first phase; not
+    with them in his hand, thrown back by a parry (nor when the 360 ticks run out while he
+    reels), in the air, or running after his sword.
+  - His third phase: a blow for 1,000 takes 960 for 980; one at a time, 222 of 300 bullets
+    are struck out of the air (4 in 5 would be 240) and 108 of those go back, 239 of 300
+    spells are stepped out of the way of, 244 of 300 swings are met; in his second phase it
+    is still 2 in 3 (205 of 300 bullets).
+- **Thirty seconds of each of the two that cut him down, in each phase**, in a Classic world
+  (150,000 life), against a player who stands and is hit: with nothing in the way, as §16.49
+  had it, and now (38,420 is the most the cap lets thirty seconds take):
+
+| | first phase | second | third |
+|---|---|---|---|
+| the Last Prism, before | 80,354 | 38,049 | 34,464 |
+| the Last Prism, now | 38,360 | 13,771 | 12,997 |
+| the Zenith, before | 68,848 | 68,534 | 58,960 |
+| the Zenith, now | 37,984 | 24,440 | 18,871 |
+
+  In his first phase that is the cap and nothing else. In his second and third it is also
+  the seconds held (10 of 17 and 16 of 18 for the Prism, 14 of 21 and 16 of 21 for the
+  Zenith), the run (0 to 3 times in the thirty seconds) and the break-out (2 to 4 times). He
+  was broken once in five of the six, and never took more than 4,611 in any one second
+  (broken, with what was kept). The player in these does nothing but stand and use the one
+  weapon, so the "before" of his second and third phases is already cut short by his own
+  hits on them.
+- **The whole rig on the build that is delivered**: the default run 489 of 489; the flags
+  152 of 152; weight and potions 121 of 121; his own rig 769 of 769 (the new part is 111 of
+  them); his third phase alone with its tally 210 of 210; his film 114 of 114; the Turned
+  218 of 218. The Meat Hook's rig, which nothing here touches, was 194 of 196 in that run
+  and 196 of 196 in three more straight after: its test throws the hook at a zombie that
+  walks about by the game's own dice, which that rig does not fix, and in the one run the
+  zombie was not there. His first two phases fight as they did: the eight four-minute fights
+  in them (and the second of the two in his third phase) come out the same, hit for hit, as
+  on §16.49's build; the first of the two in his third phase differs, as it should (four
+  answers in five).
+- **Mutations**: 131 changes were made to the mod one at a time (a number, a comparison
+  turned round, a line taken out), each run against the part of the rig that should notice.
+  124 were noticed the first time. The seven that were not were each a gap in the rig and
+  not a fault in him; each was closed, and all seven are noticed now: that what lands on him
+  while he is down counts toward the break-out (the rig struck him early in the three
+  seconds; it now strikes again a fifth of a second before he is up); the step back as he
+  breaks (it was printed and not checked); a hit that does not put off the count of a stream
+  ebbing (the rig now checks a stream is one at its third hit); a shot sent back out of the
+  middle of a move of his (the rig had never left one due); the next run needing as long
+  again after one that reached them (now checked under a ledge); the break-out without his
+  sword (checked in the air only; now with him on his feet after it); the break-out out of a
+  parry's reel (now checked with the wait since the last running out while he reels). Five
+  more changes were looked at and left out: what they change cannot be told from what is
+  there (a second test of the same thing).
+- **Drawn outside the game** from the rig's numbers, four scenes: a stream held and the run
+  behind it; his posture worn through; the break-out; his first phase at the cap.
+
+### 7. What changed on the way
+
+- **The cap was first a plain most.** Against something that hits far harder than it, that
+  is a hit every tick for whatever the last tick let back in: 20 at a time, for ever. It now
+  shuts at nothing and opens at half a second's worth.
+- **A shot struck out of the air by itself wore at his posture by 4 with no limit**: a gun
+  broke him in a few seconds in his first phase. It comes out of the same 9 a second as a
+  stream now.
+- **While he runs, what was turned aside was first what came at his front.** A fast shot is
+  first found well inside him, and counted as from behind. It is now whoever he runs at.
+- **A stream of bullets sent nothing back**, where bullets one at a time send half of those
+  he strikes: emptying a magazine at him was safer than a shot at a time. One goes back in
+  each second held.
+- **The run began again the moment it ended**, when it had not reached them. It needs two
+  and a half seconds again from where it ended.
+- **A riposte on him was answered with the break-out** as he got up. What lands on him while
+  he is down is not counted toward it.
+- **Under one who stood on something over his head he ran on the spot** until the three
+  seconds were up. The run ends there now.
+- **The bar.** A bar over his head for his posture was built and drawn in the previews, and
+  then: "keep posture ui hidden". It is not drawn. What draws it is kept in `Foigh.Draw.cs`
+  behind one switch (`PostureBarShown`, off), in case it is wanted to look at.
+- Three lines of mine that did nothing were found by changing them one at a time and taken
+  out.
+
+### 8. Not seen in the game
+
+None of this has been on a screen or played. Run in the rig and drawn outside the game from
+its numbers. What only the game can show: whether two blows a second through his guard reads
+as a guard or as a fault; how often he is broken against what you fight him with (in the
+rig, about once in thirty seconds against either of the two); whether the run and the
+break-out come too often or too seldom; that against one who never lets up at arm's length
+he goes from the run's cut straight to the next run and cut, with none of the second or two
+he otherwise waits up close (two and a half seconds have gone by in the cut itself; letting
+up for half a second ends it); the sparks and the steel of a stream turned aside (`Item37`),
+the break (`Item37`, `NPCHit4`, `Dig`), the run (`Item71`): picked by name, never heard. And
+it has never been run with two machines.
+
+### 9. Added without being asked
+
+That what burns him comes out of the same cap; that he is shut until half a second's worth
+can be taken; that the first blow on him broken is a riposte; that he is thrown back a step
+as he breaks; that one shot of a stream goes back; that nothing of theirs lands while he
+runs; that he goes up after one who hangs over his head, from the run and from the
+break-out; that he begins his next move out of the guard when a stream keeps him in it; that
+what lands on him while he is down does not count toward the break-out; the mending of the
+parry's stagger (3.7). Keep or cut each.
+
+### 10. Still as it was, or left
+
+- **The second and third deliveries** (the meat hook, the jump, his second phase's
+  projectiles, what a hit of his does to a grapple and to wings, how he reads what a player
+  does; his third phase's speed, its new moves, the plunge driven deeper): not begun.
+- **A Last Prism held near him is rolled for once, as a spell seen coming**, when it is
+  first raised within about 26 tiles: two times in three he flash-steps in on it. That is
+  from before this (§16.43: the crystal in the player's hand is a thing that hurts, with a
+  speed that is only its aim) and is left until the second delivery, which is to give him
+  something meant for a beam being held.
+- **The sparks of a stream turned aside are seen by whoever's stream it is.** Others see his
+  guard go up, and the break.
+- **Nothing tells a player how worn his posture is**, by request. If a sound or a look of
+  him as it nears breaking is wanted in place of the bar, say.
+
+---
+
+## 16.51 Later in session 7: Foigh reaches them from his second phase: the hook in his bottom hand, the leap as high as they are, two cuts of wind, a fan of knives, what a hit of his does to a grapple and to wings, and what he reads of them
+
+The second of the three deliveries of what was asked on the 7th (the whole of it is quoted
+at the head of §16.50). What this one is built on, of that message:
+
+> From 2nd phase onwards, he has a meat hook on his bottom hand..
+> in his animation he js pulls it out and doesnt mention it
+> He can jump super high
+
+and of what was said after it: "we need more projectile on phase 2-3, dead ass cuz player
+can js dodge by using hooks and rocket boots and wings"; "Make his AI actually smart and
+from software like and shi". And of the three rows of questions asked back, the answers that
+belong to this delivery:
+
+- What his hook does: **"Both, by where you are"**: on the ground it pulls him to you, into
+  a cut; in the air, on a grapple or up on the ceiling it drags you down to him.
+- What more is thrown in his second phase: **pale wind cuts**, and **knife volleys**.
+- What a hit of his does to getting about: **a hit cuts your grapple** (and none is thrown
+  for a second), and **a hit in the air grounds you** (wings and rocket boots shut for two
+  seconds). Both were picked.
+- How he thinks: **reads and punishes**, **delays and feints**, **learns you**. All three
+  were picked; the first is in this delivery, the other two are the third's.
+
+Nothing more was to be asked: the laptop was left on for the night ("take your time"), and
+what was left open is mine to decide and to say. **This is the second delivery. The third
+(§16.52) is his third phase: its speed, its slashes, the leap, turn and throw, the plunge
+driven deeper, his delays and feints, and what he learns of a player.** Nothing of that is
+in this.
+
+### 1. The device, read first
+
+- At 21:19 UTC on the 7th the mod's folder was listed (its root, `Content` with everything
+  under it, 626 entries, and `Localization`): it is as §16.50's delivery left it, file for
+  file. The one file added and the seven changed since the listing before that are that
+  delivery's own, with the times it wrote them. `client.log` there has not changed since
+  17:13:09 UTC, when the game was shut down: the game has not been run since, so §16.50 has
+  not been built on the device yet either.
+- At 22:05 UTC, before anything was written: the ten files this writes over and the four
+  sets of notes were read back from the device and are, byte for byte, what was last
+  delivered. The two new files, `Foigh.Reach.cs` and `FoighHook.cs`, were not there.
+
+### 2. Readings
+
+1. *"he has a meat hook on his bottom hand.. in his animation he js pulls it out and doesnt
+   mention it"*: in the passage into his second phase, while his third line is up, his
+   bottom hand goes back behind his hip and comes forward with a hook on a chain. No line of
+   his names it, nothing is written in the chat; it is heard once. From then on it is in
+   that hand whenever the hand is free, and slung behind his hip while the hand is at
+   something else (a knife, somebody, the sword in both hands).
+2. *"He can jump super high"*: read as the leap he already had (onto them, the point of the
+   sword down) going **as high as whoever it is for**, from his second phase: up to
+   forty-six tiles. **The other reading, not built here**: a jump of its own, straight up,
+   to do something from up there. The third delivery's leap, turn and throw of big slashes
+   is that.
+3. *"Both, by where you are"*: where they are is looked at as the hook bites, on their own
+   machine: stood on the ground (something solid within four tiles under their feet, and no
+   hook of their own in anything), he comes to them; anything else, they come to him.
+4. *"we need more projectile on phase 2-3 ... player can js dodge by using hooks and rocket
+   boots and wings"*: everything added here goes at them wherever they are, up as readily as
+   along: the wind, the fan, the hook. And the two rules for what a hit does (5).
+5. *"a hit cuts your grapple"*, *"a hit in the air grounds you"*: **any** hit of his from
+   his second phase on: the sword, a knife, a cut let go of, the hook itself, the hand's.
+   Not only the sword's.
+6. *"reads and punishes"*: four things a player does that he is told of and answers: a swing
+   that missed him from near, something held on him, a reload, a grapple thrown and biting.
+7. *"knife volleys"*: read as more knives at once and oftener: a fan of five in one throw,
+   beside the one and the three he had, and his knives picked more often from far off and at
+   one over his head.
+8. *"pale wind cuts"*, his second phase's: two of them to a move, as his third phase's three
+   are let go of, with nothing burning in them and no wound.
+
+### 3. What was built
+
+The hook, the wind and what he reads are one new file, `Foigh.Reach.cs`; the hook in the air
+is `FoighHook.cs`; what a hit does to a player, and being pulled in, are in
+`FoighGripPlayer` (`FoighPlayers.cs`); the leap and the fan are in `Foigh.Fight.cs` where
+the leap and the knives were.
+
+**3.1 The hook, from his second phase.**
+
+- **Taken out** in the passage, 54 ticks into his third line (the hand goes back from tick
+  30, is behind his hip by 44, and is forward with it by 72). After that: in his bottom
+  hand, held by its tail with its points ahead of him and a link of chain hanging from the
+  hand; behind his hip in the moves that use that hand or both; not there at all in his
+  first phase.
+- **Thrown** (a move of its own): the hand back by tick 12, through at 18, where it leaves.
+  It flies **22 px a tick for 36 ticks** (49 and a half tiles of chain), straight, at where
+  they will be (half of where they are going allowed for, as a knife is), and the first tile
+  it meets stops it. He throws it only from **140 to 732 px** off with nothing between them.
+- **What it does to whoever it bites**: 50 through armour (half a knife), and it leaves them
+  none of the grace a hurt leaves: the blow it brings is still to come. It goes through one
+  whom a hurt still shields and bites nothing. **A parry knocks it away.**
+- **One stood on the ground: he comes to them.** He is pulled along his own chain with no
+  weight, 15 px a tick at the most, to within 78 px of them, and **the sword comes down** (a
+  step into it; the blade is down 10 ticks after he arrives). If they have got off the
+  ground by the time he is there, he is beside them in the air already and it is the blow in
+  the air that sends them down. A wall between, or 50 ticks, and he lets go.
+- **One off the ground, or hanging from a hook of their own, or up on the ceiling: they come
+  to him.** Their own hooks are let go, a mount is left, and they are pulled in at 15 px a
+  tick at the most, whatever keys they hold (left, right, up, down, jump, the hook, the
+  mount: none of them is theirs while he pulls), to a place just ahead of him at his chest.
+  **Their hands are still theirs**: the blow that waits for them can be parried. He begins
+  it when they are 132 px from that place, and the blade is down as they get there. 70 ticks
+  at the most.
+- **The blow** is his sword's, whole. It wears no star: it can be turned aside by a parry,
+  and that wears his posture as any parry of his sword does. After it he waits as after any
+  move from up close (a second to two in his second phase).
+- **Nothing on it** (gone against a wall, run out, or knocked away): he takes the chain in
+  again, 36 ticks, open, and walks.
+- Losing life as fast as he can (§16.50's break-out), he does not break out with his hook in
+  the air or somebody on it. A passage ends it like any move, and whoever was on it is off
+  it.
+
+**3.2 The leap, as high as they are, from his second phase.**
+
+- The leap onto them tops out **a tile and a half over their feet**, wherever they are, **up
+  to 46 tiles** (736 px) over where he left the ground; it was 225 px at the most. Never
+  lower than it was. And no higher than leaves 28 px between his head and whatever is over
+  him.
+- His fastest is 15.5 px a tick (the fastest tiles can stop). A leap that needs more than
+  that to get there goes up at 15.5 with his weight not let at it, for as many ticks as it
+  takes, and his weight has him from there. Stopped by something over him on the way, that
+  is as high as it goes.
+- It is the same move: the gathering, the point down, the landing on them or the sword stuck
+  in the ground.
+- His first phase's leap is as it was, to the pixel.
+
+**3.3 Two cuts of wind, his second phase only.**
+
+- Where he stands: the sword up, down, held, torn up. A second and a half (92 ticks). As
+  each cut comes through level **a cut of wind is let go at them**, wherever they are: at
+  ticks 19 and 64, three quarters of a second apart, so that a parry that met the first is
+  over before one has to be begun for the second.
+- A cut of wind is the size of his third phase's first two (68 px from tip to tip), goes
+  **14 px a tick for 66 ticks** (58 tiles), breaks on the first tile, and is **half his
+  sword's blow** through armour. **No wound** (that is his third phase's). It can be
+  parried.
+- Up close the blade itself cuts as well, and his sword can be turned aside through both
+  cuts.
+- Picked from up to 900 px off. His third phase does not have it: it has what its sword
+  burns with.
+
+**3.4 Knives: oftener, and five at once.**
+
+- From his second phase his knives count for more than twice what they did among the things
+  he picks from, from far off and at one over his head (3.7).
+- Of a hundred throws, 22 are three knives (as before), **38 are a fan of five at once**
+  (from his second phase), and the rest are one.
+- **The fan**: twelve degrees between each knife and the next. **At one stood on the ground
+  the lowest is the one aimed at them and the other four go over it**, up to 48 degrees
+  over: a jump is what it is for. At one off the ground the middle one is aimed at them, two
+  either side.
+- Each knife is a knife as before: 100 through armour, broken by a parry or the first tile.
+
+**3.5 What a hit of his does to getting about, from his second phase.** On the machine of
+whoever is hit, for any hit of his:
+
+- **A hook of theirs in anything is let go** (every one they have out), and **no other is
+  thrown for a second**: not with the key, and not by using a hook as a thing held.
+- **Off the ground** (nothing solid for four tiles under their feet), **nothing holds them
+  up for two seconds**: wings (no gliding either), rocket boots, the Soaring Insignia, a
+  flying carpet; and a mount that flies or hovers is left, and cannot be mounted again until
+  it is over. A jump in the air, and anything that only slows a fall, are theirs still.
+- What their wings and boots had left as they were shut is theirs again when the two seconds
+  are over, if they are still in the air. (On the ground the game has filled both.)
+- A sword in the hand, a potion, anything else: untouched. Struck again while it lasts, it
+  lasts two seconds from then.
+- In his first phase a hit takes none of this.
+
+**3.6 What he reads, from his second phase.** A player's own machine sees them do one of
+four things and tells the server, no oftener than once in two and a half seconds; he takes
+one no oftener than every second and a quarter. Walking or with his sword up, on the ground,
+nobody in his hand, **he answers as often as he answers anything: two times in three, four
+in five in his third phase.**
+
+- **A swing that missed**, from within 240 px: something swung or thrust in the hand (a
+  sword's own swing; a spear, and the mod's own swords, which the game has as things held
+  out; a whip) whose use ended with nothing of theirs having landed on him, been met by his
+  sword, or been turned aside. **A parry is not a swing.**
+- **Something held on him** for three quarters of a second, from 200 px or further: anything
+  kept up by holding the button (a beam, a yoyo). For as long as it goes on being held he is
+  told of it again, every two and a half seconds.
+- **A reload begun** (the mod's magazines).
+- **A hook of theirs biting.**
+- **What he does about it.** At one on the ground: a flash step to in front of them, and the
+  sword (his first move or his third, half each); with nowhere to stand there, or something
+  of theirs on its way to where he would stand, a fan of knives. At one off the ground: his
+  hook, if it can get to them; from too near for that, up beside them (the blow in the air);
+  from too far, a fan.
+- And one thing that goes with it: a thing held out in the hand (the Last Prism's crystal)
+  is no longer taken, the moment it is raised, for a spell on its way to him. That was an
+  accident of §16.43's (noted in §16.50, section 10) and from his second phase it is read as
+  what it is, something held on him. His first phase is as it was.
+
+**3.7 How often.** Beside what he already picks from, in his second phase and his third: the
+hook from far off along the ground (a way in) 1.4, at one who is off the ground 3, at one
+over his head 3.5; knives 1.6 from far off (it was 0.7) and 2.5 at one over his head (it was
+1); the wind, in his second phase, 0.8 up close, 2 from far off, 2.5 at one over his head.
+For what those sit beside: walking on is 9.5 from far off, the leap 4.5, going up after one
+in the air 2.5 to 4.5.
+
+### 4. The numbers
+
+**Yours**: that he has it from his second phase, takes it out in the passage and says
+nothing; both ways for the hook, by where they are; pale wind cuts in his second phase;
+knife volleys; a hit lets go a grapple and none is thrown for **a second**; a hit in the air
+shuts wings and rocket boots for **two seconds**; that he reads and punishes.
+
+**Mine, every one of the rest**: the tick it is taken out at; 22 px a tick and 36 ticks of
+chain; thrown from 140 to 732 px; its blow of 50 and that it leaves no grace; 15 px a tick
+along the chain either way; 78 px, 132 px, 50 and 70 ticks; that the blow is the sword's
+whole and can be parried; 36 ticks to take it in; forty-six tiles and the 28 px of headroom;
+the wind's 14 px a tick, 66 ticks, half the sword's blow, no wound, 45 ticks between the
+two, 900 px; 38 fans in a hundred throws, five knives, twelve degrees, and which way the fan
+goes; that **any** hit of his counts, and that the Soaring Insignia, a carpet and a flying
+mount are shut with wings and boots; that what the wings had left is given back; the four
+things read, 240 px, three quarters of a second from 200 px or more, once in two and a half
+seconds, and what each is answered with; every weight in 3.7.
+
+They are constants at the head of `Foigh.Reach.cs` (`HookDamage`, `HookLeast`, `HookMost`,
+`HaulSpeed`, `HaulReach`, `HaulLongest`, `WinchTo`, `WinchUp`, `WinchCuts`, `WinchLongest`,
+`GaleNear`, `GaleFar`, `GaleAbove`, `GaleReach`, `HookFar`, `HookAloft`, `HookAbove`,
+`KnivesFar`, `KnivesAbove`, `ReadEvery`, `WhiffWithin`, `HeldTicks`, `HeldFrom`,
+`ReadSees`), of `FoighHook.cs` (`Speed`, `Life`), in `FoighGripPlayer` (`HookLock`,
+`FlightLock`, `DragSpeed`, `DragReach`), in `Foigh.Fight.cs` (`SuperLeap`, `LeapHeadroom`,
+`FanKnives`, `FanCount`, `FanStep`), in `FoighSlash.cs` (`PaleSpeed`, `PaleLife`) and beside
+the new movements in `FoighMoves.cs` (`HookLets`, `GaleCasts`, `GaleTicks`, `ReapDown`,
+`HookTaken`).
+
+### 5. What the 1.4.4 assembly says
+
+Read in the IL of the game's own assembly for this:
+
+- `Player.RemoveAllGrapplingHooks()` kills every projectile of that player's that flies as a
+  grappling hook does, and empties their count of hooks in things. That is what lets a hook
+  go.
+- `Player.Update`, in its order: what is worn is gone over; a mod is asked
+  (`PostUpdateRunSpeeds`); then, in this order, the jump, **"with no wings their time is
+  nothing, with no rocket boots their time is nothing"**, the carpet (only for one who has
+  one), wings and rockets, the hook's key, the pull of a hook in something, a mod asked
+  again (`PreUpdateMovement`), and the move. So wings and boots are shut by saying, in the
+  first of those two askings, that none are worn: the game then empties both itself. That is
+  why what they had left has to be kept and given back.
+- `Mount.CanFly()` and `Mount.CanHover()` say which mounts hold their rider up;
+  `Main.projHook` says which things thrown are hooks.
+- A ceiling does not leave an NPC still: `NPC.Collision_MoveWhileDry` leaves it a hundredth
+  of a pixel a tick downward. So "stopped" cannot be read as "not moving", in the leap: it
+  is read as "no longer going up while still being sent up".
+- `Player.ItemCheck_Inner` counts a use down **before** it begins the next one, so the tick
+  a swing begins is seen from his side of the tick with the count at its full
+  (`ItemAnimationJustStarted`), also when one swing follows another with the button held.
+  That is how one swing is told from the next.
+- `ParryTiming.CurvedSword` is 6, 8 and 28 ticks: 42 in all, whatever the wielder's speed.
+  The two cuts of wind are 45 apart for that.
+- A swing's own hit on an NPC and a projectile's are told to the NPC on the machine of
+  whoever's it is (`OnHitByItem`, `OnHitByProjectile`): that is where "it landed" is known,
+  and where a miss is.
+
+### 6. Verified
+
+- **The mod builds** against the 1.4.4 assemblies with 0 errors and the same 10 warnings.
+- **A new part of his rig** (`FoighBench.Reach.cs`, `FoighBench.Reach2.cs`, 91 checks) on
+  the game's own engine: the game's own grappling hook thrown and hung from, its own
+  `Player.Update` for jumps, its own projectiles, its own swing of an item, the mod's own
+  parry.
+  - A hit of his: in his first phase a hook stays where it is and what holds a player up
+    still does. In his second and his third, on one who hangs from a hook over the ground:
+    the hook is let go, no other can be thrown for 60 ticks by the key or as a thing held,
+    and for 120 ticks wings, rocket boots, the Soaring Insignia and a carpet do nothing; a
+    sword in the hand is still theirs. Still in the air when it is over, what was left is
+    theirs again (77 of flight and 5 of rockets, as they had). Stood on the ground nothing
+    is shut, and a hook in something is let go all the same. A knife of his does it as the
+    sword does. Nothing of it is left on one who has died. With him gone it is over two
+    updates later.
+  - The fan: of 951 throws in his second phase, 382 of one knife, 215 of three, 354 fans (38
+    in a hundred would be 361); none in his first. Five leave his hand at once at tick 13,
+    twelve degrees apart, at 17.5 px a tick; at one who stands the lowest is at them and the
+    other four over it, up to 48 degrees over, from either side of him; at one who hangs
+    fifteen tiles up the middle one is at them. After a fan, over eighty of them, 34 to 54
+    ticks to his next move. With the game's own jump (`Player.Update`, whole): from 300 px,
+    of the 37 moments a jump can begin in while he throws, 17 take a player clear of one
+    knife and 4 clear of the fan; from 480 px, 27 and 15.
+  - The wind: two let go, at ticks 19 and 64 of 92, at 14 px a tick, each at them. Each
+    lands on one who only stands there (74 and 64; half of 150 is 75) and leaves no wound;
+    up close the blade itself cuts as well; at one who hangs sixteen tiles up it goes up at
+    them and lands; a parry turns both aside. Picked 55 times of 600 from 300 px in his
+    second phase, never in his first or third. One who runs into it at the game's fastest
+    dash (21.9 px a tick) is cut wherever they began from; somebody first comes out the
+    other side of it between two looks at 29 px a tick.
+  - The leap: at one who hangs 500 px up and 200 off, his feet get 536 px up, never faster
+    than 15.5 px a tick, 100 ticks in the air, the point on them as he goes by, and he is on
+    the floor as it ends; the same one of him twice running, 536 and 536. In his first phase
+    at the same: 225 px. At one 700 px up: 738 px, and on them. At one 1000 px up: 738 px,
+    under them, and down again. At one on the ground it is as it was (200 px, 56 ticks).
+    Under a ceiling 25 tiles up: 335 px, with 15 px left over his head, never meeting it.
+    Sent into a ceiling that begins a way ahead of him: he meets it, goes no higher, falls,
+    and is not taken for landed where he was stopped.
+  - The hook: not there in his first phase; in his hand from tick 54 of his third line;
+    behind his hip while a knife is thrown. He would throw it from 300 and 700 px, not from
+    100 or 760, not through a wall. Thrown at tick 18 at 22 px a tick, at them; at one
+    carried along 250 px up, at where they will be with half of where they are going allowed
+    for. It bites one who stands (48), he comes along it at 15 px a tick at the most to 52
+    px of them, and the blow lands 9 ticks into it (156), with the hook out of them; 107
+    ticks from the cast to walking again, and then the up-close wait. It bites one who hangs
+    from their own hook 250 px up (46): their hook is let go and they are pulled in at 15 px
+    a tick at the most for 29 ticks, none of the keys theirs but the one for what is in
+    their hand, and the blow lands with them 2 px from where he pulls them to (129). One on
+    the ground with a hook of their own in something, and one in the air with none, are
+    pulled in the same. A hook of theirs still on its way to something is gone as he begins
+    to pull. At nobody: it flies 35 ticks and he takes it in again, 36 ticks. Into a wall:
+    gone in 9 ticks. Met by a parry: knocked away. Through one whom a hurt still shields:
+    nothing. Bitten on the ground and off it by the time he gets there: straight from the
+    chain into the blow in the air. He lets go after 51 ticks of one too far off, 8 ticks
+    into a wall, 71 ticks of one who does not come. No break-out with it out; a passage ends
+    it. On a machine it is not of, a hook in the air while he is doing something else is not
+    seen and bites nobody. Who is on it is sent with him (50 bytes of his own now).
+  - What he reads: told 600 times of one who stands 300 px off, he answers 397 in his second
+    phase (2 in 3 would be 400) and 476 in his third (4 in 5: 480), each a flash step to in
+    front of them and the sword. Never in his first phase. At one off the ground: his hook
+    from 300 px, up beside them from 60 px, a fan from 760 px. Not in the middle of a move;
+    not 40 ticks after the last he took; 75 ticks after, as ever. A swing that touches
+    nothing from 200 px is told, and from 300 px is not; one that cuts him, or is met, is
+    not; a gun fired is not. A cut with a sword the game has as a thing held out (as the
+    mod's own are), a spear's thrust and a whip's crack at nothing are told; a staff's bolt
+    is not; a parry begun that meets nothing is not; a swing during which something of
+    theirs is turned aside by him is not. A thing held on him from 400 px is told after 45
+    ticks and again at 195 and 345; from 150 px, or let go after 40, it is not. A reload
+    begun is told. A hook of theirs biting again and again is told 150 ticks after the last
+    thing was. A Last Prism's crystal raised 300 px off: in his first phase he steps in on
+    it 65 times of 120, as he did; from his second, never.
+- **The whole rig on the build that is delivered**: the default run 489 of 489; the flags
+  152 of 152; weight and potions 121 of 121; his own rig 860 of 860 (the new part is 91 of
+  them); his third phase alone with its tally 210 of 210; his film 114 of 114; the Turned
+  218 of 218; the Meat Hook 196 of 196. **His first phase fights as it did**: its five
+  four-minute fights come out the same, hit for hit, as on §16.50's build. His second and
+  third phases' do not, as they should not: the player in them, who does a little of
+  everything, is hit 95, 100 and 87 times in four minutes of his second phase where it was
+  67, 74 and 69, and 99 and 96 times in his third where it was 74 and 76.
+- **Mutations**: 152 changes were made to the mod one at a time (a number, a comparison
+  turned round, a line taken out), each run against the part of the rig that should notice.
+  128 were noticed the first time. Of the 24 that were not: fourteen were gaps in the rig,
+  each closed, and all fourteen are noticed now (the wait after a fan was looked at once and
+  could pass by luck; a second leap by the same one of him was never made; the hook was only
+  ever thrown at one who stood still; where a player is as it bites was only tried hanging
+  from a hook in the air; that he goes straight from his chain into the blow in the air was
+  looked for anywhere in the next five seconds; the keys, a hook of theirs in flight, the
+  hook out of them once the blade is down, and each of the three ways he lets go, were not
+  looked at; a swing that cuts him was not told from one that is met; and a hook in the air
+  on a machine that does not own it was never tried). Two of the changes tested nothing as
+  they were written and were written again; both are noticed. Three showed lines that did
+  nothing (the hook ended in three places, a thing held told once: section 7) and those
+  lines are gone; a change to what is in their place is noticed. Five cannot be told from
+  what is there, and are left: what wings had left given back on the ground as well (the
+  game has filled more there than was kept); the wait his blow asks for (the up-close wait
+  is always the one taken); the parry looked at again as the hook is on them (the parry's
+  own reach has always found it a tick sooner, as it does his knives); the phase asked again
+  before something read is answered (in his first phase what answers it is nought times in
+  five); and the up-close wait marked over as he answers (the next wait marks it again).
+- **Drawn outside the game** from the rig's numbers, seven scenes: the hook into one who
+  stands (the cast, the chain slack in flight and taut once it bites, him along it, the
+  blow); into one who hangs (pulled in, and the blow as they arrive); thrown at nobody and
+  taken in again; the fan at one who stands; the two cuts of wind; the leap onto one 31
+  tiles up; the hook taken out in the passage.
+
+### 7. What changed on the way
+
+- **The very high jump was first to be a move of its own** (up at his fastest to beside
+  them, and the blow in the air or knives from up there). He has that already as the flash
+  step up after one in the air. It is the leap he had, raised: one thing to learn, and the
+  third delivery's leap, turn and throw is the new move in the air.
+- **The fan was first the same either side of the knife aimed at them.** Drawn, at one stood
+  level with him, its two lower knives went into the floor at his own feet. At one on the
+  ground it now goes from the aimed knife upward. Measured after, with the game's own jump:
+  from 300 px, of 37 moments a jump can begin in, 17 take a player clear of one knife and 4
+  clear of the fan.
+- **The two cuts of wind were first closer together** than a parry is long: I had the parry
+  at 28 ticks; that is only its last part, and it is 42 in all. They are 45 apart, as his
+  third phase's cuts are.
+- **The hook's bite first left the grace any hurt leaves**, and the blow it brought went
+  through them untouched. It is on the slot the sword on a held player uses, which leaves
+  none.
+- **The locks first counted ticks of the player's own**, and came out a tick short or long
+  by the order things happen in within a tick. They are kept as the update of the game they
+  last through.
+- **A leap stopped by a ceiling was first taken for landed**, where it was stopped: his
+  speed there is not nothing (section 5). And a leap sent to just under a ceiling went a
+  tick's rise past where it was sent, into it: the headroom was 12 px and is 28.
+- **A swing that missed was first only the game's own swing of an item.** The mod's own
+  swords (the Iron Flow, Visus, the Flesh Maiden) are things held out, which the game does
+  not call a swing: none of them would ever have been read. It is anything swung or thrust
+  now; and the Iron Flow's parry, which is the same item in use, is not one.
+- **Something of theirs turned aside by him was first no part of whether a swing missed**:
+  at the cap (§16.50) he turns a blade aside, and that swing was then read as one that
+  touched nothing. Turned aside is not missed.
+- **A thing held on him was first told once for each time it was raised.** One who survived
+  his answer could then hold it on him for as long as they liked. He is told again every two
+  and a half seconds of it.
+- **The hook in the air was first ended in three places** (by itself when he is doing
+  something else, by him as it bit, and by him again every tick). Two of the three did
+  nothing the first did not: they are gone, and what is in the air ends itself.
+- Four of the rig's own checks were wrong and were mended: two let him go on to his next
+  move inside the check (a leap after a missed hook landed on the rig's player, once in a
+  dozen runs); one depended on what the rig had run just before it (section 10: two
+  updates); one held a move picked from far off to the short wait, where the hook, which
+  ends beside them, is rightly held to the long one.
+
+### 8. Not seen in the game
+
+None of this has been on a screen or played: run in the rig, and drawn outside the game from
+its numbers. What only the game can show: whether the hook is seen coming (the hand goes
+back for a fifth of a second before it leaves); whether being pulled in reads as his doing
+or as the game taking the keys away; whether two seconds without wings over a long drop is
+fair, in a hall with a floor it is a fall of a second; how the fan reads; whether he reads
+too much (every missed swing near him is a flash step two times in three) or too little; the
+chain, drawn link by link with the Meat Hook's own pictures (a stand-in:
+`PlaceholderTextures.md`). Sounds, picked by name and never heard: `Item1` and `Item37` for
+the hook thrown and its chain, `DD2_JavelinThrowersAttack` as it leaves the hand, `NPCHit1`
+as it bites, `Tink` against a tile, `DD2_MonkStaffSwing` as he is pulled,
+`DD2_SonicBoomBladeSlash` (higher) for a cut of wind and `Item10` as it breaks. And it has
+never been run with two machines: what is sent is read through (who is on his hook goes with
+him, two bytes; the hook's bite and what is read are words from the player's machine, as his
+other words are), not run.
+
+### 9. Added without being asked
+
+That **any** hit of his lets go a grapple and shuts wings, not the sword's alone; that the
+Soaring Insignia, a flying carpet and a mount that flies are shut with wings and boots, and
+that gliding is; that what the wings and boots had left is given back; that the hook's bite
+leaves no grace against the blow it brings; that he is beside them in the air if they jump
+while he comes along the chain; that he cannot break out with his hook out; that at one on
+the ground the fan goes over them; that a reload and a grapple are read, beside the swing
+and the thing held; that a parry is not read as a swing; that the hook, which ends beside
+them, is followed by the up-close wait; that his knives are picked oftener in his third
+phase as well as his second; that a held crystal is no longer taken for a spell on its way.
+Keep or cut each.
+
+### 10. Still as it was, or left
+
+- **The third delivery** (his third phase's speed and the half second to a second between
+  its moves; its slashes more often; the leap, turn and throw; the plunge driven deeper;
+  delays and feints; what he learns of a player): not begun in this.
+- **His hook uses the mod's own Meat Hook's two pictures.** A hook and a chain of his own,
+  if they are to differ, are two files (`PlaceholderTextures.md`).
+- **In his third phase he has the hook, the fan, the leap and what he reads, and not the
+  wind.** His third phase's own cuts are in its place there.
+- **A hit of his goes on counting for two updates of the game after he is gone** (a
+  thirtieth of a second). It is how a player's machine, which works a hit out before his own
+  tick comes, knows he is there past his first phase. Nothing of his can land in that time
+  but what was already in the air.
+- **Two of him at once**, one in his first phase and one past it: a hit of either lets go a
+  grapple. He is not met twice.
+- **A grapple is not thrown for a second after a hit; it can be thrown in the second after
+  that**, while wings are still shut. That is the two numbers as they were picked.
+- **One who is pulled in can still use what is in their hands**, a rod that takes them
+  elsewhere with it. He pulls for 70 ticks at the most and then lets go.
+- **He reads a swing from 240 px**, which is further than most swords reach: a sword swung
+  at air fifteen tiles from him is read. One number (`WhiffWithin`), if it should be nearer.
+
+---
+
+## 16.52 Later in session 7: Foigh's third phase, faster and wilder: half as fast again, a cut let go, the wheel, the sword driven deeper with cuts out of the ground, the sword that lingers or does not come down, and what he learns of them
+
+The third and last of the three deliveries of what was asked on the 7th (the whole of it is
+quoted at the head of §16.50). What this one is built on, of that message:
+
+> His slashes are more frequent. like he has a move where he leap up, and turn his body and throw big slashes. Add more anti fly/hook ceiling attacks
+> He also have his jump and plunge blade down attack from phase 1 but now instead of struggling to pull it out he plunge it deeper and it creates AOE slashes in a 10 tiles radius circle.
+> His attacks in phase 3 must also be much faster and wilder and beast like, like maliketh the black blade.
+
+and of what was said after it: "we need more projectile on phase 2-3, dead ass cuz player
+can js dodge by using hooks and rocket boots and wings"; "Make his AI actually smart and
+from software like and shi". And of the questions asked back, the answers that belong to
+this delivery:
+
+- How much faster his third phase is: **"Half as fast again"**, with half a second to a
+  second between moves.
+- How he thinks: **reads and punishes** (§16.51), **delays and feints**, **learns you**. The
+  last two are here.
+
+Nothing more was to be asked: the laptop was left on for the night ("take your time"), and
+what was left open is mine to decide and to say. **This is the third delivery, and with it
+everything asked on the 7th is built.** What is left of him is his ending and whatever
+brings him to the hall (section 10).
+
+### 1. The device, read first
+
+- At 23:00 UTC on the 7th the mod's folder was listed (its root, `Content` with everything
+  under it, 628 entries, and `Localization`): it is as §16.51's delivery left it, file for
+  file. The two files added and the thirteen changed since the listing before that are that
+  delivery's own, with the times it wrote them. `client.log` there has not changed since
+  17:13:09 UTC, when the game was shut down: the game has not been run since, so neither
+  §16.50 nor §16.51 has been built on the device yet.
+- At 23:51 UTC, before anything was written: the six files this writes over and the three
+  sets of notes were read back from the device and are, byte for byte, what was last
+  delivered. The one new file, `Foigh.Wild.cs`, was not there.
+
+### 2. Readings
+
+1. *"much faster"*, *"Half as fast again"*: the sword's moves **on his feet** run a tick and
+   a half of their own clock to the game's tick. That is the four his second phase had at a
+   tick and a quarter, and with them the hand's sword swung up and its blow down, the late
+   cut, the mill, the cut up out of the ground and his knives. **Not** what goes by his
+   weight or is timed against something of a player's: anything in the air, the hand itself,
+   the hook and the blow it brings, the three cuts let go of (they are spaced for a parry:
+   §16.49), the step behind (its 0.2 s and its half second were asked for as that).
+2. *"half a second to a second between moves"*: after a move picked from up close he waits
+   30 to 60 ticks (it was 60 to 120 in his second phase, by request). And no wait a move
+   asks for is longer than that: what asked for 40 to 62 waits 30 to 60. **The other
+   reading, not built**: every wait in that range, the short ones too. The few that were
+   shorter (after a flash step back, after his sword is turned aside) are still shorter.
+3. *"His slashes are more frequent"*: read as **more of what he does ends in a slash**, not
+   as the three cuts picked oftener (what they weigh is as it was). A cut of the sword's
+   that ends with them out of its reach, ahead of him, is let go at them through the air;
+   the wheel throws three; the sword driven deeper throws eleven.
+4. *"he leap up, and turn his body and throw big slashes"*: **the wheel**. Down as for his
+   fourth move, up off the ground about eleven tiles, turning with the sword out; each time
+   it comes round to ahead of him, three times, one of the great cuts (the largest of
+   §16.49's three) is let go at them wherever they are; then he falls.
+5. *"Add more anti fly/hook ceiling attacks"*: the wheel is that (its cuts go up at one on
+   the ceiling as readily as down at one on the floor, and it is what he picks most at one
+   over his head), and so is what he learns (9). With §16.51's hook, fan and leap, and a hit
+   that lets go a grapple. **Nothing else was added under these words.** Say if they meant
+   another move.
+6. *"instead of struggling to pull it out he plunge it deeper and it creates AOE slashes in
+   a 10 tiles radius circle"*: the leap that comes down on nobody. In his third phase the
+   sword is not stuck for two seconds: he comes up over it, drives it in, and cuts go out of
+   the ground from where the blade is, **level along the ground both ways and round over the
+   top** (the ground is under the rest of the circle), each as far as ten tiles. Then he
+   tears it out as he did. The leap that lands on somebody is as it was.
+7. *"wilder and beast like, like maliketh the black blade"*: read as what the speed, the
+   waits and the slashes above come to, and that he **walks on at them less** and thinks
+   again sooner. No picture, sound or word of a beast was added (no roar, nothing on all
+   fours). Say if that was meant.
+8. *"Delays and feints"*: in his first move, his third, and the hand's blow down, now and
+   then **the sword stays up longer than it should** before it comes down; and in the first
+   two, now and then **it does not come down at all** and he is behind them. Neither comes
+   unannounced (3.6).
+9. *"Learns you"*: three things he counts of whoever he fights, from his second phase on,
+   and uses in his third: how much of what he does is **parried**, how much of the time they
+   are **off the ground**, and how much of the time they are **out of his reach**.
+
+### 3. What was built
+
+One new file, `Foigh.Wild.cs` (his third phase's speed, the cut let go, the wheel, the sword
+driven deeper, lingers and feints, what he learns). Two new moves in `Foigh.cs` (`Soar`,
+`Wheel`); their poses and the driving pose in `FoighMoves.cs`; a fourth kind of his slash in
+`FoighSlash.cs` (the ring's); the rest is small changes where his second phase's things were
+(`Foigh.Fight.cs`, `Foigh.Draw.cs`) and in how a slash is aimed (`Foigh.Third.cs`). No new
+picture, no new line of text.
+
+**3.1 Half as fast again.** In the game's ticks, each move begun by hand in the rig:
+
+| move | as written | his second phase | his third |
+|---|---|---|---|
+| his first (three cuts, the thrust, the leap back) | 150 | 121 | **101** |
+| his third's first part (the blow down) | 70 | 57 | **48** |
+| the crouch before the leap | 18 | 16 | **13** |
+| the hand: the sword swung up | 16 | 17 | **12** |
+| the hand: the blow down and the cut up | 42 | 43 | **29** |
+| the mill: the sword levelled | 22 | 23 | **16** |
+| the mill: three turns | 48 | 49 | **33** |
+| the late cut: sunk low | 26 | 27 | **19** |
+| the late cut: past them, and the line opening | 66 | 67 | **45** |
+| the cut up out of the ground | 46 | 47 | **32** |
+| a knife | 30 | 31 | **21** |
+| three knives | 70 | 71 | **48** |
+
+- His first move's first cut lands 28 ticks after he begins it (34 in his second phase, 42
+  in his first).
+- **The leap back** at the end of his first move is lower and faster (9.2 px a tick back and
+  4.7 up, where his second phase's is 7.6 and 5.7), so that he is down again by the tick the
+  quicker move has him down: 19 ticks in the air and 201 px back (22 and 191).
+- **The mill** carries him half as fast again, so that its three turns go as far as they
+  did: 330 px in 33 ticks (335 in 49).
+- As long as they are written: the three cuts let go of (160), the hook's blow (46), the
+  hook taken in (36), the blow out of the mill (50), the step behind (52), everything in the
+  air.
+
+**3.2 Between moves.** After a move picked from up close: 30 to 60 ticks. Any other wait a
+move asks for is its own, held to that: its least no more than 30, its most no more than 60
+(40 to 62 becomes 30 to 60; 18 to 30 stays 18 to 30). From far off he walks on less (it
+weighs 5 beside what else he may pick, where it is 9.5 in his second phase) and thinks again
+after 20 to 36 ticks (40 to 70). His second phase is as it was.
+
+**3.3 A cut lets go.** The tick a cut of the sword's is over, with whoever he fights **ahead
+of him and more than 150 px from his middle**, it goes on at them through the air: one of
+the plain kind of §16.49 (68 px from tip to tip, 12 px a tick for 80 ticks, half his sword's
+blow and its wound, jumped or parried). No oftener than every 30 ticks. The moves it is so
+in: his first, his third (the blow, and the turn after it), the turn of his fourth, the cut
+after the step behind, the hand's blow down and cut up, the blow out of the mill, the cut up
+out of the ground, the hook's blow. Not the mill's six cuts, nor the three cuts and the
+leap, which have their own. A cut that was ended for him (turned aside by a parry, or
+stopped) lets nothing go.
+
+**3.4 The wheel** (`Soar`, `Wheel`).
+
+- **Down** for 17 ticks, as for his fourth move (his eye lights), and **up**: 15.5 px a tick
+  at first, falling away to nothing over 24 ticks, his feet 179 px over where he stood (a
+  tile short of twelve), and from there no weight.
+- **Turning** all the while, a turn every 16 ticks, the sword out level and his knees up.
+  Before the sword comes round to ahead of him he looks for them (three ticks before), the
+  blade flares (six ticks before), and as it comes round, at ticks 16, 32 and 48, **one of
+  the great cuts is let go off the middle of the blade, at them wherever they are**: 88 px
+  from tip to tip, 9 px a tick for 100 ticks, half his sword's blow and its wound. At one
+  under him, where it cannot be sent at them, it goes **straight down**: under the wheel is
+  not somewhere to stand.
+- At tick 56 he **falls**, and lands as after the blow in the air. 125 ticks from the crouch
+  to walking again.
+- The blade itself cuts nobody while it turns.
+- He begins it only with 130 px clear over his head, at one within 800 px. Stopped by a
+  ceiling on the way up, that is as high as it goes.
+- **How often** (beside what else he picks from, §5.9 to §5.12): 1.2 up close, 2.5 from
+  further off, 3.5 at one over his head.
+
+**3.5 Driven deeper** (the sword in the ground after a leap that came down on nobody, in his
+third phase).
+
+- 44 ticks in the ground, where it was 120. He comes **up over it** by tick 12, the far hand
+  come to the handle with the near one (the blade flares), and **drives it in** at tick 24:
+  its grip 11 px lower than it stuck at, his legs wide under him.
+- As it goes in, **eleven cuts go out of the ground** from where the blade is in it (26 px
+  over the ground, so that the level ones go clear of it): eighteen degrees apart, from
+  level one way, round over the top, to level the other way. Each is 48 px from tip to tip
+  and goes 12 px a tick; it hurts for 13 ticks of its 20 and thins away over the rest.
+  **Along the ground it lands as far as 156 px** from where the blade went in (ten tiles are
+  160); straight over it, to about the same.
+- Each is half his sword's blow and its wound, once to a player, and can be parried. One who
+  stands at the sword is in it the tick they go out.
+- With a wall where the blade went in, they go out from over his feet.
+- Then he tears it out as he did.
+
+**3.6 The sword lingers, or does not come down.** Settled as the move is begun, where the
+world is decided, for his first move, his third, and the hand (as its sword is swung up:
+what is settled there is kept through the run at them and into the blow).
+
+- **It lingers** 15 times in a hundred: at the tick before the sword would come down the
+  move's own clock stands still, for 20 to 34 ticks, and he with it (he does not slide on).
+  Then it goes on as it would have.
+- **It is a feint** 8 times in a hundred, in his first move and his third only: at the tick
+  the sword would come down he is gone, and behind them, and the cut after the step behind
+  follows as it always does (it lands 31 ticks after he is there). With nowhere to stand
+  behind them the sword comes down after all.
+- **Neither comes unannounced.** As he begins a move that will do either, **the blade
+  flares** (what it burns with stands off the whole length of it, and is heard): the same
+  for both, so that it says only that this one is not to be trusted. Where the sword then
+  stays up, the blade **flares again and his eye lights 20 ticks before it comes down**,
+  however long it has been up: the blow lands 25 ticks after that, every time, in all three
+  moves.
+- As its time is up **he looks for them again**: gone round behind him while it stayed up,
+  they are not behind the blow.
+- The more he is parried (3.7), the oftener: up to 60 lingers and 35 feints in a hundred.
+
+**3.7 What he learns.** Three numbers, each from 0 to 1, kept by the server from his second
+phase on; each thing he sees counts for 15 parts in a hundred of the number and all he saw
+before for the rest.
+
+- **Parried**: up each time his sword is turned aside; down each time a move of his ends
+  that was not.
+- **Off the ground**, and **out of his reach**: looked at each time he picks his next move
+  (off the ground, on a hook, or over his head; further off than his sword reaches).
+
+In his third phase they weigh what he picks from, and nothing in his second:
+
+| the more they | the more he picks | by as much as |
+|---|---|---|
+| are off the ground | the blow in the air, his hook, the wheel | two and a half times |
+| keep out of reach | the leap, the late cut, his hook, the three cuts, the wheel, his knives; and walks on **less** | twice (and half) |
+| parry | the hand, and the cut up out of the ground (which no parry turns); and the sword lingers or is a feint | twice; 60 and 35 in a hundred |
+
+**3.8 What is sent.** One byte more with him (51 of his own now): how long the sword lingers
+in the move he is in, or 255 for a feint, so that the blade flares on every machine. The
+clock stands still on each machine by itself, from that. The rest is the server's alone.
+
+### 4. The numbers
+
+**Yours**: half as fast again; half a second to a second between moves; a move where he
+leaps up, turns and throws big slashes; the sword plunged deeper and slashes out to ten
+tiles all round; delays and feints; that he learns the player.
+
+**Mine, every one of the rest**: which moves are quicker and which are not; that no wait is
+longer than a second and the short ones stay short; walking on at 5 and for 20 to 36 ticks;
+the leap back's 9.2 and 4.7; that a cut is let go at all, from 150 px, ahead of him only, no
+oftener than every 30 ticks, and in which moves; the wheel's 17 ticks down, 179 px up, a
+turn every 16 ticks, three cuts, the great kind, 130 px of room, 800 px, and its 1.2, 2.5
+and 3.5; the sword 44 ticks in the ground, driven in at 24, eleven cuts, 48 px, 12 px a
+tick, and that they are a half circle over the ground; lingering 15 in a hundred for 20 to
+34 ticks, a feint 8 in a hundred, in which moves, the two flares and the 20 ticks; the three
+things he learns, the 15 parts in a hundred, and what each comes to.
+
+### 5. What the 1.4.4 assembly says
+
+Nothing new was needed of it: every call here is one his fight already makes (a projectile
+made, a place tested for tiles, a sound by name), and the build is against the 1.4.4
+assemblies.
+
+### 6. Verified
+
+- **The mod builds** against the 1.4.4 assemblies with 0 errors and the same 10 warnings.
+- **A new part of his rig** (`FoighBench.Wild.cs`, 63 checks) on the game's own engine: its
+  own player, its own projectiles, the mod's own parry.
+  - Half as fast again: the table in 3.1, each move begun by hand in each phase. What is not
+    quickened is as long as it is written (the three cuts 161, the hook's blow 47, the hook
+    taken in 37, the blow out of the mill 51, the step behind 53, the wheel's crouch 17).
+    His first move whole: 151, 121 and 101 ticks in his three phases, its first cut landing
+    at tick 42, 34 and 28; in the air 27, 22 and 19 ticks at its end, 170, 191 and 201 px
+    back, and down as it ends each time. Three turns of the mill: 335 px in his second
+    phase, 330 in his third. A knife leaves his hand 10 ticks into the throw (14).
+  - Between moves: after each of eighty moves picked from up close and played to its end, 30
+    to 60 ticks. A wait asked for, three hundred times each: 40 to 62 gives 30 to 60; 18 to
+    30 gives 18 to 30; 46 to 70 gives 30 to 60; 26 to 44 from up close gives 30 to 60; 8 to
+    14 gives 8 to 14. In his second phase from up close it is still 60 to 120. From 500 px
+    he walks on 422 times of 900 in his second phase (by its weight 401), for 40 to 70
+    ticks, and 170 times in his third (175), for 20 to 36.
+  - A cut let go: his first move at one who stands 240 px off lets two go (as ticks 30 and
+    91 of it are crossed), of the plain kind, and both land; at 90 px none (the blade is on
+    them); none in his second phase. Asked as a cut ends: at one ahead of him and out of
+    reach, yes; behind him, within 30 ticks of the last, within 150 px, at one who is dead,
+    or a cut of a move he has been taken out of: no. His sword turned aside in the middle of
+    a cut: nothing. The cut up out of the ground, begun at tick 10 of the run before it:
+    nothing as it begins, one at tick 16 as its cut is over. Each of the nine moves, begun
+    by hand at one 260 px ahead, lets at least one go.
+  - The wheel: down 17 ticks, turning 56, 125 in all, and on the floor at the end. His feet
+    get 179 px up, and are 160, 179 and 179 px up as each of the three is let go. Three
+    great cuts as ticks 16, 32 and 48 are crossed, each from the middle of the blade as he
+    has it that tick, each the way to where it is sent to within a thousandth; on one who
+    only stands 300 px off two of the three land (the second finds them not to be hit again
+    yet); at one who hangs nineteen tiles up they go up at them and land. At one 30 px ahead
+    of where he left the ground, under him: straight down, all three. At one 60 px behind
+    where he left it: he looks for them, and it lands. With a wall where the blade comes
+    round: none is let go. Gone to his other side while he is down for it: he leaves the
+    ground facing them; gone there after the first: he looks for them before the next two.
+    Under a ceiling eleven tiles up: 126 px, which is the room there is, and down again.
+    Picked 259 times of 2400 from 300 px (by its weight 292; over 24000 picks in a run of
+    its own, 2848, where the weight says 2924), 174 from up close (178), 442 at one who
+    hangs over his head (436); never in his second phase; never with a ceiling eight tiles
+    over the floor; from 780 px, 130 times of 600, and from 830 never.
+  - Driven deeper: 45 ticks in the ground (it was 120), and torn out at the angle it went in
+    at. Eleven cuts as tick 24 is crossed, 26 px over the floor, from where the blade is as
+    he has it that tick (6.4 px along from where it stuck), at 0, 18, 36 and so on to 180
+    degrees. He comes up over it (its grip 8.4 px higher at tick 12) and drives it in (10.9
+    px lower than it stuck at); his feet are never under the floor, his hips never less than
+    8.1 px over it. With a wall where the blade goes in the eleven go out from over his
+    feet. One lands, once, for half his sword's blow and a wound, on one who stands at the
+    sword (the tick they go out), 100 px ahead, 100 px behind, 150 px, 100 px straight over
+    it, and 90 px along and 90 up; not on one 200 px along or 190 px over it. Along the
+    ground it lands as far as 156 px. Met by a parry, the one that comes at them is turned
+    aside. In his second phase the sword is stuck for 121 ticks as it was and nothing goes
+    out. The leap itself, missed: the same eleven.
+  - Lingers and feints: of 4000 of his first move begun in his third phase by one never
+    parried, the sword lingers 610 times (15 in a hundred would be 600), for 20 to 34 ticks,
+    and is a feint 319 times (8 in a hundred: 320); parried every time, 2396 and 1399 (2400
+    and 1400). His third move the same (562 and 351); the hand's lingers as often (568),
+    settled as its sword is swung up, and is never a feint; kept through the run and into
+    the blow, and gone with the move after. Never in his first two phases. Lingering 24
+    ticks, his first move's first cut lands at tick 52 where it lands at 28 and the move is
+    125 ticks for 101; for those ticks its clock stands still and he does not move. The
+    blade flares as he begins it (a dozen puffs off it at once, none in one that will not
+    linger) and again 20 ticks before it comes down, at the first tick of 20 it stands still
+    for, the fifth of 24, the fifteenth of 34: 25 ticks from that to the blow each time, and
+    the same in his third move and the hand's. The move's clock as it was any number of
+    ticks back is as it was written down, every tick, through the standing still and after.
+    Twice running by the same one of him: 24 ticks and 24. Gone round behind him while it
+    stayed up: he keeps his back to them until its time is up, looks for them, and the blow
+    that was up lands. A feint, in his first move and his third: the flare, the sword up,
+    and at the tick it would come down (24 and 32) he is gone, behind them, and the cut from
+    there lands 31 ticks after; with a wall at their back and nowhere to stand, the sword
+    comes down after all. One byte: 21 ticks read back as 21, a feint as a feint.
+  - What he learns: five parries running, each reel played out: 0.556; a sixth that puts him
+    on a knee, 0.623, and still that when he is up and after his posture has been broken and
+    mended; five moves ended with no parry, 0.25; nothing counted in his first phase. Where
+    they are, each time he picks: 0.15 after one pick at one who hangs, at one a hundred px
+    up, at one stood on the ground with a hook of their own in something, at one stood on a
+    ledge over his head; nothing at one stood on the ground. The weighing, to the number,
+    for one always in the air, always out of reach, who parries half of it. And by what he
+    then picks, 2400 times each: from 500 px he walks on 519 times (by its weight 466), and
+    184 known to keep off (180); up close the hand and the cut up are 733 (741), and 1111
+    parried all the time (1132); at one who hangs over his head what goes up after them is
+    1312 (1359), and 1764 in the air all the time (1745). In his second phase, whatever he
+    has learned: 1031 of 2400 walked on (1070).
+- **The whole rig on the build that is delivered**: the default run 489 of 489; the flags
+  152 of 152; weight and potions 121 of 121; his own rig 923 of 923 (the new part is 63 of
+  them); his third phase alone with its tally 210 of 210; his film 114 of 114; the Turned
+  218 of 218; the Meat Hook 196 of 196. **His first two phases fight as they did**: the five
+  four-minute fights of his first phase and the three of his second come out the same, hit
+  for hit, as on §16.51's build. His third phase's do not, as they should not: the player in
+  them, who does a little of everything, is hit 120 and 110 times in four minutes where it
+  was 99 and 96.
+- **Mutations**: 151 changes were made to the mod one at a time (a number, a comparison
+  turned round, a line taken out), each run against the part of the rig that should notice.
+  Of the first 133, 116 were noticed the first time. Of the 17 that were not: thirteen were
+  gaps in the rig, each closed, and all thirteen are noticed now (how far the mill carries
+  him was looked at to twelve parts in a hundred; how often he walks on was only compared
+  with his second phase; nobody went to his other side while he was down for the wheel; that
+  he has no weight at the top of it, and that it is not begun from further off than it
+  reaches, were not looked at; where the cuts out of the ground begin was not looked at to
+  the pixel, nor how wide his legs go over the sword; that he looks for them as a lingering
+  sword's time is up was hidden by the look he takes before the thrust anyway; the same one
+  of him never lingered twice; a feint was only run in his first move; nobody stood on a
+  ledge over his head, or was off the ground and not over it; and the reel after a parry was
+  never played out to its end). Four showed conditions that could never be otherwise, and
+  those are gone (section 7). Eighteen more changes were made after that, to what had been
+  written since (the wheel's own cast and its aim, what is left of the conditions) and to
+  five of the plain numbers as a sample (each number is compared outright in the rig; the
+  other twenty-one were not changed): sixteen were noticed the first time; one was one more
+  gap, closed and noticed now (a cut begun inside a wall is gone the same tick, and looked
+  like none let go: what it breaks into is counted); and one cannot be told from what is
+  there and is left (the wheel's cuts leave at whole turns, where he stands as he stood at
+  its first tick, so which tick's pose they leave from makes no difference). Five of the
+  first 133 were written again for the lines as they now are; all five are noticed.
+- **Drawn outside the game** from the rig's numbers, six scenes: the wheel at one who stands
+  and at one who hangs; the leap that comes down on nobody, the sword driven deeper and the
+  eleven cuts; a cut let go off his first move; the sword lingering; a feint.
+
+### 7. What changed on the way
+
+- **The sword first lingered 10 to 24 ticks with nothing to say that it would.** A cut that
+  comes late, on a windup that looks like every other, cannot be read: whoever parries by
+  the rhythm is hit, and nothing they can see tells them not to. It has the two flares now
+  (as he begins, and 20 ticks before it comes down), lingers 20 to 34 ticks so that the
+  second always fits, and a feint has the first.
+- **While the sword lingered he slid on.** A step is taken by how far the move's clock goes
+  in a tick, and it was still being asked for the tick's worth it was not going. A tick the
+  clock stands still is no step.
+- **The hand's blow down was first settled as the blow began**, four ticks before it would
+  land: too late to be told of. It is settled as the hand's sword is swung up, and kept.
+- **Gone round behind him while the sword stayed up, they were behind the blow.** He looks
+  for them as its time is up.
+- **What his blade leaves behind it** is laid along where the blade was over the last ticks,
+  worked out from the move's clock: after the sword had stood still, the first ticks of the
+  cut drew the whole rise again as if it had just been made. The ticks it stood still are
+  counted.
+- **Driven in, he first sank into the floor**: the pose put his hips 11 px lower than his
+  feet allow. Seen in the first picture made of it. He goes down by his legs going wide
+  under him, as far as they do when he is on a knee.
+- **A cut ended for him let a slash go.** Read through before it was run: a parry ends the
+  move, and the tick after looked like a cut that had ended. A cut is over only in the move
+  it was made in.
+- **Under the wheel was first the place to stand.** Its cuts began a way ahead of him, as
+  the last of the three cuts does on the ground, and one that could not be sent at a player
+  went level, the way he faced: whoever ran in under him was missed by all three. They leave
+  the blade now, and at one under him go straight down.
+- **Four conditions that could never be otherwise** are gone, found by changing each on
+  purpose (section 6): that a cut is let go only in his third phase, asked twice over; that
+  he has his sword in a move whose cut is let go (he has, in every one of them); that a
+  feint is put out as it is used (the move ends with it); that where they are is counted
+  only from his second phase (it is only looked at from there).
+- Of the rig's own: it did not know the ring's kind from the wind's; it stood its player by
+  where the sword was a move ago; it counted bleeding as blows; three of its counts of ticks
+  were one short; and it counted the puffs of a flare against what the checks before had
+  left in the air. Mended. One older check changed with what was asked: after the three cuts
+  he waits 30 to 60 ticks, where it was 40 to 62.
+
+### 8. Not seen in the game
+
+None of this has been on a screen or played: run in the rig, and drawn outside the game from
+its numbers (six scenes: section 6). What only the game can show: **whether his third phase
+at this speed can still be fought** (a parry is 42 ticks, and his first move's first cut now
+lands 28 ticks after it begins); whether the flare is enough to see and hear in the middle
+of a fight; whether the wheel reads as a leap and a turn (he turns about himself as he does
+in the mill, the sword level); whether eleven cuts out of the ground read as a ring; whether
+a slash let go off an ordinary cut is too much with everything else in the air. Sounds,
+picked by name and never heard: `Item71` as he goes down for the wheel and as he comes up
+over the sword, `DoubleJump` as he leaves the ground, `DD2_MonkStaffSwing` as he turns,
+`Item14` and `DD2_SonicBoomBladeSlash` as the sword goes in, `Item74` in the flare (it was
+there for the three cuts). And it has never been run with two machines: the one byte is read
+through, not run.
+
+### 9. Added without being asked
+
+That a cut of the sword's is let go at one out of its reach (my reading of "his slashes are
+more frequent"); that he walks on less, and thinks again sooner; that no wait is longer than
+a second; the two flares, and his eye; that he looks for them again when the sword has
+stayed up; that a feint has the same flare as a linger; that the hand's blow lingers too;
+that the wheel needs room over his head and is not begun from further than 800 px; that its
+cuts go straight down at one under it; that with a wall where the blade went in the cuts go
+out from over his feet; that the more they parry the more he picks what no parry turns; that
+the more they keep off the less he walks. Keep or cut each.
+
+### 10. Still as it was, or left
+
+- **Everything asked on the 7th is built.** Not built, of him: his ending (the lore plan's
+  choice: kill him as he asks, or spare him and be given his sword), anything dropped, a
+  flag that he was beaten, and whatever brings him to the hall (`/foigh` only).
+- **The wheel's blade cuts nobody while it turns.** Only the three cuts it lets go. One who
+  hangs beside him up there is not cut by the sword itself. Say if it should.
+- **A feint goes to wherever he can stand behind them**, as the step behind always has: on a
+  ledge there, if that is what is behind them.
+- **He learns one player.** With several, what he has counted is of whoever he was fighting
+  as he counted. It is not kept per player, and not sent.
+- **His first two phases are as they were**, hit for hit in the rig's fights. What he learns
+  in his second phase changes nothing there.
+- **The three cuts let go of are as often as they were.** If "more frequent" meant that
+  move, it is one number each way (`RendNear`, `RendFar`).
+- **The posture bar is still hidden**, by request.
+
+---
+
+## 16.53 Later in session 7: Foigh's flying cuts parried as they come; every slash over a place made straight cuts, no two alike; the ball against what fights for a player; and the loading screen's next tip at once
+
+What was said on the 8th, after the user had built §16.52 and fought him (a GIF with it, of
+a boss of another game driving a greatsword into the floor):
+
+> cannot parry wind or blood slashes of the guy
+> also for his plunge aoe move in 3rd phase I was thinking about the straight slashes stuff tho, like this plunge. gif
+> I think u already make that, try to make it again but do damage
+> Also any suggestion for minion damage cuz if i have 20 minions of either projectile shooting eyes or very long stardust dragon, its shredding him. Maybe if he takes too much minion damage within a time frame, he curl up into a ball and explode into 20 tile radius slashes aoe?
+
+And while it was being built, each on its own:
+
+> slashes aoe must always be straight cuts
+
+> and they dont start and end at the same time, they have variations ranges and different duration, start and ends all of these straight cuts slashes are like that
+
+> should not go thru a same point
+
+(the last with the picture of the ball's burst as it then was, twelve lines all through his
+middle)
+
+> it tips dont load right away when i pressed E
+
+(with a screenshot of the loading screen.) Nothing was asked back. What was decided here is
+said in section 3, and the numbers that are mine in section 5.
+
+### 1. The device, read first
+
+- At 08:50 UTC on the 8th the mod's folder was listed (its root, `Content` with everything
+  under it, 629 entries, and `Localization`). It is as §16.52's delivery left it: the only
+  times newer than the listing before that are that delivery's own. At 09:01 UTC the files
+  this writes over and the three sets of notes were read back from the device and are, byte
+  for byte, what was delivered. Before this delivery it was listed again (root, `Content`
+  with its 629 entries, `Localization`) and the twelve files this writes over were read
+  back: all as §16.52 left them, and no `FoighLine.cs` there yet.
+- `client.log`: the mod was built on the device at 09:22 local (01:22 UTC) with 0 errors and
+  the 10 warnings, and the Empty Hall was gone into at 09:23. Read again at 10:37 UTC: the
+  game ran on until 18:32 local, saving every ten minutes, through the door to the world at
+  18:29 and back into the hall at 18:32. Nothing from the mod in it but the passages' own
+  lines: no error, no exception. The one back into the hall took 44.8 seconds, 37.4 of them
+  coming back up (2,236 frames, the longest 222 ms); what held it there is not in the log.
+- The GIF: 115 frames, 5.75 seconds. He swings the sword low along the floor, a red cut
+  sweeps out, he lifts it over his head with both hands and drives it point first into the
+  floor; the floor about him goes red; and for most of a second after, long straight cuts
+  cross everything around him at every slant, one after another, a bright red line each with
+  a black one beside it, each there for a moment. Then he stands with the sword up again.
+- The screenshot: the picture and its frame at full strength, the bar a third of the way
+  along, the key's box under it bright; and the tip's two lines dark grey on the dark
+  corner, its title not to be seen.
+
+### 2. Why the slashes could not be parried
+
+Measured, not guessed. The parry (the curved sword's, `IronFlow`) takes **6 ticks to wind
+up** before it turns anything aside (Elden Ring's 3 frames at 30 a second), turns things
+aside for 8, and is 28 more before anything else can be done. His slashes fly at 12 px a
+tick (the blood), 9 (the great one) and 14 (the wind). On §16.52's build, with a parry
+pressed as the game presses one (in the player's own update, before anything else moves that
+tick), a slash along the ground was turned aside only by a parry pressed **6 to 17 ticks
+before it landed** (the great one 6 to 19; the wind 6 to 17), that is while it was still **4
+to 13 tiles off** (the wind 5 to 14). Pressed in the last 5 ticks, when it is under four
+tiles off and the eye has just seen it come, it landed every time. Nothing was broken: every
+part of the parry did what it was written to. It was unanswerable by eye.
+
+And whatever the timing: a parry is 42 ticks, so of cuts that come closer together than that
+only the first can be turned. The wheel's three come 16 ticks apart; two cuts let go off his
+moves can be 30 apart.
+
+### 3. Readings
+
+1. *"cannot parry wind or blood slashes"*: as section 2 says. **Built**: a parry already
+   begun when one of his flying cuts reaches you turns it aside, **its wind-up and all**.
+   Measured now: the blood from the tick it lands to 17 ticks before, the great one to 19,
+   the wind to 17, one coming down at 45 degrees to 16. His sword in his hand keeps the rule
+   it had (the wind-up first: it is read off his body, and that is what the wind-up is for),
+   and so do his knives and his hook. The 42 ticks of a parry are as they were.
+2. *"the straight slashes stuff ... like this plunge"*: lines, not crescents: long straight
+   cuts across the place he stands in, at every slant, one after another, red with a black
+   twin, each shown a moment before it opens.
+3. *"I think u already make that, try to make it again but do damage"*: read as the plunge's
+   cuts out of the ground (the ring of §16.52) made again as those lines, **each one a
+   blow**. The ring is gone. (Whether the ring hurt in the game is not in the log. In the
+   rig it hurt anyone within ten tiles of the blade.)
+4. *"a 10 tiles radius circle"* (the 7th's words for this move) is kept: every line lies
+   within the ten tiles about where the blade went in.
+5. *"any suggestion for minion damage"*: section 10.
+6. *"if he takes too much minion damage within a time frame, he curl up into a ball and
+   explode into 20 tile radius slashes aoe"*: **built as said**, in all three phases. "Too
+   much" and "a time frame" are mine: half of everything the cap lets him lose, in three
+   seconds. Section 4.4.
+7. *"slashes aoe must always be straight cuts"*: the ball's burst is straight cuts too (it
+   was crescents flying out of him, the slash's own kind, which is gone again). His flying
+   slashes (the three cuts', the wheel's, a cut let go, the wind) go at you through the air
+   rather than over a place, and are as they were.
+8. *"they dont start and end at the same time, they have variations ranges and different
+   duration, start and ends"*, and *"all of these straight cuts slashes are like that"*:
+   every straight cut, of both moves, is let out with **a length of its own, a place of its
+   own along its line, its own ticks shown before it opens and its own ticks hanging
+   after**; the moves let them out **at uneven ticks, no two at one**, and **no two open on
+   one tick**. **The other reading, not built**: that each one grows along its length from
+   one end to the other.
+9. *"should not go thru a same point"*: the ball's cuts first all went through his middle, a
+   star. Now **each goes through a point of its own** about him, as the plunge's always did
+   about the blade, and those that are at you go **through a point of your body of their
+   own**, not all through your middle.
+10. *"it tips dont load right away when i pressed E"*: the next tip came up over a fifth of
+    a second, and while it did, its words were drawn **dark**, not faint (section 4.5): what
+    the screenshot shows. The next tip is now up whole on the frame E goes down, and words
+    drawn faint are faint.
+
+### 4. What was built
+
+One new file, `FoighLine.cs` (a straight cut). `Parry.cs` gains a parry that is up while it
+winds (`Up`), `Takes` a word to say a shot comes too fast to wait out the wind, and
+`TakesLine` for a shot that is a line. In `Foigh.Wild.cs` the ring's place is the lines',
+and the ball is new; one move more in `Foigh.cs` (`Curl`, after `Wheel`) and one word
+(`Swarmed`); its pose in `FoighMoves.cs`; in `FoighSlash.cs` only the parry's line (§16.52's
+ring kind is gone with the ring). `SubworldLoading.cs` for the tip. Two lines of words in
+the `.hjson` (a death line and a name). No new picture.
+
+**4.1 The parry against his flying cuts.** What turns aside a slash as it touches you is now
+a parry that is up: pressed, and not yet past its active ticks. Its look as a parry always
+has: a spark where it was met, the slash gone. At your arc, before it touches you, it is
+found as it always was (an active parry). Asked of: the three cuts' slashes, the wind, the
+cuts let go off his moves, the wheel's, and the straight cuts.
+
+**4.2 A straight cut** (`FoighLine`). A straight line at any slant through the ground and
+the air, through tiles. Let out with its own ticks: **shown 12 to 22**, a hair of dark with
+a hair of red along it that brightens until it opens; **open 3**, a band of red with a
+bright middle and its black twin beside it, a red cut hanging in the air along it, embers
+off it, and `DD2_GhastlyGlaivePierce` low; then **hanging 6 to 28**, thinner and dimmer to
+nothing. Open, it cuts whoever it lies through: **half his sword's blow, through armour**,
+once, and **in his third phase its wound** (the ball is in all three, so the wound is the
+third phase's alone). The game's own grace after a hit (40 ticks) keeps the next from
+landing too soon. Parried whichever way you face (it lies through you, as the late cut does)
+by a parry up as it opens, its wind-up and all: through with you, and opening for anybody
+else as it would. If he is struck down while some are still showing, those are gone. Its own
+ticks are sent with it to every machine (`SendExtraAI`), set where it is let out, before the
+game sends it to anybody.
+
+**4.3 The cuts out of the ground** (the leap that comes down on nobody, in his third phase).
+
+| ticks of it | |
+|---|---|
+| 0 to 12 | up over the stuck sword, both hands on it; the blade flares |
+| 24 | driven in; the ground about it lit, a red ring out to ten tiles; **the first cut is let out** |
+| to 63 | thirteen more, at uneven ticks of their own within the forty, no two at one |
+| each, 12 to 22 after it is let out | **it opens**, on a tick none of the others does, cuts for 3, and hangs 6 to 28 as it goes |
+| 5 after the last has done cutting | he tears the sword out as he did (by 92 at the latest, as late as that can be; it was 44) |
+
+Each lies across the ten tiles about the blade (160 px), at any slant, through a point over
+the ground within seven tiles of the blade, as likely anywhere there as anywhere else; **the
+first, and every third after it, through you** (a point of your body of its own) as it is
+let out, if you are within the ten tiles. Its length is its own: **from 45 in a hundred of
+the line across the ten tiles there to all of it**, wherever along that line, so long as the
+point it goes through is on it (with a tile and a half of it either side where there is
+room).
+
+**4.4 The ball.** What is called up to fight for you (a minion, a sentry, and what those
+shoot: the game's own `IsMinionOrSentryRelated`) still lands on him for what the cap allows
+(§16.50). Your own machine counts what it takes from him, a tick at a time over the last
+three seconds. When that comes to half of all the cap would let him lose in three seconds
+(1,800 of his 150,000 in a Classic world), it tells the server, and as soon as he is free
+(on his feet, walking or with his sword up) he answers:
+
+| ticks | |
+|---|---|
+| 0 to 8 | down, as for a leap, facing you; the sword in to his side |
+| 8 to 24 | up off the ground, 9 px a tick falling away to nothing (**measured**: 77 px up), folding: bent double over his legs, his arms about them, the sword in against him behind; from there no weight |
+| to 52 | curled up there, shaking; **nothing lands on him** (it is as if he were between two places: nothing of anyone's can touch him, and what fights for you looks elsewhere); what burns off his sword drawn in to him from all round, a red light in him growing; 20 ticks before the end the blade flares, his eye lights, a low breath of fire; 3 before, he looks for you again |
+| 30 to 51 | **sixteen straight cuts let out about him**, the first at 30, the rest at uneven ticks, no two at one |
+| 52 | **he bursts**: flung open, a flash of red, a ring of red out to twenty tiles, the ground shaking; **the first cut opens** (it was shown 22 ticks) |
+| 52 to 73 | the rest open one after another, each on a tick of its own, each shown 12 to 22 ticks, none before he bursts |
+| 58 on | he falls, and lands as after the wheel |
+
+Each lies across the twenty tiles about him (320 px), at any slant, **through a point of its
+own within twelve tiles of him**, as likely anywhere there as anywhere else, and of its own
+length as the plunge's are; **the first, and every fourth after it, through you** where you
+are as it is let out (a point of your body of its own), if you are within the twenty tiles.
+Random lines cross one another here and there, by threes and fours a few pixels apart, by
+chance; none of the burst goes through one point. No oftener than every ten seconds. One
+owed as a passage begins is not owed after it.
+
+**4.5 The loading screen's next tip.** A tip turned to with E came up over a fifth of a
+second (`TipComeUp`, mine; §16.40 kept it for a tip turned to, when the first was made to be
+up at once). It is now up whole on the frame the key goes down. And what made the
+screenshot: the game's own way of drawing words (`ChatManager`) gives each piece of them the
+hover text's pulse and **makes it whole again** (`TextSnippet.GetVisibleColor`,
+`ChatManager.WaveColor`: its alpha set to `Main.mouseTextColor`), so that words given at a
+fifth of their strength came out dark grey and near enough solid instead of faint, and the
+title, dark on the darkest of the corner, could not be seen. The tip, its title, the key and
+its word are drawn in the colours given now (`SubworldLoading.Words`), so they are as faint
+as the rest while the screen comes and goes, never darker, and no longer pulse with the
+hover text.
+
+### 5. The numbers
+
+**Yours**: that his slashes can be parried; straight slashes for the plunge, and that they
+do damage; ten tiles for them (the 7th's); the curl and the burst on too much damage of
+minions in a time frame, and twenty tiles for it; that every slash over a place is straight
+cuts; that they start and end at times of their own, with lengths and durations of their
+own; that they do not go through one point; and that E turns to the next tip at once.
+
+**Mine, every one of the rest**: that the wind-up counts against his flying cuts and the
+straight cuts, and not against his sword, his knives or his hook; a straight cut shown 12 to
+22 ticks, open 3, hanging 6 to 28, 14 px thick, from 45 in a hundred of its line to all of
+it, a tile and a half of it kept either side of the point it goes through, half his sword's
+blow, and the wound in his third phase only; the plunge's fourteen, within 40 ticks, within
+seven of the ten tiles, every third through you, the sword out five ticks after the last;
+three seconds; half of the cap; ten seconds between balls, and a second between two words
+from one machine; in all three phases; 8 ticks down, 16 up at up to 9 px a tick, the burst
+at 52 and the fall from 58; the ball's sixteen, within twelve of the twenty tiles, every
+fourth through you, the first let out 22 ticks before he bursts; that nothing lands on him
+while he is curled up.
+
+### 6. What the 1.4.4 assembly says
+
+- `Projectile.IsMinionOrSentryRelated` is there: a minion, a minion's shot, a sentry or a
+  sentry's shot (the same four things he has always let land: `Foigh.React`).
+- The Stardust Dragon is four kinds of projectile (625 to 628), **every one of them a
+  minion**, each with its own cooldown on what it hits (`usesLocalNPCImmunity`,
+  `localNPCHitCooldown` 7): every segment of a long dragon hits on its own every seven
+  ticks. A longer dragon hits more often, not only harder.
+- A projectile's third number (`ai[2]`) is sent with it (`NetMessage.SendData`, the
+  projectile's message): a line's length goes to every machine. `NewProjectile` takes it.
+- `Projectile.NewProjectile` calls the projectile's `OnSpawn` before it sends the projectile
+  to anybody, and the message carries what `SendExtraAI` writes; a machine that receives it
+  runs `SetDefaults` first and `ReceiveExtraAI` after. So a straight cut's own ticks, set in
+  `OnSpawn` from what it was let out by (a source of the mod's own, `EntitySource_Parent`,
+  which is not sealed), arrive with it.
+- `Utils.NextVector2Circular` is a way and a share of the radius, not a point as likely
+  anywhere in the circle as anywhere else: the points of the lines are drawn by hand (the
+  square root of a share of it).
+- `ChatManager.WaveColor` sets a colour's alpha to `Main.mouseTextColor`, and
+  `TextSnippet.GetVisibleColor` is that; every one of `DrawColorCodedStringWithShadow`'s
+  overloads draws its words with their snippets' colours (`ignoreColors` false).
+  `DrawColorCodedString` with `ignoreColors` true draws them in the colour it is given.
+- tModLoader makes each NPC's own instance by its constructor (`CloneNewInstances` is
+  false), so the count's window is his own.
+- `Player.CCed` (frozen, webbed, stoned, or a mod's own) ends a parry: looked at, and not
+  what was wrong.
+
+### 7. Verified
+
+- Built against the 1.4.4 assemblies on the final source: 0 errors, the 10 warnings as
+  before. Every game call the change leans on was read in the 1.4.4 assembly first (section
+  6).
+- The rig, on the final build (all of it, one part after another, the build's bytes the same
+  before and after): the default run 489 of 489 (among them the loading screen's: the first
+  tip up at once, the key turning to another there and then, and nothing of a tip's own
+  coming up after the rest), the flags 152 of 152, the weight 121 of 121, **Foigh's whole
+  rig 954 of 954** (it was 923), his third phase's tally 210 of 210, the film 114 of 114,
+  the Turned 218 of 218, the Meat Hook 196 of 196.
+- Among Foigh's: each of his flying cuts turned aside by a parry pressed from the tick it
+  lands back through the wind-up (the four measured in section 3); a straight cut through
+  you shown the most ticks turned by a parry pressed from the tick it opens to 13 before and
+  by none sooner, and one shown the fewest by any pressed while it shows; one beside you,
+  not at all; the plunge's fourteen let out at uneven ticks within 40, every one within the
+  ten tiles, of lengths from under half to all of its line, at every slant, opening on
+  fourteen ticks, with the ticks shown and hanging that each was sent with; the first
+  through you landing on the tick it opens, for half his sword's blow and the wound, a
+  second no sooner than the game's grace allows, none at 200 px along or 190 over; every
+  third through a point of you of its own as you walk away, until you are out of the ten
+  tiles; the sword torn out five ticks after the last; struck down, those showing gone. The
+  ball: curled up once 1,980 had been taken (1,800 is too much), nothing landing on him
+  then, 77 px up and still there as he bursts; sixteen let out from 22 ticks before, opening
+  from the tick he bursts on, each on its own, at every slant, through points of their own
+  (no more than 3 within 3 px of any one), none reaching you 478 px off; one at him as he
+  curls up cut as he bursts; landing once, as he bursts, on one 60, 200 and 280 px off,
+  behind him and over him, and on nobody 360 px off; the wound in his third phase only;
+  every fourth through you; the first turned by a parry pressed from the tick he bursts to
+  13 before. Owed in the middle of his first move, he plays all 150 ticks of it out first;
+  owed with his sword up, facing away, he turns to you as he curls up. A minion of 150 every
+  half second is let be; your own shots, as hard, are not counted.
+- **Changes made on purpose**, one at a time, each with the rig's part for it run (`mut10`):
+  78 to the parry's wind-up, the straight cut, the plunge's and the ball's code. 73 were
+  caught at once. Four were not: every cut at one slant; the ball begun in the middle of a
+  move; the ball begun facing away from whoever it is for; and him falling, not hanging
+  there, until he bursts. The rig looks at all four now (the widest gap between the slants,
+  when he curls up against when his move ends, his facing from a guard turned away, how high
+  he still is as he bursts), and catches each. The fifth not caught, a bound on a straight
+  cut's ticks in `FoighLine.Let` that his moves never come near, could not be, and is gone
+  from the code. (The numbers the rig asserts one by one were not changed: their own
+  equality fails them.)
+- Drawn outside the game from the full run's film, with the mod's own strip pictures, on the
+  hall's wall: the plunge's cuts and the ball's burst, frame by frame. And apart from the
+  rig, 600 bursts drawn as the mod draws them, for the count of points several go through
+  (section 8).
+
+### 8. What changed on the way
+
+- **Every line first went through the blade.** A line through a point is laid along from the
+  point on it nearest the blade; it was laid from the blade itself. The rig saw it at once:
+  their ends were not on the circle, and every one passed within a pixel of the blade.
+- **Where the lines are laid about is where the blade went in, as it went in.** It was asked
+  again for each, and he settles a pixel or so after he lands: the lines' circle wandered
+  1.3 px.
+- **Curled up he first looked like a man flying head first**: the sword out along his legs,
+  ahead and up, a long way past the rest of him. Seen in the first picture made of it. Bent
+  double over his legs now, the sword in behind him, and his hook slung at his hip.
+- **The ball's burst was made three times.** Crescents flying out of him, as said in my
+  first account of it; then, on *"slashes aoe must always be straight cuts"*, twelve lines
+  through his middle, evenly round, all opening at once; then, on the variations, each of
+  its own length and ticks, still through his middle; then, on *"should not go thru a same
+  point"*, sixteen lines each through a point of its own about him. The rig's own count of a
+  point many go through first asked for no more than four within 6 px of one: random lines
+  in a circle cross by threes and fours that close by chance (worked out apart from the rig:
+  600 bursts drawn as the mod draws them), so it asks now that no point has half of them
+  within 3 px.
+- **The plunge's lines at you all went through your middle**: standing still, every third
+  crossed one point. Each through a point of your body of its own now.
+- **Conditions that could never be otherwise** are gone. Two were left out before they were
+  written in: the window cleared off the fight (nothing lands on him there, and three
+  seconds empties it), and that he is holding nobody (he never is, walking or with his sword
+  up). Three more were found by changing each on purpose (section 7): which end of a line
+  they face, and how near its line comes to them, asked by the parry of a line that lies
+  through them (neither can ever say no of one that does); and that a line does not cut one
+  who is in the game's grace after a hit (`Player.Hurt` takes nothing then, by its own first
+  lines in 1.4.4).
+- Of the rig's own: it pressed a parry outside the player's own update (a tick early, which
+  the wind-up did not notice and the new rule does); it never gave the line its
+  `SetStaticDefaults` (so the parry did not know it); it took a projectile's slot for the
+  same projectile after another had it; it expected one blow from fourteen lines where one
+  who stands still can take two; two of §16.50's checks of minion lasers now keep the ball
+  out of the way, since it is checked on its own; and its check that a player's own shots
+  are not counted toward the ball lost its one arrow, struck out of the air by him on its
+  first touch (a roll of his), and counted nothing: it keeps them coming now, one put back
+  for each he strikes.
+
+### 9. Not seen in the game
+
+Run in the rig, and drawn outside the game from its numbers. What only the game can show:
+whether a parry pressed late now feels right against a slash, and whether the window is now
+too wide; whether the straight cuts read, at the game's zoom and in the hall's light, as
+they do in the GIF; whether the shown hair is seen soon enough to step out of, the shortest
+of them shown a fifth of a second; the ball, bent double and shaking, and the sixteen cuts
+about him; the tip at once, and its words faint. Sounds, picked by name and never heard:
+`DD2_GhastlyGlaivePierce` low as a straight cut opens, `DoubleJump` as he leaves the ground
+for the ball, `DD2_BetsyFlameBreath` low before he bursts, `Item14`,
+`DD2_SonicBoomBladeSlash` and `Item71` as he does. And never with two machines: your machine
+counts your minions and says so; a straight cut's own ticks go with it to every machine; a
+line you parry is through with you alone.
+
+### 10. Minions: what else could be done, and what is left
+
+The ball is built. Other answers, **not built**, each a small change; say which, if any:
+
+1. **He turns minions aside as he turns anything aside.** Now everything that fights for a
+   player lands, by an old choice (§16.50); answered at his usual rate (two in three; four
+   in five in his third phase) they would do a third or a fifth of what they do.
+2. **A cap of their own.** What fights for a player can take no more than half of what the
+   cap allows in a second, whatever else is hitting him; the rest is the player's to take.
+3. **The ball's cuts cut minions down.** What a straight cut of the ball lies through, of
+   what fights for a player, is gone, and has to be called up again.
+4. **The dragon's length.** Each segment of the Stardust Dragon hits on its own every seven
+   ticks (section 6). One cooldown for the whole dragon would make its length count for
+   nothing more than its damage.
+
+Left:
+
+- **His knives and his hook still want the parry pressed before its wind-up**, as his sword
+  does: a knife flies at 17.5 px a tick. Say, and they take the same rule as the slashes.
+- **Of cuts closer together than a parry (42 ticks) only one can be turned**: one of the
+  wheel's three, and one of two let-go cuts 30 ticks apart. The straight cuts open on ticks
+  of their own, and one parry turns all that open through you while it is up (14 ticks), and
+  none after. The rest are to be got out of the way of.
+- **One who stands still in the lines can be cut twice**: the plunge's go on for over a
+  second, and the game's grace after a hit is two thirds of one.
+- **The ball does not mind how close he is to anybody.** It answers what took too much,
+  wherever its owner stands; within twenty tiles is the danger.
+- **It counts per player.** Two players' minions each count against their own window;
+  neither is added to the other's.
+
+---
+
+## 16.54 Later in session 7: what fights for a player turned aside at his usual rate, with a cap of its own, and cut down by the ball's cuts, the Stardust Dragon whole; and Ultra Bleeding spewing blood
+
+What was said on the 8th, after §16.53 was delivered (its section 10 named four more answers
+to minions besides the ball, numbered, none of them built):
+
+> minion: 4/9 chance for 3
+> the other applies
+> killing 1 stardust dragon means killing the whole dragon
+
+And while it was being built:
+
+> ultrableeding have blood particle spewing down
+
+Nothing was asked back. What was decided here is said in section 2, and the numbers that are
+mine in section 4.
+
+### 1. The device, read first
+
+- The mod's folder was listed (its root, `Content` with everything under it, 630 entries,
+  and `Localization`): as §16.53's delivery left it, the only times newer than the listing
+  before that being that delivery's own. Before this delivery the eleven files this writes
+  over were read back from the device: byte for byte the copies this was built on (as §16.53
+  left them), and no `Foigh.Called.cs` there yet.
+- `client.log` is the one read for §16.53, and 74 bytes longer: the game was shut at 18:42
+  local (10:42 UTC), before §16.53 was delivered, and has not been run on this computer
+  since. Nothing of the mod's in it but the passages' own lines. §16.53's build has not been
+  played.
+
+### 2. Readings
+
+1. *"minion: 4/9 chance for 3"*: the third of §16.53's answers, *the ball's cuts cut minions
+   down*, with a chance of four in nine. **Built**: each of the ball's sixteen straight
+   cuts, as it opens, cuts down what it lies through of what is called up to fight for a
+   player, four times in nine: a minion or a sentry, each tried once by each cut (one roll
+   for the three ticks it is open; three rolls would cut down five in six). **Mine**:
+   sentries as well as minions (they are what the ball answers); not what those shoot, which
+   is gone in a moment anyway; not the cuts out of the ground where he drives his sword
+   deeper (only the ball's were offered); on the machine of whoever's it is. Cut down, it is
+   gone, and is called up again as the game calls it up.
+2. *"the other applies"*: the other three, all of them.
+   - **(1) Turned aside at his usual rate**: two times in three; four times in five in his
+     third phase. **Mine**: in all three phases (his first phase answers other things at
+     three, two and three in five; the rate offered was two in three); in whatever move he
+     is in, as what keeps coming is (§16.50), not only while he walks: it hits all the time,
+     and he is in a move of his own for most of the fight; not while he answers nothing
+     (broken, down on a knee, his sword thrown aside). Turned aside, a minion is not hurt:
+     it is through with him for as long as a hit of it would have been; a shot of it that
+     stops at what it hits is struck out of the air. **Mine**: it wears nothing off his
+     posture and does not count as holding him at it, so what fights for a player neither
+     breaks him nor sets him running at them (turned aside as anything is, a swarm would
+     wear his posture through in about eleven seconds, what is shot at him wearing it by up
+     to 9 a second: the opposite of what was asked). And with nothing more to be taken from
+     him (the cap) it is turned aside the same way: before this it was turned aside there as
+     anything is, wearing his posture.
+   - **(2) A cap of its own**: what lands of it can take no more than half of what the cap
+     lets him lose in a second (600 of his 150,000 in a Classic world, 960 in Expert, 1,440
+     in Master, half as much again in Legends), whatever else is hitting him. **Mine**: "in
+     a second" is any sixty ticks running; counted on each player's own machine, so two
+     players' minions have a cap each; a hit cut down to what is left of it, and with less
+     than a point left, turned aside; broken, he turns nothing aside, and the least a hit
+     can take, one point, gets through.
+   - **(4) One cooldown for the whole Stardust Dragon**: **the game's own already**. In
+     1.4.4 the dragon's body and tail hit by its head's wait on whatever they hit, and set
+     it when they hit (section 5): the whole of it hits him no oftener than once every seven
+     ticks, however long it is. **§16.53 said that each segment hits on its own every seven
+     ticks: that was wrong.** What was wrong in the mod instead, and is mended: when he
+     turned a part of the body or the tail aside, he set that part's own wait, which the
+     game never reads, and the dragon was asked about again on the next tick, two times in
+     three turned aside, until one landed. Now the whole of it waits, as when a part of it
+     lands. (Its hits are made harder by its size: the game's own sum, up to twelve and a
+     half times, not changed.)
+3. *"killing 1 stardust dragon means killing the whole dragon"*: any part of it cut down by
+   the ball's cut, the whole of it is cut down, head to tail, and the game takes its buff
+   away (it is kept only while its owner has a head). Called up again, it is whole again.
+4. **The ball, retuned. Mine.** What lands of it can no longer be more than its own cap, and
+   all its own cap allows in three seconds (1,800) is just what made the ball before (half
+   of the cap's three seconds). So "too much" is now **nine tenths of what its own cap lets
+   it take in three seconds** (1,620 in a Classic world). Worked out apart from the rig
+   before it was settled (the caps and the rolls summed tick by tick, two minutes each,
+   twenty times over): a strong minion or a swarm pressing its cap, in any phase, and a long
+   dragon in his first two, are answered every twelve to fifteen seconds; a long dragon in
+   his third phase (his defence doubled, four in five turned aside) about every forty;
+   minions landing less than half of their cap (240 a second, in a Classic world), never.
+5. *"ultrableeding have blood particle spewing down"*: **built**: blood spews down out of
+   every wound of one who has Ultra Bleeding, each wound from a place of its own on them, a
+   spurt with every beat of the heart and a run of it between: one wound, two or three, one,
+   two or three spews. **Mine**: all of it but "blood", "spewing" and "down": where the
+   wounds are (the chest, the side behind, the hip, turned with the way they face), the
+   beat, the spurts a third of a beat apart, the drops coming down to the ground under them
+   and no further, and some of it lying on the ground a while after.
+
+### 3. What was built
+
+One new file, `Foigh.Called.cs` (what fights for a player). In `Foigh.React.cs` what is
+called up to fight for them is a kind of its own (`Shot.Called`), answered first, by itself;
+in `Foigh.Reach.cs` what lands of it is counted; in `Foigh.cs` the count moves on every
+tick; in `Foigh.Wild.cs` the ball's threshold, and its cuts marked as the ball's; in
+`FoighLine.cs` the ball's cut down what fights for a player. `UltraBleeding.cs` spews;
+`BloodDroplet.cs` has its fall's numbers named, and a sum of where a drop comes down.
+`Foigh.Hold.cs` changes in its account only. No picture, no words, no sound.
+
+**3.1 Where it is answered.** A minion, a sentry, and what those shoot (the game's own four,
+`IsMinionOrSentryRelated`) are asked about, as everything of a player's is, on the machine
+of whoever's it is, when the game asks whether a hit of it lands (`CanBeHitByProjectile`):
+after "he answers nothing" (broken, on a knee, the sword thrown aside: it lands), and before
+anything else. It never counts toward what keeps coming.
+
+**3.2 Turned aside.** With nothing more to be taken from him (the cap), or by it (its own
+cap), every time; else two times in three (four in five in his third phase), a roll each
+time the game asks, which is once for each hit it would make (the game asks only when its
+wait on him is out). A shot of it that stops at what it hits is struck out of the air;
+anything else, and what was called up itself, is through with him for as long as a hit would
+be (the Stardust Dragon by its head's wait, all of it). Seen and heard as anything turned
+aside is (a spray of sparks no oftener than every 3 ticks, steel and a glint no oftener than
+every 7), and it is not a miss in what he reads of a swing of theirs (`Foigh.Reach`), as
+when it lands.
+
+**3.3 Its own cap.** On the machine working the hit out, before it lands
+(`ModifyHitByProjectile`): no more than what is left of it this second (`SetMaxDamage`, as
+the cap's own). What lands is counted as it lands, and the count moves on a tick at a time
+over the last sixty.
+
+**3.4 The ball's cuts.** A straight cut knows it is the ball's from where it is let out, and
+that goes with it to every machine (a third byte after its ticks). Open, on each machine
+with a player, it goes through what of that player's fights for them that it lies through
+(as thick as it cuts, 14 px), rolling for each once; one cut down is seen cut across along
+the cut (red with its black twin) and killed by its own machine, which tells every other, as
+the game does with anything of a player's; a part of the Stardust Dragon, every part of that
+player's dragon.
+
+**3.5 The spew.** Every tick, at the end of a player's update, on every machine with a
+screen, for every player it updates (the game does not ask it of the dead): for each wound,
+a place on them (5 px toward the way they face and 7 up, 5 behind and 1 down, 4 toward it
+and 9 down, from their middle); each wound spurts on five ticks of every 36 (a beat of the
+heart), two drops a tick, out and down (0.4 to 1.8 px a tick out, 2.2 to 4.6 down), the
+three wounds' spurts a third of a beat (12 ticks) apart; between spurts one tick in three a
+drop runs out of it, slower, darker. Every drop goes as they go (six tenths of their speed
+added) and lives until it is at the ground under it, and no longer (worked out as the drop
+will move: the ground under where it begins, the top of a solid tile or a platform, a half
+block's top, a slope's at that point across it); a spurt's drop that comes down leaves a
+stain there one time in three, for 150 to 230 ticks. Under no ground within 24 tiles a drop
+lives 90 ticks and is gone.
+
+### 4. The numbers
+
+**Yours**: four in nine; the other three answers as offered (two in three, four in five in
+his third phase; half of what the cap allows in a second; one cooldown for the dragon); the
+whole dragon; blood spewing down.
+
+**Mine, every one of the rest**: (1) in all three phases and in every move but where he
+answers nothing; no posture worn and no holding him at it, at his rate or at the cap; (2)
+any sixty ticks; counted for each player on their own machine; a hit cut down to what is
+left, turned aside with less than a point, one point while he is broken; the cap's share, so
+it follows his life in Expert, Master and Legends; (3) minions and sentries, not what they
+shoot; one roll for each cut for each; the ball's cuts only; the ball at nine tenths of its
+own cap over its three seconds (1,620 in a Classic world); the spew: the three places, a
+beat of 36 ticks, spurts of 5 ticks and two drops a tick, a run one tick in three, 12 ticks
+between the wounds' spurts, six tenths of their speed in the drops, a stain from a spurt's
+drop one time in three, for 150 to 230 ticks.
+
+### 5. What the 1.4.4 assembly says
+
+- `Projectile.Damage` looks at a projectile's own wait on an NPC (`localNPCImmunity`, or its
+  type's) **before** it asks the mod whether it may hit (`CombinedHooks.CanHitNPCWithProj`,
+  which asks `CanBeHitByProjectile`), and at the NPC's wait for its owner (`NPC.immune`)
+  after. So a minion turned aside is not asked about again until its wait is out: one roll
+  for each hit it would make.
+- **The Stardust Dragon** (625 head, 626 and 627 body, 628 tail): in `Projectile.Damage`,
+  for 626 to 628 the wait looked at, and set when one hits, is the head's
+  (`FindStardustDragonHeadOfOwner`: the first active 625 of the same owner, in the order of
+  the game's list; the part's own if there is none). One wait for all of it, every seven
+  ticks (`localNPCHitCooldown` 7, each part). Its hits are made harder by its `scale`: by 23
+  hundredths of the hit for each hundredth of its scale over one, up to fifty of those
+  (twelve and a half times the hit).
+- `Player.UpdateBuffs`: the dragon's buff (188) is kept while its owner has a head
+  (`ownedProjectileCounts[625]`), and taken away when not.
+- `Projectile.Kill`, by the projectile's owner in a game of several machines, tells every
+  machine (the projectile's kill message).
+- `Projectile.IsMinionOrSentryRelated`: a minion, a minion's shot, a sentry, a sentry's
+  shot: the same four he took for what fights for them before.
+- `ModNPC.ModifyHitByProjectile(Projectile, ref NPC.HitModifiers)` is asked where the hit is
+  worked out, as `ModifyIncomingHit` is; `HitModifiers.SetMaxDamage` keeps the least of the
+  limits it is given.
+- The game's own count of minion slots (`Player.numMinions`, `slotsMinions`) is begun again
+  in `Player.Update` every tick, and `Projectile.Update` cuts down a dragon's body part that
+  is beyond the player's room.
+- `Player.Update` leaves before `PlayerLoader.PostUpdate` for the dead (and for a ghost, and
+  where the world round them is not loaded): no blood out of the dead.
+- The mod's particles are moved by their speed first and then change it
+  (`PADParticleHandler.Update`, `BloodDroplet.Update`), and are drawn after the tiles
+  (`On_Main.DrawDust`): a drop under the floor would be drawn over it, so none may live
+  there.
+- The minion's laser of the Optic Staff (`MiniRetinaLaser`, 389) stops at the first thing it
+  hits (`penetrate` 1).
+
+### 6. Verified
+
+- Built against the 1.4.4 assemblies on the final source: 0 errors, the 10 warnings as
+  before. Every game call the change leans on was read in the 1.4.4 assembly first (section
+  5).
+- The rig, on the final build (all of it, one part after another, the build's bytes the same
+  before and after): the default run 489 of 489, the flags 152 of 152, the weight 121 of
+  121, **Foigh's whole rig 977 of 977** (it was 954), his third phase's tally 210 of 210,
+  the film 114 of 114, the Turned 218 of 218, the Meat Hook 196 of 196.
+- Its new part for what fights for a player (`called`, 18 checks): a minion, a sentry and a
+  minion's laser taken for it, an arrow not; a minion on him every 6 ticks for 50 seconds in
+  each phase, walking, asked about 500 times and landing 171 times in his first phase and
+  184 in his second (one in three is 167), 108 in his third (one in five is 100); in his
+  first move begun again and again in his second phase, the same; broken, every time; a
+  minion's laser one in three, the rest struck out of the air; nothing of it wearing his
+  posture, counted as something that keeps coming, or holding him at it; three minions of
+  5,000 every 2 ticks: the first tick of it that lands takes 600, no 60 ticks more than 600,
+  and after one that takes all of it the next lands 60 ticks on and no sooner; a minion's
+  lasers of 5,000 the same; broken with nothing of it left, each hit one point; the dragon's
+  body and tail on him and its head away, asked about 300 times in 2,100 ticks (once every
+  seven, the most there can be), the body's and the tail's own waits never written, 107
+  landing; the ball's lines through seven minions and a sentry a hundred times, 357 of the
+  800 cut down (four in nine is 356), the sentry 49 times of its 100, a minion's laser
+  never, each cut down seen cut; the cuts out of the ground cutting none; the ball's own
+  sixteen cuts the ball's and the plunge's fourteen not; the ball's mark sent with a line,
+  with its ticks, in three bytes; a dragon cut through the tail sixty times, the whole of it
+  cut down 22 times (four in nine is 27) and never a part of it alone. And its part for the
+  spew (`spew`, 5 checks): no wound no blood, nor out of the dead; 202, 397 and 616 drops in
+  six seconds for one wound, two and three; two at a time on exactly 50 ticks of 360; every
+  drop born on them, going down, followed until it is gone and never drawn at or under the
+  floor, gone as it comes to it; the stains on the floor; the chest wound toward the way
+  they face.
+- Changed in the rig's older parts: §16.50's checks that what a minion shoots lands now ask
+  that one in three of it lands, in his first and second phases, his sword not raised for it
+  and no step taken; that with nothing more to be taken all of it is turned aside, none
+  landing on any tick, owing nothing to his posture; and that with the stream's roll held
+  one in three lands. The ball's count of too much is its own cap's, and the minion that
+  brings it on hits every 2 ticks (it was 6), so that what lands is all its own cap allows
+  whatever the rolls.
+- **Changes made on purpose**, one at a time, each with the rig's part for it run (`mut11`):
+  38, to `Foigh.Called.cs`, `Foigh.React.cs`, `Foigh.Reach.cs`, `Foigh.cs`, `Foigh.Wild.cs`,
+  `FoighLine.cs`, `UltraBleeding.cs` and `BloodDroplet.cs`. 36 were caught at once. Two were
+  not: him at the cap letting what fights for them land for a point (given back on the next
+  tick, which was all the rig looked at, and five lasers could all be turned aside by chance
+  anyway); and no spark or steel for what is turned aside (his sword dragged along the
+  ground makes sparks of its own, and the rig counted sparks). The rig looks at his life
+  every tick now, with thirty lasers, and listens for the steel: both are caught.
+- Worked out apart from the rig: how often the ball comes at nine tenths, for summoners of
+  eight kinds in each phase (section 2.4).
+
+### 7. What changed on the way
+
+- **The Stardust Dragon.** §16.53 took it for four kinds of minion each with its own wait,
+  and so for one that hits the more often the longer it is. Read again in the assembly for
+  this, `Projectile.Damage` gives its body and tail the head's wait: the fourth answer was
+  already the game's. What the reading found instead was the mod's own fault, mended
+  (section 2.2).
+- **The ball's threshold** was settled at nine tenths only after it was worked out that a
+  summoner pressing the cap reaches it: the rolls leave gaps between the hits that land, so
+  that one pressing it lands about four fifths of it on average, but nine tenths over some
+  three seconds in every twelve or so.
+- **The whole rig, run as one, found four things its parts run alone had not.** Two of
+  §16.50's checks in its older parts (what he does about what is sent at him, in his first
+  and second phases) still asked that everything a minion shoots lands: made over, one in
+  three of it. The ball's own cuts cut down the rig's minion in its check that he curls up
+  again no sooner than ten seconds: the cut working as asked; the check calls the minion up
+  again now, as a player would. The ball's checks, with a minion hitting every 6 ticks, came
+  on time in one order of the rolls and late in another: it hits every 2 now, which takes
+  all its own cap allows whatever the rolls. And the count of how often he begins the three
+  cuts in his third phase held shares written by hand before §16.52 changed what he weighs
+  (he walks on less from far off, and learns where they are as he picks); it fell outside
+  them once: they are worked out by his own sums now (9.3 in a hundred in reach, 17.1 at 300
+  px, 18 at 560, 14.8 over his head).
+- The Meat Hook's rig missed its zombie in one of eleven runs this round, as it did once
+  before in an earlier full run: its rolls are the clock's, and the zombie's walk is the
+  game's. Nothing of this round's touches it.
+- Of the rig's own: its player did not begin the game's count of minion slots again every
+  tick, as the game does, and the game's own rule cut a dragon's body down for want of room;
+  it read each drop after its first move (the particles are moved in the tick they are born
+  on); it counted lines by their place in the game's list, which a later one takes once one
+  is gone; it took a minion's last attempt as he got up from broken for one made while he
+  was down; and one change made on purpose (`c15`, a second hit in the same tick) could not
+  be seen with one minion: the cap is tried with three now, asked about on the same ticks.
+
+### 8. Not seen in the game
+
+Run in the rig only. What only the game can show: whether twenty minions turned aside two
+times in three, sparks and steel off him all the time, read as him answering them or as
+noise; whether the ball comes about as often as it should for a real summoner; a dragon cut
+down whole, and called up again; the spew at the game's zoom, in the hall's light, and how
+much of it three wounds are. Never with two machines: each machine counts its own player's
+minions against a cap of its own, and cuts down its own player's; the ball's mark goes with
+each of its lines.
+
+### 9. Left
+
+- **His first phase now turns minions aside two times in three.** It answers nothing else
+  that often (three, two and three in five). Say if it should be its own rate, or none.
+- **Sentries are cut down by the ball's cuts as minions are.** Say if only minions.
+- **The ball comes less often than it did**, and only for what presses its own cap. Say if
+  it should come sooner (a smaller share), or not at all now.
+- **Many sparks.** Every minion's hit turned aside shows a spray of sparks (no oftener than
+  every 3 ticks) and steel no oftener than every 7: with a swarm, all the time.
+- **What fights for a player can still be most of what lands on him**: its own cap is half
+  of his, and the rest is the player's own to take.
+
+---
+
+## 16.55 Later in session 7: the ball by phase (white across 18 and 23 tiles, red and black across 27; what fights for a player cut down four, six and nine times in nine), with a roar drawn in to him before it; and his end: the roar that puts out the hall, down on his knees, his lines, and Finish or Spare
+
+What was said on the 8th, after §16.54 was delivered (with a picture of the hall's right
+end, the player standing under the fourth pilaster from its end wall):
+
+> Minion ball:
+> phase 1: its white, slashes not red black blood. chance normal chance, radiu4s: 15 tiles
+> phase2: its white, chance: 1.5x phase 1, radius: 20 tiles
+> phase3: its red and black blood, chance: 3x phase 1, radius: 20 tiles
+>
+> His death:
+> he goes to the 4th columm at the end of the hall
+> he roars big long roar that turns off all the torches except the ones in a streak above him
+> fades and pans to hiim, player standing in front of him maybe 20 tiles away, animation: slower pace, he falls onto his knees, his body falls and he put his hands on the ground, the sworrd falls in front of him. player walks up to him maybe distance 5 tiles. He is looking down and turns up to player, shaking and bleeding
+> "Ha ha ha ha... That was an interesting fight.*cough blood range 2-4 times* " (...)
+> "It is true after all, you|.|.|. mortal warrior|.|.|, chosen to disturb the House of Gods|.|.|. Well|,| I was pretty close, wasn't I?"(Yes you were)(No you weren't)
+> yes: "I knew it *cough blood range 2-4 times* 300 years of training" (...)
+> no: "I did get you to bleed a few times despite your big mouth" (...)
+> "O|, Guah!| O|, Yotsubba I shall join you|.|.|. in singing in the choir"(...)
+> Straighten back, look up, hands down, still on knees.
+> "Please|.|.|. chosen one. I have lived long enough|.|.|."(Finish) (Spare)
+> Finish: player takes the sword from the ground, walks up to the swordsman, put their bottom hand on his shoulder, and the other hand js pierce the sword thru,diagonal maybe 30 degrees, the swordsman body is perpendicular to the blade, he rigor mortis dramatic like in the anime with the big ouch, then looks at you
+> "Thank you", player pulls the blade out and cast the body.
+> Body turns into a pile of ash and fly away(check guide fade)
+> ends cinematic, player gets Foigh's Rust Side Sword. for now just a place holder sword.
+> Spare:
+> Player walks up, hold the sword and throw it behind him
+> He looks down
+> and player walks out of frame as the guy is confused there for 10 seconds.
+> "What insolent moron|.|.|." and collapse on the ground as it fades to loading screen. Player exit subworld.
+
+And while it was being built:
+
+> phase 1: its white, slashes not red black blood. chance normal chance, radiu4s: 18 tiles
+> phase2: its white, chance: 1.5x phase 1, radius: 23 tiles
+> phase3: its red and black blood, chance: 3x phase 1, radius: 27 tiles
+
+> before ball makes him a reverse roar effect in red and black
+
+> his roar red and black too
+
+Nothing was asked back. What was decided here is said in section 2, and the numbers that are
+mine in section 4.
+
+### 1. The device, read first
+
+- The mod's folder was listed (its root, 62 entries; `Content` with everything under it,
+  631; `Localization`) as this was begun and again before it was delivered: as §16.54's
+  delivery left it, both times. Before this delivery the eighteen files this writes over
+  were read back from the device: byte for byte the copies this was built on (as §16.54 left
+  them). None of the four new files was there.
+- `client.log` is new since §16.54 (114,953 bytes): the game was started at 22:13 local
+  (14:13 UTC), after §16.54 was delivered, and built the mod (the ten warnings as before, no
+  error); through the door into the Empty Hall at 22:15, there until 23:35, back through it
+  to the world, and shut at 23:46. Nothing of the mod's in it but its own lines (the world's
+  size, the parry's count, the two passages: 11.9 and 15.6 seconds). Twice, as it listed the
+  players, tModLoader caught and passed over "Expected Re-Logic file format": a file among
+  the players that is not one; its, not the mod's. What was done in the hall in that hour
+  and twenty minutes is not known here.
+
+### 2. Readings
+
+1. *"Minion ball: phase 1: its white, slashes not red black blood. chance normal chance,
+   radiu4s: 15 tiles"*, its second and third phases, and then the three again with 18, 23
+   and 27 tiles: the second is what was built (it came after, and changed only the radii).
+   **Built**: in his first phase the ball is white. What he draws in as he curls up is air,
+   with a white light at his middle; before he bursts his blade gleams (steel and a glint,
+   where in his third phase it flares); he bursts in a white flash, a ring of steel going
+   out as far as the cuts reach, the air thrown out from him with sparks in it; and its cuts
+   are white: shown as a hair of steel that brightens (over a hair of dusk, so that it is
+   seen against a bright wall), open as a cut of white steel with nothing black beside it
+   and sparks of steel along it, and white across a minion it cuts down. They reach eighteen
+   tiles from him (288 px) and cut down four times in nine ("normal chance": §16.54's). In
+   his second phase the same, white, across twenty-three tiles (368 px), six times in nine
+   ("1.5x phase 1"). In his third, red and black as it was, across twenty-seven tiles (432
+   px); "3x phase 1" is twelve in nine, more than every time: every time. **Mine**: the
+   radius read as how far from him the cuts reach (the circle the sixteen lie in: §16.53's
+   twenty tiles); the points they go through kept within three fifths of it (173, 221 and
+   259 px: twelve of twenty before); the look of the white, all of it. Every machine is
+   sent, with each cut, whether it is white and how often in nine it cuts down.
+2. *"before ball makes him a reverse roar effect in red and black"*: **Built**: the mod's
+   roar (`Cinematic.Roar`: the rings, the dark, the shake) drawn in, the other way about.
+   Rings of black, their fainter band red and the torn band lit red along it, come in from
+   off the screen, slower and slower as they near him, and are gone into him, the last as he
+   bursts; the dark and the shake swell with it and the view creeps in, most of all just
+   before the end; there is no kick. **Mine**: in all three phases (none was named); from
+   the tick he leaves the ground to the tick he bursts (44 ticks); at a boss's roar's
+   strength; and no voice: the game has no roar played backward, and his leap and his blade
+   are heard as before.
+3. *"his roar red and black too"*: his roar at his end (reading 5), the only other he has:
+   rimmed in red the same way, going out.
+4. *"he goes to the 4th columm at the end of the hall"*, with the picture: at the hall's
+   right end (its door is at the left), the fourth pilaster counted from the end wall, the
+   half pilaster against the wall the first: the one the player in the picture stands under
+   (column 179 of the hall's 264). **Built**: rocked by the blow where he is (40 ticks; and
+   on the ground, if the blow found him in the air), he is gone from there, a ghost of him
+   left where he stood as his flash step leaves one in the fight, and stands under it with
+   his back to the end wall, facing down the hall. **Mine**: gone and there, not a walk;
+   anywhere but the hall (`/foigh` in a world) he stays where he is and turns to the player,
+   and nothing is put out.
+5. *"he roars big long roar that turns off all the torches except the ones in a streak above
+   him"*: **Built**: a breath (22 ticks); the voice, two and a half seconds of it (150
+   ticks), his head thrown back and his arms out from him, shaking, black smoke with red in
+   it out of him and from his mouth: the game's roar pitched down (`SoundID.Roar`, -0.45,
+   and so longer), one and a half times a boss's roar (the rings, the dark, the shake),
+   rimmed in red; and what is left of his breath going out of him, his head down (36 ticks).
+   In the hall every torch on the walls and every Tiki Torch on the floor goes out as the
+   dark going out from him reaches it, 40 px a tick (the hall's length in about a second),
+   with a wisp of smoke off each; the five up his own pilaster stay lit. **Mine**: "the ones
+   in a streak above him" read as the torches up the pilaster he stands under (every
+   pilaster has five, one over another); how fast the dark goes; the smoke. And that they
+   are lit again: under the last black of Finish, when he is gone however it ended, and
+   whenever the hall is loaded (a place is kept as it was left, so a hall left dark would be
+   dark the next time).
+6. *"fades and pans to hiim, player standing in front of him maybe 20 tiles away"*:
+   **Built**: the picture goes to black (24 ticks); under it the player is put down twenty
+   tiles in front of him (320 px, middle to middle), on their feet, facing him; it comes
+   back on them (30 ticks), and the camera goes over to him (96 ticks) and leans in a little
+   (1.3 times). **Mine**: "in front of him" is the way he faces (in the hall, down it;
+   anywhere else he has turned to the player); where there is no ground that far, or
+   something between them, nearer a tile at a time down to eight tiles, and then the other
+   side of him; the ticks and the lean.
+7. *"animation: slower pace, he falls onto his knees, his body falls and he put his hands on
+   the ground, the sworrd falls in front of him"*: **Built**: he sways where he stands while
+   the camera comes over; then his knees go and he is down on both (46 ticks), his body over
+   and his arms out ahead of him (20), the sword let go of on the way, and his hands onto
+   the ground (18); the sword comes down before him (10 more), and he is still but for his
+   breath. On his knees his legs go on into the ground, unseen: while he is down the floor
+   is drawn over him. The sword lies flat on the floor between them, its point 38 px ahead
+   of his feet and its grip 82 px ahead, so that the grip is under the hand of a player
+   standing five tiles off him who reaches down for it. **Mine**: the pace (84 ticks from
+   his knees going to his hands on the ground, after the sway); where and how it lies.
+8. *"player walks up to him maybe distance 5 tiles"*: **Built**: on their own feet, at a
+   walk (1.6 px a tick, whatever is on their feet), to five tiles off him (80 px, middle to
+   middle) on whichever side of him they are, over anything a step will not take. **Mine**:
+   the pace; that they are walked (their keys are not theirs meanwhile); and not there in
+   fifteen seconds, he goes on without them.
+9. *"He is looking down and turns up to player, shaking and bleeding"*: his head hanging,
+   shaking, heaving with his breath, blood dripping from his mouth; and his head comes up to
+   them (36 ticks) before he speaks. **Mine**: where the blood comes from.
+10. The lines: each as written, its bars the panel's pauses as everywhere since §16.43, with
+    his face and his name on the panel (known from the fight). *"\*cough blood range 2-4
+    times\*"* read as not words but what he does: he coughs blood two to four times (the
+    count rolled where the world is decided), each cough bending him and putting blood on
+    the ground ahead of him; after the first line is up, and in "I knew it" between the
+    words and "300 years of training", the line pausing as long as his coughs take.
+    *"(...)"* read as an answer, "...", under its line, to go on with; under the first line
+    and "I knew it" it comes up only once the coughs are done. The two choices are in the
+    panel's two corners, as the passages' are. **Mine**: his laugh as "Ha ha ha ha" comes up
+    (four breaths of it); where the coughs go; that "(...)" is an answer to give.
+11. *"Straighten back, look up, hands down, still on knees."*: before "Please...": up off
+    his hands over a second (60 ticks), his back straight, his head up, his hands down at
+    his sides, still on his knees, breathing and shaking a little. **Mine**: "look up" read
+    as up, at the sky (40 degrees above level), not at the player; and that it comes before
+    the plea.
+12. *"Finish: player takes the sword from the ground, walks up to the swordsman, put their
+    bottom hand on his shoulder, and the other hand js pierce the sword thru"* ... *"the
+    swordsman body is perpendicular to the blade, he rigor mortis dramatic like in the anime
+    with the big ouch, then looks at you"*: **Built**: the panel goes; they bend and take
+    the sword up off the floor by its grip (half a second), carry it on their shoulder and
+    walk up to him until their hand is on his shoulder; their bottom hand (their back arm)
+    on his shoulder, their other hand on the blade: it is longer than they are tall, so it
+    is held by the blade, drawn back, and driven through him thirty degrees down, the point
+    well out of his back, his body leaned back thirty degrees to be square to it. As it goes
+    through he is jolted back and rigid there, his head thrown back, his arms flung out,
+    shaking hard; a second and a half on his head comes down to them, and he says "Thank
+    you". **Mine**: the carry; the hold on the blade; how far through; the look of the rigor
+    and its ticks.
+13. *"\"Thank you\", player pulls the blade out and cast the body."*: "Thank you" goes by
+    itself a second after it is all there (no answer under it); the blade is drawn out,
+    blood after it, and he sags after it; the hand on his shoulder shoves, and he goes over
+    backward onto his back. **Mine**: "cast" read as cast down, with a shove; that "Thank
+    you" goes by itself.
+14. *"Body turns into a pile of ash and fly away(check guide fade)"*: as the Guide goes in
+    his sacrifice (`GuideSacrifice`, Legends): smoke off him, more and more of it (for a
+    second and two thirds); then he comes apart into flecks of ash, one where each pixel of
+    him was drawn, as grey as it was bright (`AshDrift`, after the Guide's `AshDissolve`);
+    they fall into a heap on the floor where he lay and lie there; then a wind lifts them,
+    the side nearest the player first, and takes them away from the player, thinning as they
+    go. **Mine**: the heap (the Guide's goes with the wind at once); the wind (the hall has
+    no sky: a wind of its own, away from the player, along and up); the ticks.
+15. *"ends cinematic, player gets Foigh's Rust Side Sword. for now just a place holder
+    sword."*: the picture to black; under it the sword is theirs, the hall's flames are lit
+    and the camera is home; the picture back, and it is over. **Built**: a new item, Foigh's
+    Rust Side Sword (`FoighsRustSideSword`): a plain swung sword, put down where they stand
+    (`Player.QuickSpawnItem`) for them to pick up. **Mine**: all its numbers (150 melee, 24
+    ticks a swing, Red, 20 gold) and its picture: a copy of your `SwordsmanBluntSide.png`,
+    the side he fights his first phase with, read as the rusted one (PAD_Lore_Planning §9.1:
+    "One side rusted, one side clean"); no tooltip.
+16. *"Spare: Player walks up, hold the sword and throw it behind him"*: **Built**: they are
+    beside the sword already (they walked up to five tiles off him); they take it up as for
+    Finish, hold it up a moment, and throw it back over their shoulder: it turns over in the
+    air and comes down about fifteen tiles behind them, flat on the floor. **Mine**: "walks
+    up" read as the walk up they made; "behind him" read as behind the player, who throws
+    it; the throw.
+17. *"He looks down"*: his head goes down as it lands.
+18. *"and player walks out of frame as the guy is confused there for 10 seconds."*: they
+    turn and walk away at a walk, out of the picture, the camera staying on him; he is there
+    ten seconds (600 ticks), at a loss: a look after them, his head shaken, a look down at
+    his hands, and up. **Mine**: what "confused" is.
+19. *"\"What insolent moron|.|.|.\" and collapse on the ground as it fades to loading
+    screen. Player exit subworld."*: his line, at nobody, which goes by itself; he falls
+    forward onto his face; and as he is down the picture goes to the loading screen and they
+    leave the hall by its passage (`SubworldPassage.Leave`, as its door does: the black, the
+    art and the tips), back to the world they came in from, at the door they came in by.
+    **Mine**: that it is the passage's own black and loading screen; anywhere but a place,
+    the picture goes to black and back, and he is gone.
+20. **His end, where nothing was said. Mine.** The player is held for all of it but where
+    they are walked (no keys of their own, no item in use, no building), nothing can touch
+    them, and nothing takes their life by itself (his wounds of Ultra Bleeding stop as it
+    begins); the bars are in; nothing lands on him. The server waits for the player's word
+    at every answer and every walk, and not for ever: a line never answered goes on by
+    itself after a minute and a half; the question never answered is "No you weren't"; the
+    choice never made is Spare (PAD_Lore_Planning §9.2 proposes that not choosing is the
+    choice). With nobody left to see it (the player dead) he is down on his face and gone.
+    Nothing is dropped but the sword, and nothing is said in the chat. Only the player he
+    fights is moved and shown it; anybody else sees him do it.
+21. **Your script against the lore plan.** PAD_Lore_Planning §9.1 has killing him give no
+    sword (and the achievement Wish Maker) and sparing him give it, under the name
+    Clanmaster's Corpse Piler. Your script gives the sword on Finish and nothing on Spare,
+    by its own name: **built as your script**; the plan is yours and is not changed. Wish
+    Maker is not built.
+
+### 3. What was built
+
+New: `Foigh.End.cs` (his end, every machine's part of it and the player's),
+`Content/Particles/AshDrift.cs` (a fleck of ash that lies and is then blown away), and
+`Content/Items/Melee/FoighsRustSideSword.cs` with its `.png` (the stand-in sword). Changed:
+`Foigh.cs` (the end's parts as his moves; the blow that would kill him begins it; the
+player's word for it, `Word.Last`; nobody left to see it), `Foigh.Fight.cs` (the end's moves
+run and posed by `Foigh.End`; his knee and fade of before gone), `Foigh.Draw.cs` (the end's
+looks; the sword out of his hand; nothing of him once he is ash), `FoighMoves.cs` (the end's
+poses: the roar, the fall, on his knees and hands, the laugh and the coughs, up on his
+knees, the sword through him, on his back, spared, on his face; his old knee gone),
+`FoighPlayers.cs` (`FoighEndPlayer`: the player held, put down, walked and turned, and their
+arms with his sword in their hands), `FoighRig.cs` (a loose sword seen at less than its
+length), `Foigh.Wild.cs` and `FoighLine.cs` (the ball by phase; the roar drawn in),
+`Foigh.Called.cs` (its account only), `Cinematic.cs` (a roar rimmed in a colour, or drawn
+in), `Dialogue.cs` (its pause and its fade made readable by the mod, unchanged),
+`EmptyHall.cs` (the end's pilaster; its flames, put out and lit; lit on every load:
+`EmptyHallFlames`), `FoighCommand.cs` (`/foigh end`) and the sword's name in
+`en-US_Mods.PisAndDag.hjson`. One new picture, a copy. No new sound.
+
+**3.1 Where it is decided.** The server (or a game alone) moves him from part to part of his
+end, rolls the coughs, and waits; every machine runs the part he is in from his clock. The
+player he fights is shown it, put down, walked, and asked, on their own machine, which tells
+the server when they have answered or got where they were walked to (`Word.Last`, with the
+part it is for, so that a word late for one part is never taken for the next).
+
+**3.2 Their arms, and his sword in their hands.** On every machine, for every player in his
+end: set after the game has set them for the tick (`PostItemCheck`: the game lets go of both
+arms as an item check begins), from the end's clock as he is drawn at it; the sword drawn
+from where their hand is, by the game's own sums for where a hand is, worked out ahead so
+that the walk up can end where the hand will be on his shoulder; nothing of their own in
+their hand drawn meanwhile.
+
+**3.3 The hall's flames.** A torch is lit in the first half of its frames, a Tiki Torch in
+its first column, as the game's wires switch them; his roar puts them out so, and they are
+lit again so, without the wires' message (the hall is a place for one player). The five up
+his pilaster are left as they are.
+
+**3.4 The ball by phase.** Its reach, its white and how often it cuts down are the phase's
+when each cut is let out, and go with the cut to every machine (two more bytes with it: five
+of its own now). The roar drawn in begins on every machine with a screen as he leaves the
+ground.
+
+### 4. The numbers
+
+**Yours**: white in his first two phases and red and black in his third; eighteen,
+twenty-three and twenty-seven tiles; "normal", 1.5 and 3 times (four, six and nine in nine);
+the roar drawn in, red and black; his roar red and black; the fourth pilaster from the end;
+every flame out but those over him; twenty tiles and five; the lines, the coughs (two to
+four), the answers and the choices; thirty degrees; ten seconds; the sword's name.
+
+**Mine, every one of the rest**: the ball's points within three fifths of its reach; the
+roar drawn in over 44 ticks, at a boss's strength, silent; rocked 40 ticks; his roar a
+breath of 22 ticks, a voice of 150, 36 after; the game's roar at -0.45; one and a half times
+a boss's; the dark along the hall at 40 px a tick; to black 24 ticks, black 16 (the player
+put down 3 in), back 30, the camera over in 96, at 1.3; down to eight tiles where twenty has
+no ground; the fall: the sway to 150, his knees by 196, the sword let go at 216, his hands
+by 234, it lands by 244, still by 280; the sword lying 38 and 82 px ahead of his feet at
+half its length; a walk of 1.6 px a tick, a jump after 20 ticks stuck, fifteen seconds
+before he goes on; his head up over 36 ticks; a cough of 18 ticks every 30, the first 10
+after the line is up, the answer 24 after the last; up on his knees over 60, his head 40
+degrees up; ninety seconds before a line goes on by itself, "No you weren't" and Spare when
+nothing is chosen; the sword taken up in 30 ticks; the hand on his shoulder by 12, through
+at 22, rigid to 96, looking at them by 126, "Thank you" at 132, gone a second after it is
+read; the blade out by 18, the shove at 26, on his back by 50; smoke for 100 ticks from 58,
+the ash lying and blown for 200, to black 24, black 20 (the sword given 4 in), back 30: 432
+in all; the throw at 62, 6.2 px a tick back and 5.2 up, falling at 0.3, turning 0.32 a tick;
+his head down from 100, the walk away from 110, his line at 10 ticks into the next part,
+gone 50 after it is read; on his face by 34, the passage from there; the sword's numbers.
+
+### 5. What the 1.4.4 assembly says
+
+- `Player.ItemCheck` is `PreItemCheck`, `ItemCheck_Inner`, `PostItemCheck`: the last always,
+  whatever the first answers. `ItemCheck_Inner` lets go of both arms
+  (`compositeFrontArm.enabled` and `compositeBackArm.enabled` set false) every tick, after a
+  return for a player who cannot act (`CCed`), which leaves them as they were.
+- `Player.Update` calls `ItemCheckWrapped` for every player it updates, on every machine
+  (only the right click's own features are left out on the server), after the player has
+  moved and before `PlayerFrame`.
+- `Player.GetFrontHandPosition` and `GetBackHandPosition`: along the arm's turn plus a
+  quarter turn, by 10, 4, 6 or 8 px (the front, by its stretch) or by 10 and 12, 4 and 6, 6
+  and 8, 8 and 10 (the back); then 4 px (the front) or 6 (the back) to the side by the way
+  they face and 2 up, and for the front 3 px across the arm; from `MountedCenter`.
+  `CompositeArmStretchAmount`: Full 0, None 1, Quarter 2, ThreeQuarters 3.
+- `TileLightScanner.ApplyTileLight`: a torch gives light only while its frame across is
+  under 66 (in its style's colour, `TorchID.TorchColor`); a lamp (93, the Tiki Torch among
+  them) only while its frame across is 0.
+- `Wiring.ToggleTorch` moves a torch's frame 66 along or back; `Wiring.ToggleLamp` finds the
+  lamp's top (its frame down in 18s, by threes) and moves all three of its tiles 18 along or
+  back; both then send the tiles (`SendTileSquare`).
+- `Player.QuickSpawnItem(IEntitySource, int, int)` puts the item down over the player
+  (`Item.NewItem`) and, on a client, tells the server.
+- As used, and there: `Player.SetCompositeArmFront` and `SetCompositeArmBack` (`bool`, the
+  stretch, `float`), `ClearBuff`, `noItems`, `noBuilding`, `immuneNoBlink`, `immuneAlpha`;
+  `PlayerDrawLayers.HeldItem` (`Hide`); `NPC.behindTiles`; `SoundID.Roar`; and the
+  `ModPlayer` hooks `SetControls`, `PostUpdateRunSpeeds`, `UpdateBadLifeRegen`,
+  `PostUpdateEquips`, `PostUpdate`, `PostItemCheck`, `HideDrawLayers`, `CanUseItem`,
+  `OnEnterWorld`.
+
+### 6. Verified
+
+- Built against the 1.4.4 assemblies on the final source: 0 errors, the 10 warnings as
+  before. Every game call the change leans on was read in the 1.4.4 assembly (section 5).
+- The rig, on the final build (all of it, one part after another, the build's bytes the same
+  before and after): the default run 489 of 489, the flags 152 of 152, the weight 121 of
+  121, **Foigh's whole rig 1006 of 1006** (it was 977), his third phase's tally 210 of 210,
+  the film 114 of 114, the Turned 218 of 218, the Meat Hook 196 of 196.
+- Its new part for his end (`end`, 26 checks), played through as the game plays it on the
+  machine of the player it is for, the panel's answers given as a player gives them: struck
+  down, on one life, nothing landing, rocked 41 ticks with the player held and the bars in;
+  the roar from tick 22, 150 ticks of voice, rimmed red, 208 in all; put down 320 px before
+  him facing him under the black, the camera over to him, the sword out of his hand at 216;
+  the walk up on their own feet to 85 px (165 ticks); the first line, his laugh, three
+  coughs as rolled, and only then its answer; the question in the two corners; a word for a
+  part already past changing nothing; "I knew it", four coughs between its halves; the
+  choir; his back straight and his head 40 degrees up, Finish and Spare in the corners, a
+  choice sent before they are up not taken; the sword taken up, its grip in their hand (0 px
+  off it); the walk up with it to 5.3 px of where the thrust is made from; their bottom hand
+  on his shoulder (1.4 px off it), the other on the blade (0 px off its line), through him
+  29.2 degrees down, the point 34 px out of his back, "Thank you" going by itself; cast
+  down, 487 flecks of ash, all of them in the heap a while after, 461 blown away from the
+  player later, the sword given under the black, gone after 432 ticks; spared: the sword
+  thrown, down 242 px behind them and flat (3 px over the floor), the walk away (969 px off
+  by the end), him there 701 ticks; "What insolent moron..." going by itself; on his face,
+  and anywhere but a place the black and back, gone (108 ticks), nothing given; never
+  answered, "No you weren't" after 5,401 ticks and Spare after 5,473; the player dead, down
+  on his face and gone; in the hall (built by its own `Build` in the rig's world and taken
+  for the loaded one): gone to column 179 facing down the hall, 141 of its 146 flames out
+  from tick 24 to 77 of the roar, nearest first, the 5 up his pilaster lit; the player put
+  down 320 px down the hall; all 146 lit again under the last black, and on a load; `/foigh
+  end` on the road, between two phases, in the fight, again, and with nobody there.
+- The ball by phase (in `wild` and `called`): in each phase the roar drawn in from the tick
+  he leaves the ground (8) for 44 ticks, red; sixteen cuts, white in the first two and red
+  and black in the third, within 288, 368 and 432 px (out by 0); behind them 278 and 308
+  white things and no red in the first two, no white cut's streak and 227 red in the third.
+  In his first phase the burst and its cuts leave 295 white things and none of his burning
+  sword's; it lands once as he bursts on one who stands 60, 200 and 264 px along the ground,
+  200 behind him and 100 along and 200 up, not on one 360 px off; every fourth cut through
+  them; along the ground it lands as far as 276 px, where eighteen tiles from him up in the
+  air end (277). Cut down, a hundred times through each of seven minions and a sentry: 343
+  of 800 in his first phase (four in nine is 356), 541 in his second (six in nine is 533),
+  240 of 240 in his third; a cut sent with five bytes of its own.
+- **Changes made on purpose**, one at a time, each with the rig's part for it run: four to
+  the end (the flames up his pilaster put out too; a word for one part taken for another;
+  the sword thrown the other way; the flames not lit again under the last black) and five to
+  the ball (white in his second phase too; six in nine back to four; the roar not drawn in;
+  twenty tiles in his second phase; a white cut opening with embers). All nine were caught,
+  each by one or two of its checks.
+- Drawn outside the game from the rig's frames (`film`) and looked at: his end, Finish and
+  Spare, in the hall and out of it: the roar, the fall to his knees and hands, the sword on
+  the floor and in the player's hands, the thrust, the cast, the ash, the throw.
+
+### 7. What changed on the way
+
+- **The whole rig, run as one, found five things its parts alone had not.** Four were the
+  ball's older checks, still at §16.53's twenty tiles and its red: they counted what the
+  burst leaves as smoke, fumes and embers, and in his first phase it is white now (they
+  count its sparks, streaks of air, blooms, ring and cuts' streaks, and ask that none of the
+  red is there); and they stood a player 280 px along the ground, which is within twenty
+  tiles of him up in the air and not within eighteen, so that no cut was aimed through them
+  (they work out now where eighteen tiles from him up in the air end along the ground, 277
+  px, and stand inside it). The fifth: the hall's check found half its flames out before his
+  roar began. The rig's first part leaves the hall as the loaded world for the parts after
+  it, and an earlier part that strikes him down (`wild`, its test of him struck down with
+  the cuts out of the ground showing) had begun his roar there, which put out every flame
+  within 69 tiles of him; the hall's `Build` lays no torch where one is. The check now loads
+  the hall as the game does, its flames lit (`EmptyHallFlames`), as a hall left in the dark
+  would be.
+- **The end's own part**, run first alone: the hall the rig's first part leaves as the
+  loaded world had him step to its pilaster in every test of the part, where each had stood
+  him elsewhere; the part takes the loaded world for none but in its hall test, as the game
+  does anywhere but the hall. With no pictures in the rig his ash had nothing to come apart
+  from: the rig reads his pieces' pixels from a file of them.
+- **The sword's picture** was first the bloodied side (`SwordsmanBloodSide.png`); the lore
+  plan's "One side rusted, one side clean. He fights the player with the clean side" moved
+  it to the blunt side, which is yours.
+
+### 8. Not seen in the game
+
+Run in the rig only. Never on a screen: the white ball (its air drawn in, its gleam, its
+flash and ring of steel, its white cuts) and the roar drawn in to him; and all of his end:
+the flash step to the pilaster, the roar and the hall going dark around the streak over him,
+the fade and the camera, the fall, the sword on the floor, the walk up, the laugh and the
+coughs, the panel's lines and corners, up on his knees, the sword in the player's hands and
+through him, the rigor, the cast and the ash, the throw, the walk away, the ten seconds, the
+slump and the passage out. Sounds, picked by name and never heard: `NPCHit1` and `NPCDeath1`
+as the blow lands; `DoubleJump` and `Item1` for the step; `SoundID.Roar` at -0.45; `Dig` as
+his knees, his hands, his back or his face come down; `Tink` as the sword lands and is taken
+up; `Item1` as it is lifted and drawn out; `DD2_GhastlyGlaivePierce` and `NPCHit1` as it
+goes through him; `DD2_MonkStaffSwing` as it is thrown; `NPCDeath6` as he goes to ash. Never
+with two machines: only the player he fights is held, walked and asked, their machine
+telling the server (`Word.Last`); every machine draws their arms and the sword.
+
+### 9. Left
+
+- **Who gets the sword**: your script (Finish) against the lore plan (spare, and the
+  achievement Wish Maker for killing him). Built as the script; say if the plan should
+  change, or the script.
+- **"throw it behind him"** is built as behind the player. Say if it was behind him.
+- **"look up"** is at the sky, not at the player.
+- **The sword is a stand-in**: its picture is your blunt side, and its numbers are mine.
+- **Still nothing else of a beaten boss**: no flag kept that he was beaten, no Boss
+  Checklist entry, no bestiary entry, nothing in the chat; and what brings him to the hall
+  is still `/foigh` alone.
+- **Never answered**: a minute and a half, then he goes on; the plea's choice then is Spare.
+
+---
+
+## 16.56 Later in session 7: his red and black roar drawn as every boss's roar is, thin and seen through, its fainter band red
+
+What was said after §16.55 was delivered, with a picture of the hall during a roar of his
+(great bands of solid red and of black over the whole screen):
+
+> this roar not it, im talkin the thin transparent hollow knight roar that every other boss have, instead of just black its black and red
+
+Nothing was asked back.
+
+### 1. The device, read first
+
+- `Cinematic.cs` and the three notes this writes over were read back from the device first:
+  byte for byte as §16.55 left them.
+- `client.log` is new (111,987 bytes): the game was started at 01:44 local on the 9th (17:44
+  UTC on the 8th), after §16.55 was delivered, and built the mod (the ten warnings as
+  before, no error); through the door into the hall at 01:45, back out to the world by a
+  passage at 01:52 (Spare's end leaves by one, as a door does), into the hall again, and
+  shut at 01:53. Nothing of the mod's in it but its own lines, and tModLoader's own
+  "Expected Re-Logic file format" twice as it listed the players, as before. §16.55's build
+  has been played; the picture is of it.
+
+### 2. Readings
+
+1. *"this roar not it"*: the roar in the picture is his red and black one as §16.55 drew it,
+   and it is not what was asked.
+2. *"the thin transparent hollow knight roar that every other boss have"*: the mod's roar
+   (`Cinematic.Roar`), as the Wall of Flesh, King Slime, the Queen Bee, Queen Slime and the
+   Abomanation have it: rings of thin dark bands, seen through, torn at their edges, going
+   out.
+3. *"instead of just black its black and red"*: that roar with each ring's fainter band red
+   instead of black, as thin and as clear as it is in black, the dark band black. Both of
+   his: his roar at his end, and the one drawn in to him before the ball. **Mine**: which
+   band is red (the fainter one just outside the dark one, as §16.55 had it); and his roar
+   at his end stays at one and a half times a boss's strength (§16.55's reading of "big"):
+   its bands a little darker than another boss's, its shake and its dark at the edges more.
+   One number (`RoarStrength` in `Foigh.End.cs`) if it should be theirs.
+
+### 3. What was wrong
+
+The ring's picture (`RoarRing.png`) is white in every pixel, the clear ones too, with only
+its alpha shaped: in black that is all the same, and black is all any roar had been drawn
+in. The overlay is drawn with the game's `BlendState.AlphaBlend`, which takes a picture's
+colour as already multiplied by its alpha, so a ring drawn in red gave the red to every
+pixel of the square it was drawn on: each ring a square of red as wide as it was, over the
+whole screen once they were out, the dark bands of the others cut into it. That is the
+picture. §16.55 also laid a light of red along each dark band, which no other roar has; with
+the squares it could not be told apart.
+
+### 4. What was built
+
+`Cinematic.cs` alone. A ring's fainter band, in a colour, is drawn from a copy of the ring
+with its colour multiplied by its alpha: made from the ring the first time a coloured band
+is drawn, on the main thread, as the overlay's pool already is, and let go of with it when
+the mod is unloaded; where the ring cannot be read back, the band is drawn black. The red
+light along the dark band is gone. A roar in black, every other boss's, is drawn as it was:
+the copy is never used for it. Nothing of how loud, how long, how far or how strong anything
+is changed.
+
+### 5. What the 1.4.4 assembly says
+
+- FNA's `BlendState.AlphaBlend` is One and InverseSourceAlpha for colour and alpha both:
+  what is drawn is the picture's colour times the given colour, added to what was there
+  times one less the alpha. `BlendState.Additive` (the mod's light particles') is
+  SourceAlpha and One; `NonPremultiplied` SourceAlpha and InverseSourceAlpha.
+- `RoarRing.png`: 1,024 by 1,024, every pixel white, its alpha 0 to 255 (read from the
+  file).
+- `Texture2D.GetData`, `SetData` and its constructor, in FNA: as the mod uses them already
+  (`AshDissolve`, the Meat Hook's picture).
+
+### 6. Verified
+
+- Built against the 1.4.4 assemblies: 0 errors, the 10 warnings as before.
+- The rig's end and wild parts on the build: 231 of 231. Nothing of what changed runs there
+  (it draws), and nothing it does changed.
+- The drawing, worked out apart from the game with its own sums (the overlay's blending, the
+  ring's picture, every one of the roar's numbers, all its rings), over a stand-in of the
+  hall with its torches: as §16.55 drew it, squares of red over the screen, as in the
+  picture; as now, thin bands of black and of red that the hall is seen through, beside a
+  boss's black roar at the same moments. That picture was sent to the chat: it is the sums,
+  not the game.
+
+### 7. Left
+
+- **His roar at his end is at one and a half times a boss's strength**: other bosses' are
+  0.45 to 1.25. Say if it should be 1.
+
+---
+
+## 16.57 Later in session 7: Foigh's Rust Side Sword made a weapon: 600 through all defense, a chain of five cuts, three in the air, the blood held for with Enter, and its damage beside the Zenith's
+
+What was said after §16.56 was delivered:
+
+> For the sword that player use:
+> 600 damage
+> Autoreuse true
+>
+> attacks Ignore defense.
+> Chain attacks: Up(go forward 1 tile) down(half tile), swing around(stationary), Big smash(1.5 tile), Pierce (2 tiles)
+> Right click:  Jump up, roll in air and swing slashes, up to three before falling down. first two 1.5x damage, third triple damage. 
+>
+> all slashes penetrate -1, go thru tiles and last for 2.5 sec max, super low local hit maybe 7?
+>
+> Holding Enter for 3 second: player stays still and focus then player gets a 2 min buff: Blood Drenched Sword. and clear All debuffs. Cooldown for 2 mins.
+>
+> Sword is now Red blade, witth smoldering black and red smoke effect like swordsmans. every damage on sword is 1.75x, 1.6x defense, life max hp is 3/5, every speed is 1.25x
+> Slash projectile is now red(right click).
+> Chain attack: Up, down, Big smash then jump to nearest enemy, and if still holding, plunge deep and creates piercing AOE straight slashes. 
+>
+> Make the fancy chain swing attacks with effects.
+> calculate dps compare to zenith.
+
+Nothing was asked back.
+
+### 1. The device, read first
+
+- The mod's folder was listed (its root, 62 entries; `Content` with everything under it,
+  635; `Localization`) as this was begun and again before it was delivered: as §16.56's
+  delivery left it, both times. Before this delivery the two files of the mod this writes
+  over (`FoighsRustSideSword.cs`, the `.hjson`) and the five notes were read back from the
+  device: byte for byte the copies this was built on. None of the seven new files was there.
+- `client.log` is the one §16.56 read (111,987 bytes, last written as the game was shut at
+  01:53 local on the 9th): the game has not been started since, and §16.56's build has not
+  been run.
+
+### 2. Readings
+
+1. *"For the sword that player use"*: Foigh's Rust Side Sword, what Finish gives (§16.55's
+   stand-in), made into what follows. Its name, its picture (the copy of
+   `SwordsmanBluntSide.png`) and Finish giving it are kept. **Built**: 600 melee damage;
+   used again for as long as the button is held (*"Autoreuse true"*); knockback 7; Red; 20
+   gold to sell; no source but Finish, as before. It is in the hand whenever it is the item
+   held, laid on the shoulder (the hand before the chest, the blade up and back over it,
+   behind the head), as the Iron Flow hangs at the hip: the item itself hits nothing and is
+   never drawn in use, and the sword in the hand is the weapon (the Iron Flow's way).
+   **Mine**: the shoulder; the knockback, rarity and value; the item's use time, 22 ticks
+   (the length of the first two cuts).
+2. *"attacks Ignore defense"*: every hit of it (the cuts, the slashes, the straight cuts)
+   has the whole of the target's defense set aside: the game's scaling armour penetration
+   given its full share, which the game clamps to all of the defense whatever else adds to
+   it. The game still varies the damage (15 in a hundred either way) and it can still crit.
+3. *"Chain attacks: Up(go forward 1 tile) down(half tile), swing around(stationary), Big
+   smash(1.5 tile), Pierce (2 tiles)"*: **Built**: the left button held, five cuts in turn,
+   each from where the last left the blade.
+   - Up: drawn back and down behind, then up through the front to over the head. 16 px
+     forward (a tile); 22 ticks.
+   - Down: cocked a little further back, then down through the front to low before the feet.
+     8 px; 22 ticks.
+   - Round: on round from there, the arm out along the blade, a turn and a quarter, left
+     trailing low behind. Where they stand; 33 ticks.
+   - The smash: raised behind the head in both hands, held a moment, then brought down over
+     the top into the ground ahead, faster and faster, where it stays a moment. 24 px; 35
+     ticks.
+   - The thrust: drawn back level to the hip and driven straight ahead. 32 px; 28 ticks.
+   A chain is 140 ticks at the item's own speed. **Mine**: every pose (`RustSideMoves`,
+   numbers only); each cut's length against the use time (1, 1, 1.5, 1.6, 1.3); that a step
+   carries them exactly so far when no key is held (the speed set each tick, so they stop
+   where it ends) and only ever adds to a walk or a run (a cut never holds anyone back);
+   left longer than 40 ticks, the chain starts again from the cut up; each cut hits each
+   enemy once; knockback away from the player, half as hard again for the smash and a
+   quarter for the thrust.
+4. *"Right click: Jump up, roll in air and swing slashes, up to three before falling down.
+   first two 1.5x damage, third triple damage."*: **Built**: the right button (held, it goes
+   on): up off the ground (9.5 px a tick; 6 if already in the air), the whole body rolled
+   over forward, then a cut aimed at the cursor that lets a slash go as the blade passes the
+   aim. The second pops them up a little (3.5 px a tick), another roll, a rising cut; the
+   third, two rolls and a cut from far back: the great slash. They hang in the air while
+   they cut, falling no faster than half a pixel a tick. The first two slashes do one and a
+   half times the sword's damage (900), the third three times (1,800). **Mine**: the speeds;
+   the rolls (one turn, one, two); the aim follows the cursor until each cut begins, then
+   holds (ahead, above or below them, never behind: they face it); the next cut must be
+   asked for within 8 ticks of the last ending, and three is all until they are on the
+   ground again; in the air the blade itself does no damage, the slashes do; the right
+   button held goes on into the next (the game asks for it to be let go between two uses
+   otherwise).
+5. *"all slashes penetrate -1, go thru tiles and last for 2.5 sec max, super low local hit
+   maybe 7?"*: **Built**: as asked. Through every enemy (penetrate -1) and through tiles,
+   gone after 150 ticks (thinning over the last 18), and each enemy hit again every 7 ticks
+   while it is in it (the slash's own count for each). **Mine**: "all slashes" read as the
+   three in the air and the drive's straight cuts (reading 10), not the chain's cuts, which
+   are the blade and hit once a cut. A slash is a crescent 76 px from tip to tip going 14 px
+   a tick, the great one 120 px at 11, and it hurts along its leading edge.
+6. *"Holding Enter for 3 second: player stays still and focus then player gets a 2 min buff:
+   Blood Drenched Sword. and clear All debuffs. Cooldown for 2 mins."*: **Built**: Enter
+   held with the sword in hand, standing on the ground, nothing under way: the sword is
+   raised upright before the face and the player is held still (no key of theirs moves them
+   or uses anything) for 180 ticks, a low pulse every 45 and the red coming up the blade;
+   let go of, or off the ground, and it is over with nothing. At its end, Blood Drenched
+   Sword for 7,200 ticks, and every debuff the Nurse would take off is taken, with a roar, a
+   burst of red and cuts crossing about them. When the blood is gone, however it goes (run
+   out, clicked off, death), Dried Blood: 7,200 ticks before it can be had again. **Mine**:
+   the cooldown counted from the blood's end, so two minutes with it and two without; "All
+   debuffs" as the Nurse takes them (her own rule: what
+   `BuffID.Sets.NurseCannotRemoveDebuff` keeps from her is kept, Potion Sickness, the three
+   of hunger, a campfire's, a heart lantern's, honey's and the rest of its eighteen); Dried
+   Blood cannot be clicked off, the Nurse cannot take it and death does not; neither is
+   saved with the player, as the mod's other buffs are not; not mounted and not on a
+   grappling hook. And Enter: while the sword is in hand and could be drenched, a press of
+   Enter is the sword's and does not open the chat. Drenched, waiting, or with anything else
+   in hand, Enter opens the chat as always; Alt and Enter is the window's; the press that
+   sends a line in the chat does not go on to focus.
+7. *"Sword is now Red blade, witth smoldering black and red smoke effect like swordsmans."*:
+   **Built**: drenched, the sword in the hand is his bloodied one (`SwordsmanBloodSide.png`,
+   Foigh's own from his third phase), burning as his does: black smoke with red in it
+   standing off the blade and left behind as it moves, embers, a red light, a faint red
+   about it. Focusing, it comes up the blade from the guard over the three seconds.
+8. *"every damage on sword is 1.75x, 1.6x defense, life max hp is 3/5, every speed is
+   1.25x"*: **Built**: under the blood every hit of the sword is 1.75 times (its damage, so
+   the cuts, the slashes and the straight cuts: 1,050); defense 1.6 times (the game's final
+   multiplier); the most life three fifths of all of it, what is worn included (the game
+   then brings life down to it); speed 1.25 times. **Mine**: "every speed" read as using
+   every item (the sword, any other weapon, a tool, a block: the use time and the animation
+   as the game reckons both), running (top speed, acceleration, and a pair of boots' top
+   speed) and the jump (the speed it leaves the ground at); not flight, mounts, swimming or
+   falling.
+9. *"Slash projectile is now red(right click)."*: drenched, the slashes are red with their
+   black, as his third phase's are.
+10. *"Chain attack: Up, down, Big smash then jump to nearest enemy, and if still holding,
+    plunge deep and creates piercing AOE straight slashes."*: **Built**: drenched, the chain
+    is up, down, the smash and the leap: at the nearest enemy, a roll over in the air and a
+    cut down onto it, landing on its near side (on the ground under it if it stands on any).
+    The button still held as the leap ends: down onto the point if they are off the ground
+    (9 px a tick), and the sword driven into the ground, 70 ticks held still, while twelve
+    straight cuts are let out of the ground about it over the first 36 ticks, at uneven
+    ticks, within ten tiles of the blade: every other one through an enemy there (each in
+    turn, anywhere on its body), the rest through anywhere over the ground within seven
+    tiles. Each shows as a hair of dark red that brightens for 12 to 22 ticks, opens for 3
+    (cutting each enemy it lies through once) and hangs a moment; each is the drenched
+    sword's whole damage (1,050), through everything. **Mine**: the nearest enemy is one the
+    game lets a weapon chase (not a critter, a town NPC or a target dummy), within forty
+    tiles, that the player can see; with none, the leap goes ten tiles forward toward the
+    cursor; its time by its length (20 ticks and one more for every 28 px, 42 at the most)
+    and its height (2 tiles at the least, about 9 at the most); "deep" as all the sword's
+    weight into the ground: the ground heaved and a ring of red out to where the cuts will
+    come.
+11. *"Make the fancy chain swing attacks with effects."*: **Built**: every cut leaves a
+    trail (a dark band so that it shows on a bright sky, steel light over it, a bright line
+    along the point's path; drenched, all but black and red) and three shadows of the sword
+    along the way it came; the thrust a lance of light and air streaking off the point; each
+    cut is heard as it goes fast (the game's swing and the Monk's staff at their own
+    pitches, the thrust the Ghastly Glaive's); the smash heaves the ground, throws sparks
+    and dust and shakes the screen; a hit throws sparks the way the blade went (drenched,
+    blood and a cut left hanging in the air); the leap goes up in a rush of wind and comes
+    down as the smash does, a little softer; the dive streaks. **Mine**: all of it.
+12. *"calculate dps compare to zenith"*: measured on the game's own engine, and worked out
+    (section 5).
+
+### 3. What was built
+
+| File | What |
+|---|---|
+| `Content/Items/Melee/FoighsRustSideSword.cs` | the item, rewritten: in use exactly as long as each cut takes, it tells the sword in the hand to cut or to go up; its damage 1.75 times under the blood |
+| `Content/Projectiles/Melee/RustSideHoldout.cs` | the sword in the hand, the weapon: its moves, what moves its owner, what it hits, the drive's cuts, the focus, all it looks and sounds like; `RustSidePose` (what is drawn, and the player held still) and `RustSideLayer` (drawn in the hand) |
+| `Content/Projectiles/Melee/RustSideMoves.cs` | every pose of every move as numbers, and where the sword is in them (`RustSideState`); nothing of the game in it |
+| `Content/Projectiles/Melee/RustSideSlash.cs` | a slash let go of in the air, pale or red |
+| `Content/Projectiles/Melee/RustSideLine.cs` | a straight cut out of the ground |
+| `Content/Buffs/BloodDrenchedSword.cs`, `.png` | Blood Drenched Sword, Dried Blood and `BloodDrenchedPlayer`: what the blood does, its wait, and Enter |
+| `Content/Buffs/DriedBlood.png` | Dried Blood's icon |
+| `Localization/en-US_Mods.PisAndDag.hjson` | the sword's tooltip; the two buffs' names and lines |
+
+The tooltip:
+
+> Ignores all defense
+> Cuts in a chain: up, down, around, a smash and a thrust
+> Right click to leap and roll, loosing up to three slashes
+> Hold Enter for 3 seconds, standing, to drench it in blood
+> 'The rusted side was used on one man, for years.'
+
+Blood Drenched Sword: "Sword damage +75%, defense +60%, speed +25%, max life -40%". Dried
+Blood: "The sword cannot be drenched again yet". **Mine**, all of the words. The two icons
+are stand-ins, drawn at 16 by 16 and doubled to 32: a red blade running with blood; a dark,
+cracked drop (PlaceholderTextures.md).
+
+### 4. How it goes together
+
+- The sword in the hand is an idle holdout (`BaseIdleHoldoutProjectile`, made by
+  `PADHoldoutPlayer` while the item is held). The item is used with the game's own use time
+  and reuse, but `UseTimeMultiplier` and `UseAnimationMultiplier` make each use last exactly
+  as long as the cut it is about to start, at the player's speed (the Iron Flow's sums); its
+  `Shoot` shoots nothing and tells the sword which move to begin (`StartCut`, `StartAir`),
+  on the owner's machine. The leap's length is worked out by the same sum the leap is
+  (`PlanLeap`), so the use lasts as long as the leap.
+- The move is sent as the sword's `ai`: the move and a count that goes up with every move
+  begun (so the same move twice is two), its ticks, the side it faces; the aim of a cut in
+  the air goes with it. Each machine counts the ticks into a move for itself from when it
+  hears of it, and works the pose, the roll and the cutting edge from those. A move begun
+  from outside the sword's own update is sent with `netUpdate2` (§16.53's rule).
+- What moves the player (the steps, the jump and hang in the air, the leap's flight, the
+  dive, the stillness) is done on their own machine; the game sends the player to the
+  others.
+- The roll is the player's whole picture turned (`Player.fullRotation`, about their middle);
+  every point of the sword is turned with it by the same sum, and the cutting edge is swept
+  from where it was last tick to where it is now (turned, rolled and carried, in steps of 12
+  degrees or 16 px at the most), so a fast cut steps over nothing.
+- Held still (`RustSidePose.Still`, set by the sword every tick it wants it): no key of
+  theirs moves them or uses anything (`SetControls`), and they do not slide
+  (`PreUpdateMovement`).
+- Enter: the sword reads the key itself on its owner's machine; `BloodDrenchedPlayer` keeps
+  the game from opening the chat with it (`Main.chatRelease`, which the game asks for before
+  it opens the chat on Enter) while the sword is held and could be drenched.
+
+### 5. Its damage, against the Zenith's
+
+Measured on the game's own engine (the rig: the game's item check whole, its projectile
+update with every hook on the way to a hit, its NPCs), a player with nothing on and no buff,
+each for 120 seconds after 2 warming, at an enemy that stands still and does no damage; the
+left or the right button held, the cursor on the enemy. The Zenith as the game makes it: 190
+damage, a use every 10 ticks (its animation 30), 10 more in a hundred to crit, held at an
+enemy whose near side is 7.5 tiles off. The sword: at an enemy 2.5 tiles off for the chain,
+7.5 for the air. "Normal" is an enemy 40 by 56 px, "big" one 160 by 160.
+
+| | normal | big | normal, 80 defense |
+|---|---|---|---|
+| the Zenith | 4,153 | 5,611 | 3,280 |
+| the sword, the chain (left) | 1,398 | 1,328 | 1,326 |
+| the sword, the air (right) | 3,268 | 4,432 | as without |
+| drenched, the chain with the leap and the drive | 5,414 | 5,412 | as without |
+| drenched, the air | 6,936 | 9,314 | as without |
+| the Zenith held under the blood (its speed only) | 5,221 | | |
+
+Worked out:
+
+- The chain: five cuts of 600 every 140 ticks is 1,286 a second; with the game's 4 in 100
+  crits at double, 1,337. Any defense, any size. The 1,398 above is the same 258 cuts with
+  22 of them crits (9 in the others): luck.
+- The air, at a normal enemy: three every 101 ticks (28 and 23 to the next cut, 50 from the
+  third to the next leap: the third cut's 33 and the fall). The two slashes 900 each and the
+  great one in it long enough to hit twice, 5,400 a round: 3,208 a second, 3,336 with crits.
+  A big enemy is in each slash longer, so more of its hits land.
+- Drenched, the chain: up, down, the smash, the leap, the dive and the drive in about 157
+  ticks; the four cuts and nine or so of the twelve straight cuts land on one enemy, 1,050
+  each: about 13,650 a round, 5,230 a second, 5,440 with crits.
+- Against the Zenith: without the blood the chain does about a third of the Zenith's damage,
+  the air about four fifths; through 80 defense the sword does the same and the Zenith a
+  fifth less. With the blood the chain does 1.3 times the Zenith's, the air 1.7 times (1.66
+  on a big enemy). Two minutes of blood in every four: over a long fight the chain about
+  3,400 a second, the air about 5,100.
+- The same measured again on the same build, after the rest of the rig (so with the game's
+  chances falling otherwise), came within 6 in a hundred of each: the Zenith 4,295, 5,597
+  and 3,289; the chain 1,322, 1,373 and 1,385; the air 3,313 and 4,428; drenched, 5,321,
+  5,527, 6,959 and 9,373; the Zenith under the blood 5,233.
+- Not counted: a prefix, accessories, potions, the player's own class bonuses (they add to
+  both).
+
+### 6. What the 1.4.4 assembly says
+
+- `Player.Update`, in order: `SetControls`; `ResetEffects`; the buffs (`PostUpdateBuffs`);
+  the equipment; `PostUpdateMiscEffects`; the life regeneration; `UpdateJumpHeight`, which
+  sets the jump speed for this player; `PostUpdateRunSpeeds`; the run and then the jump
+  (`HorizontalMovement`, `JumpMovement`, which uses the jump speed); `PreUpdateMovement`;
+  the item check (`ItemCheck_ManageRightClickFeatures`, `ItemCheckWrapped`); life brought
+  down to `statLifeMax2`; `PostUpdate`. `Player.jumpSpeed` is static, one for every player,
+  set afresh at the start of each player's update.
+- `Main.DoUpdate_Enter_ToggleChat` opens the chat on Enter only if `Main.chatRelease` (with
+  no Alt and no Escape held, the window in front, no menu, sign, chest, options or in-game
+  interface, and the chat not open already), sets it false as it does, and sets it true
+  whenever Enter is up.
+- `Player.ItemCheck_ManageRightClickFeatures` reads
+  `ItemID.Sets.ItemsThatAllowRepeatedRightClick`.
+- `NPC.HitModifiers.GetDamage`: the defense taken off is the defense (never under 0) less
+  its share by `ScalingArmorPenetration` (clamped from 0 to 1) and less `ArmorPenetration`,
+  times `DefenseEffectiveness`; the game's damage variation is applied before it and the
+  crit after.
+- The Zenith (item 4956): 190 damage, use time 10, animation 30, crit 10, used again while
+  held, shooting projectile 933 (read from the game's own `Item.SetDefaults`, in the rig).
+- `BuffID.Sets.NurseCannotRemoveDebuff` is made with eighteen of the game's buffs (read from
+  the assembly's own data): Potion Sickness, Werewolf, Merfolk, Honey, Water Candle,
+  Campfire, Heart Lamp, Sunflower, Monster Banner, Peace Candle, Star in a Bottle, Dryad's
+  Ward, No Building, the Bast statue's, Shadow Candle, and the three of hunger.
+- And as the rig runs them (the game's own code, not a copy): `Main.persistentBuff` (a buff
+  kept through death), `Main.buffNoSave`, `Player.DefenseStat` multiplied,
+  `CombinedHooks.TotalUseSpeedMultiplier`, `NPC.CanBeChasedBy`, `Collision.CanHitLine`.
+
+### 7. Verified
+
+- Built against the 1.4.4 assemblies on the final source: 0 errors, the 10 warnings as
+  before. What of the game decided anything is in section 6, or is run whole in the rig.
+- The rig has a part of its own for the sword (FoighBench's `sword`, 50 checks), with the
+  game's own item check whole every tick (`ItemCheck_ManageRightClickFeatures`, then
+  `ItemCheck`: the use time, the reuse, the item's hooks, the shot), the game's projectile
+  update and the game's NPCs (a zombie's body, made still and given the size, life and
+  defense asked for). It checks the item; the chain (its order and each cut's ticks, how far
+  each carries them, each cut hitting the one in front once for the whole 600 through 200
+  defense, what reaches behind them, the chain starting again after 40 ticks); the air (up
+  off the ground, rolled over and the right way up after, three cuts and no fourth before
+  the ground, three slashes for 900, 900 and 1,800, through everything, not stopped by
+  tiles, again every 7 ticks, flying at the cursor; a slash through a wall hitting a big
+  enemy behind it more than once, gone within 2.5 seconds); the focus and the blood (Enter
+  the sword's, the focus begun, let go of before three seconds and nothing, 180 ticks held
+  still however they push, the blood for 7,200 ticks, the Nurse's debuffs gone and hers
+  kept, defense 80 of 50, most life 300 of 500 and life down to it, damage 1,050, the use
+  speed, the run, the boots and the jump 1.25 times, the blood clicked off and its wait not,
+  the wait after the blood ran out, after it was clicked off and after a death with it on,
+  Enter the chat's again while drenched or waiting); the drenched chain (up, down, the
+  smash, the leap at the nearest enemy landing on its near side, the drive with the button
+  held, twelve straight cuts of 1,050 with six or more through the enemy, all gone within a
+  second; from the air the dive first; with nobody, ten tiles toward the cursor); the damage
+  against the Zenith (section 5); and nothing thrown.
+- The rig, on the final build (all of it, one part after another, the build's bytes the same
+  before and after): the default run 489 of 489, the flags 152 of 152, the weight 121 of
+  121, **Foigh's whole rig 1056 of 1056** (it was 1006: the sword's part is run in it,
+  last), his third phase's tally 210 of 210, the film 114 of 114, the Turned 218 of 218, the
+  Meat Hook 196 of 196.
+- Eighteen deliberate breaks of the sword, each caught by the part: the cuts not through
+  defense; the great slash twice, not three times; every debuff taken, the Nurse's rule
+  gone; Enter left to the chat; the focus two seconds; the chain never starting again; the
+  cut up a tile and a half; a slash again every 10 ticks; a slash stopped by tiles; the wait
+  counted from the blood's start; the most life half; the player left turned over; the jump
+  not faster; the straight cuts never at the enemy; the dive pushing before it looks for the
+  ground; the blood not making it harder; the leap reaching 100 px; a fourth cut in the air.
+- Two things in the rig itself were wrong, found by running it whole, and mended there:
+  Finish now gives an item that is the game's (the sword is registered in the rig), and the
+  game rolled it a prefix from a table the rig had not sized for it, as tModLoader does
+  (`PrefixLoader.ResizeArrays`); and a hook the rig makes for a game with no window (an
+  enemy's frames) was made after the runtime had compiled the NPC update again, which then
+  went past it. Nothing of the mod changed for either.
+- The look (the poses, the trails, the burning) was not drawn outside the game and has not
+  been seen: it is numbers, each move begun from wherever the last left the blade and
+  joining its own path over its wind.
+
+### 8. Left
+
+- **Never run in the game**: never seen, never heard, never with a second player. The poses
+  are numbers (`RustSideMoves`); say which cut looks wrong and how.
+- **The numbers that are mine** (RELEASE_TODO lists them): the use time 22 and each cut's
+  share of it; the jump, hang and roll in the air; the leap's reach and time; the drive's
+  twelve over 36 ticks within ten tiles; knockback 7.
+- **The readings to confirm** (RELEASE_TODO): above all the cooldown counted from the
+  blood's end, "All debuffs" as the Nurse's, Enter not opening the chat while the sword
+  could be drenched, and "every speed".
+- **The two icons are stand-ins.** The sword's picture is still the copy of
+  `SwordsmanBluntSide.png`.
+
+---
+
+## 16.58 Later in session 7: the Rust Side Sword's dive that never found the ground, its straight cuts out to fifteen tiles, enemies left bleeding 200 a second under the blood, and the chain made at its enemy (under a boss, kept under it)
+
+What was said after §16.57 was delivered, with a picture (two copies of one frame) of a
+player standing on grass at night, the sword straight down from their hands into the ground
+in red, a thin white streak over their head, and no straight cut anywhere:
+
+> sometimes it digs deep without slashes, increase radius of the slashes and any attack in blood drenched sword causes a version of ultra bleeding generic -200 per second.
+
+And while it was being built:
+
+> Also give it smart CHAIN auto aim so when im under a boss, i dont just go out of him.
+
+Nothing was asked back.
+
+### 1. The device, read first
+
+- The mod's folder was listed (its root, 62 entries; `Content` with everything under it,
+  642; `Localization`) before this was delivered: as §16.57's delivery left it, but for one
+  file. (The computer could not be reached for some hours while this was built and checked;
+  it was all read when it could be.) The eight files of the mod this writes over and the
+  four notes were read back from the device: byte for byte the copies this was built on, but
+  the `.hjson`. tModLoader had added three lines to it as it built §16.57 (at 11:49 local on
+  the 9th): display names for the sword's three new projectiles, from their class names, as
+  it does for anything that has none (`Rust Side Slash`, `Rust Side Line`, `Rust Side
+  Holdout`). They are kept: this round's lines were put into that copy. The new file,
+  `UltraBleedingGeneric.cs`, was not there.
+- `client.log` is new (108,693 bytes): the game was started at 11:47 local on the 9th, built
+  the mod (§16.57's, the ten warnings as before, no error), and went into an Extra Large
+  world (12,600 by 3,000 tiles, the player Saul) at 11:49; it was still running at its last
+  save, at 23:59. Nothing of the mod's in it but its own lines at the load, and tModLoader's
+  "Expected Re-Logic file format" twice as it listed the players, as before. §16.57's build
+  has been played, and the picture is of it.
+
+### 2. What was wrong: the dive never found the ground
+
+The picture is the dive (down onto the point), not the drive: the sword straight down and
+the streaks of air going up off the player are the dive's own, and the dive is what comes
+when the leap ends off the ground. It was to end, and the drive begin, on the tick the
+player came down: when their speed down the tick before had been stopped by the game. That
+speed was read from `Player.oldVelocity`, which the game never sets for a player (1.4.4:
+nothing writes it but the NPC's and the projectile's own updates; the only other code that
+touches it, the water's waves, reads it). So it was always nothing, the landing was never
+seen, and the dive pushed against the ground for all of its 120 ticks and ended with
+nothing: two seconds of the sword in the ground, no drive and no straight cuts. "Sometimes":
+whenever the leap ended a hair or more off the ground (at an enemy in the air, or one that
+floats; or a leap whose arc had not quite come down). The rig had not seen it because its
+own player tick set `oldVelocity` every tick, as the game does not; it no longer does, and
+with that §16.57's dive fails the rig's check (section 7).
+
+### 3. Readings
+
+1. *"sometimes it digs deep without slashes"*: section 2. **Built**: the landing is told by
+   the dive's own push down of the tick before having come to nothing: no speed down left
+   (the game stops a fall that lands), or not moved down at all (a slope, a ledge). On the
+   first tick of the dive nothing is looked at, as before.
+2. *"increase radius of the slashes"*: the drive's straight cuts, the ring in the picture's
+   place. **Built**: they reach fifteen tiles from the blade (240 px; ten before, his own
+   driven sword's); the points those not at an enemy go through are within ten and a half
+   (seven before). **Mine**: fifteen; the twelve kept, so they lie further apart: on one
+   enemy the six not aimed at it cross it less often (section 6).
+3. *"any attack in blood drenched sword causes a version of ultra bleeding generic -200 per
+   second"*: **Built**: Ultra Bleeding for enemies (`UltraBleedingGeneric`), one strength:
+   200 life a second, through any defense, for five seconds from the last blow (each blow
+   puts all five back), shown as 200 once a second. Every blow of the sword while it is
+   drenched puts it on: its cuts (the leap's, the dive's and the drive's too), its red
+   slashes (a slash let go of while drenched, wherever it is when it lands), and the
+   straight cuts out of the ground (there are none but the drenched sword's). Blood spews
+   down out of the enemy as it does out of a player who bleeds: a spurt with every beat and
+   a run of it between, out of one wound, two on a bigger enemy, three on a big one.
+   **Mine**: the five seconds (a player's Ultra Bleeding's); the 200 shown once a second
+   (the game takes off a whole 200 at a time, so what is left of a last second under 200 is
+   not taken until it bleeds again); the wounds; its picture (a player's Ultra Bleeding
+   III's: a buff an enemy has is not shown); enemies only (a player struck in PvP is not
+   bled); nothing that cannot be hurt at the time is bled (Foigh and 'Dame' Quilt between
+   their fights, a boss not open to harm yet), and what the game keeps from every buff is
+   kept from it. Each piece of a worm bleeds into the one life they share, as anything that
+   burns or bleeds them does.
+4. *"smart CHAIN auto aim so when im under a boss, i dont just go out of him"*: **Built**:
+   each cut of the chain is made at an enemy where there is one near: of those within eight
+   tiles of the player (to the nearest of it) that they can see, the one nearest the cursor
+   (one under it before any other). They face it; under it or in it, the cursor's way still.
+   The cut's step goes no further than six pixels short of touching it, so under it or in it
+   there is no step at all, and they are never carried past it or out from under it. The
+   thrust is turned whole about the shoulder at the nearest of it: straight up at a boss
+   over their head. The drenched chain's leap goes for the nearest enemy by the nearest of
+   it, not its middle; and with that one over their head and them under it, straight up at
+   it, to twelve pixels under it, the way they face kept, then down onto the point and in
+   under it, its straight cuts up through it. With nobody near, all as before. **Mine**:
+   eight tiles; nearest the cursor; six pixels; the up, down, round and the smash not turned
+   (they sweep over the head already, and each hit a boss over the head in the rig); the
+   leap straight up with no arc; inside one already, a hop where they are.
+5. **Also**: the tooltip has a line for the aim, "Cuts aim at the enemy nearest the cursor";
+   Blood Drenched Sword's has a second, "Its blows bleed enemies for 200 life a second"; the
+   new buff is "Ultra Bleeding", "Bleeding out, 200 life a second".
+
+### 4. What was built
+
+| File | What |
+|---|---|
+| `Content/Projectiles/Melee/RustSideHoldout.cs` | the dive's landing; the ring fifteen tiles; the chain's aim (`ChainTarget`, `AimAt`, the step held short); the leap under one over the head; every drenched blow bleeds |
+| `Content/Projectiles/Melee/RustSideMoves.cs` | the thrust turned to its aim, and begun from where its aim puts it |
+| `Content/Projectiles/Melee/RustSideSlash.cs`, `RustSideLine.cs` | a red slash and a straight cut bleed what they hit |
+| `Content/Buffs/UltraBleedingGeneric.cs` (new) | Ultra Bleeding for enemies, and `UltraBleedingNPC`: the life it takes and the blood out of it |
+| `Content/Buffs/UltraBleeding.cs` | the ground under a drop (`GroundUnder`) shared with it: one word |
+| `Content/Buffs/BloodDrenchedSword.cs` | its summary says the blood bleeds them: words only |
+| `Content/Items/Melee/FoighsRustSideSword.cs` | the leap's plan asked as it now is: one line |
+| `Localization/en-US_Mods.PisAndDag.hjson` | the aim's line; the blood's second line; the new buff (put into the device's copy, tModLoader's three new lines kept) |
+
+### 5. What the 1.4.4 assembly says
+
+- `Entity.oldVelocity` is written in the NPC's update and collision and the projectile's
+  update and nowhere else; `Terraria.GameContent.Shaders.WaterShaderData.DrawWaves` reads
+  it. No code of the game's or tModLoader's sets a player's.
+- `NPC.UpdateNPC_BuffApplyDOTs`: after `NPCLoader.UpdateLifeRegen` (an NPC's own hook first,
+  then every global one), `lifeRegenCount` takes the tick's `lifeRegen`; every time it is
+  down by 120 times `damage`, `damage` is taken off the life (of the NPC whose life it
+  shares, a worm's head) and shown, and at none it is struck dead. So a `lifeRegen` of -400
+  is 200 life a second, and a `damage` of 200 shows 200 once a second.
+- `NPC.AddBuff`: nothing for a buff in its `buffImmune`; put on by a client it is sent to
+  the world (message 53), by the world to every machine (54).
+- And as the rig runs them, the game's own: `NPC.UpdateNPC` whole (the buffs, the life, the
+  hooks), `Projectile.Update` with every hook on the way to a hit, `Player.ItemCheck`.
+
+### 6. Its damage again
+
+Measured as in §16.57 (the rig, a player with nothing on, 120 seconds at a still enemy;
+"normal" is 40 by 56 px, "big" 160 by 160), twice on the final build: alone, and after the
+rest of the rig (the game's chances falling otherwise). Damage a second:
+
+| | normal | big | normal, 80 defense |
+|---|---|---|---|
+| the Zenith | 4,074 and 4,117 | 5,593 and 5,583 | 3,192 and 3,242 |
+| the sword, the chain | 1,342 and 1,339 | 1,342 and 1,369 | 1,332 and 1,351 |
+| the sword, the air | 3,341 and 3,360 | 4,471 and 4,503 | as without |
+| drenched, the chain with the leap and the drive, and the bleeding | 5,300 and 5,234 | 5,908 and 6,150 | as without |
+| drenched, the air, and the bleeding | 7,340 and 7,208 | 9,474 and 9,451 | as without |
+| the Zenith held under the blood (its speed only) | 5,106 and 5,233 | | |
+
+- The bleeding adds 200 a second to all that the drenched sword does to one enemy: it is on
+  it from the first blow to five seconds after the last.
+- Drenched, the chain at a normal enemy is a little less than it was (5,414 and 5,321 in
+  §16.57): with the ring half as wide again, the six straight cuts that are not aimed at it
+  cross it less often, about seven of the twelve now where it was nine, and that is more
+  than the bleeding gives back; the steps now stop short of it, so the leap is shorter, and
+  the whole of it, from one cut up to the next, takes about 144 ticks where it took 157. At
+  a big one more of the wider ring lands: 5,900 to 6,150, from 5,400 to 5,500.
+- Without the blood nothing of it changed: the chain still works out at 1,337 (five cuts of
+  600 every 140 ticks, 4 crits in 100), at any size, through any defense.
+- Against the Zenith, as §16.57 had it: without the blood the chain about a third of it and
+  the air about four fifths; with it, the chain about 1.3 times and the air about 1.75
+  times.
+
+### 7. Verified
+
+- Built against the 1.4.4 assemblies on the final source: 0 errors, the 10 warnings as
+  before.
+- The rig's own player tick no longer sets a player's `oldVelocity` (the game never does).
+  With that alone, §16.57's dive fails the rig's check of a leap at one in the air (the
+  drive never comes), as in the picture; with the mend it passes.
+- The sword's part of the rig: 70 checks (50 before). New: with nobody near, the steps whole
+  and the chain the cursor's way; with one in front, made at it, carried toward it and
+  stopped 6 px short (never into it or past it), each cut once on it through 200 defense,
+  the round and the smash reaching the one behind as before; one behind them and the cursor
+  ahead, turned to it and hitting it; under one 240 px wide over their head, two chains with
+  no step at all (not moved a pixel), every one of the ten cuts hitting it once, the thrust
+  turned straight up (-90 degrees); the drive's cuts reaching 240 px from the blade (the
+  farthest end), past the 160 they reached; the one leapt at left bleeding; under one over
+  their head drenched: up, down, the smash, the leap straight up 69 px, down onto the point
+  and in, never out from under it, six straight cuts up through it (nine in the whole rig's
+  run), and it bleeding; not drenched a cut not bleeding them; drenched one cut bleeding
+  them five seconds, 400 in two seconds through 80 defense, and nothing after the five; a
+  pale slash not bleeding them and a red one bleeding them; a straight cut bleeding what it
+  cuts; what nothing can hurt not bled; blood out of a bleeding one (34 drops falling out of
+  it in two beats of its heart and 4 stains under it, 35 and 4 in the whole rig's run; none
+  before it bled); and nothing thrown.
+- The rig, on the final build (all of it, one part after another, the build's bytes the same
+  before and after): the default run 489 of 489, the flags 152 of 152, the weight 121 of
+  121, **Foigh's whole rig 1076 of 1076** (1006 and the sword's 70), his third phase's tally
+  210 of 210, the film 114 of 114, the Turned 218 of 218, the Meat Hook 196 of 196; nothing
+  thrown anywhere.
+- Eleven deliberate breaks, each on its own, each caught by the part: the dive reading the
+  old speed again; the ring ten tiles; the bleeding 100 a second; every cut bleeding,
+  drenched or not; the step not held short of the enemy; the thrust not aimed; the chain not
+  turned to its enemy; the leap out from under it, beside it; a red slash not bleeding; a
+  straight cut not bleeding; what cannot be hurt bled.
+- Not drawn outside the game: the blood out of an enemy was counted where it is born, not
+  seen.
+
+### 8. Left
+
+- **Never run in the game**: the dive's landing, the wider ring, the bleeding and its blood,
+  the aim. Say if under a boss it still goes wrong, and where the boss was.
+- **The numbers that are mine** (RELEASE_TODO): eight tiles, six pixels, five seconds,
+  fifteen tiles, the twelve cuts.
+- **A player struck in PvP is not bled**, and the chain's aim looks for enemies only. Say if
+  either should be otherwise.
+
+---
+
+## 16.59 Later in session 7: the Zenith down to 150 damage, measured first, and Foigh's Rust Side Sword left to the ground and made a lore piece
+
+What was asked after §16.58 was delivered, with three pictures of the damage meter in the
+game (10,361 a second with the Zenith's swords on a big pink enemy; 3,304 with a beam; 7,443
+with the drenched sword's numbers, 1,208, 987, 1,018 and 2,100, and blood):
+
+> should i nerf the zenith? cuz rn its doing 5k dps on dummy? any suggestion?
+
+And while that was being measured:
+
+> and apart from slashes, how should this rust side sword deal with fast, flying bosses?
+
+Both were answered with what is in sections 2 and 3, and nothing changed. Then:
+
+> zenith ok, 150
+> rust side: how about let it be cuz its owner js a grounded guy? Well make it part of a crafting recipe or lore piece?
+
+Nothing was asked back.
+
+### 1. The device, read first
+
+- The mod's folder was listed (its root; `Content` with everything under it, 643 entries;
+  `Localization`) before this was delivered: as §16.58's delivery left it. Its newest file
+  is the sword's item, from that delivery; nothing of the mod's code has been touched since.
+  The file this writes over and the `.hjson` were read back from the device: byte for byte
+  the copies this was built on. The new file, `VanillaBalance.cs`, was not there.
+- `client.log` has grown (169,635 bytes): tModLoader reloaded §16.58's `.hjson` at 00:04
+  local on the 10th, built §16.58 at 00:17 (the ten warnings as before, no error), and went
+  into an Extra Large world (The Run of Bladders, 12,600 by 3,000, Expert) with the player
+  Saul; it saved every ten minutes or so and was shut down at 06:24. Nothing of the mod's in
+  it but its own lines at the load, and tModLoader's "Expected Re-Logic file format" twice
+  as it listed the players, as before.
+
+### 2. The Zenith, measured before anything was said
+
+A part of its own in the rig (`PAD_ZENITH=1`, in the sword part's place; nothing of it is
+delivered): the game's Zenith in the hand of a player with nothing on, the button held and
+the cursor on a still enemy 120 px off, 120 ticks and then 120 seconds counted; and what
+could be done to it, each put on the game's own item and its own swords
+(`ProjectileID.FinalFractal`) as a mod would put it. The Target Dummy is the game's size of
+one (18 by 40) and, like the game's, not an enemy the swords look for (below); the others
+are. Damage a second:
+
+| | Target Dummy | 40 by 56 | 160 by 160 |
+|---|---|---|---|
+| the game's (190 damage) | 3,654 | 4,202 | 5,618 |
+| 160 damage | 3,033 | 3,543 | 4,777 |
+| 150 damage | 3,038 | 3,355 | 4,517 |
+| 140 damage | 2,729 | 3,107 | 4,261 |
+| each sword hitting the same enemy every 10 ticks (the game's 7.5) | 2,415 | 2,849 | 3,705 |
+| every 15 ticks | 2,140 | 2,430 | 3,220 |
+| each sword hitting an enemy once | 1,159 | 1,233 | 1,305 |
+| five swords a second (use time 12, animation 36) | 3,074 | 3,496 | 4,780 |
+| four swords a second (use time 15, animation 30) | 2,528 | 2,915 | 3,886 |
+| 160 damage, every 10 ticks | 1,966 | 2,433 | 3,144 |
+| 170 damage, every 15 ticks | 1,973 | 2,216 | 2,833 |
+
+Through 80 defense: the game's 2,886, 3,318 and 4,438; at 150 damage 2,086, 2,436 and 3,284.
+
+- Six swords a second at the game's speed, and each lands about 217 a hit (190, and a crit
+  in seven). On the dummy each sword hits it 2.8 times, at 40 by 56 3.2 times, at 160 by 160
+  4.3 times: it goes out and comes back through it, and can hit it again every 7.5 ticks
+  while it is in it. So the bigger the enemy, the more it takes: half as much again on 160
+  by 160 as on the dummy.
+- **Every way of bringing it down took about the same share at every size**: less damage,
+  fewer hits, fewer swords. Only "each sword hitting an enemy once" takes the size away, and
+  it takes about seven tenths of everything with it.
+- **The dummy reads low.** The game's own dummy cannot be looked for (it is immortal), so of
+  every three swords the second as well as the third is thrown at the cursor scattered, and
+  the numbers on it are uneven from one run to the next (3,033 at 160 damage, 3,038 at 150).
+  A boss is looked for: the second goes at its middle.
+- The player's own 5,000 on the dummy against the rig's 3,654 is about 1.37 times: what they
+  had on, which was not read. A cut in damage is the same share of either.
+- Calamity, for what it does, read and not used: it raises the Zenith to 210
+  (`CalamityGlobalItemTweaks`: `DamageExact(210)`, "VANILLA: 190 DMG") and gives three of
+  its own bosses a resistance to its swords instead (`BalancingChangesManager`: Ares 20 in
+  100, Thanatos 25, the Soul Seekers of Supreme Calamitas 30). Foigh's cap (§5.11: no more
+  than eight thousandths of his life a second) already holds the Zenith off him, whatever
+  its damage.
+- The answer given: a small cut, 150, nothing else changed (the swords, their number and how
+  often they hit stay the game's); 140 if the sword is to be clearly ahead.
+
+### 3. Fast flying bosses, answered and left
+
+What was said: without the blood the sword reaches nothing high but by its slashes (the
+chain looks eight tiles out, the three cuts in the air go 119 px up at the most); the leap
+that reaches what flies (within 40 tiles, beside it at its height, or straight up under it)
+is the blood's alone, and goes where it is, not where it will be. Three things were put
+forward, none of them flight: the leap without the blood, at what flies within about 25
+tiles, once a landing, aimed where it will be when they arrive (as Foigh's thrown sword is);
+a cut in the air that lands giving one back, up to three; and meeting a charge, a guard on
+down and the right button on the ground that cuts a boss running into it for three times the
+damage, with nothing taken from its touch, once in two seconds (the parry passes over bosses
+now, so that needs a rule of its own). The answer: none of it. He keeps to the ground, and
+so does his sword.
+
+### 4. Readings
+
+1. *"zenith ok, 150"*: **Built**: the Zenith's damage 150, the game's 190; nothing else of
+   it: how many swords, how fast, how often each hits, its crit, its look. On the game's own
+   item, by a global item of the mod's own (`VanillaBalance`), so that PSItem stays as it
+   is.
+2. *"let it be cuz its owner js a grounded guy"*: nothing is added to the sword against what
+   flies. The leap, the drive and the slashes are as they were.
+3. *"Well make it part of a crafting recipe or lore piece?"*: **Built**: the lore piece. A
+   recipe would use up the one thing finishing him gives (no source but Finish), and a
+   weapon's recipe is written out and left commented in this mod in any case (the Meat
+   Hook's, the others'); a lore piece keeps it whole and puts the ground where it can be
+   read. It is a Lore Item (`PADGlobalItem`, as the Blade of Mors is): with Shift held,
+   three verses (**mine**, by the `pad-lore-voice` rules, from PAD_Lore_Planning §9 and his
+   fight, and nothing the Bible says otherwise):
+
+   > A sword twice the height of the man who dragged it.
+   > He stood on the ground and asked the same of others.
+   > Who drew blood first, the rust does not say.
+
+   What it is, who held it (the wings he cut, "Futile devices", read twice), and the gap:
+   who began it, which §9.3 keeps open. The tooltip's own last line ('The rusted side was
+   used on one man, for years.') stays where it is, under the rest.
+4. **Mine**, with the Lore Item: it is worth nothing (it was 20 gold), so that no shop will
+   take it, the one way out of a player's hands that LoreLock cannot undo (the Game Changing
+   Orb's reason). And what being one brings, as the Blade of Mors has it: always a
+   favourite; taken back out of the trash and out of a chest; one to a player (a second,
+   from finishing him again, is gone as it comes); a place on the Lore Codex's shelf; no
+   prefix, ever, not even one already on it (the next time it is loaded the game asks first,
+   below).
+
+### 5. What was built
+
+| File | What |
+|---|---|
+| `Content/Items/VanillaBalance.cs` (new) | the game's own items with the mod's numbers: the Zenith, 150 damage |
+| `Content/Items/Melee/FoighsRustSideSword.cs` | a Lore Item with its three verses, worth nothing; the summary says why |
+
+### 6. What the 1.4.4 assembly says
+
+- `GlobalItem` has `SetDefaults(Item)` and `AppliesToEntity(Item, bool)` from
+  `GlobalType<Item, GlobalItem>`. `Item.SetDefaults` ends with `ItemLoader.SetDefaults(item,
+  true)`, after the game's own `SetDefaults1` to `SetDefaults5` and its own after them, so a
+  global item's damage is the last word; `Item.OriginalDamage` is read off the type's sample
+  (`ContentSamples.ItemsByType`), which is made the same way.
+- `Player.ItemCheck_Shoot`, the Zenith: three swords to a swing, the one in a swing counted
+  by `(itemAnimationMax - itemAnimation) / itemTime`; the first at the cursor; the second at
+  the middle of the nearest enemy within 400 px of the cursor that can be looked for
+  (`Player.GetZenithTarget`, `NPC.CanBeChasedBy`: active, chaseable, more than 5 life, open
+  to harm, not friendly, not immortal), or at the cursor scattered 150 px with none; the
+  third at the same, scattered up to 150 px whether there is one or not; each with half the
+  way there as its speed; the damage the item's.
+- `ProjectileID.FinalFractal`: 32 by 32, one extra update a tick, its own immunity for each
+  enemy with a cooldown of 15 updates (7.5 ticks), through everything (`penetrate` -1),
+  through tiles; it lives until its own count, 0.7 to 2 an update by how far it was sent,
+  reaches 120 (30 ticks close, about 86 far). `Projectile.Update` takes one off that
+  immunity every update, before the projectile moves.
+- `Item.Prefix`: none for 0, then the item's own rule, then `ItemLoader.PrefixChance` for
+  whatever prefix is asked for, a reforge's or one by name as much as one rolled;
+  `ItemIO.Load` puts a saved one back through it. So a Lore Item (whose `PrefixChance` is
+  always no) takes none, and loses one it had.
+- Read from the user's own Calamity source
+  (`C:\Users\Admin\Downloads\CalamityModPublic-1.4.4`), for section 2 only.
+
+### 7. Its damage now
+
+The sword part's own measure (§16.57), twice on the final source: alone, and after the rest
+of the rig (the game's chances falling otherwise). Against the Zenith at 150:
+
+| | 40 by 56 | 160 by 160 | 40 by 56, 80 defense |
+|---|---|---|---|
+| the Zenith, 150 | 3,217 and 3,252 | 4,417 and 4,499 | 2,342 and 2,378 |
+| the Zenith, the game's 190 (§16.58) | 4,074 and 4,117 | 5,593 and 5,583 | 3,192 and 3,242 |
+| the sword, the chain | 1,342 and 1,335 | 1,342 and 1,330 | 1,332 and 1,344 |
+| the sword, the air | 3,341 and 3,349 | 4,471 and 4,493 | as without |
+| drenched, the chain with the leap and the drive, and the bleeding | 5,300 and 5,573 | 5,908 and 5,939 | as without |
+| drenched, the air, and the bleeding | 7,340 and 7,233 | 9,474 and 9,639 | as without |
+| the Zenith held under the blood (its speed only) | 4,032 and 4,038 (5,106 and 5,233 at 190) | | |
+
+- Alone, the sword's numbers are §16.58's to the one: being a Lore Item changed nothing of
+  how it fights. After the rest of the rig they move with the game's chances, as they did
+  then (the drenched chain most, by where the straight cuts not aimed at the enemy fall).
+- Against unarmoured enemies the Zenith is now about the sword's air: a little under it at
+  40 by 56 (96 and 97 in 100), level at 160 by 160. Through 80 defense, seven tenths of it.
+- On Foigh, through his cap (the rig's part that throws the Zenith's swords at him takes
+  their damage from the item): thirty seconds of it took 38,180, 27,832 and 13,857 in his
+  three phases, against 38,260, 29,615 and 25,393 at 190; 38,420 is the most the cap lets
+  thirty seconds take. In his first phase the cap decides, not the Zenith.
+
+### 8. Verified
+
+- Built against the 1.4.4 assemblies on the final source: 0 errors, the 10 warnings as
+  before.
+- The rig loads the mod's three global items as the game does, in the order of their full
+  names (`PADGlobalItem`, `PSItem`, `VanillaBalance`; only `PSItem` before), and the sword
+  part has four checks more (188 of 188 alone): the Zenith 150, the rest of it the game's
+  (use time 10, animation 30, crit 10, its swords), and no other item of the game's given
+  the mod's numbers (a Terra Blade, 85); the sword a Lore Item, worth nothing, its three
+  verses no longer than 60 letters with no quotation mark, dash, exclamation or question in
+  them; with Shift held its tooltip its name, the three verses and the marker; no prefix
+  rolled onto it, at a reforge, or put on by name (Legendary), the game's own `PrefixChance`
+  asked each way.
+- Five deliberate breaks, each on its own, each caught: the Zenith back to 190; the mod's
+  numbers given to every item of the game's; not a Lore Item (three checks); worth 20 gold
+  again; a verse of 65 letters. (A first try at that last was a verse of exactly 60, and
+  passed, as it should.)
+- The rig, on the final build (all of it, one part after another, the build's bytes the same
+  before and after): the default run 489 of 489, the flags 152 of 152, the weight 121 of
+  121, **Foigh's whole rig 1080 of 1080** (1006 and the sword's 74), his third phase's tally
+  210 of 210, the film 114 of 114, the Turned 218 of 218, the Meat Hook 196 of 196; nothing
+  thrown anywhere. His cap held against the Zenith at 150 as it did at 190 (section 7).
+- Not seen outside the rig: a tooltip drawn, the Lore Codex, a chest or the trash giving it
+  back.
+
+### 9. Left
+
+- **Never run in the game**: the Zenith at 150, the sword as a lore piece.
+- **Mine** (RELEASE_TODO): the three verses; the sword worth nothing.
+- **What comes with a Lore Item** and may not be wanted on a weapon: no prefix (one already
+  on it goes at the next load), the one copy, the favourite that cannot be taken off.
+- The Zenith with Calamity loaded as well: not looked at. Each sets its damage as the item
+  is made; which comes last was not read.
+
+---
+
+## 16.60 Later in session 7: a way down to the ball from the surface, a cave with a hall in it, and the Unmarked Door standing in the hall
+
+What was asked after §16.59 was delivered:
+
+> Give the opposite world evil ball underground a small jagged cave that follows from the surface to underground, do not obstruct anything, dont go to the ocean, prob before the dungeon. withh torches here and there, at surfafce, there is dirt wall, going down, no wall or sparse rock wall, and nearer to the ball is evil wall.
+
+And while that was being worked on:
+
+> also the door to the hallway cannot be broken, and it is generated on one of the path down there to the ball (make it so there is a flat way when ur tranversing down, somewhat like pyramid pharaoh hall, place the door there
+
+Nothing was asked back.
+
+### 1. The device, read first
+
+- The mod's folder was listed (its root; `Content` with everything under it, 644 entries;
+  `Localization`) before this was delivered: as §16.59's delivery left it. Its newest files
+  are that delivery's (the three notes, the sword's item and `VanillaBalance.cs`); nothing
+  has been touched since. The three files this writes over, the three notes it adds to and
+  the `.hjson` were read back from the device: byte for byte the copies this was built on.
+  The new file, `TheWayDown.cs`, was not there.
+- `client.log` is as §16.59 found it (169,635 bytes, last written at 06:24 local on the
+  10th): the game has not been started since.
+- The Run of Bladders, read off the device for the rig: its `.twld` keeps the Ball's middle
+  (11,734, 2,087), which `/struct update` needs to find the Ball in a world made before; and
+  nothing of a way down.
+
+### 2. Readings
+
+1. *"the opposite world evil ball"*: the Ball (`TheBallPass`, PAD_World_Plan §4), which is
+   the world's other evil. The way ends at the top of its shaft (the one way in, cut from
+   above; §4 "One shaft down into it"), where it was already. The Ball's shell is not
+   touched: the way keeps at least 4 tiles off its outside. Its arms, out in the rock, are
+   rock to it like any other.
+2. *"a small jagged cave that follows from the surface to underground"*: one narrow cave,
+   four to six tiles across and wider in lumps, its edges ragged to the tile, from an
+   opening in the ground down to the top of the shaft, winding the way a stair does. It is
+   made to be walked down (section 4).
+3. *"do not obstruct anything"*: it cuts nothing anybody made or that grows or stands there,
+   and opens nothing that holds water; section 3 has the distances. Where it can go no other
+   way it goes through caves that were there, and leaves them as they were.
+4. *"dont go to the ocean"*: its mouth is at least 50 tiles inland of where the beach's sand
+   ends, and nothing of it is seaward of that above the cavern layer.
+5. *"prob before the dungeon"*: between the beach and the Dungeon, and of the places there,
+   the ones nearest the Dungeon are tried first; nothing of it comes within 40 tiles of
+   anything of the Dungeon's, brick or wall.
+6. *"withh torches here and there"*: a torch every 18 to 32 tiles of it, standing on its
+   floor.
+7. *"at surfafce, there is dirt wall, going down, no wall or sparse rock wall, and nearer to
+   the ball is evil wall"*: behind what it cuts, dirt wall down to the bottom of the surface
+   layer; under that none, but for rock wall in patches (about a fifth); within 200 tiles of
+   the Ball's outside, the Ball's own evil wall, and its torches the evil's (the Crimson
+   Torch for a crimson Ball, the Corrupt Torch for a corrupt one).
+8. *"the door to the hallway cannot be broken"*: the hallway is the Empty Hall and the door
+   the Unmarked Door (`SubworldDoor`), which nothing breaks already, nor digs out from under
+   it (§16.35: its own `CanKillTile`, `KillTile`, `CanExplode` and `CanReplace`, and the
+   game's own sets for what it stands on). The door this places is that door, and it needed
+   nothing more.
+9. *"it is generated on one of the path down there to the ball"*: one Unmarked Door,
+   standing on the way down, in every Grand world made from now on, and put into a world
+   made before by `/struct update`.
+10. *"make it so there is a flat way when ur tranversing down, somewhat like pyramid pharaoh
+    hall, place the door there"*: partway down (about two fifths of the way from the mouth
+    to the shaft, or as near that as the rock allows) the cave comes out level into a hall
+    built into the rock: 26 tiles long and 8 tall inside (a pyramid's hall, read off
+    `WorldGen.Pyramid`, is 23 to 27 by 8 to 13), its two top corners stepped in as a
+    pyramid's are, two tiles of Gray Brick round it, an opening 4 tall at either end, and
+    the level way going on 6 tiles out of either end before it goes down again: 42 tiles
+    level in all. The door stands on the floor in the middle of it.
+11. **Mine**: the hall in Gray Brick, as the Empty Hall is (the door leads there), and its
+    back wall the Empty Hall's registers made smaller (§16.43): a dado of Gray Brick two
+    rows high, a rail of Stone Slab, the field Stone patched with Gray Brick, a frieze of
+    Gray Brick, and four pilasters of Stone Slab, about 8 columns apart and the same either
+    side of the middle, each with its capital under the frieze; a torch on each pilaster.
+    The openings carry the hall's wall through them; nothing of the hall shows the sky.
+
+### 3. What it keeps off
+
+It is planned whole on a map of the world before a tile is touched. The way may not come
+within:
+
+| what | how far |
+|---|---|
+| water, lava, honey, shimmer | 2 tiles (so nothing drains into it), and it opens nothing next to a liquid whatever the map says |
+| anything built or worth keeping (whatever is not the ground's own, soft or loose: furniture, chests, crystals, altars, statues, traps, brick, wood, platforms), and wire and actuators | 3 |
+| a wall that is not the rock's own (a house's, a cabin's) | 2 |
+| the Dungeon, brick or wall | 40 |
+| the graveyard's ground | 30 |
+| the Ball's shell | its outside and 4 tiles more (in a world made before, where its outside was not kept, the most it could be and 6 more) |
+| the sea | above the cavern layer, nothing seaward of 50 inland of the beach's end |
+| a pot, a pile, a stalactite, a gem, a tree, a herb, a sunflower, a pumpkin, a lily pad, a cattail | none of it cut, nor what it stands on, hangs from or clings to |
+
+The line the way follows keeps 3 tiles further off all of that (from the loose things of the
+last row only 1, so that the cave goes round them, as caves do: in the deep caves there are
+thousands of them, and kept off as far as the rest they leave no way through at all). A
+minecart track it may go past, leaving it be. What it cuts is only the ground's own tiles
+(dirt, stone, mud, clay, sand and sandstone, silt, slush, snow and ice, granite, marble,
+ash, obsidian, ore, gems, moss, and the evils' stone, sand and grass) and what grows soft in
+it (plants, vines, cobwebs, and the tiles drips fall from). Sand, silt or slush it leaves
+over nothing is made fast as the game's own last pass makes it (sand into hardened sand,
+silt into stone, slush into snow), so none falls in; a plant left with nothing under it, a
+vine left hanging from nothing, long moss left with no moss beside it and a drip left with
+no ceiling over it go, as the game would take them the next time it framed them, but with
+nothing dropped.
+
+### 4. It can be walked down
+
+Asked for was a cave, not a road; but a way down that cannot be walked down is not one, and
+wings are off in this mod. So:
+
+- The way is found (A*, on a grid of 2 tiles, through what the map leaves free, in a band
+  either side of the straight line from its mouth to the hall and from the hall to the
+  shaft) as a stair is: slopes down at forty-five degrees and either side of that cheapest,
+  a level step dearer, a step up dearer still, never straight down, and never turning back
+  before three steps the same way (shorter runs leave no floor between them: a well). Every
+  tile of every step is asked where one walking it would stand once it is cut (the cut's own
+  floor three under it; or, where a cave is that close under it or the line is in one, the
+  cave's floor; a hole a tile wide is walked over), and that may not drop by more than 12
+  nor rise by more than 2 from one tile to the next. The cut goes no deeper than that floor
+  in any column, so that what was asked is what is made.
+- Once cut, it is walked, as by a player two tiles wide and three tall: steps up of a tile,
+  jumps of 5 (a jump goes about 6.5: 15 ticks at 5.01 a tick and then gravity of 0.4), drops
+  of 24 at the most (the game hurts a fall of more than 25: walked off, none of them hurts;
+  jumped off, the jump's height is added). Where one would be stopped it is cut wider there
+  (up to 24 times); if it still cannot be walked down, everything it touched is put back as
+  it was, tile for tile, and the next mouth and hall are tried.
+- The drop into the shaft at its end is the Ball's own (hundreds of tiles; §4 of the world
+  plan). The way ends where the shaft begins.
+
+### 5. What was built
+
+| File | What |
+|---|---|
+| `Content/Structures/TheWayDown.cs` (new) | the pass (`TheWayDownPass`: the map, the mouths, the hall's place, the way, the cut, the walk, the hall, the door, the walls, the torches) and the world's record of it (`WayDownState`: whether it was made, its mouth and its door, saved with the world and sent to clients) |
+| `Content/Structures/TheForces.cs` | the Ball keeps, while the world is made, where it began its shaft (`ShaftTop`) and how far its outside reaches (`ShellReach`), for the way down; neither is saved: in a world made before, the way down finds the shaft off the tiles and reckons the reach from the Ball's radius |
+| `Content/Structures/PADWorldLayout.cs` | the pass goes in just before Final Cleanup, last of the mod's there (after the Mile Signs), so that nothing made after it is put in its way |
+| `Content/Structures/StructureUpdate.cs` | `/struct update` makes it in a world made before, last, and puts it in the ledger only if one was made |
+
+In worldgen it runs while the game lets nothing fall (`WorldGen.noTileActions`, set by Reset
+and cleared at the end of Final Cleanup) and Final Cleanup comes after it; in `/struct
+update` it does its own making fast and framing. Either way the log says what it made, or
+why it made nothing: `The Way Down: made: the mouth at ..., the hall at ..., the door at
+...`. Its line on the screen while a world is made: "A way down". It registers the hall and
+its level way with the game's structure map, so that nothing after it builds there.
+
+### 6. What the 1.4.4 assembly says
+
+- `WorldGen.TileFrame` lets a tile in `TileID.Sets.Falling` fall
+  (`SpawnFallingBlockProjectile`) unless `WorldGen.noTileActions` is on; the first pass of
+  worldgen (Reset) turns it on and Final Cleanup turns it off at its end. Falling in 1.4.4:
+  Sand, Ebonsand, Pearlsand, Silt, Slush, Crimsand, the four coin piles and Shell Pile.
+- Final Cleanup turns a falling tile with nothing solid under it into one that does not
+  fall: Sand into Hardened Sand, Ebonsand into Corrupt Hardened Sand, Crimsand into Crimson
+  Hardened Sand, Slush into Snow, Silt into Stone. Pearlsand is not in its list (there is no
+  Hallow at worldgen); mine: into Hallow Hardened Sand. The coin piles and the Shell Pile
+  are not ground here, so the way keeps 3 off them.
+- `Player.Update`: a fall hurts when it is more than 25 tiles and `extraFall`, for 10 a tile
+  more. `Player.jumpHeight` 15, `Player.jumpSpeed` 5.01, `Player.defaultGravity` 0.4.
+- `WorldGen.Pyramid`: its hall `genRand.Next(23, 28)` columns wide (23 to 27: the upper
+  bound is never drawn) and `genRand.Next(7, 13)` rows and one more tall (8 to 13), its
+  ceiling two rows lower over the column at either end and one row lower over the two next
+  to them; its way in `genRand.Next(5, 8)` rows and one more tall (6 to 8).
+- `WorldGen.TileFrame` kills long moss that has no moss under it (not a half block, not
+  sloped on top), over it (not sloped underneath) or either side of it
+  (`WorldGen.GetTileMossColor` of that tile not -1); and a drip (water, lava, honey, sand)
+  with no tile over it that is solid, not solid on top only, and not sloped underneath. A
+  torch it sends to `WorldGen.CheckTorch`.
+- `Tile.TopSlope`, `Tile.BottomSlope` and `Tile.IsHalfBlock` are the same tests as the
+  `topSlope()`, `bottomSlope()` and `halfBrick()` that `TileFrame` uses.
+- `Tile.BlockType`, `Tile.BlockColorAndCoating` and `UseBlockColors` (and the wall's),
+  `TileColorCache`: what is kept of a tile to put it back.
+- Walking a frame of the mirrored world showed what the game does with an object whose
+  frames it does not like when it frames it (a mirrored pot, a mirrored pile): it breaks it.
+  Framing the tile under one, or beside it, does not.
+
+### 7. Verified
+
+- Built against the 1.4.4 assemblies on the final source: 0 errors, the 10 warnings as
+  before.
+- A part of its own in the rig (`PAD_WAYDOWN=1`; nothing of it is delivered): the pass
+  itself on the user's own world, The Run of Bladders (its 2,800 columns at the ocean end,
+  read off its file into the game's tile grid at the Grand size, and framed as loading a
+  world frames it), as it is and turned round, 8 seeds each, half as worldgen runs it and
+  half as `/struct update` does. Each run is held against the world as it was: nothing
+  changed but the ground's own tiles cut, the hall and its level way, the torches, and sand
+  made fast over what was cut; no liquid moved; no wall changed but behind what was cut;
+  nothing cut within the distances of section 3 (a vine or a plant taken from near water or
+  a pot is counted apart); nothing in the graveyard's ground, seaward, or in the Ball; the
+  mouth between the beach and the Dungeon; the way open from its mouth to the shaft; the
+  door on two Gray Brick; the level way 42 long, 4 tall, solid under every tile; the walls
+  dirt, none, rock and the evil's where asked; every torch standing; the hall's four torches
+  still standing when the game frames them with nothing held back (as a block put down
+  beside one would); walked from the ground at the mouth to the top of the shaft; and then
+  the whole world framed again with nothing held back, as `/struct update` does once it has
+  placed anything (and as the game would frame any tile near the cut later): nothing near
+  what the pass made goes or changes, and the door and every torch stand. 379 of 379 checks
+  passed.
+- What the sixteen runs made: a way of 1,063 to 1,140 tiles from the mouth to the shaft, the
+  mouth 1,263 to 1,376 tiles from the world's sea end and the nearest of it 81 to 130 tiles
+  off the Dungeon; the hall's floor from 0.28 to 0.44 of the way down from the mouth to the
+  shaft's top; 5,975 to 6,677 tiles of the ground cut (and 11 to 166 soft ones taken), 38 to
+  43 torches along the way and the hall's four, 1 to 37 tiles of sand made fast; rock wall
+  behind 15 to 26 in a hundred of what was cut under the surface layer and outside the
+  evil's reach; made wider in 0 to 6 places for the walk, and 0 to 4 ways put back before
+  the one kept; to walk it down, falls of 17 to 24 needed (as it is 24, 22, 20, 22, 24, 23,
+  20, 21; turned round 23, 24, 23, 17, 23, 21, 19, 22) and jumps of 2 to 5; the pass took
+  0.6 to 7.5 s (as worldgen runs it 0.7 to 7.5, as `/struct update` does 0.6 to 4.6; longer
+  where ways were put back), and the whole world framed again after it 11 to 14 s.
+- The framing of the whole world after it found, in three of the eight runs as `/struct
+  update` runs it, a tuft of long moss left with no moss to grow from, which the game took
+  when it framed it. The pass takes such moss itself now, and a drip left with no ceiling,
+  as the game would; run again, nothing near what it made goes when the world is framed, in
+  any of the sixteen.
+- The same seed gives the same way each time it is run: all sixteen, against two earlier
+  runs (before the log line's counts were put right, and before long moss and drips were
+  taken), the same way, cut and log line each time. The pass draws only on the game's
+  world-making random numbers (`WorldGen.genRand`).
+- The pass's putting back, on its own: 4,800 tiles kept, changed every way (tile, wall,
+  paint, slope, liquid), and put back: every one as it was.
+- In a run with the planned drop held to 10 (not kept), two of three runs found no way that
+  could be walked down and said so in the log; that is what the log says when there is none.
+- Pictures, from the game's own art on the user's world, sent to the chat: the whole way,
+  the mouth, the hall with the door (its own picture put in where the rig's stand-in for its
+  tile stands), and the end at the shaft.
+
+### 8. Left
+
+- **Never run in the game.** Not in a new world, not by `/struct update`, not walked.
+- In The Run of Bladders, `/struct update` should put it in: the log line says where its
+  mouth, its hall and its door are.
+- The way is walked in the rig with drops of up to 24 (section 7 has how far each run
+  needed); walked off, none hurts; going back up the way needs a hook in places.
+- `/struct update` holds the game while it plans the way (section 7 has how long it took in
+  the rig), and then, as after anything it places, while it frames the whole world again
+  (`StructureUpdate.ReframeWorld`, there before this): 11 to 14 s in the rig for its 2,800
+  columns, so about a minute for the whole of a Grand world at that rate. A world being made
+  spends about as long on the way, as a pass of its own, with no framing of the whole world
+  after it.
+- **Mine**: the hall's look; the hall about two fifths of the way down; the torches'
+  spacing; the cave's width; "A way down" on the screen while a world is made.
+
+---
+
+## 16.61 Later in session 7: Blasphemous Crimson, a rarity of the mod's own whose name is two ramps, on Foigh's Rust Side Sword alone; and the way down's pictures put in Claude outputs
+
+What was asked after §16.60 was delivered, first with the outline's last colour #c42e08 and,
+that one interrupted, again:
+
+> Give a new item rarity called Blasphemous Crimson:
+> Inside: lerp from up to bottom: #641e07, #431938, #7b0a31
+> border: lerp from bottom to up: #c42727, #d13d62, #c40808
+
+And while that was being worked on:
+
+> for now only Rust side has this rarity
+
+> also update local files on structure generations that we did yesterday
+
+Nothing was asked back.
+
+### 1. The device, read first
+
+- The mod's folder was listed (its root; `Content` with everything under it, 645 entries;
+  `Localization`) before this was delivered: as §16.60's delivery left it, its four files
+  and three notes the newest (17:35 local on the 10th), nothing else changed since the
+  listing §16.60 compared. The two files this writes over, the three notes it adds to and
+  the `.hjson` were read back from the device: byte for byte the copies this was built on.
+  `Content/Rarities` was not there.
+- `client.log` is as §16.59 found it (169,635 bytes, last written at 06:24 local on the
+  10th): the game has not been started since, so the way down has not been tried yet.
+- `Claude outputs` was listed: pictures up to §16.56's roar; nothing of the way down's.
+
+### 2. Readings
+
+1. *"a new item rarity called Blasphemous Crimson"*: a rarity of the mod's own
+   (`ModRarity`), `BlasphemousCrimson`.
+2. *"Inside"* is the letters of the item's name and *"border"* their outline: vanilla's
+   outline round tooltip text, which is the text again 2 pixels to the left, right, above
+   and below it (black in vanilla). Both are drawn in the ramps given.
+3. *"lerp from up to bottom"*: the letters from #641e07 at the top of the name's ink to
+   #431938 half way down and #7b0a31 at its bottom, straight between each two. *"lerp from
+   bottom to up"*: the outline from #c42727 at the bottom of its own reach (the ink and 2
+   more either way) to #d13d62 half way and #c40808 at its top. Each row of each letter is
+   its own colour; the ramp runs over the whole name, so a letter that hangs below the
+   others (the g of Foigh's) takes its bottom.
+4. The second message's colours are the ones used: the outline's last is #c40808, not
+   #c42e08.
+5. *"for now only Rust side has this rarity"*: Foigh's Rust Side Sword, which was Red, is
+   Blasphemous Crimson now; nothing else is.
+6. *"also update local files on structure generations that we did yesterday"*: the way down
+   (§16.60). Its code and notes were on the device already (read back above); what was not
+   was its pictures, sent to the chat with "Not committed". They are in `Claude outputs`
+   now: `way_down_overview_1660.png`, `way_down_mouth_1660.png`, `way_down_hall_1660.png`,
+   `way_down_hall_lit_1660.png` and `way_down_shaft_1660.png`. They were made by the code as
+   delivered (its as-is run of seed 1034, the same in every run since, §16.60 section 7).
+7. **Mine**: the name breathes as every line of a tooltip does (between 190 and 255 of 255
+   of itself, a little over a second each way), darkening only, so that the outline never
+   shows through the letters: at the top of each breath the colours are exactly the six
+   given. Wherever the game shows a rarity in one colour (the name that rises from an item
+   as it is picked up) it is #d13d62, the outline's middle and the brightest of the six. No
+   prefix moves an item out of it.
+
+### 3. What was built
+
+| File | What |
+|---|---|
+| `Content/Rarities/BlasphemousCrimson.cs` (new) | `BlasphemousCrimson`, the rarity: its two ramps and its one colour; `RampedNames`, a global item that draws the name of an item of it in the tooltip in place of vanilla's drawing of that line (`PreDrawTooltipLine`, vanilla's line `ItemName`) |
+| `Content/Items/Mage/MagicColours.cs` | `Ramped`: text whose letters and outline are both ramps, a row of each letter at a time, laid out by the same code as the Conquest element's ramped outline (§13.1: `StrokedRamp`, untouched); a ramp of one colour is that colour |
+| `Content/Items/Melee/FoighsRustSideSword.cs` | `Item.rare` is Blasphemous Crimson |
+
+A rarity is one colour to the game, and a sprite is drawn in one colour; so the name is
+drawn a row of each letter at a time, each row in its own colour, out of the font's own
+pictures of its letters, where vanilla would have drawn it and laid out as vanilla lays it
+out. Nothing of it is a shader.
+
+### 4. What the 1.4.4 assembly says
+
+- `Main.MouseText_DrawItemTooltip` colours a line by its rarity when the line's mod is
+  `"Terraria"` and its name `"ItemName"` (Red, the sword's before: 255, 40, 100; a mod's
+  rarity: its `RarityColor`), then asks `ItemLoader.PreDrawTooltipLine` (the item's own,
+  then every global item's, all of them asked) and only if all say yes draws it with
+  `ChatManager.DrawColorCodedStringWithShadow` at the line's X and Y, with its font,
+  rotation, origin, scale, width and spread. Every line the game makes is the mod
+  `"Terraria"`'s.
+- `DrawableTooltipLine` starts with the `MouseText` font, origin nothing, scale one, width
+  -1 and spread 2. `ChatManager.ShadowDirections` is left, right, up and down; the outline
+  is black.
+- `ChatManager.WaveColor`: the colour taken towards black by what `Main.mouseTextColor` is
+  short of 255, and given it as its alpha. `Main.DoUpdate_AnimateCursorColors` moves
+  `Main.mouseTextColor` a step a tick between 190 and 255.
+- `ModRarity`: `RarityColor` (white unless given), `GetPrefixedRarity` (its own type,
+  whatever the prefix). `RarityLoader.GetRarity` is nothing under 12, the first rarity of a
+  mod's.
+- The tooltip's box: `Inventory_Back13` in nine pieces with corners of 10, tinted 23, 25, 81
+  at 0.925 (`Utils.DrawInvBG`); on unless turned off
+  (`SettingsEnabled_OpaqueBoxBehindTooltips`).
+- The font, `Fonts/Mouse_Text.xnb`, read as `ReLogic.Graphics.DynamicSpriteFontReader` reads
+  it: lines 29 apart, no spacing between letters, `*` for a letter it has not, 159 pages of
+  letters. Each letter's picture is cut to its ink, top to bottom; most stand on row 16 of
+  the line and the g of Foigh's hangs to row 22.
+
+### 5. Verified
+
+- Built against the 1.4.4 assemblies: 0 errors, the 10 warnings as before.
+- Not in the game: nothing of drawing can be run in the rig (it has no screen). In its
+  place, a picture of what the code draws, made off the game's own font: `Mouse_Text.xnb`
+  read from the game's folder (the `Fonts` folder was asked for once and given), its letters
+  laid out as `MagicColours` lays them out (as `DynamicSpriteFont.MeasureString` and its
+  drawing do), each row coloured as `Ramped` colours it, on the tooltip's own box out of
+  `Inventory_Back13`; and the Red name as the game draws it, beside it. Sent to the chat:
+  before and after, the bottom of the breath, the box over a day sky, no box over the sky
+  and in a cave; and the name close up beside its two ramps.
+- Read again after it was written: the order of the rows (all four sides of the outline
+  first, then the letters, as vanilla draws its shadow and then the text) and every colour's
+  place against the request.
+
+### 6. Left
+
+- **Never seen in the game.** Hover the sword, and pick it up.
+- **Mine**: the breathing, the one colour, and the ramps over the whole name's ink rather
+  than over each letter.
+- The way down: still to be tried (§16.60 section 8).

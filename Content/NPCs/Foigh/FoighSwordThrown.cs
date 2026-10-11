@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PisAndDag.Content.Buffs;
 using PisAndDag.Content.Combat;
 using PisAndDag.Content.PADplayer;
 using PisAndDag.Content.Particles;
@@ -25,8 +26,10 @@ namespace PisAndDag.Content.NPCs.Foigh
     /// In the ground it is only a sword in the ground, drawn behind the tiles so that the
     /// part of it in the ground is in the ground.
     ///
-    /// The same picture as the one in his hand. The projectile is its point: the hitbox, the
-    /// flight and the drawing are all about the point.
+    /// The same picture as the one in his hand (its sharp side, from his second phase;
+    /// bloodied, and burning, in his third, where it leaves the wound his sword leaves).
+    /// The projectile is its point: the hitbox, the flight and the drawing are all about
+    /// the point.
     /// </summary>
     public class FoighSwordThrown : ModProjectile, ICCBypassOutline
     {
@@ -53,6 +56,8 @@ namespace PisAndDag.Content.NPCs.Foigh
         private const int FadeTicks = 30;
 
         private static readonly Color Steel = new Color(214, 226, 240);
+        private static readonly Color Soot = new Color(12, 6, 8);
+        private static readonly Color BurnRed = new Color(206, 22, 28);
 
         private static Asset<Texture2D> picture;
 
@@ -155,6 +160,21 @@ namespace PisAndDag.Content.NPCs.Foigh
                     behind * Main.rand.NextFloat(1f, 3f), Main.rand.NextFloat(30f, 60f), 5f, Main.rand.Next(7, 12)));
             }
 
+            // Burning, it leaves what it burns with along its way.
+            if (!Main.dedServ && foigh != null && foigh.Burning)
+            {
+                Vector2 behind = -Projectile.velocity.SafeNormalize(Vector2.UnitY);
+                Vector2 at = Projectile.Center + behind * Main.rand.NextFloat(6f, Blade);
+
+                PADParticleHandler.SpawnParticle(new BurnSmoke(at, behind * Main.rand.NextFloat(0.5f, 2f), Soot, BurnRed, Main.rand.Next(26, 44),
+                    Main.rand.NextFloat(8f, 14f), Main.rand.NextFloat(22f, 34f), Main.rand.NextFloat(0.75f, 1f)));
+
+                if (Main.rand.NextBool())
+                    PADParticleHandler.SpawnParticle(new BloodFume(at, behind * Main.rand.NextFloat(0.3f, 1f), Main.rand.NextFloat(0.06f, 0.12f), Main.rand.Next(14, 24)));
+
+                Lighting.AddLight(Projectile.Center, 0.5f, 0.06f, 0.05f);
+            }
+
             Strike();
         }
 
@@ -193,6 +213,10 @@ namespace PisAndDag.Content.NPCs.Foigh
             // A blow that killed them throws nothing.
             if (!Foigh.Pierce(me, "FoighSwordThrown", damage, direction, 0f) || me.dead)
                 return;
+
+            // In his third phase it is his sword still, and leaves what his sword leaves.
+            if (foigh.Phase >= 3)
+                UltraBleeding.Wound(me);
 
             me.GetModPlayer<RagdollPlayer>().Throw(new Vector2(direction * ThrownAlong, -ThrownUp), RagdollStyle.Spin, Lie);
 
@@ -257,7 +281,11 @@ namespace PisAndDag.Content.NPCs.Foigh
             // Lit where the hilt is, not where the point is (in the ground, in the dark).
             Color light = Projectile.GetAlpha(Lighting.GetColor(part.At.ToTileCoordinates()));
 
-            Main.EntitySpriteDraw(picture.Value, part.At - Main.screenPosition, null, light, part.Rotation, part.Origin, 1f,
+            // The side of it he has in his hand: the sharp one from his second phase, bloodied in his third.
+            Foigh his = Owner();
+            Texture2D sword = Foigh.SwordPicture(his?.Sharp ?? false, his?.Bloodied ?? false) ?? picture.Value;
+
+            Main.EntitySpriteDraw(sword, part.At - Main.screenPosition, null, light, part.Rotation, part.Origin, 1f,
                 part.FlipX ? SpriteEffects.FlipHorizontally : SpriteEffects.None);
 
             return false;
