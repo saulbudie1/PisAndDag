@@ -8,8 +8,11 @@ namespace PisAndDag.Content.Rarities
     /// <summary>
     /// Blasphemous Crimson, by request: the letters of the name run from #641e07 at the top
     /// through #431938 to #7b0a31 at the bottom, and their outline from #c42727 at the bottom
-    /// through #d13d62 to #c40808 at the top (PADWorkFlow §16.61). For now only Foigh's Rust
-    /// Side Sword is of it.
+    /// through #d13d62 to #c40808 at the top (PADWorkFlow §16.61); and the colours move, the
+    /// letters' down them and the outline's up it, round and round, each running from its last
+    /// colour back into its first (§16.62: "the color moves with the 3 colors from up to down
+    /// and lerp again"), a turn every <see cref="FlowSeconds"/>. For now only Foigh's Rust Side
+    /// Sword is of it.
     ///
     /// To the game a rarity is one colour. In a tooltip the name is drawn by hand
     /// (<see cref="RampedNames"/>); wherever else the game shows a rarity's colour (the name
@@ -26,6 +29,9 @@ namespace PisAndDag.Content.Rarities
 
         /// <summary>Where it can only be one colour: the outline's middle, the brightest of the six, which reads on anything.</summary>
         public override Color RarityColor => Border[1];
+
+        /// <summary>Seconds for the colours to go once round. A whole number of them is an hour, so the turn never jumps when the game's clock comes round.</summary>
+        public const float FlowSeconds = 2f;
     }
 
     /// <summary>
@@ -40,8 +46,12 @@ namespace PisAndDag.Content.Rarities
             if (line.Mod != "Terraria" || line.Name != "ItemName" || item.rare != ModContent.RarityType<BlasphemousCrimson>())
                 return true;
 
+            // How far round the colours have moved: the game's clock (Main.GlobalTimeWrappedHourly,
+            // set every update, the game paused or not), in turns.
+            float flow = Main.GlobalTimeWrappedHourly / BlasphemousCrimson.FlowSeconds % 1f;
+
             MagicColours.Ramped(Main.spriteBatch, line.Font, line.Text, new Vector2(line.X, line.Y),
-                BlasphemousCrimson.Fill, BlasphemousCrimson.Border, line.BaseScale, line.Rotation, line.Origin, line.Spread);
+                BlasphemousCrimson.Fill, BlasphemousCrimson.Border, line.BaseScale, flow, line.Rotation, line.Origin, line.Spread);
             return false;
         }
     }

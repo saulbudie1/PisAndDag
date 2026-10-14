@@ -192,15 +192,15 @@ namespace PisAndDag.Content.Items.Ranged
             player.PIS().BumpScreenShake(hooked ? 8.5f : 5f, hooked ? 8 : 5);
         }
 
-        //public override void AddRecipes()
-        //{
-        //    CreateRecipe()
-        //        .AddIngredient(ItemID.Shotgun)
-        //        .AddIngredient(ItemID.GrapplingHook)
-        //        .AddIngredient(ItemID.Chain, 10)
-        //        .AddIngredient(ItemID.SoulofNight, 10)
-        //        .AddTile(TileID.MythrilAnvil)
-        //        .Register();
-        //}
+        public override void AddRecipes()
+        {
+            CreateRecipe()
+                .AddIngredient(ItemID.Shotgun)
+                .AddIngredient(ItemID.GoldBar, 3)
+                .AddIngredient(ItemID.Chain, 10)
+                .AddIngredient(ModContent.ItemType<Content.Items.Misc.EssenceOfTheFouled>(), 10)
+                .AddTile(TileID.Anvils)
+                .Register();
+        }
     }
 }

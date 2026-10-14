@@ -10,8 +10,10 @@ using Terraria.ModLoader;
 namespace PisAndDag.Content.Items.Melee
 {
     /// <summary>
-    /// The Iron Flow: a hooked sword with a crescent for a guard, made at an anvil from 12 Iron
-    /// or Lead Bars. 25 damage.
+    /// The Iron Flow: a hooked sword with a crescent for a guard. 25 damage. It drops from the
+    /// Blind Tusker, one in four (BlindTusker.IronFlowChance), by request: "Iron Flow obtain:
+    /// Create a four legged four tusk blind creature"; its recipe, 12 Iron or Lead Bars at an
+    /// anvil, stays commented out (below).
     ///
     /// It is in the hand for as long as it is the item held, hanging by the leg
     /// (IronFlowHoldout, which is the weapon: the item itself hits nothing and is never drawn

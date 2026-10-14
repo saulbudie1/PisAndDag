@@ -47,6 +47,12 @@ namespace PisAndDag
         /// answered him, drunk a potion, been landed on, swung or shot at him). See Foigh.Tell.
         /// </summary>
         Foigh,
+
+        /// <summary>
+        /// What is left of a player's Bone Casing: client to server from that player, server to the
+        /// other clients. See BoneCasingPlayer.
+        /// </summary>
+        BoneCasing,
     }
 
     // Please read https://github.com/tModLoader/tModLoader/wiki/Basic-tModLoader-Modding-Guide#mod-skeleton-contents for more information about the various files in a mod.
@@ -111,6 +117,10 @@ namespace PisAndDag
 
                 case PADPacket.Foigh:
                     Content.NPCs.Foigh.Foigh.HandlePacket(reader, whoAmI);
+                    break;
+
+                case PADPacket.BoneCasing:
+                    Content.Items.Accessories.BoneCasingPlayer.HandlePacket(reader, whoAmI);
                     break;
 
                 default:

@@ -150,8 +150,20 @@ into the rock in every direction.
   made to be walked down, with torches on its floor, dirt wall behind it near the surface,
   rock wall in patches under that and the Ball's own wall near it. About two fifths of the
   way down it comes out level into a hall of Gray Brick, a pyramid's hall made smaller,
-  with the Unmarked Door standing in it. The shaft is still the one way in: the cave ends
-  where the shaft begins.
+  with the Unmarked Door standing in it. The cave ends where the shaft begins, and the
+  shaft is the way in, but where it cannot be come to (below).
+- **Round about the Dungeon**, by request (PADWorkFlow §16.66): where the Dungeon spreads
+  out between (in Errand Boy its halls reach 1,036 tiles seaward of its entrance, over
+  the top of the shaft) and no way keeps 40 tiles off it, the way keeps 10 off it and
+  goes round, found as one walking it would go and digging where it must: down, to the
+  side, up a little, and into the top of the shaft. Ragged, made wider round where one
+  walks, never under where one stands; the hall and its door on it as before.
+- **Into the hollow from the side**, by request (PADWorkFlow §16.67): where the Dungeon
+  is round the top of the shaft too (in Flacid its lowest halls lie over it and either
+  side of it), the way round about goes into the ball's hollow instead, from whatever
+  side is nearest, down through the shell, and comes out low, onto the bank: walked into,
+  not fallen into. It never cuts the hollow's side open over the bank, and goes round
+  what the Dungeon left in the hollow. The top of the shaft is still tried first.
 - **It does not throw a V to the surface at hardmode.** Every other seed in the world
   does; this one is two thousand tiles down and it stays down. Its spread is the arms
   growing — longer, more of them, sideways and downward through the rock — and it never

@@ -12,7 +12,7 @@
 
 # 1 · Weapons
 
-`Content/Items/Melee`, `Content/Items/Ranged`
+`Content/Items/Melee`, `Content/Items/Ranged`, `Content/Items/Summoner`
 
 | item | class | state |
 |---|---|---|
@@ -24,6 +24,12 @@
 | Iron Flow | Melee | built; never run in game (below) |
 | Meat Hook | Ranged | built; never run in game (below) |
 | Foigh's Rust Side Sword | Melee | built; run once in the game (below); a lore item too (§3) |
+| Hoard of Undead | Summoner | built; never run in game (below) |
+| Bone Squad | Summoner | built; never run in game (below) |
+| Wooden Crossbow | Ranged | built; never run in game (below) |
+| Mycellaneous | Ranged | built; never run in game (below) |
+| Worminator | Summoner | built; never run in game (below) |
+| Vulture Staff | Summoner | built; never run in game; nothing gives it yet (below) |
 
 ---
 
@@ -196,10 +202,11 @@ damage has broken it.
 
 ## Iron Flow
 
-A hooked sword with a crescent for a guard. 12 Iron or Lead Bars at an anvil. 25 damage. Your
-art (`Content/Items/Melee/IronFlow.png`, 64 by 64, the point up and to the right). The whole
-record is PADWorkFlow §16.26, and §16.30, §16.31, §16.33, §16.34 and §16.42 for the parry as it
-is now.
+A hooked sword with a crescent for a guard. It comes from the Blind Tusker, one in four
+(PADWorkFlow §16.75); its recipe, 12 Iron or Lead Bars at an anvil, is commented out. 25
+damage. Your art (`Content/Items/Melee/IronFlow.png`, 64 by 64, the point up and to the right).
+The whole record is PADWorkFlow §16.26, and §16.30, §16.31, §16.33, §16.34 and §16.42 for the
+parry as it is now.
 
 ### Files
 
@@ -517,6 +524,289 @@ Zenith used under the blood (its speed only): 4,032 (5,106 at 190).
 - The numbers that are mine, the readings to confirm and what was added without being asked:
   RELEASE_TODO.
 
+---
+
+## Hoard of Undead
+
+A summoner's weapon before hardmode, by request (PADWorkFlow §16.63, §16.64): it summons a
+zombie to fight for you, one minion slot each, 30 damage. It drops from any zombie, one time in
+50; no recipe. Its picture and its buff's are stand-ins (PlaceholderTextures.md).
+
+### Files
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Summoner/HoardOfUndead.cs` + `.png` (40 by 40, a stand-in) | `HoardOfUndead`, `HoardOfUndeadDrop` | The item; the drop from every zombie |
+| `Content/Projectiles/Summoner/HoardOfUndeadZombie.cs` | `HoardOfUndeadZombie` | The zombie: its AI and its moving, what it goes for, where it stands, its drawing |
+| `Content/Buffs/HoardOfUndeadBuff.cs` + `.png` (32 by 32, a stand-in) | `HoardOfUndeadBuff` | Up while any are out; cancelled, they go |
+
+### The item
+
+Used as the game's own staffs are: 36 ticks with a swing, 10 mana, used again while held, the
+summoning sound, a knockback of 2. Green, sells for 1 gold. The zombie comes up at the cursor,
+or at your feet when the cursor is in the ground, and looks like one of the eight zombies of the
+wiki's Zombie page at random (Zombie, Bald, Pincushion, Slimed, Swamp, Twiggy, Female, Torch):
+the game's own pictures, drawn at run time.
+
+### The zombie
+
+| What | How |
+|---|---|
+| Moves | as the game's own zombie of its kind: `NPC.AI_003_Fighters` and the rest of `NPC.UpdateNPC` (gravity, tile collision, frames) taken over as 1.4.4 has them; with a zombie's numbers the same as the game's, tick for tick, in the rig; with yours (speed, liquids, gravity), as below |
+| Speed | a zombie's 0.8 (Twiggy) to 1.2 (Swamp) and 0.65 more (yours): 1.45 to 1.85 a tick, 0.07 faster a tick to it; in liquids 1.65 times that, in shimmer 1.525 (yours), never into a block |
+| Jumps | a zombie's 5, 6, 7 or 8 for what is in front of it, on land each 1.378 times as fast, so that against your gravity of 0.65 it gets up 6 tiles and not 7 (feet about 3, 4.2 and 5.5 tiles up against walls of 2, 3 and 4 or more, a step up the rest); 8 over a drop to a goal above; in Expert and Master 7.9 at a goal above it; `JumpHeight` and `Pull` set it; in liquids a zombie's own |
+| Gives up | 60 ticks getting nowhere, then 540 ticks walking the other way |
+| Goes for | the nearest enemy within 60 tiles of it (across plus up or down); the one you mark first |
+| With none | back to you, to stand behind you (30 px, and 22 more for each zombie of yours before it) |
+| Far | more than 75 tiles from you, put at your feet, from a fight too |
+| Hits | 30 by touch, summon damage; the same enemy again after 35 ticks (yours; asked for 1.5 seconds, 90), another at once |
+| Walls | blocks stop it; nothing takes it through one |
+| Looks | the zombie's picture a fifth of the way to grey, at 70% of the light on it; an outline one picture pixel wide in #c3b8d1, #b2bfd9, #b6a5b8 and #89b2c4, going round it counter clockwise a turn every 2 seconds, at 70% (yours) |
+
+### The drop
+
+`HoardOfUndeadDrop`: one time in 50 from every NPC in `NPCID.Sets.Zombies` (27 kinds of the
+game's; a mod can add its own) and from the Armed Torch Zombie, the three Zombie Elves, the
+Blood Zombie, the Zombie Merman and the Maggot Zombie, with their small and big kinds: 50 in the
+game's drop database. Not the Eyezor.
+
+### Open
+
+- Never run in the game, never heard, never tried with a second player.
+- Both pictures are stand-ins.
+- The numbers that are mine, the readings to confirm and what was added without being asked:
+  RELEASE_TODO.
+
+## Bone Squad
+
+A summoner's staff after Plantera, by request (PADWorkFlow §16.69): each use calls a squad of
+six of the Dungeon's skeletons, 5.5 minion slots in all, each with the game's own AI for it;
+used again, the squad goes and six more come, picked anew. Every picture is the game's own,
+asked of the game at run time; nothing of them is in the mod's folder. Its recipe is written out
+and commented.
+
+### Files
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Summoner/BoneSquad.cs` | `BoneSquad`, `BoneSquadPlayer`, `BoneSquadHeldGlow` | The staff; the squad's slots given back after a use; the outline round the staff in hand |
+| `Content/Buffs/BoneSquadBuff.cs` | `BoneSquadBuff` | Up while any are out; cancelled, they go |
+| `Content/Projectiles/Summoner/BoneSquadMinion.cs` | `BoneSquadMinion`, `BoneSquadBody` | What all six do (what they go for, the fetch, the damage, the drawing); the gravity and moving of those the ground holds |
+| `Content/Projectiles/Summoner/BoneSquadWalker.cs` | `BoneSquadWalker`, `BoneSquadBoneLee`, `BoneSquadArmored`, `BoneSquadArcher` | `NPC.AI_003_Fighters`, and each walker's own part of it |
+| `Content/Projectiles/Summoner/BoneSquadCaster.cs` | `BoneSquadCaster` | aiStyle 8: the Ragged Caster, the Necromancer or the Diabolist |
+| `Content/Projectiles/Summoner/BoneSquadSkull.cs` | `BoneSquadSkull` | aiStyle 10: the Giant Cursed Skull |
+| `Content/Projectiles/Summoner/BoneSquadShots.cs` | `BoneSquadShot`, `BoneSquadArrow`, `BoneSquadShadowBeam`, `BoneSquadInferno`, `BoneSquadInfernoBlast`, `BoneSquadLostSoul`, `BoneSquadShadowflames` | Their spells and arrows: the game's own, taken over |
+| `Content/Projectiles/Summoner/BoneSquadDust.cs` | `BoneSquadDust` and its five kinds | The game's dust, drawn as the squad is |
+| `Content/Projectiles/Summoner/BoneSquadLook.cs` | `BoneSquadLook` | How all of it is drawn |
+
+### The item
+
+Used as the game's own staffs are: 36 ticks with a swing, 10 mana, used again while held, the
+summoning sound; 60 damage, the Pygmy Staff's knockback of 3. Yellow, sells for 10 gold. It
+needs 5.5 slots (6, slots being whole); other minions go as the game sends them away for any
+staff. The squad comes up at the cursor, or at your feet when the cursor is in the ground. Its
+picture is the game's Skull, with the squad's outline round it in the inventory, on the ground
+and in hand.
+
+### The squad
+
+| Who | Slots | Hurts by touch | Does |
+|---|---|---|---|
+| Bone Lee (287) | 1 | 90 | runs at 5 a tick, leaps at what it fights |
+| Armored Bones, two different of the twelve (269 to 280) | 0.75 each | 40 to 85 by kind | walks at its kind's speed and 0.65 more (1.65 to 3.9) |
+| Ragged Caster, Necromancer or Diabolist, one of six (281 to 286) | 1 | 35 to 60 by kind | stands, and casts twice as often as the game's; goes and comes back near what it goes for |
+| Skeleton Archer (110) | 1 | 45 | stops and shoots flaming arrows |
+| Giant Cursed Skull (289) | 1 | 60 | flies through everything, spits shadowflame |
+
+| What | How |
+|---|---|
+| Moves | as the game's own NPC: `NPC.AI_003_Fighters`, aiStyles 8 and 10, and the rest of `NPC.UpdateNPC`, as 1.4.4 has them |
+| Goes for | the nearest enemy within 60 tiles of it (across plus up or down); the one you mark first |
+| With none | the walkers stand behind you (30 px, and 22 more for each walker before it); the caster comes to you; the skull keeps 40 behind and 60 over you |
+| Far | more than 75 tiles from you, put at your feet (the skull at your middle), from a fight too |
+| Brought back | Bone Lee and the Armored Bones, with nothing to fight, not back with you (within 10 tiles, nothing solid between) for 5 seconds together: put at your feet (§16.70) |
+| Jumps | Bone Lee and the Armored Bones up to 10 blocks: their highest jump as high as the wall in front of them, or what they go for over a drop, needs, never lower than the game's 8 (§16.70); the archer the game's; none jumps while it stands at its place |
+| Hits | its NPC's damage by touch, times the staff's damage over 60, summon damage; the same enemy again after 35 ticks |
+| Spells and arrows | the game's own, 1.5 times as fast; the NPC's damage for them, the same way; each kind hits the same enemy again after 10 ticks; On Fire the only debuff |
+| Looks | the NPC's picture a fifth of the way to grey, at 70% of its colour; an outline one picture pixel wide in #34eb4f, #6afc94, #16c90c and #a3de57 at 70%, going round counter clockwise a turn every 2 seconds; the arrow and their dust the same way |
+
+### Open
+
+- Never run in the game, never heard, never tried with a second player. The walkers' moving,
+  their jumps and the melee ones' bringing back were run in a rig on the game's own engine
+  (§16.70); nothing else of it.
+- The numbers that are mine, the readings to confirm and what was added without being asked:
+  RELEASE_TODO.
+
+---
+
+## Wooden Crossbow
+
+A crossbow for the very start, by request (PADWorkFlow §16.73): slower and harder than the
+game's Wooden Bow, its arrows faster. Its recipe is live since you uncommented it, and its damage
+and knockback are yours (§16.75); its picture is a stand-in (PlaceholderTextures.md).
+
+### Files
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Ranged/WoodenCrossbow.cs` + `.png` (52 by 32, a stand-in) | `WoodenCrossbow` | The item |
+
+### The item
+
+| What | How |
+|---|---|
+| Damage | 14 ranged; knockback 5 (yours, §16.75; 12 and 3, mine, before) |
+| Use | 40 ticks a shot; not again by holding the button |
+| Shoots | the arrows loaded, at 9 a tick (the Wooden Bow's 6.1) |
+| Sound | the ballista tower's shot (`DD2_BallistaTowerShot`), higher and softer (mine) |
+| Held | level, at the trigger: drawn from 6 pixels behind the point the game holds a gun at (`HoldoutOffset`), where the game draws one from 10 in front |
+| Worth | White, sells for 2 silver (mine) |
+| Recipe | 15 Any Wood and an Any Iron Bar at a Work Bench; live (you uncommented it, §16.75) |
+
+### Open
+
+- Never run in the game.
+- The picture is a stand-in; the numbers that are mine: RELEASE_TODO.
+
+---
+
+## Mycellaneous
+
+A bow for early on, by request (PADWorkFlow §16.73): every arrow it shoots that hits an enemy
+sends its shooter back a little life, on a spore of blue light that flies home. Its recipe is
+live since you uncommented it (§16.75); its picture is a stand-in (PlaceholderTextures.md).
+
+### Files
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Ranged/Mycellaneous.cs` + `.png` (26 by 44, a stand-in) | `Mycellaneous`, `MycellaneousArrow` | The bow; its arrows, marked as it shoots them, which send the spore off a hit |
+| `Content/Projectiles/Ranged/MycellaneousSpore.cs` | `MycellaneousSpore` | The spore: its flight home, the life landing, its drawing |
+| `Content/Particles/SporeMote.cs` | `SporeMote` | The motes it sheds |
+
+### The item
+
+| What | How |
+|---|---|
+| Damage | 13 ranged; no knockback |
+| Use | 20 ticks a shot; not again by holding the button |
+| Shoots | the arrows loaded, at 7.5 a tick (the Wooden Bow's 6.1) |
+| Life | 2 or 3 for a hit on an enemy, evenly; 5 for a critical hit. An enemy: not a critter, not friendly, not unhurtable, more than 5 life |
+| Light | a little of the Glowing Mushroom's, about whoever holds it |
+| Worth | Blue, sells for 20 silver (mine) |
+| Recipe | 50 Glowing Mushrooms and a Wooden Bow, anywhere; live (you uncommented it, §16.75) |
+
+### The spore
+
+| What | How |
+|---|---|
+| Leaves | the struck enemy where the arrow hit, the way the arrow was going, up to 0.8 of a radian to either side, 3.5 to 5.5 a tick and 1.5 up |
+| Out | 10 ticks, keeping 0.88 of its speed each tick |
+| Home | to its shooter's middle: 3 a tick, 0.45 faster each tick, to 24; turning 0.08 of the way, 0.012 more each tick, to straight at them; never more than the distance left. 0.4 to 1.6 seconds after the hit |
+| Lands | on touching its shooter: the life, with the green number (`Player.Heal`), on the shooter's machine only; none under Moon Bite |
+| Else | its shooter dead or gone: nothing; further than 2,400 pixels, or 5 seconds flying: the life lands at once |
+| Looks | a bloom (`BloomGeneric`) in deep blue, pale blue and white over a tail of light 8 ticks long; motes shed (`SporeMote`), one for each 8 pixels flown, up to 3 a tick; one of the game's glowing mushroom spores every 6 ticks; light; a burst where it leaves and where it lands; bigger for 3 and 5 life |
+| Seen | by every player; on the others the landing shows when it reaches its shooter there or when the shooter's machine's kill arrives |
+
+### Open
+
+- Never run in the game, never tried with a second player.
+- The picture is a stand-in; the readings and the numbers that are mine: RELEASE_TODO.
+
+---
+
+## Worminator
+
+A summoner's weapon before hardmode, by request (PADWorkFlow §16.78): it summons a worm that
+goes through the ground as the game's Giant Worm does, at twice its pace, put together as the
+Stardust Dragon is: a head, three segments and a tail for the first summon, one segment more
+for each summon after it. Every segment hurts for 8. It drops from the Giant Worm, one time in
+5. Its pictures are the game's own, copied as they are for you to change; its buff's is a
+stand-in (PlaceholderTextures.md).
+
+### Files
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Summoner/Worminator.cs` + `.png` (20 by 20, the game's Worm) | `Worminator`, `WorminatorDrop` | The item; the drop from the Giant Worm |
+| `Content/Projectiles/Summoner/WorminatorSegments.cs` | `WorminatorSegment`, `WorminatorHead`, `WorminatorNeck`, `WorminatorBody`, `WorminatorTail` | The worm: its segments and their slots, the summon, the head's moving and the body's following, what it goes for, its drawing |
+| `Content/Projectiles/Summoner/WorminatorHead.png`, `WorminatorBody.png`, `WorminatorTail.png` (18 by 30 each) | | The Giant Worm's own head, body and tail |
+| `Content/Buffs/WorminatorBuff.cs` + `.png` (32 by 32, a stand-in) | `WorminatorBuff` | Up while the worm is out; cancelled, it goes |
+
+### The item
+
+Used as the game's own staffs are: 36 ticks with a swing, 10 mana, used again while held, the
+summoning sound, a knockback of 2. Blue, sells for 1 gold. A new worm comes up out of the
+ground under the cursor, going up (under you if there is no ground within 40 blocks under the
+cursor); with a worm out, one segment more goes in before its tail.
+
+### The worm
+
+| What | How |
+|---|---|
+| Segments | the head, two segments that take no slot (drawn as bodies), a body, the tail: one slot; one body (one slot) more for each summon after the first. The head and the tail are never let go for another minion; a body is, and the worm closes up behind it. No body left: the worm goes |
+| Moves | the Giant Worm's head (`NPC.AI_006_Worms`, type 10, as 1.4.4 has it): top speed 6, 0.05 a move to change it; in the ground it steers for what it goes after, out of it it falls (0.11 a move, to 6); each segment its width (14) behind the one ahead. Two moves a tick while it has an enemy or is more than 480 from you, one otherwise (yours: "2x speed") |
+| Ground | a solid block not actuated, a platform of the first kind, a quarter tile of liquid (the game's) |
+| Goes for | the enemy you mark, within 1,200 of you; else the nearest within 700 of you, kept while it stays within 700 |
+| With none | circles under you, about 9 blocks under the ground below you, swinging 6 to each side, now and then breaking out |
+| Far | more than 1,000 from you both ways, out of the ground: back through the air (the Giant Worm's rule); more than 2,400: put back in the ground under you |
+| Hits | 8 a segment by touch, summon damage, each segment the same enemy again after 12 ticks; knocked away from the segment |
+| Looks | drawn by the head, tail first, behind the blocks as the Giant Worm is (seen through them with a Hunter Potion); in the ground, its dirt: one time in 100 for each block a segment overlaps, each move; a spray where it breaks out and goes in |
+| Sounds | its digging, the Giant Worm's at a quarter of its loudness, every 10 to 20 ticks in the ground; the Giant Worm's at full loudness when summoned |
+
+### Open
+
+- Never run in the game, never tried with a second player. Its steering was run beside a port
+  of the game's own (§16.78).
+- The pictures are the game's own, as asked; the buff's is a stand-in.
+- The readings and the numbers that are mine: RELEASE_TODO.
+
+---
+
+## Vulture Staff
+
+A summoner's weapon, by request (PADWorkFlow §16.78): vultures that sit on your shoulders in
+two towers when there is nothing to fight, and circle and dive on the weakest enemy near you
+when there is. One minion slot each. Nothing gives it yet: one source is written out and left
+off. Its pictures are the game's Vulture's, copied as they are for you to change; its buff's is
+a stand-in (PlaceholderTextures.md).
+
+### Files
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Summoner/VultureStaff.cs` + `.png` (38 by 38, the Vulture perched) | `VultureStaff` | The item; the source, left off |
+| `Content/Projectiles/Summoner/VultureMinion.cs` + `.png` (78 by 360, the game's Vulture) | `VultureMinion`, `VultureFrenzy` | The vulture: where it sits, what it does, its drawing; the frenzy |
+| `Content/Buffs/VultureStaffBuff.cs` + `.png` (32 by 32, a stand-in) | `VultureStaffBuff` | Up while any are out; cancelled, they go |
+
+### The item
+
+12 summon damage, knockback 3; the rest as the Worminator's. Blue, sells for 1 gold. The vulture
+comes out at the cursor and flies to its shoulder. Source left off: the Vulture, one time in 25.
+
+### The vultures
+
+| What | How |
+|---|---|
+| Sitting | on your shoulders, placed as the Baby Finch is placed on the head (turned with you, your head's bob as you walk): the first on the shoulder you face with, the second on the other, each next one on the back of the one two before it; 16 to each side of your head, 24 up and 3 further out a vulture up a tower; both towers behind you |
+| Alive | they face your way, hop across when you turn, flap to keep their balance when you jump or land, stretch their wings now and then; the higher ones lean back as you run |
+| Goes for | of the enemies within 640 of you and in your sight, the one with the least share of its life left (kept while it has no more than a twentieth more than that); the one you mark, within 1,000, first |
+| Hunting | off the shoulders with a beat of wings, 18 ticks apart; one circle over it for all of them (220 by 77, 150 above it, a turn every 3 seconds); each dives after 48 ticks of circling, with a screech, 1.1 faster a tick to 15, for 40 ticks at most, a streak behind it; a hit or a miss: 18 ticks climbing, then the circle again |
+| Hits | 12 by touch, summon damage, 25% more on an enemy under half its life; the same enemy again after 20 ticks; only while hunting |
+| Frenzy | a kill by any of them: for 3 seconds they circle half as long between dives, the streaks red |
+| With none | they fly home and sit |
+| Far | more than 2,000 from you: back on the shoulder at once (the Baby Finch's) |
+| Looks | the game's Vulture: frame 0 sitting, 1 to 5 flying (5 ticks each), 3 diving, the beak along the dive |
+
+### Open
+
+- Never run in the game, never tried with a second player. Its hunting was run in a flat
+  scene (§16.78).
+- No source yet. The pictures are the game's own, as asked; the buff's is a stand-in; the
+  perch is set for the game's Vulture, whose size is large on a player.
+- All its numbers are mine: RELEASE_TODO.
+
 ## The game's own items
 
 `Content/Items/VanillaBalance.cs`: the game's items with this mod's numbers, put on after the
@@ -526,16 +816,37 @@ game's own (PSItem stays as it is).
 |---|---|---|
 | Zenith | 190 damage | 150 damage, nothing else of it changed (PADWorkFlow §16.59) |
 
+Recipes for the game's items are in `PADRecipes.cs`, live, as the Greater Mana Potion's is (the
+mod's own items' recipes were kept commented out; since §16.75 some are live: yours, uncommented,
+and the Trumpet's). Five were added by request (PADWorkFlow §16.71); the game has a recipe for
+none of them:
+
+| item | from | where |
+|---|---|---|
+| Cloud in a Bottle | 25 Clouds, a Bottle | anywhere |
+| Whoopie Cushion | 3 Poo, 2 Silk | anywhere (no place was named; mine) |
+| Ice Skates | a pair of Boots, 4 Iron Bars (any), 20 Ice Blocks | a Tinkerer's Workshop |
+| Hermes Boots | a pair of Boots, 50 Clouds | a Tinkerer's Workshop |
+| Water Walking Boots | a pair of Boots, 50 Gel, a Water Bucket (it goes, bucket and all) | a Tinkerer's Workshop |
+
+`Content/NPCs/VanillaLoot.cs`: the game's items in the game's enemies' loot.
+
+| enemy | drops | chance |
+|---|---|---|
+| Voodoo Demon | Molten Charm | 1 in 10, every mode, rolled beside the Guide Voodoo Doll it always drops (§16.71) |
+
 ## The mod's own rarities
 
-`Content/Rarities/BlasphemousCrimson.cs` (PADWorkFlow §16.61). To the game a rarity is one
-colour; a name in these is drawn by hand in the tooltip (`RampedNames`, through
+`Content/Rarities/BlasphemousCrimson.cs` (PADWorkFlow §16.61, §16.62). To the game a rarity is
+one colour; a name in these is drawn by hand in the tooltip (`RampedNames`, through
 `MagicColours.Ramped`), each row of each letter in its own colour, and shows the one colour
-wherever the game can show only one (the name that rises from an item picked up).
+wherever the game can show only one (the name that rises from an item picked up). The colours
+move: the letters' down them and the outline's up it, each coming round from its last back into
+its first, a turn every `FlowSeconds`; at any moment two thirds of a turn spans the name.
 
-| rarity | the letters, top to bottom | their outline, bottom to top | the one colour | items |
-|---|---|---|---|---|
-| Blasphemous Crimson | #641e07, #431938, #7b0a31 | #c42727, #d13d62, #c40808 | #d13d62 | Foigh's Rust Side Sword, for now the only one (yours) |
+| rarity | the letters, moving down | their outline, moving up | a turn | the one colour | items |
+|---|---|---|---|---|---|
+| Blasphemous Crimson | #641e07, #431938, #7b0a31 | #c42727, #d13d62, #c40808 | 2 s | #d13d62 | Foigh's Rust Side Sword, for now the only one (yours) |
 
 ---
 
@@ -596,17 +907,19 @@ The bow is a weapon, not a lore item, but it carries lore text. All proposals.
 
 ## Foigh's Rust Side Sword — text
 
-Built (PADWorkFlow §16.59). **Flavour**, the tooltip's last line since §16.57:
+Yours since §16.62 (written in by you on the 11th; PADWorkFlow §16.62 has them). **Flavour**,
+the tooltip's last line:
 
-> `'The rusted side was used on one man, for years.'`
+> `'The rusted side was used on one man, for centuries.'`
 
-**Verses**, mine, from PAD_Lore_Planning §9 and his fight:
+**Verses**:
 
-> A sword twice the height of the man who dragged it.
-> He stood on the ground and asked the same of others.
-> Who drew blood first, the rust does not say.
+> Its jagged rusted side was used for a three hundred year long pursuit of vengeance
+> The pristine side awaits a worthy foe
+> 'The muscle hardens to rust, the sword bleeds with the body'
 
-What it is, who held it, and the gap: who began it, which §9.3 keeps open.
+The tooltip's other lines: "Ignores all defense", "Right click shoots up to three slashes.",
+"Hold Enter for 3 seconds, standing, to drench it in blood". Mine before them are gone.
 
 ---
 
@@ -769,8 +1082,9 @@ The only seal comes after Skeletron, so no incantation can be cast before him.
 | Forest, Nurture Me | `Incantation/ForestNurtureMe` | Incantation | Abjuration | Flora and Fauna | 0 | 25 | 30 | Blue | Dryad's shop |
 | Chlorophyte, Arm Me | `Incantation/ChlorophyteArmMe` | Incantation | Transmutation | Flora and Fauna | 0 | 30 | 30 | Lime | Witch Doctor's shop, after Plantera |
 | Rage! Sweet Fire | `Incantation/RageSweetFire` | Incantation | Enchantment | Flame | 0 | 40 | 30 | Pink | Altar: Lava Bucket, 15 Soul of Fright, 50 Living Fire Block, Book |
+| Betsy's Flames | `Incantation/BetsysFlames` | Incantation | Transmutation | Draconic | 84, to each thing in the breath every 5 ticks | 30, then 30/s after 1 s | 20 | Yellow | Betsy, 1 in 20 (classic); her bag, 1 in 20 |
 
-All under `Content/Items/Mage/`. Eight casts against ten slots: §4.2 wants twenty to thirty.
+All under `Content/Items/Mage/`. Nine casts against ten slots: §4.2 wants twenty to thirty.
 
 ### Element colours (`MagicColours`)
 
@@ -781,6 +1095,7 @@ All under `Content/Items/Mage/`. Eight casts against ten slots: §4.2 wants twen
 | Frost | `#9fe2ff` | `#1d3b7a` |
 | Flora and Fauna | `#0f3311` | `#1d9f49` |
 | Conquest | `#7a3a24` | ramp, bottom to top: `#bdab51` → `#c8a55b` → `#dbd88f` |
+| Draconic | `#b0a158` | `#db184c` |
 
 Kind words: Spell `#38462b` on `#da7210`; Incantation `#d65a51` on `#5d7ba2`.
 
@@ -852,9 +1167,9 @@ effect only (embers drawn in, then a burst of flame).
   IL: everything vanilla lets set On Fire!, Hellfire or Daybreak (`Projectile.StatusNPC` by
   projectile type, `Player.StatusToNPC` by item type for a swing), the Magma Stone's and the
   Flask of Fire's melee exactly as vanilla gives them, the rest of the solar weapons and tools,
-  the Hellfire Arrow, and Meagre Flame's ball. Both flamethrowers, the Elf Melter's cold flame
-  included. **Not** Cursed Inferno or Shadowflame (the user: dark), nor Frostburn. Never an
-  NPC's or a trap's projectile.
+  the Hellfire Arrow, Meagre Flame's ball and Betsy's Flames' breath. Both flamethrowers, the
+  Elf Melter's cold flame included. **Not** Cursed Inferno or Shadowflame (the user: dark), nor
+  Frostburn. Never an NPC's or a trap's projectile.
 - **Other mods** are learned as they are used (`FireAffinityPlayer`): the first time one of
   their projectiles, or a swing of one of their items, sets what the player hits on fire, that
   type counts from then on, for the session (the first hit itself is not raised). "On fire" is
@@ -870,6 +1185,266 @@ effect only (embers drawn in, then a burst of flame).
   with a 12-dot tail that cools white to yellow to orange to red and rises 10 px, the far side
   dimmer; embers now and then; light by design. A premultiplied soft dot in the alpha pass
   (adds its light, covers a little), so it keeps its colour on a bright sky.
+
+### Betsy's Flames
+
+Turns the caster's head into Betsy's and breathes her fire at the cursor for 5 seconds
+(PADWorkFlow §16.73, §16.74). `BetsysFlamesBreath` is the whole of it, from the change to the
+head going back; `BetsysFlamesPlayer` hides the caster's own head and `BetsysFlamesHead` draws
+hers.
+
+- **The order:** the change (48 ticks: their head bursts, and hers heaves up out of the neck in
+  seven throbs, raw and dead-eyed until her eyes open at 39), the roar (30: her scream, two
+  rings of fire, the head thrown back with the jaw wide, the screen shaking, the only time it
+  does), the breath (300), then the last flames leave (60): the mouth shuts over the first 16
+  of them and the head sags and shrinks back over the last 16.
+- **The breath is the game's** (type 687's drawing, collision, light, dust, smoke and fire),
+  held for the 5 seconds: the game's is one burst of 78 ticks. Half as far again as hers
+  (`Reach` 600) at her flames' speed (a puff 60 ticks out, 22 of them), and through walls as
+  hers. It hurts each thing in it every 5 ticks (`HitCooldown`) for 84: 1,008 a second,
+  measured against the Nebula Arcanum.
+- **Her head** is the user's picture (the game's `Gore_1081` facing left, the neck off, the eyes
+  opened): the game's pixels drawn from the gore at run time in strips 2 pixels tall
+  (`BetsysFlamesHeadCut`), the user's own 260 from `BetsysFlamesHead.png`; half size, the back
+  of the jaw on the neck; the game's dead face until the eyes open. The jaw turns about the
+  mouth's corner (`JawMost` 0.5 at the roar, 0.36 breathing) over the inside of the mouth
+  (`BetsysFlamesMaw.png`) and its fire (`BetsysFlamesMawGlow.png`, drawn added); the head is
+  turned so that the breath, leaving the middle of the mouth (`BreathTilt` 0.18 under the way
+  it faces), goes along the aim.
+- **Mana:** the cast's 30 pays the first second; then `ManaPerSecond` 30, a point at a time. No
+  mana, no seal, another cast picked or the caster held, and it stops; the head goes back either
+  way. Its tooltip's mana line says a second.
+- **Aim** turns at most `TurnRate` 0.12 a tick; the owner sends it on when it has moved 0.03, at
+  most every 3 ticks.
+- One-off sounds and bursts go through a `played` bitmask with a 6-tick window, as Aquatic
+  Firearms' do. `FireAffinity` counts the breath as fire.
+
+---
+
+# 5 · Accessories
+
+`Content/Items/Accessories`
+
+## Triple Fart In A Horse Shoe Adorned Bottle
+
+By request (PADWorkFlow §16.66): *"as the name suggests: it creates allow quadruple jumps and
+negates fall damage, you know what the recipe is."* Its picture is a stand-in
+(PlaceholderTextures.md).
+
+### Files
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Accessories/TripleFartInAHorseShoeAdornedBottle.cs` + `.png` (28 by 32, a stand-in) | `TripleFartInAHorseShoeAdornedBottle`, `TripleFartJump`, `TripleFartPlayer` | The item and its recipe; its jump; how many of its jumps are left, and no fall damage |
+
+### What it does
+
+| What | How |
+|---|---|
+| Jumps | three in the air, one after another, each the Fart in a Jar's own: held up twice as long as a jump off the ground (30 ticks to 15), 1.75 times as fast across while it lasts, its sound and its green cloud; with the jump off the ground, four (the game calls the Bundle of Balloons' four "quadruple") |
+| Their order | tried right after the Fart in a Jar's, before the Tsunami's and the Cloud's: worn with a Cloud in a Bottle, its three and then the cloud |
+| Back | all three once on the ground again, as every jump in the air comes back |
+| Falls | no fall damage, with wings or without (`noFallDmg`, as a Lucky Horseshoe gives it; given again after the mod's grounding of wings takes it from one wearing wings) |
+| Worth | Yellow, 20 gold to buy and 4 to sell: the Bundle of Horseshoe Balloons' |
+| Tooltip | the game's own words for what it does, and a line of mine: *'The horseshoe is for luck. So is the cork.'* |
+| Recipe | three Fart in a Jar and a Lucky Horseshoe at a Tinkerer's Workshop (my reading of "you know what the recipe is"); commented out, as every recipe is |
+
+### Open
+
+- Never worn in the game.
+- The picture is a stand-in; the recipe is commented out.
+- What was mine: RELEASE_TODO.
+
+---
+
+## Boots
+
+By request (PADWorkFlow §16.71): *"Boots equipable, doesnt have any affect but wear on shoes
+(reuse wearing texture of hermes boots)"*, made from 10 Silk, 5 Leather and 2 Iron Bars. What
+three of the game's boots are now made from. Its picture is a stand-in (PlaceholderTextures.md).
+
+### Files
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Accessories/Boots.cs` + `.png` (26 by 24, a stand-in) | `Boots` | The item; its recipe |
+
+### What it does
+
+| What | How |
+|---|---|
+| Worn | nothing at all |
+| On the feet | the Hermes Boots' own picture (`Item.shoeSlot` is theirs, `ArmorIDs.Shoe.HermesBoots`); the slot's eye hides them as any shoe |
+| For | a pair goes into the Ice Skates, the Hermes Boots and the Water Walking Boots, at a Tinkerer's Workshop (`PADRecipes`) |
+| Worth | White, sells for 20 silver: a fifth of the Hermes Boots' worth (mine) |
+| Tooltip | *'Plain enough. Someone handy could make more of them.'* |
+| Recipe | 10 Silk, 5 Leather, 2 Iron Bars (any), anywhere: no place was named (mine); live since you uncommented it (§16.75) |
+
+### Open
+
+- Never worn in the game.
+- Its recipe is live (§16.75), and with it the three boots made from them.
+- The picture is a stand-in. What was mine: RELEASE_TODO.
+
+---
+
+## Metallurgist's Brilliant Stone
+
+By request (PADWorkFlow §16.71): *"In a 38(wide)x39 rectangle, every ore that can be turned on
+by spelunker, will be draw with no light level. Sold by Merchant for 30 gold."* The field made
+58 by 45 by request (§16.72). Its picture is a stand-in (PlaceholderTextures.md).
+
+### Files
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Accessories/MetallurgistsBrilliantStone.cs` + `.png` (24 by 24, a stand-in) | `MetallurgistsBrilliantStone`, `MetallurgistsBrilliantStoneShop`, `MetallurgistsStonePlayer`, `MetallurgistsSight` | The item; the Merchant's shop; who wears it, and the glints; the drawing and its IL edit |
+
+### What it does
+
+| What | How |
+|---|---|
+| Where | 58 by 45 tiles about the tile its wearer's middle is in: 29 to the left, 28 to the right, 22 up, 22 down (§16.72; 38 by 39 before); the wearer alone sees it |
+| Which | the game's ores the Spelunker Potion lights (`TileID.Sets.Ore` and `Main.IsTileSpelunkable`): copper, tin, iron, lead, silver, tungsten, gold, platinum, meteorite, cobalt, palladium, mythril, orichalcum, adamantite, titanium, chlorophyte. Not demonite, crimtane or hellstone (the potion does not light them); not the gems |
+| How it looks | as in full light, however dark it is there; slopes and half blocks as the game draws them; painted ore keeps its paint; under the Echo Coating only where the game shows it; ore turned off by an actuator not drawn; now and then the potion's own spark, for 1 ore in 300 a tick (mine) |
+| How | drawn a second time over the game's own, through the game's `TileDrawing` (`GetTileDrawData`, the private `DrawBasicTile`), once a frame after `Main.DoDraw_Tiles_Solid` ends its batch and before it calls `Main.DrawTileEntities` (an IL edit); what stands among the tiles, the cracks of mining, NPCs, players and projectiles are drawn over it |
+| Worth | Green (mine); the Merchant asks 30 gold, moved by his mood as all his prices are |
+| Tooltip | "Shows the ore near you as if in full light"; *'The metal answers it, even in the dark.'* |
+
+### Open
+
+- Never worn in the game.
+- A whole block of ore beside a half block is drawn whole, where the game draws it in two parts.
+- The picture is a stand-in. What counts as ore, and what was mine: RELEASE_TODO.
+
+---
+
+## Dryad's Blessing
+
+A four leaf clover, by request (PADWorkFlow §16.71): *"Will survive an attack that will kill you
+with 25 HP, Gives you a buff that boosts your regen by 20hp/s for 5 sec and 1.5 sec of
+invinciblity"*, a sound and leaves circling, ready again in 15 minutes (10 since §16.72) or at a
+respawn. The Dryad gives it, for a Bezoar (§16.75). Its pictures are stand-ins
+(PlaceholderTextures.md); its sound was made here.
+
+### Files
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Accessories/DryadsBlessing.cs` + `.png` (26 by 28), `DryadsBlessingLeaf.png` (12 by 12) | `DryadsBlessing`, `DryadsBlessingPlayer`, `DryadsBlessingLeaves`, `DryadsBlessingLeavesBack`, `DryadsBlessingLeavesFront` | The item; sparing its wearer, the sound and the burst; the ring of leaves, behind and in front of the wearer |
+| `Content/Buffs/Spared.cs` + `Spared.png`, `WiltedClover.png` | `Spared`, `WiltedClover` | The regeneration after; the wait |
+| `Content/Sounds/DryadsBlessing.ogg` | | Its sound, made here (2.3 s, mono, Vorbis at quality 8) |
+
+### What it does
+
+| What | How |
+|---|---|
+| Spares | a hit through the game's `Player.Hurt` that would take the last of its wearer's life leaves them at 25 (or all their life, if they have less at most): any hit, a fall, lava and spikes included. Not burning, poison and the other harm a second, drowning, or the deaths the story deals out by name |
+| Then | a second and a half in which no hit lands (`SetImmuneTimeForAllTypes(90)`); Spared, 5 seconds of 20 life a second more (`lifeRegen` 40, after what burning and the like take) |
+| Again | after Wilted Clover, 10 minutes (§16.72; 15 before), or at a respawn (death takes it); saved with the player, the Nurse does not cure it, expert does not lengthen it |
+| Seen and heard | its sound; green motes (the Dryad's Ward dust), grass and sparks; ten leaves on a tilted ring about the wearer's middle while Spared lasts, six of the game's forest leaf and four of the clover's, bursting out in a third of a second, going round about once in a second and a half, drifting off and fading in the last three quarters; a soft green light |
+| How | `OnHurt` notes the hit that takes the last life; `PreKill`, on the wearer's machine, spares them; the others are told their life by the game's `PlayerLifeMana` and draw the leaves from the buff |
+| Worth | Orange, sells for 2 gold (mine) |
+| Tooltip | what it does, three lines; *'She does not let go of what she is handed.'* |
+| Source | the Dryad, by request (§16.75): one chat in four she speaks of a wound a Bezoar would draw out, until the player has brought her one; with a Bezoar on them, "The Bezoar" under her dialogue takes it, and she thanks them and gives them the clover; once for each player (`DryadBezoar.cs`) |
+
+### Open
+
+- Never worn in the game; its sound measured, never heard.
+- The Dryad's wound and her Bezoar never run in the game (§16.75).
+- The pictures are stand-ins. What it spares, and what was mine: RELEASE_TODO.
+
+---
+
+## Necklace Of The Academy
+
+By request (PADWorkFlow §16.71): *"(first hint at the Havu Lainey Magic Academy) has a bool
+BasicNecklace in globalplayer, +1 slot in arsenal, +5% magic damage. Obtained 1/15 chance from
+dark caster."* Its picture is a stand-in (PlaceholderTextures.md).
+
+### Files
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Accessories/NecklaceOfTheAcademy.cs` + `.png` (24 by 32, a stand-in) | `NecklaceOfTheAcademy`, `NecklaceOfTheAcademySource` | The item; its drop |
+| `Content/PADplayer/PADPlayer.cs` | `PADPlayer.BasicNecklace` | Set every tick it is worn |
+| `Content/PADplayer/MagicArsenal.cs` | `MagicArsenal` (`Necklace`, `OpenSlots`, `NecklaceSlot`, `HoldsOpen`) | The slot it holds open |
+| `Content/UI/MagicArsenalUI.cs`, `MagicArsenalCommand.cs` | | The slot drawn, hovered and clicked; `/magicarsenal` says so |
+
+### What it does
+
+| What | How |
+|---|---|
+| Worn | `PADPlayer.BasicNecklace`; one more Magic Arsenal slot, the first past those earned (none more with all ten earned); 5% more magic damage |
+| Its slot | a little bluer than the rest, with a small picture of the necklace in its corner; hovered empty, says it is held open by the necklace (mine) |
+| Taken off | the slot shuts with whatever is in it: a cast there is kept, not cast, not up, not in the cycle, shown faint over the bands; a click near a house gives it back; nothing goes in |
+| Drop | the Dark Caster, 1 in 15, every mode |
+| Worth | Green, sells for 1 gold (mine) |
+| Tooltip | "One more Magic Arsenal slot", "5% increased magic damage"; *'A first year's necklace. The clasp reads H. L.'*, the academy's first hint (the Lore Bible names no academy yet) |
+
+### Open
+
+- Never worn in the game.
+- The picture is a stand-in, and its mark in the slot is small (12 px). What was mine:
+  RELEASE_TODO.
+
+---
+
+## Bone Casing
+
+By request (PADWorkFlow §16.71): *"Gives a ribcage shaped shield over the entire body, wont
+disappear until you die. ribcage has 100HP, every attack on the player will be absorbed by
+this"*, as the Dark Prince's shield in Clash Royale: a blow however big breaks it and leaves the
+player standing. Ready again in 15 minutes (a minute and a half since §16.72) or at a respawn; 1
+in 4 from Skeletron. Its pictures are stand-ins (PlaceholderTextures.md).
+
+### Files
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Accessories/BoneCasing.cs` + `.png` (26 by 28), `BoneCasingRibs.png` (80 by 168: 40 by 56 frames, behind and in front, three looks) | `BoneCasing`, `BoneCasingSource`, `BoneCasingBag`, `BoneCasingPlayer`, `BoneCasingShards`, `BoneCasingLayer`, `BoneCasingBack`, `BoneCasingFront` | The item; Skeletron's drop and its bag's; the ribs; their pieces; the cage, behind and in front of the wearer |
+| `Content/Buffs/BoneCasingBuff.cs` + `BoneCasingBuff.png`, `Splintered.png` | `BoneCasingBuff`, `Splintered` | What is left of the ribs; the wait |
+| `Content/Gores/BoneCasingShard1.png`, `2`, `3` | | The pieces |
+| `PisAndDag.cs` | `PADPacket.BoneCasing` | What is left, to the other machines |
+
+### What it does
+
+| What | How |
+|---|---|
+| Takes | every hit something deals (an enemy's touch, a shot, the bosses' holds and drains included), what it would have taken off the wearer after defense, off the ribs' 100 life. Not the world's own hits (`PlayerDeathReason.ByOther`: a fall, lava, spikes, being turned to stone; mine), not another player's |
+| The last blow | however big, it breaks the ribs and goes no further |
+| How | a hit that can be dodged after the game's own dodges have had their try (`ConsumableDodge`); one that cannot, cancelled where its damage is known (`ModifyHurtInfo`); either way the wearer gets the game's time after a hit that lands (two thirds of a second, a third for a hit of 1, twice with the Cross Necklace) |
+| Lasts | until broken or its wearer dies; never mends; saved with the player |
+| Again | after Splintered, a minute and a half (§16.72; 15 minutes before); whole at every respawn |
+| Seen and heard | the cage from the collarbones to the hips, three looks (whole; cracked at 66 life or less; broken through at 33 or less); a blow: the life it took in bone white, the skeleton hit, bone dust the way it pushed, a flash and a shake; the break: the skeleton death and a crack, bone dust, seven rib pieces flying; standing again: dust drawn in, the rattle of skeletons rising, the cage growing in over six tenths of a second; the slot's eye hides the cage |
+| Buffs | Bone Casing while it stands, showing what is left (no time, cannot be clicked off); Splintered, the wait |
+| Drop | Skeletron, 1 in 4: from Skeletron in classic, from its bag in expert and master |
+| Worth | Green, sells for 1 gold (mine) |
+| Tooltip | what it does, three lines; *'It held a heart once. It is not fussy about whose.'* |
+
+### Open
+
+- Never worn in the game, never tried with a second player.
+- The pictures are stand-ins; the bone shows less over light clothes. What the ribs take, and
+  what was mine: RELEASE_TODO.
+
+---
+
+# 6 · Instruments
+
+## Trumpet
+
+Held and played (`Content/Items/Instrument/Trumpet.cs`). Its recipe, by request (PADWorkFlow
+§16.75): *"Trumpet :any gold 3, any iron 6, any copper 14 at anvil"*.
+
+| What | How |
+|---|---|
+| Recipe | 3 Any Gold Bar (Gold, Platinum), 6 Any Iron Bar (Iron, Lead), 14 Any Copper Bar (Copper, Tin), at an Iron or Lead Anvil; live (mine: the recipes beside it are) |
+| The groups | Any Gold Bar and Any Copper Bar are the mod's own (`PADRecipes.AnyGoldBar`, `AnyCopperBar`), named as the game names its Any Iron Bar; the game has a group for iron bars alone |
+
+### Open
+
+- The recipe never made in the game.
 
 ---
 

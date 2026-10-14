@@ -741,7 +741,7 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         public const int PreyLook = 15;
 
         /// <summary>Legends: more of it to get through, and it hits harder. On top of the mode's numbers.</summary>
-        public const float LegendsLife = 1.25f;
+        public const float LegendsLife = 1.5f;
         public const float LegendsDamage = 1.3f;
 
         /// <summary>Health fraction the second half starts at.</summary>

@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PisAndDag.Content.Items.Accessories;
 using PisAndDag.Content.Items.Mage;
 using PisAndDag.Content.PADplayer;
 using ReLogic.Content;
@@ -26,6 +27,10 @@ namespace PisAndDag.Content.UI
     ///
     /// The slots take and give only near a lived-in house. Elsewhere they still show,
     /// dimmed, and a click says why.
+    ///
+    /// The slot the Necklace Of The Academy holds open is a little bluer than the rest and wears
+    /// a small picture of the necklace in its corner. A cast left in it when the necklace comes
+    /// off shows through the bands, faint; a click there gives it back, and nothing can be put in.
     /// </summary>
     public class MagicArsenalUI : ModSystem
     {
@@ -69,6 +74,15 @@ namespace PisAndDag.Content.UI
         private static readonly Color TitleStroke = new Color(198, 194, 188);
         private static readonly Color NoteColour = new Color(150, 140, 130);
         private static readonly Color Dimmed = new Color(120, 120, 120);
+
+        /// <summary>A cast kept in a shut slot, seen through the bands.</summary>
+        private static readonly Color Kept = Color.White * 0.45f;
+
+        /// <summary>How big the necklace's mark in the corner of its slot is drawn, at most, in pixels.</summary>
+        private const float MarkSize = 12f;
+
+        /// <summary>The necklace's slot, a little bluer than the rest: the enamel of its medallion.</summary>
+        private static readonly Color NecklaceTint = new Color(196, 212, 255);
 
         public static bool Open;
 
@@ -276,43 +290,58 @@ namespace PisAndDag.Content.UI
                     SoundEngine.PlaySound(SoundID.MenuTick);
                 }
 
-                if (locked)
+                if (locked && item.IsAir)
                     Main.instance.MouseText(Language.GetTextValue("Mods.PisAndDag.Magic.Locked"), 0, 0);
+                else if (locked)
+                    Main.instance.MouseText(Language.GetTextValue("Mods.PisAndDag.Magic.LockedKept", item.Name), 0, 0);
                 else if (!item.IsAir)
                 {
                     Main.HoverItem = item.Clone();
                     Main.hoverItemName = item.Name;
                 }
+                else if (index == arsenal.NecklaceSlot)
+                    Main.instance.MouseText(Language.GetTextValue("Mods.PisAndDag.Magic.NecklaceSlot",
+                        Lang.GetItemNameValue(ModContent.ItemType<NecklaceOfTheAcademy>())), 0, 0);
             }
 
             Color tint = locked || nearHome ? Color.White : Dimmed;
+            Color frameTint = index == arsenal.NecklaceSlot ? tint.MultiplyRGB(NecklaceTint) : tint;
 
             if (slotTexture != null && slotTexture.IsLoaded)
             {
                 Texture2D texture = slotTexture.Value;
                 Rectangle source = texture.Frame(1, 4, 0, (int)frame);
 
-                Main.spriteBatch.Draw(texture, position, source, tint, 0f, Vector2.Zero, SlotScale, SpriteEffects.None, 0f);
+                Main.spriteBatch.Draw(texture, position, source, frameTint, 0f, Vector2.Zero, SlotScale, SpriteEffects.None, 0f);
             }
 
-            if (!locked && !item.IsAir)
+            if (!item.IsAir)
             {
                 Vector2 centre = position + new Vector2(SlotSize * 0.5f);
-                ItemSlot.DrawItemIcon(item, ItemSlot.Context.ChestItem, Main.spriteBatch, centre, SlotScale, 32f, tint);
+                ItemSlot.DrawItemIcon(item, ItemSlot.Context.ChestItem, Main.spriteBatch, centre, SlotScale, 32f, locked ? Kept : tint);
+            }
+
+            if (index == arsenal.NecklaceSlot)
+            {
+                // The necklace itself, small, tucked into the bottom right corner: the slot is its.
+                Item necklace = ContentSamples.ItemsByType[ModContent.ItemType<NecklaceOfTheAcademy>()];
+                Vector2 corner = position + new Vector2(SlotSize - MarkSize * 0.5f - 2f);
+                ItemSlot.DrawItemIcon(necklace, ItemSlot.Context.ChestItem, Main.spriteBatch, corner, 1f, MarkSize, tint);
             }
         }
 
         /// <summary>
         /// Take one out, or put one in. Only a cast goes in, never a second of the same,
-        /// and only near a house. A cast dropped on a cast swaps.
+        /// and only near a house. A cast dropped on a cast swaps. A shut slot takes nothing:
+        /// it only gives back a cast left in it, into an empty hand.
         /// </summary>
         private static void Click(MagicArsenal arsenal, int index, bool locked, bool nearHome)
         {
-            if (locked)
-                return;
-
             Item mouse = Main.mouseItem;
             Item slot = arsenal.Slots[index];
+
+            if (locked && (slot.IsAir || !mouse.IsAir))
+                return;
 
             if (mouse.IsAir && slot.IsAir)
                 return;

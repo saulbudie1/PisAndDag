@@ -33,6 +33,12 @@ namespace PisAndDag.Content.PADplayer
     /// (<see cref="Maxed"/>), and /magicarsenal normal shuts them back to what has; see
     /// MagicArsenalCommand. <see cref="Unlocked"/> is never touched by it, so going back
     /// is exact.
+    ///
+    /// The Necklace Of The Academy, worn, opens one more: the first past those earned
+    /// (<see cref="NecklaceSlot"/>). Taken off, that slot shuts with whatever is in it, which
+    /// stays there, out of use, until the necklace is worn again or it is taken out by hand:
+    /// a shut slot gives back what it holds (near a house, as an open one does) but takes
+    /// nothing. Nothing in it is ever lost.
     /// </summary>
     public class MagicArsenal : ModPlayer
     {
@@ -48,8 +54,18 @@ namespace PisAndDag.Content.PADplayer
         /// <summary>All ten open for testing, whatever has been earned. Saved, so it lasts until put back.</summary>
         public bool Maxed;
 
-        /// <summary>How many of the ten can be used right now.</summary>
-        public int OpenSlots => Maxed ? MaxSlots : Unlocked;
+        /// <summary>
+        /// Whether the Necklace Of The Academy was worn when everything worn last had its say
+        /// (PADPlayer.BasicNecklace, read in <see cref="PostUpdateEquips"/>). Held until the next
+        /// time, so the necklace's slot does not shut and open again between ticks.
+        /// </summary>
+        public bool Necklace { get; private set; }
+
+        /// <summary>How many of the ten can be used right now: those earned, and one more for the necklace.</summary>
+        public int OpenSlots => Maxed ? MaxSlots : System.Math.Min(MaxSlots, Unlocked + (Necklace ? 1 : 0));
+
+        /// <summary>The slot the necklace holds open, or -1: none worn, all ten earned, or all ten open for testing.</summary>
+        public int NecklaceSlot => !Maxed && Necklace && Unlocked < MaxSlots ? Unlocked : -1;
 
         /// <summary>The slots, always <see cref="MaxSlots"/> long, air where empty. Saved.</summary>
         public readonly Item[] Slots = new Item[MaxSlots];
@@ -65,15 +81,26 @@ namespace PisAndDag.Content.PADplayer
                 Slots[i] = new Item();
         }
 
-        public bool Holds(int type)
+        /// <summary>Whether this cast is anywhere in the arsenal, a shut slot included. No two of the same, ever.</summary>
+        public bool Holds(int type) => Find(type, Slots.Length);
+
+        /// <summary>Whether this cast is in a slot that is open now, so it can be cast.</summary>
+        public bool HoldsOpen(int type) => Find(type, OpenSlots);
+
+        private bool Find(int type, int slots)
         {
-            for (int i = 0; i < Slots.Length; i++)
+            for (int i = 0; i < slots && i < Slots.Length; i++)
             {
                 if (!Slots[i].IsAir && Slots[i].type == type)
                     return true;
             }
 
             return false;
+        }
+
+        public override void PostUpdateEquips()
+        {
+            Necklace = Player.GetModPlayer<PADPlayer>().BasicNecklace;
         }
 
         /// <summary>
@@ -132,7 +159,7 @@ namespace PisAndDag.Content.PADplayer
         {
             int type = selected[(int)kind];
 
-            if (type > 0 && Holds(type) && ModContent.GetModItem(type) is Castable still && still.Kind == kind)
+            if (type > 0 && HoldsOpen(type) && ModContent.GetModItem(type) is Castable still && still.Kind == kind)
                 return still;
 
             List<Castable> list = OfKind(kind);
@@ -145,7 +172,7 @@ namespace PisAndDag.Content.PADplayer
         /// <summary>Makes this cast the one that is up for its kind.</summary>
         public void Select(Castable cast)
         {
-            if (cast == null || !Holds(cast.Type))
+            if (cast == null || !HoldsOpen(cast.Type))
                 return;
 
             selected[(int)cast.Kind] = cast.Type;
@@ -184,9 +211,9 @@ namespace PisAndDag.Content.PADplayer
         public void Max() => Maxed = true;
 
         /// <summary>
-        /// Back to the slots earned. Nothing is lost with the ones that shut: a cast in one
-        /// moves to the first empty slot still open, and if there is none it is given back to
-        /// the player, at their feet, the way a bag's loot is.
+        /// Back to the slots earned (and the necklace's, if it is worn). Nothing is lost with the
+        /// ones that shut: a cast in one moves to the first empty slot still open, and if there is
+        /// none it is given back to the player, at their feet, the way a bag's loot is.
         /// </summary>
         /// <param name="moved">Casts moved into open slots.</param>
         /// <param name="returned">Casts given back to the player.</param>
@@ -200,7 +227,9 @@ namespace PisAndDag.Content.PADplayer
 
             Maxed = false;
 
-            for (int i = Unlocked; i < Slots.Length; i++)
+            int open = OpenSlots;
+
+            for (int i = open; i < Slots.Length; i++)
             {
                 if (Slots[i].IsAir)
                     continue;
@@ -210,7 +239,7 @@ namespace PisAndDag.Content.PADplayer
 
                 int free = -1;
 
-                for (int j = 0; j < Unlocked && j < Slots.Length; j++)
+                for (int j = 0; j < open && j < Slots.Length; j++)
                 {
                     if (Slots[j].IsAir)
                     {

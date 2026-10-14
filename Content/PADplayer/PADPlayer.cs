@@ -104,9 +104,20 @@ namespace PisAndDag.Content.PADplayer
             surgeThroughWalls |= throughWalls;
         }
 
+        // ---- Necklace Of The Academy ---------------------------------------------
+        //
+        // Asked for by name: "has a bool BasicNecklace in globalplayer". The necklace sets it
+        // from UpdateAccessory; what it does (one more Magic Arsenal slot) is the arsenal's
+        // business, which reads it once everything worn has had its say (MagicArsenal); the
+        // necklace's magic damage is added by the necklace itself.
+
+        /// <summary>The Necklace Of The Academy is worn this tick.</summary>
+        public bool BasicNecklace;
+
         public override void ResetEffects()
         {
             surging = false;
+            BasicNecklace = false;
         }
 
         /// <summary>

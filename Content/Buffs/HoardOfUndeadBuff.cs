@@ -1,0 +1,35 @@
+using PisAndDag.Content.Projectiles.Summoner;
+using Terraria;
+using Terraria.ModLoader;
+
+namespace PisAndDag.Content.Buffs
+{
+    /// <summary>
+    /// Hoard of Undead's zombies are out (HoardOfUndeadZombie): as long as any of the player's are,
+    /// it lasts; when none are left it goes, and cancelling it sends them away (each zombie lives
+    /// only while its owner has this). As the game's own minion buffs are: no time shown, not saved.
+    ///
+    /// The texture is a placeholder (PlaceholderTextures.md).
+    /// </summary>
+    public class HoardOfUndeadBuff : ModBuff
+    {
+        public override void SetStaticDefaults()
+        {
+            Main.buffNoSave[Type] = true;
+            Main.buffNoTimeDisplay[Type] = true;
+        }
+
+        public override void Update(Player player, ref int buffIndex)
+        {
+            if (player.ownedProjectileCounts[ModContent.ProjectileType<HoardOfUndeadZombie>()] > 0)
+            {
+                player.buffTime[buffIndex] = 18000;
+            }
+            else
+            {
+                player.DelBuff(buffIndex);
+                buffIndex--;
+            }
+        }
+    }
+}

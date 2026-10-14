@@ -2252,6 +2252,26 @@ namespace PisAndDag.Content.NPCs.Foigh
         private static float Deg(float degrees) => MathHelper.ToRadians(degrees);
 
         /// <summary>
+        /// Shown, before his roar (Foigh.End): standing as he does, the sword dragged, a
+        /// little bowed and getting his breath, hard at first; straight, and his breath let
+        /// go of, by the last of it (<paramref name="ticks"/>), so that his roar takes its
+        /// own from his stance.
+        /// </summary>
+        public static FoighRig.Pose Showing(float tick, float ticks)
+        {
+            FoighRig.Pose pose = Drag;
+
+            float breath = (float)Math.Sin(tick * 0.16f);
+            float hard = 1f - MathHelper.Clamp((tick - (ticks - 30f)) / 30f, 0f, 1f);
+
+            pose.Lean += Deg(hard * (5f + 2.4f * breath));
+            pose.Nod += Deg(hard * (6f + 1.6f * breath));
+            pose.FarArm += Deg(hard * 1.2f * breath);
+
+            return pose;
+        }
+
+        /// <summary>
         /// His roar where he stands: a breath (to <see cref="RoarDraws"/>); the voice, his
         /// head thrown back and his arms out from him, shaking (to <see cref="RoarLets"/>:
         /// two and a half seconds, "big long roar"); and what is left of his breath going
@@ -2293,19 +2313,19 @@ namespace PisAndDag.Content.NPCs.Foigh
         }
 
         /// <summary>
-        /// Down, by request at a slower pace. From where his roar left him, swaying, while the
-        /// camera comes over to him (to <see cref="FoldFalls"/>); his knees going, and down
-        /// onto both of them (<see cref="FoldKnees"/>); his body over and his arms out ahead
-        /// of him, the sword let go of on the way (<see cref="FoldLets"/>: it falls before him,
-        /// down by <see cref="FoldLands"/>, Foigh.End), and his hands onto the ground
-        /// (<see cref="FoldHands"/>); and still, breathing (<see cref="FoldTicks"/>).
+        /// Down, by request at a slower pace. From where his roar left him, swaying a moment
+        /// (to <see cref="FoldFalls"/>; the camera is on him from before his roar); his knees
+        /// going, and down onto both of them (<see cref="FoldKnees"/>); his body over and his
+        /// arms out ahead of him, the sword let go of on the way (<see cref="FoldLets"/>: it
+        /// falls before him, down by <see cref="FoldLands"/>, Foigh.End), and his hands onto
+        /// the ground (<see cref="FoldHands"/>); and still, breathing (<see cref="FoldTicks"/>).
         /// </summary>
-        public const int FoldFalls = 150;
-        public const int FoldKnees = 196;
-        public const int FoldLets = 216;
-        public const int FoldHands = 234;
-        public const int FoldLands = 244;
-        public const int FoldTicks = 280;
+        public const int FoldFalls = 40;
+        public const int FoldKnees = FoldFalls + 46;
+        public const int FoldLets = FoldFalls + 66;
+        public const int FoldHands = FoldFalls + 84;
+        public const int FoldLands = FoldFalls + 94;
+        public const int FoldTicks = FoldFalls + 130;
 
         /// <summary>
         /// On both knees. Each leg is one picture, from the hip to the sole: the near one
@@ -2373,7 +2393,7 @@ namespace PisAndDag.Content.NPCs.Foigh
             .At(FoldHands, Ease.PolyIn, 2).Lean(FoursLean).Nod(FoursHangs).Rise(FoursRise)
             .At(FoldTicks, Ease.SineInOut).Lean(FoursLean).Nod(FoursHangs);
 
-        /// <summary>Down, at this tick of it: swaying while the camera comes over; and once his hands are on their way to the ground, put on it.</summary>
+        /// <summary>Down, at this tick of it: swaying a moment; and once his hands are on their way to the ground, put on it.</summary>
         public static FoighRig.Pose Folding(float tick)
         {
             float breath = (float)Math.Sin(tick * 0.16f);

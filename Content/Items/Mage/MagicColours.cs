@@ -23,7 +23,7 @@ namespace PisAndDag.Content.Items.Mage
     /// drawn a row of each letter at a time, each row in its own colour.
     ///
     /// The same rows draw the name of an item whose rarity is two ramps, a fill and an
-    /// outline (<see cref="Ramped"/>; Content/Rarities).
+    /// outline, that go round and move (<see cref="Ramped"/>; Content/Rarities).
     /// </summary>
     public static class MagicColours
     {
@@ -44,6 +44,7 @@ namespace PisAndDag.Content.Items.Mage
             // Its stroke is the ramp below. This one is the ramp's middle, for anything that
             // can only take one colour.
             ["Conquest"] = (new Color(0x7a, 0x3a, 0x24), new Color(0xc8, 0xa5, 0x5b)),
+            ["Draconic"] = (new Color(0xb0, 0xa1, 0x58), new Color(0xdb, 0x18, 0x4c)),
         };
 
         /// <summary>
@@ -185,17 +186,20 @@ namespace PisAndDag.Content.Items.Mage
         // ---- a fill and a stroke that are both ramps --------------------------------
 
         /// <summary>
-        /// Text whose fill and outline are both ramps (an item's name in Blasphemous Crimson,
-        /// Content/Rarities): the fill from its first colour at the top of the letters to its
-        /// last at the bottom, the outline from its first at the bottom to its last at the top,
-        /// each spread over the ink of the whole text (the outline over the ink and its reach
-        /// either way), a row of each letter at a time. Laid out as <see cref="StrokedRamp"/>
-        /// lays it out. Both take the slow pulse vanilla gives every tooltip line, as a
-        /// darkening only, so that neither is ever seen through: at the top of the pulse the
-        /// colours are the ramps' own. Plain text only, no colour codes.
+        /// Text whose fill and outline are both ramps that go round and move (an item's name in
+        /// Blasphemous Crimson, Content/Rarities). Each ramp is its colours one after another and
+        /// then back into the first, again and again; two thirds of a turn of it (with three
+        /// colours, the first to the last) span the ink of the whole text, the outline's its ink
+        /// and its reach either way. <paramref name="flow"/> is how far round they have moved, in
+        /// turns: the fill moves down the letters, from its first colour towards its last, and the
+        /// outline up them, from its first towards its last; at a flow of 0 the fill runs from its
+        /// first colour at the top to its last at the bottom and the outline from its first at the
+        /// bottom to its last at the top. A row of each letter at a time, laid out as
+        /// <see cref="StrokedRamp"/> lays it out, in the ramps' own colours (no pulse). Plain text
+        /// only, no colour codes.
         /// </summary>
         public static void Ramped(SpriteBatch spriteBatch, DynamicSpriteFont font, string text, Vector2 at,
-            Color[] fill, Color[] stroke, Vector2 scale, float rotation = 0f, Vector2 origin = default, float spread = Spread)
+            Color[] fill, Color[] stroke, Vector2 scale, float flow, float rotation = 0f, Vector2 origin = default, float spread = Spread)
         {
             Lay(font, text, scale);
 
@@ -205,13 +209,10 @@ namespace PisAndDag.Content.Items.Mage
             // As in StrokedRamp: DynamicSpriteFont's own placement, the origin taken off and the whole turned.
             Matrix turn = Matrix.CreateTranslation(-origin.X * scale.X, -origin.Y * scale.Y, 0f) * Matrix.CreateRotationZ(rotation);
 
-            // ChatManager.WaveColor's darkening (towards black by what Main.mouseTextColor is short of 255).
-            float dim = 1f - Main.mouseTextColor / 255f;
-
             foreach (Vector2 direction in Around)
-                Rows(spriteBatch, turn, at, direction * spread, scale, rotation, stroke, top - spread, bottom - top + 2f * spread, true, dim);
+                Rows(spriteBatch, turn, at, direction * spread, scale, rotation, stroke, top - spread, bottom - top + 2f * spread, true, flow);
 
-            Rows(spriteBatch, turn, at, Vector2.Zero, scale, rotation, fill, top, bottom - top, false, dim);
+            Rows(spriteBatch, turn, at, Vector2.Zero, scale, rotation, fill, top, bottom - top, false, flow);
         }
 
         /// <summary>How far the ink of the text laid out runs, top to bottom, from where it starts. False if there is none.</summary>
@@ -235,14 +236,17 @@ namespace PisAndDag.Content.Items.Mage
 
         /// <summary>
         /// Every row of every letter laid out, moved by <paramref name="offset"/>, each in the
-        /// ramp's colour at the height of the middle of that row: the ramp begins at
-        /// <paramref name="from"/> and runs <paramref name="span"/> down the text, or up it from
-        /// the bottom if <paramref name="upward"/>; then darkened by <paramref name="dim"/>.
+        /// colour of the ramp that goes round at the height of the middle of that row: the span
+        /// from <paramref name="from"/>, <paramref name="span"/> long, holds all of the ramp but its
+        /// way back to the first colour, running down the text, or up it from the bottom if
+        /// <paramref name="upward"/>; and the whole moved on by <paramref name="flow"/> turns, the
+        /// way it runs.
         /// </summary>
         private static void Rows(SpriteBatch spriteBatch, Matrix turn, Vector2 at, Vector2 offset, Vector2 scale, float rotation,
-            Color[] ramp, float from, float span, bool upward, float dim)
+            Color[] ramp, float from, float span, bool upward, float flow)
         {
             span = Math.Max(1f, span);
+            float shown = (ramp.Length - 1f) / ramp.Length;
 
             foreach (Letter letter in letters)
             {
@@ -250,7 +254,7 @@ namespace PisAndDag.Content.Items.Mage
                 {
                     Vector2 local = letter.In + new Vector2(0f, row * scale.Y);
                     float down = (letter.Word.Y + local.Y + 0.5f * scale.Y + offset.Y - from) / span;
-                    Color colour = Color.Lerp(Ramp(ramp, upward ? 1f - down : down), Color.Black, dim);
+                    Color colour = Round(ramp, (upward ? 1f - down : down) * shown - flow);
 
                     spriteBatch.Draw(letter.Texture, Vector2.Transform(local, turn) + at + letter.Word + offset,
                         new Rectangle(letter.Glyph.X, letter.Glyph.Y + row, letter.Glyph.Width, 1),
@@ -316,6 +320,21 @@ namespace PisAndDag.Content.Items.Mage
                 pen.X += (kerning.Y + kerning.Z) * scale.X;
                 first = false;
             }
+        }
+
+        /// <summary>
+        /// A colour along a ramp that goes round: its colours evenly spaced over a turn, the last
+        /// running back into the first, so that 0, 1 and every whole turn are the first colour and
+        /// any amount is somewhere on it. A ramp of one colour is that colour.
+        /// </summary>
+        private static Color Round(Color[] ramp, float along)
+        {
+            if (ramp.Length == 1)
+                return ramp[0];
+
+            float at = (along - (float)Math.Floor(along)) * ramp.Length;
+            int i = Math.Min((int)at, ramp.Length - 1);
+            return Color.Lerp(ramp[i], ramp[(i + 1) % ramp.Length], at - i);
         }
 
         /// <summary>A colour along a ramp: 0 is its first colour, 1 its last. A ramp of one colour is that colour.</summary>

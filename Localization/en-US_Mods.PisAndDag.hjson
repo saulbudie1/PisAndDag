@@ -54,6 +54,62 @@ Items: {
 			DisplayName: Rage Of A Thunder
 			Tooltip: ""
 		}
+
+		TripleFartInAHorseShoeAdornedBottle: {
+			DisplayName: Triple Fart In A Horse Shoe Adorned Bottle
+			Tooltip:
+				'''
+				Allows the holder to quadruple jump
+				Negates fall damage
+				'The horseshoe is for luck. So is the cork.'
+				'''
+		}
+
+		Boots: {
+			DisplayName: Boots
+			Tooltip: "'Plain enough. Someone handy could make more of them.'"
+		}
+
+		MetallurgistsBrilliantStone: {
+			DisplayName: Metallurgist's Brilliant Stone
+			Tooltip:
+				'''
+				Shows the ore near you as if in full light
+				'The metal answers it, even in the dark.'
+				'''
+		}
+
+		DryadsBlessing: {
+			DisplayName: Dryad's Blessing
+			Tooltip:
+				'''
+				A hit that would kill you leaves you at 25 life
+				Then 1.5 seconds of invincibility, and 20 life a second for 5 seconds
+				Ready again after 10 minutes, or when you respawn
+				'She does not let go of what she is handed.'
+				'''
+		}
+
+		NecklaceOfTheAcademy: {
+			DisplayName: Necklace Of The Academy
+			Tooltip:
+				'''
+				One more Magic Arsenal slot
+				5% increased magic damage
+				'A first year's necklace. The clasp reads H. L.'
+				'''
+		}
+
+		BoneCasing: {
+			DisplayName: Bone Casing
+			Tooltip:
+				'''
+				A cage of ribs takes every attack in your place
+				The ribs have 100 life, and the hit that breaks them is taken whole
+				They stand again after 1.5 minutes, or when you respawn
+				'It held a heart once. It is not fussy about whose.'
+				'''
+		}
 	}
 
 	Chlorophyte_Rifle: {
@@ -87,6 +143,20 @@ Items: {
 	GreatbowOfAPilgrim: {
 		DisplayName: She Who Sings
 		Tooltip: Wait 5 seconds to shoot a piercing arrow
+	}
+
+	WoodenCrossbow: {
+		DisplayName: Wooden Crossbow
+		Tooltip: "'Wood, string, and one stubborn iron trigger.'"
+	}
+
+	Mycellaneous: {
+		DisplayName: Mycellaneous
+		Tooltip:
+			'''
+			Arrows that hit an enemy send you back 2 or 3 life, 5 on a critical hit
+			'Mushrooms grow on what is done with. So do you.'
+			'''
 	}
 
 	MeagreFlame: {
@@ -256,6 +326,16 @@ Items: {
 			'''
 	}
 
+	BetsysFlames: {
+		DisplayName: Betsy's Flames
+		Tooltip:
+			'''
+			Turns your head into Betsy's to breathe her fire at the cursor for 5 seconds
+			The flames set foes on fire
+			'It borrows her face. Your jaw aches for days.'
+			'''
+	}
+
 	SubworldDoor: {
 		DisplayName: Unmarked Door
 		Tooltip:
@@ -287,6 +367,42 @@ Items: {
 			Right click shoots up to three slashes.
 			Hold Enter for 3 seconds, standing, to drench it in blood
 			'The rusted side was used on one man, for centuries.'
+			'''
+	}
+
+	HoardOfUndead: {
+		DisplayName: Hoard of Undead
+		Tooltip: Summons a zombie to fight for you
+	}
+
+	BoneSquad: {
+		DisplayName: Bone Squad
+		Tooltip:
+			'''
+			Summons a squad of six skeletons to fight for you
+			Takes 5.5 minion slots
+			'''
+	}
+
+	Worminator: {
+		DisplayName: Worminator
+		Tooltip:
+			'''
+			Summons a worm that tunnels through the ground to fight for you
+			Each summon after the first lengthens the worm by one segment
+			'It is always under you.'
+			'''
+	}
+
+	VultureStaff: {
+		DisplayName: Vulture Staff
+		Tooltip:
+			'''
+			Summons a vulture to fight for you
+			Vultures circle the weakest enemy near you and dive at it
+			They deal 25% more damage to enemies under half health
+			A kill makes them dive more often for 3 seconds
+			'They are very good at waiting.'
 			'''
 	}
 }
@@ -380,6 +496,46 @@ Buffs: {
 		DisplayName: Dried Blood
 		Description: The sword cannot be drenched again yet
 	}
+
+	HoardOfUndeadBuff: {
+		DisplayName: Zombie
+		Description: The zombie will fight for you
+	}
+
+	BoneSquadBuff: {
+		DisplayName: Bone Squad
+		Description: The skeletons will fight for you
+	}
+
+	Spared: {
+		DisplayName: Spared
+		Description: Regenerating 20 life a second
+	}
+
+	WiltedClover: {
+		DisplayName: Wilted Clover
+		Description: The clover cannot spare you again yet
+	}
+
+	BoneCasingBuff: {
+		DisplayName: Bone Casing
+		Description: The ribs take every attack: {0} of {1} life left
+	}
+
+	Splintered: {
+		DisplayName: Splintered
+		Description: The ribs cannot stand again yet
+	}
+
+	WorminatorBuff: {
+		DisplayName: Worminator
+		Description: The worm will fight for you
+	}
+
+	VultureStaffBuff: {
+		DisplayName: Vultures
+		Description: The vultures will fight for you
+	}
 }
 
 DeathText: {
@@ -457,6 +613,25 @@ Projectiles: {
 	RustSideSlash.DisplayName: Rust Side Slash
 	RustSideLine.DisplayName: Rust Side Line
 	RustSideHoldout.DisplayName: Rust Side Holdout
+	HoardOfUndeadZombie.DisplayName: Zombie
+	BoneSquadBoneLee.DisplayName: Bone Lee
+	BoneSquadArmored.DisplayName: Armored Bones
+	BoneSquadCaster.DisplayName: Dungeon Caster
+	BoneSquadArcher.DisplayName: Skeleton Archer
+	BoneSquadSkull.DisplayName: Giant Cursed Skull
+	BoneSquadArrow.DisplayName: Flaming Arrow
+	BoneSquadShadowBeam.DisplayName: Shadow Beam
+	BoneSquadInferno.DisplayName: Inferno
+	BoneSquadInfernoBlast.DisplayName: Inferno
+	BoneSquadLostSoul.DisplayName: Lost Soul
+	BoneSquadShadowflames.DisplayName: Shadowflames
+	BetsysFlamesBreath.DisplayName: Betsy's Flames
+	MycellaneousSpore.DisplayName: Mycellaneous
+	WorminatorHead.DisplayName: Worminator
+	WorminatorNeck.DisplayName: Worminator
+	WorminatorBody.DisplayName: Worminator
+	WorminatorTail.DisplayName: Worminator
+	VultureMinion.DisplayName: Vulture
 }
 
 NPCs: {
@@ -471,6 +646,11 @@ NPCs: {
 	DonaQuinn.DisplayName: "'Dame' Quilt"
 	TriunfoTheDonkey.DisplayName: Triunfo
 	Foigh.DisplayName: Foigh
+
+	BlindTusker: {
+		DisplayName: Blind Tusker
+		Bestiary: Its eyes are white all through. It hears you through the sand, and it does not stop for anything it cannot climb. Men went after it with curved swords. Some of the swords came back.
+	}
 }
 
 Biomes: {
@@ -504,6 +684,7 @@ Hints: {
 	GuideKingdom: Far {0}, past the field where every tree is a stump, there's a wall taller than any tree ever grew. A kingdom's, my books say. Its gates are still shut. The books don't say who shut them.
 	GuidePilgrim: A man came through here leaning on a bow taller than he was, with a huge sword on his back too. He told me his name twice and laugh loudly, as if the first time might not have taken.
 	GuideHut: I scouted the area before your awakening. On the trail seawards, there is a little hut, tethered yet foreboding. I'm too much of a coward and dared not enter. Do me a favour and tell me what is inside.
+	DryadBezoar: There is a wound in my side that has not closed in years. Leaves do nothing for it. A Bezoar would draw it out. The hornets carry them, though not often.
 }
 
 Subworlds: {
@@ -749,6 +930,7 @@ Magic: {
 	CastsIncantation: Casts incantations
 	Damage: "{0} damage"
 	Mana: Uses {0} mana
+	ManaPerSecond: Uses {0} mana a second
 	Type: Type: {0}
 	Element: Element: {0}
 	Arsenal: Magic Arsenal
@@ -761,6 +943,8 @@ Magic: {
 	NotACast: Only a spell or an incantation goes there.
 	AlreadyHeld: It is already in there.
 	Locked: Locked
+	LockedKept: Locked. {0} can still be taken out
+	NecklaceSlot: Held open by the {0}
 	NothingIn: Nothing in the arsenal
 	Up: Up: {0}
 	NothingMemorised: Nothing in the arsenal

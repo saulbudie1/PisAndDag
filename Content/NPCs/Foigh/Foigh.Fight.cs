@@ -647,6 +647,7 @@ namespace PisAndDag.Content.NPCs.Foigh
 
                 // At nothing: his end (Foigh.End).
                 case Move.Dying:
+                case Move.Shown:
                 case Move.Roar:
                 case Move.Fold:
                 case Move.Bowed:
@@ -3327,6 +3328,7 @@ namespace PisAndDag.Content.NPCs.Foigh
 
                 // At nothing: his end (Foigh.End).
                 case Move.Dying:
+                case Move.Shown:
                 case Move.Roar:
                 case Move.Fold:
                 case Move.Bowed:

@@ -74,6 +74,7 @@ namespace PisAndDag
         private static void Report(CommandCaller caller, MagicArsenal arsenal)
         {
             caller.Reply($"{arsenal.OpenSlots} of {MagicArsenal.MaxSlots} slots open, {arsenal.Unlocked} earned"
+                + (arsenal.NecklaceSlot >= 0 ? ", one held open by the Necklace Of The Academy" : "")
                 + (arsenal.Maxed ? ", max is on." : "."), Reply);
         }
     }

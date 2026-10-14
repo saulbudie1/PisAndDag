@@ -430,10 +430,13 @@ namespace PisAndDag.Content.NPCs.Foigh
 
             // ---- at nothing: the rest of his end (Foigh.End), from Dying ----
 
+            /// <summary>The picture to black and back, the player before him, and the camera over to him where he stands (in the hall, at its end): before his roar, by request.</summary>
+            Shown,
+
             /// <summary>His long roar; in the hall, its flames out but the ones over him.</summary>
             Roar,
 
-            /// <summary>The picture to black and back, the player before him: down onto his knees and his hands, the sword let fall.</summary>
+            /// <summary>Down onto his knees and his hands, the sword let fall.</summary>
             Fold,
 
             /// <summary>His head down, shaking and bleeding: the player walks up to him.</summary>

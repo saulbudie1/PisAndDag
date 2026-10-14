@@ -183,12 +183,12 @@ namespace PisAndDag.Content.Items.Ranged
             return new Vector2(-1.1f, 1);
         }
 
-        //public override void AddRecipes()
-        //{
-        //	Recipe recipe = CreateRecipe();
-        //	recipe.AddIngredient(ItemID.ChlorophyteBar, 12);
-        //	recipe.AddTile(TileID.MythrilAnvil);
-        //	recipe.Register();
-        //}
+        public override void AddRecipes()
+        {
+            Recipe recipe = CreateRecipe();
+            recipe.AddIngredient(ItemID.ChlorophyteBar, 12);
+            recipe.AddTile(TileID.MythrilAnvil);
+            recipe.Register();
+        }
     }
 }

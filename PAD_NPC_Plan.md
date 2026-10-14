@@ -22,6 +22,7 @@
 | Legends slimes / Guide sacrifice | `Content/NPCs/Legends` | built |
 | **Abomanation** | `Content/NPCs/Abomanation_Small` | **built; one move planned, §2.4** |
 | **Foigh, the Swordsman** | `Content/NPCs/Foigh` | **his road, phase one of three and the passage into phase two built; put down by `/foigh` only; §5** |
+| Blind Tusker | `Content/NPCs/Desert` | built: a desert enemy before hardmode, where the Iron Flow comes from; run in a rig, never in the game (PADWorkFlow §16.75) |
 
 ---
 
@@ -31,7 +32,9 @@ A worm that lives in the sand and comes up through it. Desert, pre-hardmode.
 Head steers and owns the health pool, fifteen body segments follow it and carry the arms,
 the tail closes the chain and is bare.
 
-HP 6000 / 9000 / 12000. Contact only, so far.
+HP 10,000 / 12,000 / 15,000 in classic, expert and master, half as much again in Legends, by
+request (PADWorkFlow §16.75; 16,000 / 26,000 / 36,000 and a quarter more before). Contact only,
+so far.
 
 ## 2.1 What is built
 
@@ -424,7 +427,7 @@ him), and an hour and twenty minutes in the hall on §16.54's, what was done the
 | `Foigh.Called.cs` | what is called up to fight for a player: turned aside at his usual rate, a cap of its own, the Stardust Dragon's one wait (§5.16) |
 | `Foigh.Reach.cs` | what reaches them from his second phase: the hook, the two cuts of wind, what he reads of a player (§5.12) |
 | `Foigh.Wild.cs` | his third phase, wilder: half as fast again, a cut let go, the wheel, the sword driven deeper, lingers and feints, what he learns of a player (§5.13); and in all three phases the ball (§5.15), by phase (§5.17) |
-| `Foigh.End.cs` | his end: the step to the hall's end, the roar and the flames, the fold, the lines and the answers, Finish and Spare (§5.17) |
+| `Foigh.End.cs` | his end: the step to the hall's end, his being shown, the roar and the flames, the fold, the lines and the answers, Finish and Spare (§5.17) |
 | `Foigh.Draw.cs` | drawing him from his pieces, the blade's trail, the ghosts of a flash step, sparks, dust, sounds |
 | `FoighRig.cs` | where everything is on his art, and the sums that put seven pieces together for any pose. No game in it |
 | `FoighTrack.cs` | a movement as poses at moments, eased between |
@@ -1168,9 +1171,10 @@ anybody else he is simply doing it.
 
 | part | ticks | |
 |---|---|---|
-| Dying | 40 at least | rocked by the blow; on the ground, gone to the pilaster (a ghost left where he stood) |
-| Roar | 208 | a breath to 22; the voice to 172 (the game's roar at -0.45, one and a half times a boss's, rimmed red); the hall's flames out from him at 40 px a tick but the five up his pilaster |
-| Fold | 280 | to black 24, the player put down twenty tiles in front of him at 27, back by 70; the camera over to him from 82 (96 ticks, leaning to 1.3); swaying to 150, his knees by 196, the sword let go at 216, his hands down by 234, the sword down by 244 |
+| Dying | 40 at least | rocked by the blow |
+| Shown | 156 | on the ground, gone to the pilaster as it begins (a ghost left where he stood); to black 24, the player put down twenty tiles in front of him at 27, back by 70; the camera over to him from 82 (96 ticks, leaning to 1.3), most of the way as his roar begins; getting his breath, the sword dragged, straight by the end (§16.66, by request: *"fades and pans to him at the pillar before he do his roar"*; it came after his roar) |
+| Roar | 208 | a breath to 22, the camera on him as its voice begins; the voice to 172 (the game's roar at -0.45, one and a half times a boss's, rimmed red); the hall's flames out from him at 40 px a tick but the five up his pilaster |
+| Fold | 170 | swaying to 40, his knees by 86, the sword let go at 106, his hands down by 124, the sword down by 134; the camera on him |
 | Bowed | the walk | the player walked up to five tiles off him; his head hanging, shaking, blood from his mouth (fifteen seconds at the most) |
 | Laugh | his line | his head up (36); "Ha ha ha ha..."; two to four coughs; "..." |
 | Asked | the answer | "It is true after all, ..." (Yes you were) (No you weren't) |

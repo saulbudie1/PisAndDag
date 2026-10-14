@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using PisAndDag.Content.Projectiles.Mage;
+using PisAndDag.Content.Projectiles.Magic;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -77,6 +78,7 @@ namespace PisAndDag.Content.Combat
         public static List<string> AddModded()
         {
             Projectiles.Add(ModContent.ProjectileType<MeagreFlameBall>());
+            Projectiles.Add(ModContent.ProjectileType<BetsysFlamesBreath>());
 
             List<string> found = new();
 

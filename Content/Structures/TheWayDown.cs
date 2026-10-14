@@ -75,6 +75,30 @@ namespace PisAndDag.Content.Structures
     /// ITS TORCHES. One every <see cref="TorchGapLeast"/> to <see cref="TorchGapMost"/> tiles along
     /// it, on its floor: a torch, and within the evil's walls the evil's torch, as the ring's.
     ///
+    /// ROUND ABOUT. Where the Dungeon lies between (its halls spread out over the ball), so that no
+    /// way can be found as above, it goes round, by request: "Why not create a path around it, i
+    /// dont mind it going down then to the side tho, maybe even up a little. jaggedy js dont
+    /// obstruct the dungeon and goes into the hole of the ball" (<see cref="RoundAbout"/>). It is
+    /// found again on a map that keeps it <see cref="RoundKeep"/> off anything of the Dungeon's (not
+    /// <see cref="DungeonKeep"/>) and reaches round it; this time as one walking it would go
+    /// (<see cref="Burrow"/>): walking, stepping up and down, dropping, jumping up and over a hole,
+    /// and digging the ground's own tiles where they are in the way, from the ground at the mouth
+    /// to the hall, and from the hall wherever it must go, down, along and up again, into the top
+    /// of the shaft. Cut so (as wide as one walking it), made wider, ragged, but never under where
+    /// it is stood on, and walked; where one walking it is stopped, found again on the world as it
+    /// then is, never taking what they stood on. The rest is as above: the mouths and their window,
+    /// the hall and its door, the walls, the torches, and everything it keeps away from.
+    ///
+    /// INTO THE HOLLOW FROM THE SIDE. Where the Dungeon is round the top of the shaft too (in Flacid
+    /// its lowest halls lie over it and beside it), so that no way round about can come to it, the
+    /// way round about goes into the ball's hollow from whatever side is nearest instead, by request:
+    /// "the access to the inner circle of the ball dont have to be from top down, it can be from any
+    /// angle" (<see cref="RoundAbout"/>). It comes down and round as above and through the ball's
+    /// shell, dug as any ground is, never within <see cref="HollowKeep"/> of the hollow over its bank,
+    /// and comes out low, where one can stand on the bank: walked into, not fallen into. What the
+    /// Dungeon left in the hollow when the ball was made round it, its walls, is gone round, never
+    /// cut. The top of the shaft is still tried first.
+    ///
     /// Run as late as the Grace side's late passes, just before Final Cleanup, so that nothing made
     /// after it is put in its way; and by /struct update into a world made before it existed
     /// (StructureUpdate), where the shaft's top is found again off the tiles.
@@ -115,6 +139,41 @@ namespace PisAndDag.Content.Structures
         public const int BuiltKeep = 3;
         public const int LooseKeep = 0;
         public const int WallKeep = 2;
+
+        // ---- round about ------------------------------------------------------------------------
+
+        /// <summary>How far from anything of the Dungeon's (its brick, its walls) a way round about keeps: so that it never comes into it, nor opens into it.</summary>
+        public const int RoundKeep = 10;
+
+        /// <summary>How far round the Dungeon, the mouths' window and the shaft the map of a way round about reaches; and how far either side of the mouths' window and the shaft the Dungeon is looked for.</summary>
+        private const int RoundMargin = 240;
+        private const int RoundLook = 1200;
+
+        /// <summary>Round about, how far across one coming down jumps at the most (past three, only from a jump of two or more); and how many times at the most the way is found again from where one walking it was stopped.</summary>
+        private const int RoundAcross = 5;
+        private const int RoundMends = 12;
+
+        /// <summary>
+        /// Into the ball's hollow from the side (<see cref="RoundAbout"/>): how far from its middle
+        /// the hollow may reach (Hollow * (1 + HollowRough), 214, three of grain, and six more); the
+        /// ball's shell is all between this and its outside. And between how far under its middle one
+        /// may come to stand in it: on the bank, whose top is at least BaseFrom - BaseRough under the
+        /// middle and at most BaseFrom + BaseRough (two of grain either way; one standing on it is a
+        /// row over it; and six more under).
+        /// </summary>
+        private const int HollowReach = TheBallPass.Hollow + (int)(TheBallPass.Hollow * TheBallPass.HollowRough) + 9;
+        private const int BankHigh = TheBallPass.BaseFrom - TheBallPass.BaseRough - 3;
+        private const int BankLow = TheBallPass.BaseFrom + TheBallPass.BaseRough + 8;
+
+        /// <summary>Into the hollow from the side: how far off the hollow over where one may stand in it the way keeps, so that it never cuts the hollow's side open over the bank.</summary>
+        private const int HollowKeep = 2;
+
+        /// <summary>
+        /// Round about, how many places with room for the body joined to where a way must end are
+        /// counted at the most (<see cref="Burrow.Joined"/>): fewer, and where none of them is joined
+        /// to a hall's far end, no way is looked for from there.
+        /// </summary>
+        private const int JoinedMost = 1_500_000;
 
         // ---- its size and its winding ------------------------------------------------------------
 
@@ -202,6 +261,12 @@ namespace PisAndDag.Content.Structures
         /// <summary>The way the last way down made goes, tile by tile, from its mouth down to the hall, along it, and down to the shaft: for looking at it.</summary>
         public static IReadOnlyList<Point> LastWay { get; private set; } = Array.Empty<Point>();
 
+        /// <summary>How far off the Dungeon the last way down made kept: <see cref="DungeonKeep"/>, or round about <see cref="RoundKeep"/>.</summary>
+        public static int LastKeep { get; private set; }
+
+        /// <summary>Where the last way down made came into the ball's hollow, round about from the side (<see cref="RoundAbout"/>); nothing if it ends at the top of the shaft.</summary>
+        public static Point LastInto { get; private set; }
+
         protected override void ApplyPass(GenerationProgress progress, GameConfiguration config)
         {
             progress.Message = "A way down";
@@ -286,16 +351,12 @@ namespace PisAndDag.Content.Structures
 
             List<Point> mouths = Mouths(area, from, to, rand);
 
-            if (mouths.Count == 0)
-            {
-                Say($"nowhere between plan {from} and plan {to} could the mouth be opened without undermining something.");
-                return false;
-            }
-
             // The first mouth, and hall, that a way can be found from and to (around the hall, never
             // through it), and that, once cut, can be walked down: a way that cannot is put back as
             // it was, and the next tried.
-            string why = "no rock solid and clear enough for the hall under any of them";
+            string why = mouths.Count == 0
+                ? $"nowhere between plan {from} and plan {to} could the mouth be opened without undermining something"
+                : "no rock solid and clear enough for the hall under any of them";
             int tried = 0;
 
             foreach (Point mouth in mouths)
@@ -381,6 +442,8 @@ namespace PisAndDag.Content.Structures
 
                     WayDownState.Set(mouth, door);
                     LastWay = way;
+                    LastKeep = DungeonKeep;
+                    LastInto = Point.Zero;
                     progress?.Set(1f);
 
                     Say($"made: the mouth at {mouth.X}, {mouth.Y}; the hall at {hall.X}-{hall.Right - 1}, floor {floor}, the door at {door.X}, {door.Y}; " +
@@ -390,7 +453,20 @@ namespace PisAndDag.Content.Structures
                 }
             }
 
-            Say($"no way could be found that keeps clear of everything and can be walked down, from {Many(mouths.Count, "mouth")} and {Many(tried, "way")} tried (the last: {why}).");
+            // Round about (by request): the Dungeon lies between, and the way goes round it, into the
+            // top of the shaft; or, where the Dungeon is round that too, into the ball's hollow from
+            // the side (by request: "the access to the inner circle of the ball dont have to be from
+            // top down, it can be from any angle").
+            string first = $"{Many(mouths.Count, "mouth")} and {Many(tried, "way")} tried, the last: {why}";
+
+            if (RoundAbout(progress, ball, reach, shaft, beach, from, to, high, rand, first, null, out string round))
+                return true;
+
+            if (RoundAbout(progress, ball, reach, shaft, beach, from, to, high, rand, first, round, out string into))
+                return true;
+
+            Say($"no way could be found that keeps clear of everything and can be walked down, from {Many(mouths.Count, "mouth")} and {Many(tried, "way")} tried (the last: {why}); nor round about the Dungeon ({round}); " +
+                $"nor round about it into the ball's hollow from the side ({into}).");
             return false;
         }
 
@@ -721,10 +797,21 @@ namespace PisAndDag.Content.Structures
         }
 
         /// <summary>
-        /// The ball's shaft, in a world made before its top was kept: the column through the
-        /// middle of the ball that is open furthest up, and the top of it.
+        /// The ball's shaft, in a world made before its top was kept (and in any world loaded
+        /// since: its top is not saved): the column through the middle of the ball that is open
+        /// furthest up, and the top of it (<see cref="StraightShaft"/>); or, where no column is
+        /// open from the hollow far enough up, the shaft followed up as it winds
+        /// (<see cref="WindingShaft"/>).
         /// </summary>
         private static Point FindShaft(Point ball)
+        {
+            Point straight = StraightShaft(ball);
+
+            return straight != Point.Zero ? straight : WindingShaft(ball);
+        }
+
+        /// <summary>The column through the middle of the ball that is open furthest up, straight up from the hollow, and the top of it; nothing if none is open far enough up.</summary>
+        private static Point StraightShaft(Point ball)
         {
             int start = ball.Y - 40;
             int best = int.MaxValue;
@@ -757,6 +844,117 @@ namespace PisAndDag.Content.Structures
             return new Point(tops[tops.Count / 2], best);
         }
 
+        /// <summary>
+        /// The row the shaft is looked for from over the ring's top knuckle (it reaches five rows
+        /// over its orb) and under the hollow's roof where it comes lowest (the hollow is never
+        /// nearer its middle than Hollow * (1 - HollowRough), less three of grain).
+        /// </summary>
+        private const int OverKnuckle = TheBallPass.OrbRing + 11;
+
+        /// <summary>
+        /// How far either way the shaft is followed over as it winds up (<see cref="Climb"/>): a
+        /// tile to the next column at the most, of the open tiles along a row; and how far from the
+        /// column it was begun in.
+        /// </summary>
+        private const int WindOver = 4;
+        private const int WindMost = 20;
+
+        /// <summary>
+        /// The ball's shaft as it was cut (TheBallPass): it moves over a column now and then as it
+        /// goes down, so that no one column may be open from the hollow to its top; and the ring's
+        /// top knuckle may hang right under its foot (in Flacid both: straight up from forty rows
+        /// over the hollow's middle, no column is open further than 169 rows over it, and 230 are
+        /// asked; the shaft's top is 417 over it). So it is followed up from the hollow's top, from every
+        /// open tile of it under the knuckle (forty rows over the middle) and over it
+        /// (<see cref="OverKnuckle"/>) within sixty columns of the middle: straight up while it can,
+        /// else over to the nearest tile along the row (<see cref="Climb"/>). The highest any of them
+        /// comes to, across the middle of the open tiles there, if it is as far over the hollow's roof
+        /// as <see cref="StraightShaft"/> asks; else nothing.
+        /// </summary>
+        private static Point WindingShaft(Point ball)
+        {
+            Point best = Point.Zero;
+
+            foreach (int start in new[] { ball.Y - 40, ball.Y - OverKnuckle })
+            {
+                for (int x = ball.X - 60; x <= ball.X + 60; x++)
+                {
+                    if (!WorldGen.InWorld(x, start, 20) || Solid(x, start))
+                        continue;
+
+                    Point top = Climb(x, start);
+
+                    if (best == Point.Zero || top.Y < best.Y)
+                        best = top;
+                }
+            }
+
+            if (best == Point.Zero || best.Y > ball.Y - TheBallPass.Hollow - 60)
+                return Point.Zero;
+
+            int left = best.X, right = best.X;
+
+            while (left > best.X - WindOver && !Solid(left - 1, best.Y))
+                left--;
+
+            while (right < best.X + WindOver && !Solid(right + 1, best.Y))
+                right++;
+
+            return new Point((left + right) / 2, best.Y);
+        }
+
+        /// <summary>
+        /// Up from an open tile through the open tiles: straight up while it can; where it cannot,
+        /// over to the nearest tile along the row that is open over it, <see cref="WindOver"/> at the
+        /// most either way and every tile between open, never further than <see cref="WindMost"/>
+        /// from the column it began in. Where it comes to, the highest.
+        /// </summary>
+        private static Point Climb(int x, int y)
+        {
+            int from = x;
+
+            while (y > 20)
+            {
+                if (!Solid(x, y - 1))
+                {
+                    y--;
+                    continue;
+                }
+
+                int next = int.MinValue;
+
+                for (int d = 1; d <= WindOver && next == int.MinValue; d++)
+                {
+                    foreach (int side in new[] { -1, 1 })
+                    {
+                        int c = x + side * d;
+
+                        if (Math.Abs(c - from) > WindMost)
+                            continue;
+
+                        bool along = true;
+
+                        for (int k = 1; k <= d && along; k++)
+                            along = !Solid(x + side * k, y);
+
+                        if (along && !Solid(c, y - 1))
+                        {
+                            next = c;
+                            break;
+                        }
+                    }
+                }
+
+                if (next == int.MinValue)
+                    break;
+
+                x = next;
+                y--;
+            }
+
+            return new Point(x, y);
+        }
+
         // ===========================================================================================
         // THE MAP OF WHAT IT MAY NOT COME NEAR
         // ===========================================================================================
@@ -766,6 +964,9 @@ namespace PisAndDag.Content.Structures
             public readonly int X0, Y0, W, H;
             public bool[] Blocked;
             public bool[] Free;
+
+            /// <summary>Of what it keeps away from, all but the loose things (each with its own distance round it): round about, one walking the way may go through the air beside a pot or a pile, but never into any of this.</summary>
+            public bool[] Firm;
 
             /// <summary>How far down from each tile it is to something to stand on (as the world was, before anything is cut), at the most <see cref="AirMost"/>.</summary>
             public byte[] Air;
@@ -789,7 +990,15 @@ namespace PisAndDag.Content.Structures
             public int AirAt(int x, int y) => In(x, y) ? Air[I(x, y)] : AirMost;
         }
 
-        private static Area Map(int x0, int y0, int x1, int y1, Point ball, int reach, int beach)
+        /// <summary>
+        /// The map of what the way may not come near, over these columns and rows (see the notes
+        /// over the pass); keeping <paramref name="dungeonKeep"/> off the Dungeon. Into the ball's
+        /// hollow from the side (<paramref name="intoHollow"/>, see <see cref="RoundAbout"/>), the
+        /// ball is not kept off; and what the Dungeon left in the hollow when the ball was made round
+        /// it (its walls within <see cref="HollowReach"/> of the middle, where there is none of its
+        /// brick) is not the Dungeon.
+        /// </summary>
+        private static Area Map(int x0, int y0, int x1, int y1, Point ball, int reach, int beach, int dungeonKeep = DungeonKeep, bool intoHollow = false)
         {
             var area = new Area(x0, y0, x1 - x0 + 1, y1 - y0 + 1);
             int n = area.W * area.H;
@@ -807,6 +1016,7 @@ namespace PisAndDag.Content.Structures
                     GraveyardZone.Right - GraveyardZone.Left + GraveKeep * 2, GraveyardZone.Bottom - GraveyardZone.Top + GraveKeep * 2)
                 : Rectangle.Empty;
             double ballReach = reach * (double)reach;
+            double hollowReach = HollowReach * (double)HollowReach;
             int coast = beach + BeachKeep;
 
             for (int y = y0; y <= y1; y++)
@@ -822,6 +1032,7 @@ namespace PisAndDag.Content.Structures
                     }
 
                     Tile tile = Main.tile[x, y];
+                    double dx = x - ball.X, dy = y - ball.Y;
 
                     if (tile.LiquidAmount > 0)
                         liquid[i] = true;
@@ -859,7 +1070,14 @@ namespace PisAndDag.Content.Structures
                     if (tile.WallType > 0)
                     {
                         if (Main.wallDungeon[tile.WallType])
-                            dungeon[i] = true;
+                        {
+                            // Into the hollow, its walls left in the hollow, with nothing of its brick:
+                            // gone round, never cut, as a pot is; not kept away from.
+                            if (intoHollow && !dungeon[i] && dx * dx + dy * dy < hollowReach)
+                                looseHere[i] = true;
+                            else
+                                dungeon[i] = true;
+                        }
                         else if (!NaturalWall(tile.WallType))
                             wall[i] = true;
                     }
@@ -867,9 +1085,7 @@ namespace PisAndDag.Content.Structures
                     if (tile.RedWire || tile.BlueWire || tile.GreenWire || tile.YellowWire || tile.HasActuator)
                         built[i] = true;
 
-                    double dx = x - ball.X, dy = y - ball.Y;
-
-                    if (dx * dx + dy * dy < ballReach)
+                    if (!intoHollow && dx * dx + dy * dy < ballReach)
                         zone[i] = true;
                     else if (graveyard && grave.Contains(x, y))
                         zone[i] = true;
@@ -883,12 +1099,13 @@ namespace PisAndDag.Content.Structures
             Or(firm, Dilate(liquid, area, LiquidKeep));
             Or(firm, Dilate(built, area, BuiltKeep));
             Or(firm, Dilate(wall, area, WallKeep));
-            Or(firm, Dilate(dungeon, area, DungeonKeep));
+            Or(firm, Dilate(dungeon, area, dungeonKeep));
 
             bool[] looseKept = Dilate(looseHere, area, LooseKeep);
             var blocked = (bool[])firm.Clone();
             Or(blocked, looseKept);
             area.Blocked = blocked;
+            area.Firm = firm;
 
             bool[] near = Dilate(firm, area, LineClear);
             Or(near, Dilate(looseKept, area, LooseClear));
@@ -924,9 +1141,11 @@ namespace PisAndDag.Content.Structures
         }
 
         /// <summary>Everything within <paramref name="r"/> tiles of a marked tile, across and down (a square), marked.</summary>
-        private static bool[] Dilate(bool[] src, Area area, int r)
+        private static bool[] Dilate(bool[] src, Area area, int r) => Spread(src, area.W, area.H, r);
+
+        /// <summary>Everything within <paramref name="r"/> tiles of a marked tile, across and down (a square), marked: on a grid <paramref name="w"/> wide, row by row.</summary>
+        private static bool[] Spread(bool[] src, int w, int h, int r)
         {
-            int w = area.W, h = area.H;
             var across = new bool[src.Length];
 
             for (int y = 0; y < h; y++)
@@ -1606,26 +1825,37 @@ namespace PisAndDag.Content.Structures
 
         private static void Take(Area area, int x, int y, HashSet<Point> cut)
         {
-            if (area.BlockedAt(x, y) || !WorldGen.InWorld(x, y, 50))
+            if (!Takes(area, x, y))
                 return;
 
             Tile tile = Main.tile[x, y];
 
-            if (!tile.HasTile || tile.LiquidAmount > 0 || WetBeside(x, y))
-                return;
-
-            if (!Ground(tile.TileType) && !Soft(tile.TileType))
-                return;
-
-            // Sand (or silt, or slush) that is to be kept where it is, over it: it would fall.
-            Tile above = Main.tile[x, y - 1];
-
-            if (above.HasTile && TileID.Sets.Falling[above.TileType] && area.BlockedAt(x, y - 1))
-                return;
-
             undo?.Keep(x, y);
             tile.ClearTile();
             cut.Add(new Point(x, y));
+        }
+
+        /// <summary>
+        /// Whether the cut takes this tile: the ground's own, or soft, where the map lets it, with no
+        /// water on it or beside it; and not from under sand (or silt, or slush) that is to be kept
+        /// where it is, which would fall.
+        /// </summary>
+        private static bool Takes(Area area, int x, int y)
+        {
+            if (area.BlockedAt(x, y) || !WorldGen.InWorld(x, y, 50))
+                return false;
+
+            Tile tile = Main.tile[x, y];
+
+            if (!tile.HasTile || tile.LiquidAmount > 0 || WetBeside(x, y))
+                return false;
+
+            if (!Ground(tile.TileType) && !Soft(tile.TileType))
+                return false;
+
+            Tile above = Main.tile[x, y - 1];
+
+            return !(above.HasTile && TileID.Sets.Falling[above.TileType] && area.BlockedAt(x, y - 1));
         }
 
         /// <summary>
@@ -1896,13 +2126,44 @@ namespace PisAndDag.Content.Structures
         private static bool StandsAt(Rectangle box, int x, int y) =>
             box.Contains(x, y) && BodyAt(x, y) && (Underfoot(x, y + 1) || Underfoot(x + 1, y + 1));
 
+        /// <summary>Round about, how far from the way one walking it is looked for: the way is long, and the rock round it full of caves.</summary>
+        private const int WalkNear = 24;
+
         /// <summary>
         /// Walks the way as one coming down it would, on the world as it now is: from the ground at
-        /// the mouth, walking, stepping up a tile, jumping (<see cref="WalkJump"/> up, then three
-        /// across at the most) and dropping (<see cref="WalkFall"/> at the most), within the way's
-        /// box. True if it comes to the top of the shaft. The places stood on, either way.
+        /// the mouth (<see cref="Window"/>) to the top of the shaft (within four columns of it, ten
+        /// rows over it at the most), as <see cref="Walker"/> walks. True if they come to it; the
+        /// places stood on, either way.
         /// </summary>
-        private static bool Walk(List<Point> way, Point mouth, Point shaft, out HashSet<Point> stood)
+        private static bool Walk(List<Point> way, Point mouth, Point shaft, out HashSet<Point> stood, int across = 0) =>
+            Walker(way, Window(mouth), (x, y) => Math.Abs(x - shaft.X) <= 4 && y >= shaft.Y - 10, across, out stood);
+
+        /// <summary>Where one walking the way may start from, on the ground at its mouth: within four columns of it, eight rows over it to four under it, wherever they can stand.</summary>
+        private static List<Point> Window(Point mouth)
+        {
+            var starts = new List<Point>();
+
+            for (int x = mouth.X - 4; x <= mouth.X + 4; x++)
+            {
+                for (int y = mouth.Y - 8; y <= mouth.Y + 4; y++)
+                    starts.Add(new Point(x, y));
+            }
+
+            return starts;
+        }
+
+        /// <summary>
+        /// Walks as one coming down the way would, on the world as it now is: from those of the
+        /// places given that they can stand on, walking, stepping up a tile, jumping
+        /// (<see cref="WalkJump"/> up, then three across at the most) and dropping
+        /// (<see cref="WalkFall"/> at the most), within the way's box. Round about
+        /// (<paramref name="across"/> more than none), within <see cref="WalkNear"/> of the way; a jump
+        /// goes as far as that across (past three, only from a jump of two or more), and on, over a
+        /// hole, down to whatever is under it, a drop of <see cref="WalkFall"/> at the most from the
+        /// top of the jump. True if they come to a place the goal says, standing there or falling
+        /// into it. The places stood on, either way.
+        /// </summary>
+        private static bool Walker(List<Point> way, List<Point> starts, Func<int, int, bool> goal, int across, out HashSet<Point> stood)
         {
             int left = int.MaxValue, right = int.MinValue, top = int.MaxValue, bottom = int.MinValue;
 
@@ -1919,45 +2180,57 @@ namespace PisAndDag.Content.Structures
             var queue = new Queue<Point>();
             stood = seen;
 
+            // Round about, only near the way.
+            bool[] near = null;
+
+            if (across > 0)
+            {
+                near = new bool[box.Width * box.Height];
+
+                foreach (Point p in way)
+                    near[(p.Y - box.Top) * box.Width + (p.X - box.Left)] = true;
+
+                near = Spread(near, box.Width, box.Height, WalkNear);
+            }
+
+            bool Stands(int x, int y) => StandsAt(box, x, y) && (near == null || near[(y - box.Top) * box.Width + (x - box.Left)]);
+
             void Try(int x, int y)
             {
-                if (StandsAt(box, x, y) && seen.Add(new Point(x, y)))
+                if (Stands(x, y) && seen.Add(new Point(x, y)))
                     queue.Enqueue(new Point(x, y));
             }
 
-            bool AtShaft(int x, int y) => Math.Abs(x - shaft.X) <= 4 && y >= shaft.Y - 10;
+            foreach (Point start in starts)
+                Try(start.X, start.Y);
 
-            for (int x = mouth.X - 4; x <= mouth.X + 4; x++)
-            {
-                for (int y = mouth.Y - 8; y <= mouth.Y + 4; y++)
-                    Try(x, y);
-            }
+            int reach = across > 0 ? across : 3;
 
             while (queue.Count > 0)
             {
                 Point at = queue.Dequeue();
                 int x = at.X, y = at.Y;
 
-                if (AtShaft(x, y))
+                if (goal(x, y))
                     return true;
 
                 foreach (int dx in new[] { -1, 1 })
                 {
                     int nx = x + dx;
 
-                    if (StandsAt(box, nx, y))
+                    if (Stands(nx, y))
                         Try(nx, y);
-                    else if (BodyAt(x, y - 1) && StandsAt(box, nx, y - 1))
+                    else if (BodyAt(x, y - 1) && Stands(nx, y - 1))
                         Try(nx, y - 1);
                     else if (BodyAt(nx, y))
                     {
                         // Off the edge: down to whatever is under.
                         int ny = y;
 
-                        while (ny - y <= WalkFall && box.Contains(nx, ny + 1) && !StandsAt(box, nx, ny) && BodyAt(nx, ny + 1))
+                        while (ny - y <= WalkFall && box.Contains(nx, ny + 1) && !Stands(nx, ny) && BodyAt(nx, ny + 1))
                             ny++;
 
-                        if (AtShaft(nx, ny))
+                        if (goal(nx, ny))
                             return true;
 
                         if (ny - y <= WalkFall)
@@ -1973,9 +2246,9 @@ namespace PisAndDag.Content.Structures
 
                 for (int h = 1; h <= up; h++)
                 {
-                    for (int dx = -3; dx <= 3; dx++)
+                    for (int dx = -reach; dx <= reach; dx++)
                     {
-                        if (dx == 0)
+                        if (dx == 0 || (Math.Abs(dx) > 3 && h < 2))
                             continue;
 
                         bool clear = true;
@@ -1983,13 +2256,1362 @@ namespace PisAndDag.Content.Structures
                         for (int k = 1; k <= Math.Abs(dx) && clear; k++)
                             clear = BodyAt(x + Math.Sign(dx) * k, y - h);
 
-                        if (clear)
-                            Try(x + dx, y - h);
+                        if (!clear)
+                            continue;
+
+                        Try(x + dx, y - h);
+
+                        if (across == 0 || Stands(x + dx, y - h))
+                            continue;
+
+                        // Round about: on over a hole, and down to whatever is under it.
+                        int nx = x + dx, ny = y - h;
+
+                        while (ny - (y - h) <= WalkFall && box.Contains(nx, ny + 1) && !Stands(nx, ny) && BodyAt(nx, ny + 1))
+                            ny++;
+
+                        if (goal(nx, ny))
+                            return true;
+
+                        if (ny - (y - h) <= WalkFall)
+                            Try(nx, ny);
                     }
                 }
             }
 
             return false;
+        }
+
+        // ===========================================================================================
+        // ROUND ABOUT
+        // ===========================================================================================
+
+        /// <summary>Round about, what a step costs for each tile of it, beside a step along and a step up (<see cref="LevelDear"/>, <see cref="UpDear"/>): a step down a tile, and down two.</summary>
+        private const float DownDear = 1.4f;
+        private const float DownTwoDear = 2.2f;
+
+        /// <summary>Round about, what a jump costs before its height and how far across it goes; and each tile dug (so that a cave already there is liked better, a little, where it leads the same way).</summary>
+        private const float JumpDear = 3f;
+        private const float DigDear = 0.12f;
+
+        /// <summary>How much of what is left of the way, as the crow flies, a search round about counts on its costing at the least; and how many places, all told, the searches round about may look at.</summary>
+        private const float GuessShare = 0.8f;
+        private const long RoundLooked = 30_000_000;
+
+        /// <summary>Round about, how much further out than the way down's own cut the way is made wider round each place of it (<see cref="Widen"/>), from a middle this far over the feet there: the way down's line is two or three tiles over its floor, and this is cut from the floor up.</summary>
+        private const float WidenMore = 0.8f;
+        private const float WidenOver = 2f;
+
+        /// <summary>
+        /// Round about the Dungeon, by request (see the notes over the pass): the map again, keeping
+        /// <see cref="RoundKeep"/> off the Dungeon and reaching round it (and the mouths' window and the
+        /// shaft) by <see cref="RoundMargin"/>; the mouths in the same window and the halls under them
+        /// as before; and for each, the way found as one walking it would go (<see cref="Burrow"/>):
+        /// from the ground at the mouth to the hall's near end, and from its far end to the shaft. The
+        /// first found is made (<see cref="RoundMade"/>); one that cannot be walked down once made is
+        /// put back as it was, and the next tried. True if one was made.
+        ///
+        /// INTO THE HOLLOW FROM THE SIDE, by request: "the access to the inner circle of the ball dont
+        /// have to be from top down, it can be from any angle". Given why no way round into the top of
+        /// the shaft was found (<paramref name="notShaft"/>: in Flacid the Dungeon's lowest halls lie
+        /// over it and beside it), all of it again, the way from the hall's far end going on as one
+        /// walking it would, down and round, through the ball's shell from whatever side is nearest
+        /// (dug as it digs any ground), and into its hollow, to stand there (<see cref="InHollow"/>):
+        /// walked into, not fallen into, so that it can be walked from the mouth to the hollow's
+        /// floor. On its map the ball is not kept off; and what the Dungeon left in the hollow when
+        /// the ball was made round it (its walls, with nothing of its brick: in Flacid all of it within
+        /// 200 tiles of the middle) is not the Dungeon: never cut, gone round as a pot is, not kept
+        /// away from (<see cref="Map"/>).
+        /// </summary>
+        private static bool RoundAbout(GenerationProgress progress, Point ball, int reach, Point shaft, int beach, int from, int to, int high, UnifiedRandom rand, string first, string notShaft, out string why)
+        {
+            bool intoHollow = notShaft != null;
+            (int left, int right) = WorldMirror.Span(from, to);
+            int near = Math.Min(left, shaft.X);
+            int far = Math.Max(right, shaft.X);
+            int y0 = Math.Max(60, high - 40);
+            int y1 = Math.Min(Main.UnderworldLayer - 60, shaft.Y + 40);
+            bool[] hollow = null;
+            Rectangle hollowBox = Rectangle.Empty;
+
+            if (intoHollow)
+            {
+                hollow = Hollowed(ball, out hollowBox);
+
+                if (hollow == null)
+                {
+                    why = $"the ball's hollow is not open at its middle at {ball.X}, {ball.Y}, nor over it";
+                    return false;
+                }
+
+                // The whole ball and round it, and down to under where one comes to stand in it.
+                near = Math.Min(near, ball.X - reach - RoundBeside);
+                far = Math.Max(far, ball.X + reach + RoundBeside);
+                y1 = Math.Min(Main.UnderworldLayer - 60, Math.Max(y1, ball.Y + BankLow + RoundBeside));
+            }
+
+            Rectangle dungeon = DungeonBox(Math.Max(60, near - RoundLook), Math.Min(Main.maxTilesX - 61, far + RoundLook), y1);
+
+            if (dungeon.Width > 0)
+            {
+                near = Math.Min(near, dungeon.Left);
+                far = Math.Max(far, dungeon.Right - 1);
+            }
+
+            Area area = Map(Math.Max(60, near - RoundMargin), y0, Math.Min(Main.maxTilesX - 61, far + RoundMargin), y1, ball, reach, beach, RoundKeep, intoHollow);
+
+            if (intoHollow)
+                KeepOff(area, hollow, hollowBox, ball);
+
+            List<Point> mouths = Mouths(area, from, to, rand);
+
+            if (mouths.Count == 0)
+            {
+                why = $"nowhere between plan {from} and plan {to} could the mouth be opened without undermining something";
+                return false;
+            }
+
+            var burrow = new Burrow(area, rand.Next());
+            why = "no rock solid and clear enough for the hall under any of them";
+            int tried = 0;
+            bool InShaftHere(int x, int y) => InShaft(shaft, x, y);
+            bool InHollowHere(int x, int y) => InHollow(ball, hollow, hollowBox, x, y);
+            bool HollowHere(int x, int y) => HollowAt(hollow, hollowBox, x, y);
+            Func<int, int, bool> goal = intoHollow ? InHollowHere : InShaftHere;
+            Rectangle aim = intoHollow ? new Rectangle(ball.X - HollowReach, ball.Y + BankHigh, HollowReach * 2 + 1, BankLow - BankHigh + 1) : Aim(shaft);
+
+            // Where the way must end, and every place with room for the body joined to it, side by side,
+            // as the world is (a hall shuts more, never less): where none of a hall's far end is one of
+            // them, no way can be found from there (every move goes so), and none is looked for. In
+            // Flacid the shaft's top is shut in so by the Dungeon round it and the ball's reach under it.
+            var ends = new List<Point>();
+            Rectangle endBox = intoHollow ? aim : new Rectangle(shaft.X - 1, shaft.Y, 2, Math.Max(0, area.Y0 + area.H - shaft.Y));
+
+            for (int y = endBox.Top; y < endBox.Bottom; y++)
+            {
+                for (int x = endBox.Left; x < endBox.Right; x++)
+                {
+                    if (goal(x, y))
+                        ends.Add(new Point(x, y));
+                }
+            }
+
+            bool[] joined = burrow.Joined(ends, JoinedMost, out int joinedCount);
+
+            foreach (Point mouth in mouths)
+            {
+                List<Point> starts = burrow.Starts(mouth);
+
+                if (starts.Count == 0)
+                {
+                    why = $"nowhere to stand on the ground at the mouth at {mouth.X}, {mouth.Y}";
+                    continue;
+                }
+
+                int side = shaft.X >= mouth.X ? 1 : -1;
+
+                foreach (Rectangle hall in Halls(area, mouth, shaft, side))
+                {
+                    if (burrow.Looked > RoundLooked)
+                    {
+                        why = $"{Many(mouths.Count, "mouth")} and {Many(tried, "way")} tried, the last: {why}; and then {burrow.Looked} places looked at, as many as may be";
+                        return false;
+                    }
+
+                    burrow.Hall(hall, side);
+
+                    if (joined != null && !burrow.ExitStarts().Exists(p => burrow.Of(joined, p)))
+                    {
+                        why = intoHollow
+                            ? $"no way round from the hall's far end at {burrow.ExitAim.X}, {burrow.ExitAim.Y} into the ball's hollow: where one may stand in it is shut in by what the way keeps off ({Many(joinedCount, "place")} with room for the body joined to it, that far end not one of them)"
+                            : $"no way round from the hall's far end at {burrow.ExitAim.X}, {burrow.ExitAim.Y} to the shaft's top at {shaft.X}, {shaft.Y}: it is shut in by what the way keeps off ({Many(joinedCount, "place")} with room for the body joined to it, that far end not one of them)";
+                        continue;
+                    }
+
+                    List<Place> upper = burrow.Search(starts, burrow.InEntry, Aim(burrow.EntryAim));
+
+                    if (upper == null)
+                    {
+                        why = $"no way round from the mouth at {mouth.X}, {mouth.Y} to the hall's near end at {burrow.EntryAim.X}, {burrow.EntryAim.Y}";
+                        continue;
+                    }
+
+                    List<Place> lower = burrow.Search(burrow.ExitStarts(), goal, aim);
+
+                    if (lower == null)
+                    {
+                        why = intoHollow
+                            ? $"no way round from the hall's far end at {burrow.ExitAim.X}, {burrow.ExitAim.Y} into the ball's hollow"
+                            : $"no way round from the hall's far end at {burrow.ExitAim.X}, {burrow.ExitAim.Y} to the shaft's top at {shaft.X}, {shaft.Y}";
+                        continue;
+                    }
+
+                    tried++;
+
+                    if (RoundMade(area, burrow, ball, reach, shaft, hall, starts, upper, lower, goal, aim, intoHollow ? HollowHere : null, rand, tried, first, notShaft, ref why))
+                    {
+                        progress?.Set(1f);
+                        return true;
+                    }
+
+                    // Put back as it was: looked at again as it is.
+                    burrow.Forget();
+                }
+            }
+
+            why = $"{Many(mouths.Count, "mouth")} and {Many(tried, "way")} tried, the last: {why}";
+            return false;
+        }
+
+        /// <summary>A place to aim a search round about at, as a box a tile across.</summary>
+        private static Rectangle Aim(Point at) => new Rectangle(at.X, at.Y, 1, 1);
+
+        /// <summary>Into the hollow from the side: how far beside the ball, and under where one comes to stand in it, the map reaches.</summary>
+        private const int RoundBeside = 60;
+
+        /// <summary>
+        /// The ball's hollow as it now is: every open tile within <see cref="HollowReach"/> of its
+        /// middle that is joined to the middle (the chamber, and the alcoves, the flues and the foot
+        /// of the shaft off it), over the box given back, row by row. Null if neither the middle nor
+        /// anything within forty rows over it is open.
+        /// </summary>
+        private static bool[] Hollowed(Point ball, out Rectangle box)
+        {
+            int r = HollowReach;
+            box = new Rectangle(ball.X - r, ball.Y - r, r * 2 + 1, r * 2 + 1);
+            int sy = ball.Y;
+
+            while (sy > ball.Y - 40 && WorldGen.InWorld(ball.X, sy, 20) && Solid(ball.X, sy))
+                sy--;
+
+            if (!WorldGen.InWorld(ball.X, sy, 20) || Solid(ball.X, sy))
+                return null;
+
+            var open = new bool[box.Width * box.Height];
+            var queue = new Queue<Point>();
+            long most = (long)r * r;
+
+            open[(sy - box.Y) * box.Width + (ball.X - box.X)] = true;
+            queue.Enqueue(new Point(ball.X, sy));
+
+            while (queue.Count > 0)
+            {
+                Point p = queue.Dequeue();
+
+                for (int k = 0; k < 4; k++)
+                {
+                    int nx = p.X + (k == 0 ? -1 : k == 1 ? 1 : 0);
+                    int ny = p.Y + (k == 2 ? -1 : k == 3 ? 1 : 0);
+                    long dx = nx - ball.X, dy = ny - ball.Y;
+
+                    if (dx * dx + dy * dy > most || !WorldGen.InWorld(nx, ny, 20))
+                        continue;
+
+                    int i = (ny - box.Y) * box.Width + (nx - box.X);
+
+                    if (open[i] || Solid(nx, ny))
+                        continue;
+
+                    open[i] = true;
+                    queue.Enqueue(new Point(nx, ny));
+                }
+            }
+
+            return open;
+        }
+
+        /// <summary>
+        /// Into the hollow from the side: the hollow over where one may stand in it (its open tiles
+        /// higher than <see cref="BankHigh"/> under its middle), and everything within
+        /// <see cref="HollowKeep"/> of them, kept off, as the map keeps what it may not come near: the
+        /// way comes into the hollow only low, where one can stand in it, never along its side nor
+        /// over it; its side is never cut open over the bank.
+        /// </summary>
+        private static void KeepOff(Area area, bool[] hollow, Rectangle box, Point ball)
+        {
+            var over = new bool[area.W * area.H];
+
+            for (int y = box.Top; y < Math.Min(box.Bottom, ball.Y + BankHigh); y++)
+            {
+                for (int x = box.Left; x < box.Right; x++)
+                {
+                    if (area.In(x, y) && HollowAt(hollow, box, x, y))
+                        over[area.I(x, y)] = true;
+                }
+            }
+
+            bool[] kept = Dilate(over, area, HollowKeep);
+            Or(area.Firm, kept);
+            Or(area.Blocked, kept);
+
+            for (int i = 0; i < kept.Length; i++)
+            {
+                if (kept[i])
+                    area.Free[i] = false;
+            }
+        }
+
+        /// <summary>Whether a tile is one of the ball's hollow's (<see cref="Hollowed"/>).</summary>
+        private static bool HollowAt(bool[] hollow, Rectangle box, int x, int y) => box.Contains(x, y) && hollow[(y - box.Y) * box.Width + (x - box.X)];
+
+        /// <summary>
+        /// One walking the way into the ball's hollow from the side has come into it: their feet in
+        /// its open tiles, standing on something, as low as its bank's top can be and no lower than
+        /// that by much (<see cref="BankHigh"/>, <see cref="BankLow"/> under its middle): on the bank,
+        /// or on what is set in it.
+        /// </summary>
+        private static bool InHollow(Point ball, bool[] hollow, Rectangle box, int x, int y) =>
+            y >= ball.Y + BankHigh && y <= ball.Y + BankLow && HollowAt(hollow, box, x, y) && HollowAt(hollow, box, x + 1, y) && (Solid(x, y + 1) || Solid(x + 1, y + 1));
+
+        /// <summary>
+        /// The way round about, made: cut as narrow as one walking it (the room for their body along
+        /// every move), the hall built and the door stood, then made wider (<see cref="Widen"/>); and
+        /// walked, from the ground at the mouth into the hall and from the hall into the shaft (or,
+        /// given the hollow's tiles, <paramref name="hollowAt"/>, into the ball's hollow from the side:
+        /// where <paramref name="goal"/> says, as the search went, aimed at <paramref name="aim"/>).
+        /// Where one walking a half is stopped, that half is found again from its start, on the world
+        /// as it now is, never taking what they stood on (and cut, and made wider), at most
+        /// <see cref="RoundMends"/> times in all; then walked whole. If it cannot be, everything it
+        /// touched is put back as it was. The rest as a way down is made: what would fall made fast,
+        /// what would hang left go, the walls, the torches along it, the framing.
+        /// </summary>
+        private static bool RoundMade(Area area, Burrow burrow, Point ball, int reach, Point shaft, Rectangle hall, List<Point> starts, List<Place> upper, List<Place> lower,
+            Func<int, int, bool> goal, Rectangle aim, Func<int, int, bool> hollowAt, UnifiedRandom rand, int tried, string first, string notShaft, ref string why)
+        {
+            bool intoHollow = hollowAt != null;
+            string end = intoHollow ? "the ball's hollow" : "the shaft";
+            int floor = hall.Bottom;
+            double phase = rand.NextDouble() * 100.0;
+            var cut = new HashSet<Point>();
+            var keep = new HashSet<Point>();
+            undo = new Undo();
+
+            burrow.Dig(upper, cut);
+            burrow.Dig(lower, cut);
+            Level(area, hall, cut);
+            Build(hall);
+            Point door = Door(hall);
+
+            Floors(keep, upper);
+            Floors(keep, lower);
+            Widen(area, burrow, upper, keep, cut, phase);
+            Widen(area, burrow, lower, keep, cut, phase);
+
+            // The level way, from end to end, where one walking it stands.
+            var level = new List<Point>();
+
+            for (int x = hall.Left - Masonry - Approach; x <= hall.Right - 1 + Masonry + Approach; x++)
+                level.Add(new Point(x, floor - 1));
+
+            var inHall = new List<Point>();
+
+            for (int x = hall.Left; x <= hall.Right - 2; x++)
+                inHall.Add(new Point(x, floor - 1));
+
+            bool InHall(int x, int y) => y == floor - 1 && x >= hall.Left && x <= hall.Right - 2;
+
+            // From the ground at the mouth into the hall.
+            var alongUpper = new List<Point>(Feet(upper));
+            alongUpper.AddRange(level);
+            int mends = 0;
+            HashSet<Point> stood;
+
+            while (!Walker(alongUpper, Window(new Point(upper[0].X, upper[0].Y)), InHall, RoundAcross, out stood))
+            {
+                if (mends >= RoundMends || (upper = Again(area, burrow, keep, cut, stood, starts, burrow.InEntry, Aim(burrow.EntryAim), phase)) == null)
+                    return Unmade(hall, mends, "from the ground at the mouth into the hall", ref why);
+
+                mends++;
+                alongUpper.AddRange(Feet(upper));
+            }
+
+            // What they stood on coming down to it is not taken, from here on.
+            Kept(burrow, keep, stood);
+
+            // From the hall into the shaft (or the ball's hollow).
+            var alongLower = new List<Point>(level);
+            alongLower.AddRange(Feet(lower));
+
+            while (!Walker(alongLower, inHall, goal, RoundAcross, out stood))
+            {
+                if (mends >= RoundMends || (lower = Again(area, burrow, keep, cut, stood, burrow.ExitStarts(), goal, aim, phase)) == null)
+                    return Unmade(hall, mends, $"from the hall into {end}", ref why);
+
+                mends++;
+                alongLower.AddRange(Feet(lower));
+            }
+
+            // And whole.
+            var along = new List<Point>(alongUpper);
+            along.AddRange(alongLower);
+
+            if (!Walker(along, Window(new Point(upper[0].X, upper[0].Y)), goal, RoundAcross, out _))
+                return Unmade(hall, mends, $"whole, from the ground at the mouth into {end}", ref why);
+
+            undo = null;
+
+            Prop(cut);
+            Loosen(cut);
+            Walls(cut, ball, reach);
+
+            List<Point> upperWay = Feet(upper), lowerWay = Feet(lower);
+            int torches = Torches(upperWay.ConvertAll(p => p.ToVector2()), ball, reach, hall) + Torches(lowerWay.ConvertAll(p => p.ToVector2()), ball, reach, hall);
+            Frame(cut, hall);
+
+            if (WorldGen.gen)
+                GenVars.structures?.AddProtectedStructure(new Rectangle(hall.Left - Masonry - Approach, hall.Top - Masonry, hall.Width + (Masonry + Approach) * 2, hall.Height + Masonry * 2), 4);
+
+            // The way, tile by tile: down to the hall's near end, along it, and down from its far end
+            // to where it comes into the shaft, and up the shaft to its top; or into the ball's hollow,
+            // to where it stands there.
+            var way = new List<Point>();
+
+            foreach (Point p in upperWay)
+                Step(way, p);
+
+            if (intoHollow)
+            {
+                foreach (Point p in lowerWay)
+                    Step(way, p);
+
+                Point into = lowerWay.Find(p => hollowAt(p.X, p.Y));
+
+                LastInto = into != Point.Zero ? into : lowerWay[^1];
+            }
+            else
+            {
+                foreach (Point p in lowerWay)
+                {
+                    Step(way, p);
+
+                    if (p.Y >= shaft.Y - 1 && Math.Abs(p.X - shaft.X) <= 1)
+                        break;
+                }
+
+                Step(way, shaft);
+                LastInto = Point.Zero;
+            }
+
+            WayDownState.Set(way[0], door);
+            LastWay = way;
+            LastKeep = RoundKeep;
+
+            string found = $"{(tried > 1 ? $"; {Many(tried - 1, "way")} before it put back, that could not be walked down" : "")}";
+
+            if (intoHollow)
+            {
+                double dx = LastInto.X - ball.X, dy = LastInto.Y - ball.Y;
+
+                Say($"no way down keeping {DungeonKeep} off the Dungeon ({first}); nor round about it into the top of the ball's shaft ({notShaft}); made round about it into the ball's hollow " +
+                    $"from the side, {RoundKeep} off it at the least: the mouth at {way[0].X}, {way[0].Y}; the hall at {hall.X}-{hall.Right - 1}, floor {floor}, the door at {door.X}, {door.Y}; " +
+                    $"into the hollow at {LastInto.X}, {LastInto.Y}, {(int)Math.Round(Math.Sqrt(dx * dx + dy * dy))} tiles from its middle; {Many(way.Count, "tile")} of way, {Many(cut.Count, "tile")} cut, " +
+                    $"{Many(torches, "torch", "torches")}; walked from the mouth into the hollow ({Many(mends, "time")} found again where one walking it was stopped{found}).");
+            }
+            else
+            {
+                Say($"no way down keeping {DungeonKeep} off the Dungeon ({first}); made round about it, {RoundKeep} off it at the least: the mouth at {way[0].X}, {way[0].Y}; " +
+                    $"the hall at {hall.X}-{hall.Right - 1}, floor {floor}, the door at {door.X}, {door.Y}; the shaft's top at {shaft.X}, {shaft.Y}; {Many(way.Count, "tile")} of way, " +
+                    $"{Many(cut.Count, "tile")} cut, {Many(torches, "torch", "torches")}; walked from the mouth into the shaft ({Many(mends, "time")} found again where one walking it was stopped" +
+                    $"{found}).");
+            }
+
+            return true;
+        }
+
+        /// <summary>Everything the way being made touched, put back as it was; and why.</summary>
+        private static bool Unmade(Rectangle hall, int mends, string half, ref string why)
+        {
+            undo.Restore();
+            undo = null;
+            why = $"the way round by the hall at {hall.X}, {hall.Bottom} could not be walked {half}, even found again {Many(mends, "time")}";
+            return false;
+        }
+
+        /// <summary>
+        /// Where one walking a half was stopped: the half found again from its start, on the world as
+        /// it now is, never taking what they stood on (nor, in making it wider, from here on); then
+        /// cut, and made wider. Null if there is no way now.
+        /// </summary>
+        private static List<Place> Again(Area area, Burrow burrow, HashSet<Point> keep, HashSet<Point> cut, HashSet<Point> stood, List<Point> starts, Func<int, int, bool> goal, Rectangle aim, double phase)
+        {
+            Kept(burrow, keep, stood);
+            burrow.Refresh();
+
+            List<Place> path = burrow.Search(starts, goal, aim);
+
+            if (path == null)
+                return null;
+
+            burrow.Dig(path, cut);
+            Floors(keep, path);
+            Widen(area, burrow, path, keep, cut, phase);
+            return path;
+        }
+
+        /// <summary>What these places stand on (under either foot), not to be taken from here on: not dug by a way found again, nor taken in making it wider.</summary>
+        private static void Kept(Burrow burrow, HashSet<Point> keep, HashSet<Point> stood)
+        {
+            var under = new List<Point>(stood.Count * 2);
+
+            foreach (Point p in stood)
+            {
+                under.Add(new Point(p.X, p.Y + 1));
+                under.Add(new Point(p.X + 1, p.Y + 1));
+            }
+
+            burrow.Protect(under);
+
+            foreach (Point p in under)
+                keep.Add(p);
+        }
+
+        /// <summary>What one walking the way stands on at each place of it (under either foot), and the row under that: never taken in making it wider.</summary>
+        private static void Floors(HashSet<Point> keep, List<Place> path)
+        {
+            foreach (Place p in path)
+            {
+                for (int dx = 0; dx <= 1; dx++)
+                {
+                    for (int dy = 1; dy <= 2; dy++)
+                        keep.Add(new Point(p.X + dx, p.Y + dy));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Round about, the way, dug only as wide as one walking it, made wider: round each place of
+        /// it (round their body, <see cref="WidenOver"/> over their feet), as far as the cut of a way
+        /// down reaches and <see cref="WidenMore"/> further, lumps and all (see <see cref="Cut"/>), but
+        /// never lower than their feet there, and never what they or anyone walking it stands on
+        /// (<paramref name="keep"/>), nor the hall's brick and its level way's floor. As every cut,
+        /// only the ground's own tiles, and only where the map lets it.
+        /// </summary>
+        private static void Widen(Area area, Burrow burrow, List<Place> path, HashSet<Point> keep, HashSet<Point> cut, double phase)
+        {
+            for (int k = 0; k < path.Count; k++)
+            {
+                Place p = path[k];
+                double size = 0.5 + 0.3 * Math.Sin(k * 0.17 + phase) + 0.2 * Math.Sin(k * 0.05 + phase * 0.7);
+                float r = MathHelper.Lerp(RadiusLeast, RadiusMost, (float)Math.Clamp(size, 0.0, 1.0)) + WidenMore;
+                var at = new Vector2(p.X + 0.5f, p.Y - WidenOver);
+                int most = (int)Math.Ceiling(r + BulgeMost + Rough * 0.5f + 0.5f);
+
+                for (int x = p.X - most; x <= p.X + 1 + most; x++)
+                {
+                    for (int y = p.Y - (int)WidenOver - most; y <= p.Y; y++)
+                    {
+                        float edge = r + Lumps(x, y, BulgeSeed) * BulgeMost + (Lumps(x, y, BulgeSeed + 1, 3) - 0.5f) * Rough + Layout.Grain(x, y, 1) * 0.5f;
+
+                        if (Vector2.DistanceSquared(new Vector2(x, y), at) > edge * edge)
+                            continue;
+
+                        if (keep.Contains(new Point(x, y)) || !burrow.MayDig(x, y))
+                            continue;
+
+                        Take(area, x, y, cut);
+                    }
+                }
+            }
+        }
+
+        /// <summary>The places one goes through along a way found round about, tile by tile (where their feet are): up and across a jump, along and down a drop.</summary>
+        private static List<Point> Feet(List<Place> path)
+        {
+            var way = new List<Point>();
+
+            for (int k = 0; k < path.Count; k++)
+            {
+                Place b = path[k];
+
+                if (k > 0)
+                {
+                    Place a = path[k - 1];
+
+                    if (b.How == Go.Drop)
+                        Step(way, new Point(b.X, a.Y));
+                    else if (b.How == Go.JumpOnto || b.How == Go.JumpOver)
+                    {
+                        Step(way, new Point(a.X, a.Y - b.Lift));
+                        Step(way, new Point(b.X, a.Y - b.Lift));
+                    }
+                }
+
+                Step(way, new Point(b.X, b.Y));
+            }
+
+            return way;
+        }
+
+        /// <summary>One walking the way round about has come into the shaft: their body over its middle column, their feet as low as its top or lower.</summary>
+        private static bool InShaft(Point shaft, int x, int y) => x >= shaft.X - 1 && x <= shaft.X && y >= shaft.Y;
+
+        /// <summary>The box round everything of the Dungeon's (its brick, its walls) in these columns, from the sky down to this row; empty if there is none.</summary>
+        private static Rectangle DungeonBox(int x0, int x1, int y1)
+        {
+            int left = int.MaxValue, right = int.MinValue, top = int.MaxValue, bottom = int.MinValue;
+
+            for (int x = x0; x <= x1; x++)
+            {
+                for (int y = 20; y <= y1; y++)
+                {
+                    Tile tile = Main.tile[x, y];
+
+                    if ((tile.HasTile && Dungeon(tile.TileType)) || (tile.WallType > 0 && Main.wallDungeon[tile.WallType]))
+                    {
+                        left = Math.Min(left, x);
+                        right = Math.Max(right, x);
+                        top = Math.Min(top, y);
+                        bottom = Math.Max(bottom, y);
+                    }
+                }
+            }
+
+            return left > right ? Rectangle.Empty : new Rectangle(left, top, right - left + 1, bottom - top + 1);
+        }
+
+        /// <summary>How one walking the way round about came to a place from the one before it.</summary>
+        private enum Go : byte
+        {
+            /// <summary>Started there.</summary>
+            Start,
+
+            /// <summary>A step along.</summary>
+            Along,
+
+            /// <summary>A step up a tile.</summary>
+            Up,
+
+            /// <summary>A step down a tile.</summary>
+            Down,
+
+            /// <summary>A step down two.</summary>
+            DownTwo,
+
+            /// <summary>Off an edge, and down through the air.</summary>
+            Drop,
+
+            /// <summary>A jump straight up, then across, onto something.</summary>
+            JumpOnto,
+
+            /// <summary>A jump straight up, then across, on over a hole, and down through the air.</summary>
+            JumpOver,
+        }
+
+        /// <summary>A place one walking the way round about stands (their feet there); how they came to it; and how high they jumped to come to it.</summary>
+        private readonly struct Place
+        {
+            public readonly int X, Y;
+            public readonly Go How;
+            public readonly int Lift;
+
+            public Place(int x, int y, Go how, int lift)
+            {
+                X = x;
+                Y = y;
+                How = how;
+                Lift = lift;
+            }
+        }
+
+        /// <summary>
+        /// Round about, the way found as one walking it would go, and digging it as they went (A*,
+        /// the cheapest first): from where they stand, a step along, up a tile, or down one or two;
+        /// off an edge and down to whatever is under it (<see cref="WalkFall"/> at the most); a jump
+        /// straight up (<see cref="WalkJump"/> at the most) and across, onto something (three across at
+        /// the most), or on over a hole (<see cref="RoundAcross"/> at the most, past three only from a
+        /// jump of two or more) and down to whatever is under it. Where one stands is where their feet
+        /// are: the body is two tiles wide and three tall over them, as the game has a player. Through
+        /// the air where there is air; through the ground's own tiles where there is not, digging what
+        /// <see cref="Take"/> would take (each tile dug costs a little); never into anything the map
+        /// keeps it from; never standing on what the move itself digs away. Turning back the way it
+        /// came costs more (<see cref="TurnCost"/>), so that it runs one way and then the other. The
+        /// tiles as they are when it is told to look again (<see cref="Refresh"/>), and the hall being
+        /// tried as it will be built: closed, but for its level ways, whose floors are stood on and
+        /// never dug.
+        /// </summary>
+        private sealed class Burrow
+        {
+            /// <summary>What a tile is: solid; kept (never come into, nor dug, but it may be stood on); one that may be dug.</summary>
+            private const byte HardBit = 1, KeptBit = 2, DigBit = 4;
+
+            private static readonly int[] Sides = { -1, 1 };
+
+            private readonly Area area;
+            private readonly int x0, y0, w, h;
+            private readonly int seed;
+            private readonly byte[] tiles;
+
+            /// <summary>Of each place (feet there): room for the body, once what is in the way is dug; and how many of its tiles are solid.</summary>
+            private readonly bool[] room;
+            private readonly byte[] digs;
+
+            // The search's own: what each place cost to come to, from where and how; whether it is done
+            // with; and the places still to look at, cheapest (with what is left, guessed) first.
+            private readonly float[] paid, rank;
+            private readonly int[] came, heap, slot;
+            private readonly byte[] how, rise;
+            private readonly bool[] shut;
+            private int count;
+
+            /// <summary>Tiles never dug, whatever they are: what one walking the way stood on.</summary>
+            private readonly HashSet<Point> keep = new HashSet<Point>();
+
+            // The hall being tried: the box kept round it, its level ways (inside, from the floor up to
+            // the openings' tops), and its floor.
+            private bool hasHall;
+            private Rectangle box, entry, exit;
+            private int floor;
+
+            /// <summary>How many places the searches have looked at, all told.</summary>
+            public long Looked { get; private set; }
+
+            /// <summary>The far end of the near level way of the hall being tried, and of the far one: where the way comes to it, and where it goes on from.</summary>
+            public Point EntryAim { get; private set; }
+
+            public Point ExitAim { get; private set; }
+
+            public Burrow(Area area, int seed)
+            {
+                this.area = area;
+                this.seed = seed;
+                x0 = area.X0;
+                y0 = area.Y0;
+                w = area.W;
+                h = area.H;
+
+                int n = w * h;
+                tiles = new byte[n];
+                room = new bool[n];
+                digs = new byte[n];
+                paid = new float[n];
+                rank = new float[n];
+                came = new int[n];
+                heap = new int[n];
+                slot = new int[n];
+                how = new byte[n];
+                rise = new byte[n];
+                shut = new bool[n];
+
+                Refresh();
+            }
+
+            private bool InArea(int x, int y) => x >= x0 && y >= y0 && x < x0 + w && y < y0 + h;
+
+            private int I(int x, int y) => (y - y0) * w + (x - x0);
+
+            private bool Room(int x, int y) => InArea(x, y) && room[I(x, y)];
+
+            private bool Hard(int x, int y) => InArea(x, y) && (tiles[I(x, y)] & HardBit) != 0;
+
+            private bool IsKept(int x, int y) => !InArea(x, y) || (tiles[I(x, y)] & KeptBit) != 0;
+
+            /// <summary>Whether a tile may be dug, as far as the map and the hall being tried go (never anything kept, the hall's brick, its level way's floor).</summary>
+            public bool MayDig(int x, int y) => !IsKept(x, y);
+
+            /// <summary>Something to stand on, with the feet here: a solid tile under either foot.</summary>
+            private bool Stands(int x, int y) => Hard(x, y + 1) || Hard(x + 1, y + 1);
+
+            /// <summary>Something to stand on, with the feet here, that is not one of the tiles dug by the move (column <paramref name="bx"/> and the next, rows <paramref name="top"/> to <paramref name="bottom"/>).</summary>
+            private bool StandsBut(int x, int y, int bx, int top, int bottom) =>
+                (Hard(x, y + 1) && !Within(x, y + 1, bx, top, bottom)) || (Hard(x + 1, y + 1) && !Within(x + 1, y + 1, bx, top, bottom));
+
+            private static bool Within(int x, int y, int bx, int top, int bottom) => x >= bx && x <= bx + 1 && y >= top && y <= bottom;
+
+            /// <summary>Everything read off the world again, as it now is.</summary>
+            public void Refresh() => Refresh(new Rectangle(x0, y0, w, h));
+
+            private void Refresh(Rectangle r)
+            {
+                int xa = Math.Max(r.Left, x0), xb = Math.Min(r.Right, x0 + w) - 1;
+                int ya = Math.Max(r.Top, y0), yb = Math.Min(r.Bottom, y0 + h) - 1;
+
+                for (int y = ya; y <= yb; y++)
+                {
+                    for (int x = xa; x <= xb; x++)
+                        tiles[I(x, y)] = Overlay(x, y, Read(x, y));
+                }
+
+                foreach (Point at in keep)
+                {
+                    if (at.X >= xa && at.X <= xb && at.Y >= ya && at.Y <= yb)
+                        tiles[I(at.X, at.Y)] &= unchecked((byte)~DigBit);
+                }
+
+                Derive(xa - 1, xb, ya, yb + 2);
+            }
+
+            private byte Read(int x, int y)
+            {
+                Tile tile = Main.tile[x, y];
+                byte k = 0;
+
+                if (tile.HasTile && Main.tileSolid[tile.TileType] && !Main.tileSolidTop[tile.TileType])
+                    k |= HardBit;
+
+                if (area.Firm[area.I(x, y)])
+                    k |= KeptBit;
+                else if (Takes(area, x, y))
+                    k |= DigBit;
+
+                return k;
+            }
+
+            /// <summary>The hall being tried, as it will be: shut, and the rock round it as far as the way down keeps from it; but its level ways as they are (they are cut to it), and their floors stood on, never dug.</summary>
+            private byte Overlay(int x, int y, byte k)
+            {
+                if (!hasHall)
+                    return k;
+
+                bool level = (x >= entry.Left && x < entry.Right) || (x >= exit.Left && x < exit.Right);
+
+                if (level && y >= floor - Opening && y < floor)
+                    return k;
+
+                if (level && y >= floor && y < floor + Masonry)
+                    return (byte)(KeptBit | (y == floor ? (FloorWillBe(x) ? HardBit : 0) : k & HardBit));
+
+                if (box.Contains(x, y))
+                    return (byte)((k & HardBit) | KeptBit);
+
+                return k;
+            }
+
+            /// <summary>Whether the level way's floor will be solid here once it is made (<see cref="Level"/>: solid, or made good with stone).</summary>
+            private bool FloorWillBe(int x)
+            {
+                Tile under = Main.tile[x, floor];
+
+                if (under.HasTile && Main.tileSolid[under.TileType] && !Main.tileSolidTop[under.TileType])
+                    return true;
+
+                return under.LiquidAmount == 0 && !area.BlockedAt(x, floor) && (!under.HasTile || Soft(under.TileType));
+            }
+
+            /// <summary>Of each place whose body is within these columns and rows (feet there): room for it, and how much of it is solid.</summary>
+            private void Derive(int xa, int xb, int ya, int yb)
+            {
+                xa = Math.Max(xa, x0);
+                xb = Math.Min(xb, x0 + w - 2);
+                ya = Math.Max(ya, y0 + 2);
+                yb = Math.Min(yb, y0 + h - 1);
+
+                for (int y = ya; y <= yb; y++)
+                {
+                    for (int x = xa; x <= xb; x++)
+                    {
+                        int i = I(x, y);
+                        bool fits = true;
+                        int solid = 0;
+
+                        for (int dy = 0; dy <= 2; dy++)
+                        {
+                            for (int dx = 0; dx <= 1; dx++)
+                            {
+                                byte k = tiles[i - dy * w + dx];
+
+                                if ((k & KeptBit) != 0)
+                                    fits = false;
+                                else if ((k & HardBit) != 0)
+                                {
+                                    solid++;
+
+                                    if ((k & DigBit) == 0)
+                                        fits = false;
+                                }
+                            }
+                        }
+
+                        room[i] = fits;
+                        digs[i] = (byte)solid;
+                    }
+                }
+            }
+
+            /// <summary>Tiles never to be dug from here on (the next time it looks again).</summary>
+            public void Protect(IEnumerable<Point> tiles)
+            {
+                foreach (Point at in tiles)
+                    keep.Add(at);
+            }
+
+            /// <summary>Nothing kept from being dug any more; and everything read off the world again (as it was put back).</summary>
+            public void Forget()
+            {
+                keep.Clear();
+                Refresh();
+            }
+
+            /// <summary>The hall to try: shut, its level ways open, the way to come to the near one and go on from the far one.</summary>
+            public void Hall(Rectangle hall, int side)
+            {
+                Rectangle was = hasHall ? Changed() : Rectangle.Empty;
+
+                hasHall = true;
+                floor = hall.Bottom;
+
+                var left = new Rectangle(hall.Left - Masonry - Approach, floor - Opening, Approach, Opening);
+                var right = new Rectangle(hall.Right + Masonry, floor - Opening, Approach, Opening);
+
+                entry = side > 0 ? left : right;
+                exit = side > 0 ? right : left;
+                box = new Rectangle(hall.Left - Masonry - HallKeep, hall.Top - Masonry - HallKeep, hall.Width + (Masonry + HallKeep) * 2, hall.Height + (Masonry + HallKeep) * 2);
+                EntryAim = new Point(side > 0 ? entry.Left : entry.Right - 2, floor - 1);
+                ExitAim = new Point(side > 0 ? exit.Right - 2 : exit.Left, floor - 1);
+
+                if (was.Width > 0)
+                    Refresh(was);
+
+                Refresh(Changed());
+            }
+
+            /// <summary>Every tile the hall being tried makes other than it is: the box round it, and its level ways and their floors.</summary>
+            private Rectangle Changed() =>
+                Rectangle.Union(box, Rectangle.Union(new Rectangle(entry.X, entry.Y, entry.Width, Opening + Masonry), new Rectangle(exit.X, exit.Y, exit.Width, Opening + Masonry)));
+
+            /// <summary>Come into the hall's near level way: standing on its floor, the body all in it.</summary>
+            public bool InEntry(int x, int y) => y == floor - 1 && x >= entry.Left && x <= entry.Right - 2;
+
+            /// <summary>Where one walking it may go on from, in the hall's far level way.</summary>
+            public List<Point> ExitStarts()
+            {
+                var starts = new List<Point>();
+
+                for (int x = exit.Left; x <= exit.Right - 2; x++)
+                    starts.Add(new Point(x, floor - 1));
+
+                return starts;
+            }
+
+            /// <summary>
+            /// Every place with room for the body (<see cref="Room"/>) joined to these, side by side, as
+            /// the tiles were last read: null if there are more than <paramref name="most"/> (and how many
+            /// were counted, then or all told). Every move one walking the way makes, a step, a drop, a
+            /// jump up and across, goes from place to place so joined (each place it passes through has
+            /// room for the body); so a way can be found from a place only if it is one of them. Read
+            /// before any hall is tried: a hall only shuts more.
+            /// </summary>
+            public bool[] Joined(List<Point> from, int most, out int count)
+            {
+                var joined = new bool[w * h];
+                var queue = new Queue<int>();
+                count = 0;
+
+                foreach (Point p in from)
+                {
+                    if (!Room(p.X, p.Y) || joined[I(p.X, p.Y)])
+                        continue;
+
+                    joined[I(p.X, p.Y)] = true;
+                    queue.Enqueue(I(p.X, p.Y));
+                    count++;
+                }
+
+                while (queue.Count > 0)
+                {
+                    int i = queue.Dequeue();
+                    int x = x0 + i % w, y = y0 + i / w;
+
+                    for (int k = 0; k < 4; k++)
+                    {
+                        int nx = x + (k == 0 ? -1 : k == 1 ? 1 : 0);
+                        int ny = y + (k == 2 ? -1 : k == 3 ? 1 : 0);
+
+                        if (!Room(nx, ny))
+                            continue;
+
+                        int j = I(nx, ny);
+
+                        if (joined[j])
+                            continue;
+
+                        if (++count > most)
+                            return null;
+
+                        joined[j] = true;
+                        queue.Enqueue(j);
+                    }
+                }
+
+                return joined;
+            }
+
+            /// <summary>Whether a place is one of these (<see cref="Joined"/>).</summary>
+            public bool Of(bool[] places, Point at) => InArea(at.X, at.Y) && places[I(at.X, at.Y)];
+
+            /// <summary>Where one may start from, on the ground at the mouth: within two columns of it, standing on the ground there (or as near it as the body has room), both feet on something.</summary>
+            public List<Point> Starts(Point mouth)
+            {
+                var starts = new List<Point>();
+
+                for (int x = mouth.X - 2; x <= mouth.X + 2; x++)
+                {
+                    int top = Surface(x);
+
+                    if (top < 0)
+                        continue;
+
+                    for (int y = top - 1; y <= top + 1; y++)
+                    {
+                        if (Room(x, y) && Hard(x, y + 1) && Hard(x + 1, y + 1))
+                        {
+                            starts.Add(new Point(x, y));
+                            break;
+                        }
+                    }
+                }
+
+                return starts;
+            }
+
+            /// <summary>
+            /// The cheapest way from any of these places (those with room for the body) to one the goal
+            /// says, as one walking and digging it would go; null if there is none. What is left of the
+            /// way is guessed, as the crow flies to the nearest of <paramref name="aim"/> (a place, as a
+            /// box a tile across, or the box all the places the goal says are in), a little short of
+            /// what it could cost at the least.
+            /// </summary>
+            public List<Place> Search(List<Point> starts, Func<int, int, bool> goal, Rectangle aim)
+            {
+                Array.Fill(paid, float.MaxValue);
+                Array.Fill(slot, -1);
+                Array.Clear(shut);
+                count = 0;
+
+                foreach (Point s in starts)
+                {
+                    if (!Room(s.X, s.Y))
+                        continue;
+
+                    int i = I(s.X, s.Y);
+                    float cost = DigDear * digs[i];
+
+                    if (cost >= paid[i])
+                        continue;
+
+                    paid[i] = cost;
+                    came[i] = -1;
+                    how[i] = (byte)Go.Start;
+                    rise[i] = 0;
+                    Push(i, cost + Guess(s.X, s.Y, aim));
+                }
+
+                while (count > 0)
+                {
+                    int i = Pop();
+                    shut[i] = true;
+                    Looked++;
+
+                    int x = x0 + i % w, y = y0 + i / w;
+
+                    if (goal(x, y))
+                        return Trace(i);
+
+                    Moves(i, x, y, goal, aim);
+                }
+
+                return null;
+            }
+
+            private static float Guess(int x, int y, Rectangle aim) =>
+                GuessShare * Math.Max(Math.Max(0, Math.Max(aim.Left - x, x - (aim.Right - 1))), Math.Max(0, Math.Max(aim.Top - y, y - (aim.Bottom - 1))));
+
+            /// <summary>
+            /// What a step costs here, for each tile of it, beside how it is made: the way down's own
+            /// roll (lumps eight tiles across, <see cref="Roll"/>) over lumps twenty tiles across, 0.56
+            /// to 2.2 times in all; so that it winds through the rock as a cave does, and is not
+            /// drawn across it straight.
+            /// </summary>
+            private float Wander(int x, int y) => Roll(x, y, seed) * (0.7f + 0.8f * Lumps(x, y, seed + 1, 20));
+
+            /// <summary>Every move from here, each to where it ends, if that costs less than the best way there yet.</summary>
+            private void Moves(int i, int x, int y, Func<int, int, bool> goal, Rectangle aim)
+            {
+                // Turning back from the way it came costs more (TurnCost), as it does the way down
+                // as it was: so that it runs one way and then the other, and does not wriggle down a
+                // well.
+                int was = came[i] < 0 ? 0 : Math.Sign(x - (x0 + came[i] % w));
+
+                foreach (int d in Sides)
+                {
+                    int nx = x + d;
+                    float roll = Wander(nx, y);
+                    float here = paid[i] + (was != 0 && d != was ? TurnCost : 0f);
+
+                    if (Room(nx, y))
+                    {
+                        int dig = digs[I(nx, y)];
+
+                        // A step along, onto something; or off the edge, and down to whatever is under it.
+                        if (Stands(nx, y))
+                            Relax(i, nx, y, here + LevelDear * roll + DigDear * dig, Go.Along, 0, aim);
+                        else
+                        {
+                            int ny = Fall(nx, y, y, goal, int.MinValue, 0, 0);
+
+                            if (ny >= 0)
+                                Relax(i, nx, ny, here + DigDear * dig + 1f + (ny - y), Go.Drop, 0, aim);
+                        }
+
+                        // A step down a tile, or two.
+                        if (Room(nx, y + 1))
+                        {
+                            int dig1 = dig + digs[I(nx, y + 1)];
+
+                            if (Stands(nx, y + 1))
+                                Relax(i, nx, y + 1, here + DownDear * roll + DigDear * dig1, Go.Down, 0, aim);
+
+                            if (Room(nx, y + 2) && Stands(nx, y + 2))
+                                Relax(i, nx, y + 2, here + DownTwoDear * roll + DigDear * (dig1 + digs[I(nx, y + 2)]), Go.DownTwo, 0, aim);
+                        }
+                    }
+
+                    // A step up a tile: room over where they stand and beside it, and something to step
+                    // onto that the step does not dig away.
+                    if (Room(x, y - 1) && Room(nx, y - 1) && StandsBut(nx, y - 1, x, y - 3, y))
+                        Relax(i, nx, y - 1, here + UpDear * roll + DigDear * (digs[I(x, y - 1)] + digs[I(nx, y - 1)]), Go.Up, 0, aim);
+                }
+
+                // A jump: straight up as far as there is room (dug), then across.
+                int up = 0;
+
+                while (up < WalkJump && Room(x, y - up - 1))
+                    up++;
+
+                int upDigs = 0;
+
+                for (int lift = 1; lift <= up; lift++)
+                {
+                    int top = y - lift;
+                    upDigs += digs[I(x, top)];
+
+                    foreach (int d in Sides)
+                    {
+                        float here = paid[i] + (was != 0 && d != was ? TurnCost : 0f);
+                        int acrossDigs = 0;
+
+                        for (int k = 1; k <= RoundAcross; k++)
+                        {
+                            if (k > 3 && lift < 2)
+                                break;
+
+                            int nx = x + d * k;
+
+                            if (!Room(nx, top))
+                                break;
+
+                            acrossDigs += digs[I(nx, top)];
+                            float cost = here + JumpDear + lift + 0.5f * k + DigDear * (upDigs + acrossDigs);
+
+                            // Onto something that the jump's way up does not dig away.
+                            if (StandsBut(nx, top, x, top - 2, y))
+                            {
+                                if (k <= 3)
+                                    Relax(i, nx, top, cost, Go.JumpOnto, lift, aim);
+
+                                continue;
+                            }
+
+                            // On over a hole, and down to whatever is under it.
+                            int ny = Fall(nx, top, top, goal, x, top - 2, y);
+
+                            if (ny >= 0)
+                                Relax(i, nx, ny, cost + 0.5f * (ny - top), Go.JumpOver, lift, aim);
+                        }
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Down through the air from here (the body's room dug, if it had to be): where they come to
+            /// rest on something (not on any of the tiles dug by the move: column <paramref name="bx"/>
+            /// and the next, rows <paramref name="top"/> to <paramref name="bottom"/>), or come into the
+            /// goal; -1 if they would fall further than <see cref="WalkFall"/> from
+            /// <paramref name="start"/>, or into anything kept.
+            /// </summary>
+            private int Fall(int x, int y, int start, Func<int, int, bool> goal, int bx, int top, int bottom)
+            {
+                for (int ny = y; ; ny++)
+                {
+                    if (goal(x, ny))
+                        return ny;
+
+                    if ((Hard(x, ny + 1) && !Within(x, ny + 1, bx, top, bottom)) || (Hard(x + 1, ny + 1) && !Within(x + 1, ny + 1, bx, top, bottom)))
+                        return ny;
+
+                    if (ny - start >= WalkFall || IsKept(x, ny + 1) || IsKept(x + 1, ny + 1))
+                        return -1;
+                }
+            }
+
+            private void Relax(int from, int x, int y, float cost, Go move, int lift, Rectangle aim)
+            {
+                int j = I(x, y);
+
+                if (shut[j] || cost >= paid[j])
+                    return;
+
+                paid[j] = cost;
+                came[j] = from;
+                how[j] = (byte)move;
+                rise[j] = (byte)lift;
+                Push(j, cost + Guess(x, y, aim));
+            }
+
+            private List<Place> Trace(int i)
+            {
+                var path = new List<Place>();
+
+                for (int j = i; j >= 0; j = came[j])
+                    path.Add(new Place(x0 + j % w, y0 + j / w, (Go)how[j], rise[j]));
+
+                path.Reverse();
+                return path;
+            }
+
+            // The places still to look at: a heap, cheapest on top, each place in it once.
+
+            private void Push(int i, float value)
+            {
+                rank[i] = value;
+
+                if (slot[i] < 0)
+                {
+                    slot[i] = count;
+                    heap[count++] = i;
+                }
+
+                Rise(slot[i]);
+            }
+
+            private int Pop()
+            {
+                int top = heap[0];
+                slot[top] = -1;
+                count--;
+
+                if (count > 0)
+                {
+                    heap[0] = heap[count];
+                    slot[heap[0]] = 0;
+                    Sink(0);
+                }
+
+                return top;
+            }
+
+            private void Rise(int at)
+            {
+                int i = heap[at];
+                float value = rank[i];
+
+                while (at > 0)
+                {
+                    int parent = (at - 1) / 2;
+                    int p = heap[parent];
+
+                    if (rank[p] <= value)
+                        break;
+
+                    heap[at] = p;
+                    slot[p] = at;
+                    at = parent;
+                }
+
+                heap[at] = i;
+                slot[i] = at;
+            }
+
+            private void Sink(int at)
+            {
+                int i = heap[at];
+                float value = rank[i];
+
+                while (true)
+                {
+                    int child = at * 2 + 1;
+
+                    if (child >= count)
+                        break;
+
+                    if (child + 1 < count && rank[heap[child + 1]] < rank[heap[child]])
+                        child++;
+
+                    if (rank[heap[child]] >= value)
+                        break;
+
+                    heap[at] = heap[child];
+                    slot[heap[at]] = at;
+                    at = child;
+                }
+
+                heap[at] = i;
+                slot[i] = at;
+            }
+
+            /// <summary>The tiles a way found takes, as it was found: the room for the body along every move (up and across a jump; at the edge of a drop, the air under it left as it is).</summary>
+            public void Dig(List<Place> path, HashSet<Point> cut)
+            {
+                for (int k = 0; k < path.Count; k++)
+                {
+                    Place b = path[k];
+
+                    if (k == 0)
+                    {
+                        Body(b.X, b.Y, cut);
+                        continue;
+                    }
+
+                    Place a = path[k - 1];
+
+                    switch (b.How)
+                    {
+                        case Go.Along:
+                            Body(b.X, b.Y, cut);
+                            break;
+
+                        case Go.Up:
+                            Body(a.X, a.Y - 1, cut);
+                            Body(b.X, b.Y, cut);
+                            break;
+
+                        case Go.Down:
+                            Body(b.X, a.Y, cut);
+                            Body(b.X, b.Y, cut);
+                            break;
+
+                        case Go.DownTwo:
+                            Body(b.X, a.Y, cut);
+                            Body(b.X, a.Y + 1, cut);
+                            Body(b.X, b.Y, cut);
+                            break;
+
+                        case Go.Drop:
+                            Body(b.X, a.Y, cut);
+                            break;
+
+                        case Go.JumpOnto:
+                        case Go.JumpOver:
+                            for (int up = 1; up <= b.Lift; up++)
+                                Body(a.X, a.Y - up, cut);
+
+                            int d = Math.Sign(b.X - a.X);
+
+                            for (int s = 1; s <= Math.Abs(b.X - a.X); s++)
+                                Body(a.X + d * s, a.Y - b.Lift, cut);
+
+                            break;
+                    }
+                }
+            }
+
+            private void Body(int x, int y, HashSet<Point> cut)
+            {
+                for (int dx = 0; dx <= 1; dx++)
+                {
+                    for (int dy = 0; dy <= 2; dy++)
+                        Take(area, x + dx, y - dy, cut);
+                }
+            }
         }
 
         // ===========================================================================================

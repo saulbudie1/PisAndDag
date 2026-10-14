@@ -227,6 +227,22 @@ namespace PisAndDag.Content.Items.Instrument
             Item.rare = ItemRarityID.Orange;
         }
 
+        /// <summary>
+        /// By request: "Trumpet :any gold 3, any iron 6, any copper 14 at anvil": 3 Gold or Platinum
+        /// Bars, 6 Iron or Lead Bars and 14 Copper or Tin Bars, at an Iron or Lead Anvil (one tile).
+        /// The gold and copper groups are the mod's own (PADRecipes); the game has one for iron alone.
+        /// Live, as the recipes beside it that the user has uncommented.
+        /// </summary>
+        public override void AddRecipes()
+        {
+            CreateRecipe()
+                .AddRecipeGroup(PADRecipes.AnyGoldBar, 3)
+                .AddRecipeGroup(RecipeGroupID.IronBar, 6)
+                .AddRecipeGroup(PADRecipes.AnyCopperBar, 14)
+                .AddTile(TileID.Anvils)
+                .Register();
+        }
+
         /// <summary>The trumpet is not used; it is held and played. See HoldItem.</summary>
         public override bool CanUseItem(Player player) => false;
 

@@ -39,7 +39,7 @@ namespace PisAndDag.Content.Structures
 
         /// <summary>How far the two surfaces are allowed to wander off a circle.</summary>
         private const double ShellRough = 0.13;
-        private const double HollowRough = 0.26;
+        public const double HollowRough = 0.26;
 
         /// <summary>The arms. Thin, many, and none of them straight.</summary>
         private const int ArmCount = 48;
@@ -63,7 +63,7 @@ namespace PisAndDag.Content.Structures
         /// its own roughness to what it was asked for, so the hollow never comes in
         /// closer than Hollow * (1 - HollowRough) and the ring never ends up in the wall.
         /// </summary>
-        private const int OrbRing = 105;
+        public const int OrbRing = 105;
 
         /// <summary>
         /// The leaves of the Terraspark tree — every accessory the craft needs that the
@@ -127,8 +127,8 @@ namespace PisAndDag.Content.Structures
         private const int ChasmMost = 10;
 
         /// <summary>The bank at the bottom, measured down from the middle of the hollow.</summary>
-        private const int BaseFrom = 34;
-        private const int BaseRough = 26;
+        public const int BaseFrom = 34;
+        public const int BaseRough = 26;
 
         private static Rim shell;
         private static Rim hollow;

@@ -30,15 +30,17 @@ namespace PisAndDag.Content.NPCs.Foigh
     ///            fourth pilaster counted from the end wall (the one against it the first,
     ///            as where the player stood in the picture sent with it), his back to the
     ///            end, facing down the hall. Anywhere else he stays where he is.
+    ///   SHOWN    by a later request, "fades and pans to him at the pillar before he do his
+    ///            roar": the picture fades; the player is put down twenty tiles in front of
+    ///            him; the picture comes back on them, and the camera goes over to him where
+    ///            he stands, at the pillar in the hall, getting his breath.
     ///   ROAR     "a big long roar", two and a half seconds of it, red and black
-    ///            (Cinematic.Roar); and in the hall it "turns off all the torches except the
-    ///            ones in a streak above him": every torch and Tiki Torch goes out as the
-    ///            roar reaches it, out along the hall from him, all but those up his own
-    ///            pilaster.
-    ///   FOLD     the picture fades; the player is put down twenty tiles in front of him;
-    ///            the picture comes back on them, and the camera goes over to him. "At a
-    ///            slower pace": down onto his knees, his body over and his hands onto the
-    ///            ground, and the sword falls in front of him.
+    ///            (Cinematic.Roar), its voice as the camera gets to him; and in the hall it
+    ///            "turns off all the torches except the ones in a streak above him": every
+    ///            torch and Tiki Torch goes out as the roar reaches it, out along the hall
+    ///            from him, all but those up his own pilaster.
+    ///   FOLD     "At a slower pace": down onto his knees, his body over and his hands onto
+    ///            the ground, and the sword falls in front of him.
     ///   BOWED    his head down, shaking and bleeding: the player walks up to five tiles
     ///            off him.
     ///   LAUGH    he looks up to them: "Ha ha ha ha... That was an interesting fight.",
@@ -126,13 +128,19 @@ namespace PisAndDag.Content.NPCs.Foigh
         private const float RoarPitch = -0.45f;
         private const float SweepSpeed = 40f;
 
-        /// <summary>Fold: the picture to black; the tick of the black the player is put down on; black until; back up over this long; the camera sets off for him, and the ticks it takes.</summary>
-        private const int FoldFade = 24;
-        private const int FoldCut = FoldFade + 3;
-        private const int FoldBlack = FoldFade + 16;
-        private const int FoldFadeIn = 30;
-        private const int FoldPanAt = FoldBlack + FoldFadeIn + 12;
-        private const int FoldPan = 96;
+        /// <summary>
+        /// Shown: the picture to black; the tick of the black the player is put down on;
+        /// black until; back up over this long; the camera sets off for him; and the ticks it
+        /// takes (to him, and back, all through his end). His roar begins so that its voice
+        /// comes as the camera gets to him.
+        /// </summary>
+        private const int ShownFade = 24;
+        private const int ShownCut = ShownFade + 3;
+        private const int ShownBlack = ShownFade + 16;
+        private const int ShownFadeIn = 30;
+        private const int ShownPanAt = ShownBlack + ShownFadeIn + 12;
+        private const int EndPan = 96;
+        private const int ShownTicks = ShownPanAt + EndPan - M.RoarDraws;
 
         /// <summary>How far in front of him the player is put down, and how near they walk up, from his middle to theirs: twenty tiles and five, by request; no nearer than the least where there is no ground that far off. And how near a walk's end they are taken to have got there.</summary>
         public const float EndPutAt = 20f * 16f;
@@ -244,7 +252,7 @@ namespace PisAndDag.Content.NPCs.Foigh
         public bool Ending => OfEnd(State);
 
         /// <summary>Whether a move is a part of his end.</summary>
-        private static bool OfEnd(Move move) => move == Move.Dying || move >= Move.Roar;
+        private static bool OfEnd(Move move) => move == Move.Dying || move >= Move.Shown;
 
         /// <summary>Down on his knees (his legs into the ground: M.KneelRise), on his back or on his face: the tiles are drawn over what is in the ground (NPC.behindTiles).</summary>
         private bool EndLow => (State == Move.Fold && now >= M.FoldFalls) || (State > Move.Fold && State <= Move.Slump);
@@ -411,12 +419,23 @@ namespace PisAndDag.Content.NPCs.Foigh
                         NPC.velocity = Vector2.Zero;
 
                         Face(EmptyHall.DownTheHall);
-                        Go(Move.Roar, 1f);
+                        Go(Move.Shown, 1f);
                         break;
                     }
 
                     FaceThem(Target());
-                    Go(Move.Roar);
+                    Go(Move.Shown);
+                    break;
+
+                case Move.Shown:
+                    // Put down in front of him under the black (their own machine): he is
+                    // turned to where they are, until the camera sets off for him. (In the
+                    // hall they are where he faces: nothing turns.)
+                    if (now > ShownCut + 2 && now <= ShownPanAt)
+                        FaceThem(Target());
+
+                    if (now >= ShownTicks)
+                        Go(Move.Roar);
                     break;
 
                 case Move.Roar:
@@ -427,12 +446,6 @@ namespace PisAndDag.Content.NPCs.Foigh
                     break;
 
                 case Move.Fold:
-                    // Put down in front of him under the black (their own machine): he is
-                    // turned to where they are, until the camera sets off for him. (In the
-                    // hall they are where he faces: nothing turns.)
-                    if (now > FoldCut + 2 && now <= FoldPanAt)
-                        FaceThem(Target());
-
                     if (now >= M.FoldLets && hasSword)
                     {
                         hasSword = false;
@@ -655,39 +668,45 @@ namespace PisAndDag.Content.NPCs.Foigh
             switch (State)
             {
                 case Move.Dying:
-                case Move.Roar:
                     Cinematic.Hold();
                     break;
 
-                case Move.Fold:
+                case Move.Shown:
                     Cinematic.Hold();
 
-                    if (now < FoldFade)
-                        Cinematic.Fade(Smooth(now / (float)FoldFade));
-                    else if (now < FoldBlack)
+                    if (now < ShownFade)
+                        Cinematic.Fade(Smooth(now / (float)ShownFade));
+                    else if (now < ShownBlack)
                         Cinematic.Fade(1f);
-                    else if (now < FoldBlack + FoldFadeIn)
-                        Cinematic.Fade(1f - Smooth((now - FoldBlack) / (float)FoldFadeIn));
+                    else if (now < ShownBlack + ShownFadeIn)
+                        Cinematic.Fade(1f - Smooth((now - ShownBlack) / (float)ShownFadeIn));
 
                     // Under the black: in front of him, twenty tiles off, on their feet; the
                     // camera on them, at once. (One who became his after the picture was back
                     // is left where they stand.)
-                    if (!endPut && now >= FoldCut)
+                    if (!endPut && now >= ShownCut)
                     {
                         endPut = true;
 
-                        if (now < FoldBlack)
+                        if (now < ShownBlack)
                         {
                             shot = 0f;
                             me.GetModPlayer<FoighEndPlayer>().PutAhead(NPC, facing, EndPutAt, EndPutLeast);
                         }
                     }
 
-                    if (now >= FoldPanAt)
+                    if (now >= ShownPanAt)
                     {
                         wantShot = true;
                         Cinematic.Lean(EndZoom, 0.03f);
                     }
+                    break;
+
+                case Move.Roar:
+                case Move.Fold:
+                    Cinematic.Hold();
+                    wantShot = true;
+                    Cinematic.Lean(EndZoom, 0.03f);
                     break;
 
                 case Move.Bowed:
@@ -888,7 +907,7 @@ namespace PisAndDag.Content.NPCs.Foigh
                 }
             }
 
-            shot = MathHelper.Clamp(shot + (wantShot ? 1f : -1f) / FoldPan, 0f, 1f);
+            shot = MathHelper.Clamp(shot + (wantShot ? 1f : -1f) / EndPan, 0f, 1f);
 
             if (shot > 0f)
                 PisPlayer.BlendCamera(EndLook, shot * shot * (3f - 2f * shot));
@@ -1648,9 +1667,10 @@ namespace PisAndDag.Content.NPCs.Foigh
 
         /// <summary>
         /// How he holds himself at this tick of a part of his end (Foigh.Fight's PoseOf asks):
-        /// rocked by the blow, as a passage begins (from the pose he was in: Entered); his
-        /// roar; down; bowed; his head up to them, laughing and coughing; up on his knees;
-        /// the sword through him; cast down; left there; down on his face.
+        /// rocked by the blow, as a passage begins (from the pose he was in: Entered); getting
+        /// his breath while he is shown; his roar; down; bowed; his head up to them, laughing
+        /// and coughing; up on his knees; the sword through him; cast down; left there; down
+        /// on his face.
         /// </summary>
         private FoighRig.Pose EndPose(Move move, float t)
         {
@@ -1658,6 +1678,9 @@ namespace PisAndDag.Content.NPCs.Foigh
             {
                 case Move.Dying:
                     return (spent ??= M.Spent(M.Drag)).Sample(t);
+
+                case Move.Shown:
+                    return M.Showing(t, ShownTicks);
 
                 case Move.Roar:
                     return M.Roaring(t);
@@ -1741,7 +1764,7 @@ namespace PisAndDag.Content.NPCs.Foigh
                     Shake(6f, 16);
                     break;
 
-                case Move.Roar when Arg >= 1f:
+                case Move.Shown when Arg >= 1f:
                 {
                     // Gone from where he was (left there a moment, the way he faced there), and
                     // at the end of the hall. (He is shown at this tick's end: his eye there is

@@ -14360,3 +14360,2903 @@ out. Nothing of it is a shader.
 - **Mine**: the breathing, the one colour, and the ramps over the whole name's ink rather
   than over each letter.
 - The way down: still to be tried (§16.60 section 8).
+
+---
+
+## 16.62 Later in session 7: Blasphemous Crimson's colours set moving, round and round; and a count of minion slots beside the minimap
+
+What was asked after §16.61 was delivered:
+
+> I mean the color moves with the 3 colors from up to down and lerp again.
+>
+> Add minion count UI, small and next to where the map is js: float(without f, has 1 digit after the .)/max minion " Minion"
+
+Nothing was asked back.
+
+### 1. The device, read first
+
+- The mod's folder was listed (its root; `Content` with everything under it, 647 entries;
+  `Localization`) before this was delivered. Since §16.61's delivery two files of the mod
+  were changed, both yours, both the Rust Side Sword's words: its verses in
+  `FoighsRustSideSword.cs` (18:00 local on the 11th), now *"Its jagged rusted side was used
+  for a three hundred year long pursuit of vengeance"*, *"The pristine side awaits a worthy
+  foe"* and *"'The muscle hardens to rust, the sword bleeds with the body'"*; and its
+  tooltip in the `.hjson` (18:02), its two lines on the chain and its aim gone, its right
+  click now *"Right click shoots up to three slashes."*, its last line *'The rusted side was
+  used on one man, for centuries.'*. Both are kept as they are, and this was built and
+  compiled on them; neither is written over. Nothing else changed. The two files this writes
+  over and the three notes it adds to were read back from the device: byte for byte
+  §16.61's. `Content/UI/MinionCountHUD.cs` was not there.
+- `client.log` is as §16.59 found it (169,635 bytes, last written at 06:24 local on the
+  10th): the game has not been started since.
+
+### 2. Readings
+
+1. *"the color moves with the 3 colors from up to down and lerp again"*: the letters' three
+   colours travel down through the name, one after another, and after the last comes the
+   first again, blended into it, round and round; the outline's three travel up it (its
+   colours were given bottom to top), the same way round. What was asked before is one
+   moment of it: at any moment two thirds of a turn spans the name, the letters from one
+   colour at the top to the one after next at the bottom, the outline from one at the bottom
+   to the one after next at the top; and at the turn's start exactly as §16.61 had it still.
+2. **Mine**: a turn every 2 seconds, which is the colours going down the letters at about 16
+   pixels a second; and the breathing of §16.61 taken out, the moving in its place: the
+   colours are always the six given and what lies between them.
+3. *"minion count UI, small and next to where the map is js: float(without f, has 1 digit
+   after the .)/max minion " Minion""*: `2.5/4 Minion`: the minion slots taken
+   (`Player.slotsMinions`, which counts each minion as what it takes up, half or three
+   quarters for some), to one place after the point and always with a point, whatever
+   language the game is in; a slash; the most there can be (`Player.maxMinions`); and "
+   Minion".
+4. "Small": three quarters of the size of tooltip text, with the black edge the game puts
+   round its own small words, in the colour of the magazine's count beside the player
+   (`MagazineHUD`, 235, 235, 235), so the two read as one kind of thing. **Mine**.
+5. "Next to where the map is": to the left of the minimap, 12 pixels short of it (8 short of
+   its frame), its letters standing level with the bottom of the map. Under the minimap the
+   game puts the info accessories' lines and the map's own buttons; over it the life and the
+   mana. With the minimap turned off, or laid over the screen, it stays where the minimap
+   would be. **Mine**.
+6. **Mine**: it is there all the time, for anyone, in the world: `0.0/1 Minion` with none
+   out. It goes with the rest of the interface (Hide UI) and over the full map.
+
+### 3. What was built
+
+| File | What |
+|---|---|
+| `Content/Items/Mage/MagicColours.cs` | `Ramped` takes how far round the colours have moved (`flow`, in turns) and draws each ramp as one that goes round (`Round`: the colours evenly spaced over a turn, the last running back into the first); the breathing taken out. `StrokedRamp` and the Conquest element's outline untouched |
+| `Content/Rarities/BlasphemousCrimson.cs` | `FlowSeconds` (2); `RampedNames` gives `Ramped` the game's clock in turns |
+| `Content/UI/MinionCountHUD.cs` (new) | `MinionCountHUD`: the words (`Text`), and their drawing in a layer of their own just after the minimap's (`PisAndDag: Minion Count`, scaled as the interface is) |
+
+### 4. What the 1.4.4 assembly says
+
+- `Main.GlobalTimeWrappedHourly` is set from the game's own time near the start of
+  `Main.DoUpdate`, before anything of the world is updated, so also while the game is
+  paused; it comes round every hour; only the capture camera stops it (`GlobalTimerPaused`).
+  Two seconds a turn goes into an hour a whole number of times, so the colours never jump
+  when it comes round.
+- `Player.Update` sets `slotsMinions` and `numMinions` to nothing every tick; then each
+  minion's `Projectile.Update` adds its `minionSlots` to its owner's `slotsMinions` (the
+  Stardust Dragon's head and tail not); and when they come to more than there is room for,
+  the game cuts some down.
+- `Main.UpdateMinimapAnchors`: the minimap's right edge 52 in from the screen's, plus 240 at
+  the map's scale (`Main.MapScale`, a setting of its own), its top 90 down. `Main.DrawMap`
+  draws it 240 square at that scale, under the interface's scale (`UIScaleMatrix` times the
+  map's). Its layer, `Vanilla: Map / Minimap`, is one the interface's scale is put on:
+  `GameInterfaceLayer.Draw` sets the screen's size in the interface's pixels
+  (`PlayerInput.SetZoom_UI`) for such a layer, for the world's (0) the world's, and none for
+  anything else (2).
+- The default minimap frame stands 8 left of and 15 over the minimap's own place (which is 4
+  in from where the minimap is), and its three buttons are 150, 176 and 202 along it and 240
+  down: at its bottom right.
+- With the minimap shown and the inventory shut, the info accessories' lines begin 280 in
+  from the right and 355 down (`Main.GetInfoAccIconPosition`): under the minimap.
+- `Utils.DrawBorderString`: the tooltip font through
+  `ChatManager.DrawColorCodedStringWithShadow`, black at the four sides 1.5 out, anchored by
+  its size as the font measures it (the font's line, 29 of its rows, not its ink). The
+  font's letters stand on its 17th row of 29.
+
+### 5. Verified
+
+- Built against the 1.4.4 assemblies, with your two edits in: 0 errors, the 10 warnings as
+  before.
+- In the rig, on the game's own engine (`PAD_MINIONS=1`; nothing of it is delivered), what
+  the count says: `0.0/1 Minion`, `1.0/1 Minion`, `2.5/4 Minion`, `0.8/4 Minion`, `3.3/11
+  Minion` and `10.0/11 Minion` for set counts, the same in English, German and French (the
+  last two write the point as a comma); four Imps of the player's, given 1, 0.5, 0.75 and 1
+  slots, counted by the game's own update over three ticks: 3.25 slots, four minions,
+  `3.3/11 Minion`; the room then cut to two: the game cut two down, `1.5/2 Minion`. 110 of
+  110 checks passed in that run.
+- Not in the game: drawing cannot be run in the rig (it has no screen). In its place,
+  pictures off the game's own font and art, sent to the chat: the name through one whole
+  turn (an animation, and six moments of it, made as `Ramped` now colours it); and the count
+  beside the game's own default minimap frame and its buttons, where the code puts it on a
+  1920 wide screen at the scales of 1.
+
+### 6. Left
+
+- **Never seen in the game**, neither of them.
+- **Mine**: the colours' speed and their going opposite ways; the count's size, colour and
+  place, and its being there always.
+- The count's place is worked out as the game works out the minimap's, not read off it: a
+  mod that moves the minimap would leave the count where the minimap would have been. On a
+  very narrow screen with a chest open, the count could lie over the chest's last slots.
+
+---
+
+## 16.63 Later in session 7: Hoard of Undead, a summoner's weapon before hardmode whose zombies walk as the game's own zombies walk; dropped by any zombie, one time in 50
+
+What was asked after §16.62 was delivered:
+
+> Create a prehardmode Summoner weapon:
+> Hoard of Undead
+> use these textures as Minion's textures: https://terraria.wiki.gg/wiki/Zombie I guess you can also look at images of Terraria game
+> Summon zombie that fights for you
+> Each minion projectile: 30 damage, if attacking the same target then attack cooldown is 1.5 second.
+> 1 minion slot.
+> Every minion of this weapon has the same default zombie AI, jump over things, has jump height,  Target max range: 60 tiles, cant go thru walls.
+> Its texture is 70% opacity, 20% desaturated, and has an outline that lerps the color with time counter clockwise: #c3b8d1,#b2bfd9,#b6a5b8,#89b2c4.
+>
+> Dropped by any zombie with a 1/50 chance
+
+Nothing was asked back.
+
+### 1. The device, read first
+
+- The mod's folder was listed (its root; `Content` with everything under it, 648 entries;
+  `Localization`) before anything was written: as §16.62's delivery left it, nothing changed
+  since. The `.hjson` this adds to, and the four notes, were read back from the device
+  before they were written over: byte for byte §16.62's (the `.hjson` with your two edits of
+  the 11th in it). None of the new files was there.
+- `client.log` is as §16.59 found it (169,635 bytes, last written at 06:24 local on the
+  10th): the game has not been started since.
+- The game's own pictures of the eight zombies (`NPC_3`, `NPC_132`, `NPC_186` to `NPC_189`,
+  `NPC_200`, `NPC_590`) and `MagicPixel` were read from its `Content/Images` for the
+  pictures of §5; nothing of them is in the mod's folder (the zombie draws the game's own at
+  run time).
+- The wiki's Zombie page was read: its table of the zombie's kinds (Zombie, Bald,
+  Pincushion, Slimed, Swamp, Twiggy, Female, Torch), then the small and big ones, the armed
+  ones, the Halloween and Christmas ones, and a list of other zombies.
+
+### 2. Readings
+
+1. *"Hoard of Undead"*: the item's name as written.
+2. *"a prehardmode Summoner weapon"*: a summoning staff. **Mine**: Green (the game's staffs
+   before hardmode are Blue, the Finch Staff, to Light Red, the Slime Staff, most of them
+   Orange), selling for 1 gold; no recipe (it drops).
+3. *"use these textures as Minion's textures"* (the wiki's Zombie page): the eight zombies
+   of the page's own table, the game's own pictures of them: the Zombie, the Bald,
+   Pincushion, Slimed, Swamp and Twiggy Zombies, the Female Zombie and the Torch Zombie.
+   Each zombie summoned is one of the eight at random. Not the armed ones (another AI, their
+   arms out), not the seasonal ones, not the page's other zombies.
+4. *"Summon zombie that fights for you"*: the tooltip, *"Summons a zombie to fight for
+   you"*, as the game words its staffs.
+5. *"Each minion projectile: 30 damage"*: the item's damage, summon damage; each zombie
+   hurts what it walks into for that, with the summoner's bonuses on it as on every
+   minion's, and the game's own spread of 15% either way.
+6. *"if attacking the same target then attack cooldown is 1.5 second"*: each zombie, each
+   enemy: 90 ticks before it can hurt that enemy again; another enemy at once; two zombies
+   on one enemy each on its own count.
+7. *"1 minion slot"*: one.
+8. *"the same default zombie AI, jump over things, has jump height"*: the game's own zombie
+   AI and how the game moves a zombie, taken over whole (§4): each of the eight walks at its
+   own kind's speed (the Twiggy Zombie 0.8 a tick, the Swamp Zombie 1.2); it steps up a
+   block, and jumps what is in front of it as a zombie does, 5, 6, 7 or 8 up, which lifts
+   its feet about two and a half, three and a half, five and six and a half tiles; a wall it
+   cannot get over it gives up on after a second and walks away from for nine, then comes
+   back to. As the game's zombie does, in Expert and Master it also jumps 7.9 at what it
+   goes for when that is above it (up to 6 tiles, within three of its widths across, and in
+   sight); in Classic it does not.
+9. *"Target max range: 60 tiles"*: an enemy is gone for only within 60 tiles of the zombie,
+   middle to middle, in a straight line; of those, the nearest as a zombie picks the nearest
+   player (how far across and how far up or down, added).
+10. *"cant go thru walls"*: blocks stop it as they stop a zombie, platforms too unless what
+    it goes for is below it; nothing ever takes it through a block.
+11. *"Its texture is 70% opacity, 20% desaturated"*: the zombie's own picture, each texel a
+    fifth of the way to its own grey (its brightness to the eye: 0.299 red, 0.587 green,
+    0.114 blue), lit by the world's light where it stands as the game lights a zombie, at
+    70% of that.
+12. *"an outline that lerps the color with time counter clockwise:
+    #c3b8d1,#b2bfd9,#b6a5b8,#89b2c4"*: a line one of the picture's own pixels wide (the
+    game's pictures are drawn in pixels of 2 by 2 texels) round every pixel of the zombie
+    that is not empty, on that grid; the four colours spaced evenly round it, each pixel of
+    the line the colour of where it is round the zombie's middle, blended between them; the
+    colours go round counter clockwise, so that at any one point they come in the order
+    given, the last back into the first. **Mine**: a turn every 2 seconds; the line full
+    colour, neither lit nor faded.
+13. *"Dropped by any zombie with a 1/50 chance"*: one time in 50 from every NPC the game
+    counts as a zombie (its own list, `NPCID.Sets.Zombies`: 27 kinds, Doctor Bones, the
+    Groom and the Bride, the Spore Zombies and all but one armed zombie among them; a mod
+    may add its own to it) and from those it names zombies and leaves out of that list: the
+    Armed Torch Zombie, the three Zombie Elves, the Blood Zombie, the Zombie Merman and the
+    Maggot Zombie. With their small and big kinds, 50 in all. Not the Eyezor. The player's
+    luck counts, as for every drop.
+
+**Mine**, besides: with nothing to fight it walks back to its owner and stands behind them
+(30 px behind, and 22 more for each of their zombies before it), stops within a tile of its
+place, and is not counted as stuck when it sets off again; it follows when they turn. More
+than 75 tiles from its owner with nothing to fight, it is put at their feet at once. The
+enemy its owner has marked (right click with a summoning item) is gone for before any. The
+item is used as the game's own staffs are: 36 ticks with a swing, 10 mana, used again while
+it is held, the summoning sound most of them make, a knockback of 2. The zombie comes up at
+the cursor, as theirs do, unless the cursor is in the ground: then at the summoner's feet.
+The buff is *Zombie*, *"The zombie will fight for you"*, as the game names and words its
+minions' buffs; the zombie's own name *Zombie* too. The Torch Zombie's torch lights where it
+is held and lets a spark go now and then, as the game's does. Left out of the zombie's AI:
+its moan, its leaving at daybreak, the doors it knocks on and in a Blood Moon opens (a
+closed door is a wall to this), and its being turned by shimmer (in shimmer it is only
+slowed).
+
+### 3. What was built
+
+| File | What |
+|---|---|
+| `Content/Items/Summoner/HoardOfUndead.cs` (new), `.png` (new, a stand-in, 40 by 40) | `HoardOfUndead`, the item: the buff, the zombie, which one it looks like, where it comes up; `HoardOfUndeadDrop`, the drop |
+| `Content/Projectiles/Summoner/HoardOfUndeadZombie.cs` (new) | `HoardOfUndeadZombie`: the zombie's AI and its moving, the game's taken over; what it goes for; where it stands; its drawing |
+| `Content/Buffs/HoardOfUndeadBuff.cs` (new), `.png` (new, a stand-in, 32 by 32) | `HoardOfUndeadBuff`: up while any are out; cancelled, they go |
+| `Localization/en-US_Mods.PisAndDag.hjson` | the item's name and tooltip, the buff's name and line, the zombie's name; nothing of yours changed |
+
+### 4. What the 1.4.4 assembly says
+
+- `NPC.AI_003_Fighters`, as a zombie goes through it: it goes for the nearest player
+  (`TargetClosest`); how fast at most (1; Bald 0.95, Pincushion 1.1, Slimed 0.9, Swamp 1.2,
+  Twiggy 0.8, Female 0.87; the Torch Zombie 1), 0.07 faster a tick toward it, slowed by a
+  fifth a tick on the ground when faster; up a step no higher than 16.1; on the ground with
+  nothing over its head, walking the way it faces: 8 up against three blocks or more, 7
+  against two, 6 against one, 5 against a low step, 8 and half again as fast across a drop
+  when what it goes for is above it, 5 when it has just got stuck; 60 ticks getting nowhere
+  and it gives up on what it goes for, turning round whenever it is stopped, for 540 more.
+  In Expert and Master the 7.9.
+- Where 1.4.4 is not the 1.4.5 that the decompile in DK is: in 1.4.4 a platform over a
+  zombie's head stops it jumping, and a platform in front of it is jumped as a wall; in
+  1.4.5 neither. Taken over as 1.4.4 has it.
+- `NPC.UpdateNPC`: gravity 0.3, less high in the sky, 0.2 in water (and lava), 0.1 in honey,
+  0.15 in shimmer, falling at most 10, 7, 4 and 5.5; and a step's shift of the picture let
+  back by (1 + a third of its speed across) times `stepSpeed` a tick, which
+  `Projectile.Update` does for every projectile too, before its AI.
+- `NPC.UpdateCollision`: down slopes; which liquid it is in, and coming out of one its speed
+  across halved; through platforms when what it goes for is below it;
+  `Collision.TileCollision`; half speed in water and lava, a quarter in honey, 0.375 in
+  shimmer; then slopes and stairs (`Collision.SlopeCollision`).
+- `NPC.FindFrame` for a zombie: by how far it has walked, frame 0 to 8 px, 1 to 16, 2 to 24,
+  1 to 32, then again; 2 in the air and while turning; 0 standing. `Main.DrawNPCDirect`: its
+  picture's middle over its box's, its frame 4 lower than its box, flipped when it faces
+  right.
+- `Projectile.Update`: a minion's damage is made again every tick from its `originalDamage`
+  and its owner's bonuses; it moves only if `ShouldUpdatePosition`; with
+  `manualDirectionChange` the game does not turn it by its speed. `Projectile.Damage`: a
+  minion hurts by touch only with `MinionContactDamage`.
+- `ItemDropDatabase.Populate` asks `ModifyNPCLoot` once for every NPC by its net ID, the
+  small and big zombies' (below 0) among them, and a drop is looked up by net ID. The
+  Shackle (one in 50), the Zombie Arm and Spiffo drop from a list of 23 zombies of the
+  game's own; `NPCID.Sets.Zombies` has 27, and nothing of the game's reads it.
+- The game's summoning staffs: 36 ticks with a swing and 10 mana for most, all used again
+  while held, the Slime, Flinx, Vampire Frog, Finch, Pirate and Pygmy staffs with the
+  summoning sound (`SoundID.Item44`), the Imp, Hornet, Spider, Sanguine and Optic staffs
+  each a sound of its own.
+- The eight pictures: 34 or 38 texels across, three frames of 42 to 52, drawn in pixels of 2
+  by 2 texels; every zombie of the eight 18 by 40, three frames.
+
+### 5. Verified
+
+- Built against the 1.4.4 assemblies: 0 errors, the 10 warnings as before.
+- In the rig, on the game's own engine (`PAD_FOIGH=1 PAD_FOIGH_ONLY=hoard`; nothing of it is
+  delivered), the mod's zombie side by side with the game's own zombie of the same kind,
+  from the same place over the same ground, the game's after a player and the mod's after an
+  enemy of the player's size where the player stood: ten courses (flat ground; a step and
+  walls of two, three and four; a half block, slopes up and down and a wall too high, which
+  each gives up on and comes back to; a drop with the goal on a ledge beyond it; down
+  through platforms; water; honey; a long way of steps, a ledge, a drop and a wall; the goal
+  on a platform above it, in Expert and in Classic), each for all eight kinds: 80 runs of
+  420 to 2,400 ticks, every tick the same, where it is, how fast it goes, which way it
+  faces, its frame, its picture's step shift and how long it has been getting nowhere.
+- Its own, in the rig: four summoned behind their owner stood on the ground at their places,
+  each within a tile; the owner turned round, they walked to the other side and stood again,
+  not one jump on flat ground; 90 tiles away with nothing to fight they were at the owner's
+  feet the next tick and walked back to their places; an enemy 61 tiles off not gone for,
+  one 59 off gone for, a nearer one behind it turned to, the marked one before any; one
+  enemy hit at ticks 0, 90, 180, 270 and 360, another that came up against it at tick 100
+  hit at once; 26 to 34 a hit; three summoned with room for two left two; the buff up while
+  they were out, cancelled taking them all, and going by itself with none; at the cursor in
+  the air, at the summoner's feet with the cursor in the ground; the eight about as often in
+  400 summons (42 to 59 each); what is sent to other machines back the same. The drop, the
+  game's own drop database made as the game makes it: all 50 kinds one time in 50, nothing
+  else. 154 of 154 checks passed.
+- Not in the game: drawing cannot be run in the rig. In its place, pictures made off the
+  game's own pictures by the same steps as the code, sent to the chat: the eight beside the
+  game's own zombies, by day, at night and on grey; one walking with its outline turning, by
+  day and by night.
+
+### 6. Left
+
+- **Never seen in the game, never heard, never with a second player.**
+- **Mine**, and the readings to confirm: RELEASE_TODO.
+- It walks as slowly as a zombie (0.8 to 1.2 a tick; a player runs at 3 and more): its owner
+  leaves it behind, and 75 tiles behind with nothing to fight it is fetched.
+- Both pictures are stand-ins (PlaceholderTextures.md).
+
+---
+
+## 16.64 Later in session 7: Hoard of Undead's zombies brought back from a fight, a jump of 6 tiles with your numbers kept, and the minion count beside the life display as a block of two lines
+
+What was asked after §16.63 was delivered:
+
+> fixed some parameteres, can you make it so that if im 75 tiles awway they all move to my place? even if they busy attacking an npc? now if i run away more than 75 tiles they js busy gnawling on  dummy
+
+> increase jump height to 6 tiles
+
+> also place minion UI next to the health bar please
+
+(with a picture of the Classic life display: twenty golden hearts, the minimap under them,
+"1.0/1 Minion" left of the minimap's bottom)
+
+> and make it a centered block like this:
+> Minion
+> num/max
+
+Nothing was asked back.
+
+### 1. The device, read first
+
+- The mod's folder was listed (its root; `Content` with everything under it, 653 entries;
+  `Localization`) before anything was written. Since §16.63's delivery one file has changed:
+  `Content/Projectiles/Summoner/HoardOfUndeadZombie.cs`, yours, at 20:52 local on the 11th
+  (41,399 bytes). Everything else, the four notes and the `.hjson` among them, is byte for
+  byte §16.63's.
+- Your changes in it, against §16.63's (all kept, §2.3): each kind's top speed 0.65 faster
+  (`1f+0.65f` and so on); `Cooldown` 35 (from 90); each step in water, lava and honey 1.65
+  times the zombie's speed and in shimmer 1.525 (from 0.5, 0.5, 0.25 and 0.375); the
+  outline's four colours given an alpha of `255*0.7f`; and its gravity on land 0.65 (from
+  0.3).
+- `client.log` (241,770 bytes, last written at 22:20 local on the 11th): the game has been
+  run since; nothing in it from the zombie or the minion count.
+
+### 2. Readings
+
+1. *"if im 75 tiles awway they all move to my place? even if they busy attacking an npc?"*:
+   every zombie farther than 75 tiles from its owner (middle to middle, as before) is put at
+   its owner's feet that tick, whatever it was doing. The enemy it had is let go of, and it
+   picks again from where it now is, within its own 60 tiles: the dummy it was at is then
+   more than 75 tiles off, past its 60, so it stays with you. **Mine**: where it was before
+   it was taken stays its last place, so it is not counted as stuck where it lands and does
+   not hop.
+2. *"increase jump height to 6 tiles"*: the highest it gets up is onto what stands 6 tiles
+   over its feet, and not onto 7. With your gravity (0.65 against a zombie's 0.3) its
+   highest jump, a zombie's 8, lifted its feet 45.3 px, under 3 tiles: run in the rig as you
+   had it, it got up walls of 2 and 3 tiles and none of 4 or more. Now each of its jumps (a
+   zombie's 5, 6, 7, 7.9 and 8) is made faster by one share, `Lift`, worked out from
+   `JumpHeight` and your gravity: 1.378. The 8 leaves the ground at 11.03 and lifts its feet
+   88 px, 5.5 tiles; the step up a zombie makes onto a block (up to 16.1 px) takes it the
+   last half tile. Onto 6 tiles that is, not onto 7, which would need 95.9. The lower jumps
+   keep their share of it, as a zombie's do: against walls of two, three and four its feet
+   go about 3, 4.2 and 5.5 tiles up. **Mine**: in a liquid its jumps are a zombie's own
+   (`JumpLift`): the share is worked out against its gravity on land, and in a liquid the
+   game's own liquid gravity holds it (0.2 in water); and with your liquid steps a lifted
+   jump would carry it 17.9 px in a tick, further than the game looks for blocks (§4).
+3. *"fixed some parameteres"*: kept as they are. Your gravity is now a named number, `Pull`,
+   so that the jump follows it if you change it again; `JumpHeight` (6 tiles) is one too.
+   Two of your changes did something besides what they look like, and are made to do what
+   they look like (§3, §4): the outline's alpha turned the outline white, and steps in
+   liquids longer than the zombie's speed could take it into a block.
+4. *"place minion UI next to the health bar"*: the count beside the life display, the hearts
+   or the bar, to its left and 12 px short of it, its letters level with the display's
+   middle. On every one of the game's own displays (Classic, Fancy, Fancy with its text, the
+   bars, the bars with their text and with their full text), wherever the one the player has
+   chosen draws its life; a display of another mod's is taken to be where Fancy is.
+5. *"a centered block like this: Minion / num/max"*: two lines, *Minion* over the count,
+   each centred across the block; the count as before, the slots taken to one place after
+   the point over the most there can be (`2.5/4`).
+
+**Mine**, besides: the bars draw their life text over the life bar and their mana bar under
+it. Where the block would run into either, it moves up or down beside the life bar as far as
+it must; where there is no room between them, it goes out past both to the left, level with
+the bar.
+
+### 3. What was built
+
+| File | What |
+|---|---|
+| `Content/Projectiles/Summoner/HoardOfUndeadZombie.cs` (yours, with these in it) | the fetch past 75 tiles whatever it is doing, the enemy let go of; `Pull` (your 0.65), `JumpHeight` (6 tiles), `Lift` and `JumpLift`, every jump times `JumpLift`; in a liquid, a step longer than its speed is asked again of the blocks; the outline colours at 70% as the game draws 70% (`new Color(r, g, b) * 0.7f`); its comments told what is yours |
+| `Content/UI/MinionCountHUD.cs` | the block of two lines beside the life display: `LifeDisplay`, where each of the game's displays draws its life; `Place`, where the block goes beside it |
+
+### 4. What the 1.4.4 assembly says
+
+- FNA's `Color` has these constructors: `(int, int, int)`, `(int, int, int, int)`, `(float,
+  float, float)`, `(float, float, float, float)`, from a `Vector3` and from a `Vector4`.
+  None takes three whole numbers and a fraction, so `new Color(0xc3, 0xb8, 0xd1, 255*0.7f)`
+  is the one of four fractions, which takes each number times 255 and keeps it to 255:
+  white, wholly opaque. The built mod's static constructor shows it: 195.0, 184.0, 209.0 and
+  178.5, then the fractions' constructor. The game's sprite batch draws premultiplied, so
+  70% of a colour is all four of its numbers times 0.7 (`Color * 0.7f`), as the zombie's
+  body already is.
+- `Collision.TileCollision` looks for blocks only round where the box starts, a tile before
+  it and two past it. `NPC.UpdateCollision` in a liquid asks it of the speed and then moves
+  the speed times the liquid's share (0.5, 0.25, 0.375), never further than it asked. With a
+  share over 1 it moves further than it asked: into a block, when one is just past where the
+  speed reaches.
+- `PlayerResourceSetsManager` keeps the game's six displays by name, `Default`, `New`,
+  `NewWithText`, `HorizontalBars`, `HorizontalBarsWithText` and
+  `HorizontalBarsWithFullText`; `ActiveSetKeyName` is the chosen one's
+  (`Main.ResourceSetsManager`). Their hearts and stars are counted by `PlayerStatsSnapshot`
+  (hearts at most 20).
+- Classic (`ClassicPlayerResourcesDisplaySet.DrawLife`): hearts 22 square, the first's left
+  300 in from the right edge, 26 apart, ten to a row, rows 26 apart from 32 down; *Life:*
+  centred over them, 6 down.
+- Fancy (`FancyClassicPlayerResourcesDisplaySet`: `PrepareFields`, `DrawLifeBar`,
+  `HeartPanelDrawer`; `ResourceDrawSettings.Draw`): panels 30 high from 296 in and 15 down,
+  21 down with its text, rows 28 apart; a row of one heart is drawn 4 left and 4 up; its
+  text centred 170 in.
+- The bars (`HorizontalBarsPlayerResourcesDisplaySet`: `Draw`, `LifePanelDrawer`,
+  `ManaPanelDrawer`, `DrawLifeBarText`, `DrawManaText`): the life bar 24 high from 306 in,
+  shorter from the left by 12 for each heart under 20, 18 down (22 with its text, 20 with
+  its full text); the mana bar right under it from 316 in, shorter by 12 for each star under
+  20; the life text's line 20 over the life bar, centred 130 in from where the bar starts
+  with 20 hearts; the mana text 65 down, centred 180 in. The pictures' sizes read from the
+  game's own files (`Panel_Left` 6, `HP_Panel_Middle` and `MP_Panel_Middle` 12 wide).
+- The layer `Vanilla: Resource Bars` is drawn at the interface's scale.
+  `Utils.DrawBorderString` takes its anchor times the text's measure as its origin; its
+  border is 1.5 wide.
+- The tooltip font (`Mouse_Text`): lines 29 rows apart; capitals stand on row 17 with their
+  tops on row 3; a 4 starts on row 1, a slash and a 6 on row 2, a 9 hangs to row 19;
+  *Minion* is 55 wide.
+- `Main.DrawInventory`: the open inventory's slots 56 apart at a scale of 0.85 from 20 in,
+  so its last column ends 493 in from the left.
+
+### 5. Checked
+
+In the rig, on the game's own engine (`hoard9`, 170 of 170; `minions3`, 114 of 114):
+
+- The rig's own copy of the zombie made from this source with a zombie's numbers put back
+  (speeds, liquid steps, gravity, no lift): the same as the game's own zombie of its kind,
+  tick for tick, 80 runs over the ten courses of §16.63. What is new in the code changes
+  nothing with a zombie's numbers; what differs is your numbers.
+- The zombie as delivered, over the same ground: on flat ground, over a step and walls of
+  two, three and four, down through platforms, through water, through honey and onto a
+  platform above it in Expert, all eight get to what they go for, and none is ever inside a
+  block. In water and in honey, before its step was asked again of the blocks, each got
+  there but was inside a block for 12 ticks of the eight runs together; after, none.
+- How high: walls of 2, 3, 4, 5 and 6 tiles, all eight get up; 7 and 8, none. Its highest
+  jump lifts its feet 88.01 px (5.5 tiles); on the wall of 6 its feet stand 96 over the
+  ground.
+- Read, not asked, with your numbers: a pit 4 wide and 7 deep with the goal on a ledge 3
+  high beyond it. Six of the eight jump it; the two slowest, Twiggy and Female (1.45 and
+  1.52 a tick), come down short, into the pit, and stay there. With a zombie's numbers all
+  eight made it (§16.63): your gravity shortens the time in the air, so the jump is high
+  enough but not long enough for them.
+- Fetched: four zombies with nothing to fight, their owner 90 tiles off: at the owner's feet
+  the next tick, then each walks back to its place without a jump. Three zombies each at its
+  own enemy: their owner 51 to 63 tiles off, they fight on; 76.9 tiles or more, each is at
+  the owner's feet the next tick with its enemy let go of; in the 600 ticks after, none goes
+  back for the enemies (78 tiles and more off, past its 60), none jumps, each stands at its
+  place.
+- Its hits, with your 35: the same enemy every 35 ticks, another at once, 25 to 35 a hit.
+- The minion count: *Minion* over `0.0/1`, `1.0/1`, `2.5/4`, `0.8/4`, `3.3/11` and
+  `10.0/11`, in English, German and French; four Imps of the player's, counted by the game's
+  own update, `3.3/11`. The life display where each of the game's own displays draws it, 12
+  cases; the block's place, 6 cases worked by hand. 9,600 layouts (each display, 1 to 20
+  hearts and stars, four widths of life text): the block runs into nothing of theirs and
+  stays on the screen; on Classic and Fancy it is always beside the hearts and level with
+  them; beside the bars, 1,894 level, 986 moved up, 626 down and 1,294 out past them.
+- Compiled: 0 errors, the 10 warnings there were.
+
+### 6. Pictures
+
+In the chat only, off the game's own pictures and font, laid out as its displays' code lays
+them out: the block beside your Classic hearts, as in your picture; and beside Fancy and
+Fancy with its text, and the bars, level, lowered under their text, raised over their mana
+bar and out past both.
+
+### 7. Left
+
+- Neither has been seen in the game.
+- On an interface narrower than 846 (a small screen at a large interface scale) the block
+  lies over the open inventory's last column, which there comes up to the hearts.
+- The two slowest zombies and a pit with a ledge beyond (§5): yours to weigh against the
+  gravity.
+
+---
+
+## 16.65 Later in session 7: why the way down to the ball was not made in Errand Boy: the Dungeon spread out over the ball
+
+What was asked while §16.64 was being finished:
+
+> why is the cave down to the ball not created ?
+
+(with the map of the new world, Errand Boy: the sea and the beach on the left, the Dungeon
+in the middle, the ball under it at the lower left, and no cave down to it)
+
+Nothing was asked back.
+
+### 1. What the game's log says
+
+`client.log`, the world made at 22:12 to 22:15 local on the 11th (Errand Boy, 12,600 by
+3,000, seed 1088470750, a corruption world with the ball crimson at 910, 2,141 and the
+graveyard at x 750 to 900):
+
+> The Way Down: no way could be found that keeps clear of everything and can be walked down, from 6 mouths and 0 ways tried (the last: no way from the hall's far end at 1188, 837 down to the shaft's top at 906, 1721).
+
+The pass ran, and found no way it was allowed to cut, so it cut nothing.
+
+### 2. Why
+
+Errand Boy's `.wld` and `.twld` were read off the device (its 2,800 columns at the sea end
+into the rig's tile grid at the Grand size, the graveyard's ground and the ball's middle
+from its own saved data), and the pass run on them in the rig, as `/struct update` runs it
+and as worldgen runs it: no way, both times, for the same reason.
+
+- The Dungeon's entrance is at x 1,634. Down to the cavern layer it stays within x 1,562 to
+  1,754; under it, its halls spread seaward as far as x 598, 1,036 tiles from its entrance,
+  from row 1,100 to row 1,600. The ball (x 560 to 1,260) is under them; over the columns of
+  the top of its shaft, the Dungeon is in rows 1,191 to 1,341.
+- The ball keeps its middle 600 tiles from the Dungeon's entrance (`TheBallPass`: 350 for
+  itself and 250 for the Dungeon, taken to spread "a couple of hundred either side of its
+  entrance"). Here it is 724 off the entrance, but this Dungeon spread five times further
+  than that.
+- The way keeps 40 tiles off the Dungeon. The top of the shaft opens into a pocket of caves
+  closed in from above by the Dungeon's halls: searched backward from the shaft by the way's
+  own rules, nothing higher than row 1,314 can come down to it, and with the Dungeon kept
+  only 3 tiles off, nothing higher than row 1,226. The one way round the Dungeon is on its
+  sea side, under the beach, where the way keeps out above the cavern layer (*"dont go to
+  the ocean"*). Let into the ground under the beach below the surface layer, the way's
+  search could come down there, but only with a climb of 5 tiles out of a cave beside the
+  shaft; the floor of a way is let rise 2 at the most from one tile to the next. Let rise 5
+  as well, ways were found, and none of them could be walked down once cut.
+
+### 3. Changed
+
+Nothing of the mod's. The rig's only (none of it is delivered): its part for the way down
+reads either world (`PAD_WAYDOWN_WORLD`), and has three looks of its own: the pass's map
+across the whole slice, a search for where the way could get to from a point (or back from
+the shaft), and a step through one mouth and hall that shows where one walking it stopped.
+
+### 4. What would make it
+
+- In worlds made from now on: the ball put where the Dungeon is not, read off the Dungeon's
+  own tiles (the ball's pass runs after the Dungeon is made), not off its entrance. In
+  Errand Boy's ground that is as far seaward as the ball may go, its middle at x 440, the
+  top of its shaft 118 tiles and more off the Dungeon. And the way down let into the ground
+  under the beach below the surface layer, when nothing is found otherwise.
+- In Errand Boy itself the ball is where it is, under the Dungeon; `/struct update` could
+  not make a way down to it. A new world would have one.
+- Neither is done: both change how a world is laid out. Asked in the chat.
+
+### 5. Picture
+
+In the chat only, off the world's own file: the Dungeon (blue) spread over the ball (red),
+the top of the shaft (white), where the cave's mouth may open (yellow), the beach's end and
+the cavern layer.
+
+---
+
+## 16.66 Later in session 7: the way down round about the Dungeon where it lies between, Foigh shown at his pillar before his roar, and the Triple Fart In A Horse Shoe Adorned Bottle
+
+What was asked while §16.65 was being finished, in this order:
+
+> Why not create a path around it, i dont mind it going down then to the side tho, maybe even up a little. jaggedy js dont obstruct the dungeon and goes into the hole of the ball
+
+> For death animation of Foigh, makes it fades and pans to him at the pillar before he do his roar.
+
+> Create Triple Fart In A Horse Shoe Adorned Bottle, as  the name suggests: it creates allow quadruple jumps and negates fall damage, you know what the recipe is.
+
+Nothing was asked back. How each was read:
+
+- *"a path around it"*: round the Dungeon, only where the way down as it was (§16.60) finds
+  nothing, which is tried first and is not changed. It keeps 10 tiles off anything of the
+  Dungeon's (the first try keeps 40). *"going down then to the side, maybe even up a
+  little"* and *"jaggedy"*: found as one walking it would go, wherever that leads, down,
+  along, up and down again, ragged. *"the hole of the ball"*: the shaft; the way ends coming
+  into it.
+- *"fades and pans to him at the pillar before he do his roar"*: the fade, the player put
+  down in front of him and the camera going over to him, which came after his roar, now come
+  before it, with him at the fourth pilaster when he is in the hall.
+- *"quadruple jumps"*: the jump off the ground and three in the air, as the game counts the
+  Bundle of Balloons' (*"Allows the holder to quadruple jump"*: three in the air). *"you
+  know what the recipe is"*: three Fart in a Jar and a Lucky Horseshoe at a Tinkerer's
+  Workshop, as the game makes its horseshoe balloons; written and commented out, as every
+  recipe is.
+- §16.65's first suggestion, the ball put off the Dungeon's own tiles in new worlds, was not
+  asked for: not done.
+
+### 1. The way down, round about the Dungeon
+
+**When.** `TheWayDownPass.Make` tries the way down as it was; only when it finds nothing
+does it go round (`RoundAbout`). In Run of Bladders the first try finds what it found
+before, every time (§4).
+
+**The map.** As the first try's, but keeping 10 tiles off the Dungeon's brick and walls
+(`RoundKeep`), and wider: round the mouths' window, the shaft and the Dungeon (looked for
+within 1,200 columns of them, `RoundLook`), and 240 columns further (`RoundMargin`).
+Everything else it keeps away from is kept as before: water, lava, honey and shimmer by 2,
+anything built by 3, walls not the rock's by 2, the graveyard's ground, the ball, and the
+sea side above the cavern layer. The mouths are in the same window as before (inland of the
+beach and its keep, 40 short of the Dungeon), and the halls under them as before.
+
+**Found as one walking it would go** (`Burrow`, the cheapest way first): from where they
+stand, a step along, a step up a tile, a step down one or two, off an edge and down to
+whatever is under it (24 at the most), a jump straight up (5 at the most) and across, onto
+something (3 across at the most) or on over a hole (5 across, from a jump of 2 or more) and
+down to whatever is under it. The body is two tiles wide and three tall, as the game's
+player. Through the air where there is air; through the ground's own tiles where there is
+not, digging what the cut always takes (each tile dug costs a little, so a cave already
+there that leads the same way is taken); never into anything the map keeps it from, but
+through the air beside a pot or a pile, never cutting them or what they stand on; never
+standing on what the move itself digs away. Turning back the way it came costs as much as a
+few tiles of way, so that it runs one way and then the other, and does not wriggle down a
+well; and each step costs more or less by lumps of rock 8 and 20 tiles across (0.56 to 2.2
+times), so that it winds through the rock as a cave does. From the ground at the mouth to
+the hall's near end, and from its far end into the shaft: their body over its middle column,
+as low as its top or lower.
+
+**Cut, built, made wider.** Cut as wide as one walking it (the room for the body along every
+move); the hall built and the door stood as before; then made wider round each place of it,
+from a middle two tiles over the feet, 2.8 to 3.7 tiles out and in lumps up to 1.6 tiles
+more, ragged, as the first try's cut is (0.8 further out than it, the first try's line being
+two or three tiles over its floor); but never lower than the feet there, and never what
+anyone walking it stands on (under either foot, and the row under that), nor the hall's
+brick and its level way's floor.
+
+**Walked.** In two halves, from the ground at the mouth into the hall and from the hall into
+the shaft, as the first try is walked (steps of 1, jumps of 5, falls of 24) and further
+across a jump, as the search goes. Where one walking a half is stopped, that half is found
+again from its start on the world as it then is, never digging what they stood on, and cut
+and made wider; 12 times at the most in all. Then walked whole. If it cannot be, everything
+it touched is put back as it was, and the next mouth and hall are tried.
+
+**The rest as before**: sand, silt and slush over what was cut made fast, plants and drips
+left with nothing to hang from taken, the walls behind what was cut (dirt in the surface
+layer, under it none or rock in patches, the evil's near the ball), a torch every 18 to 32
+tiles along it, everything framed, and the hall kept from later passes in worldgen. The log:
+
+> The Way Down: no way down keeping 40 off the Dungeon (6 mouths and 0 ways tried, the last: no way from the hall's far end at 1086, 894 down to the shaft's top at 904, 1712); made round about it, 10 off it at the least: the mouth at 1412, 526; the hall at 1288-1313, floor 1033, the door at 1300, 1030; the shaft's top at 904, 1712; 2855 tiles of way, 9451 tiles cut, 104 torches; walked from the mouth into the shaft (1 time found again where one walking it was stopped).
+
+**In Errand Boy** (the rig, on the world's own tiles as §16.65 read them; `/struct update`
+and worldgen; as it is and turned round):
+
+| | as it is, by `/struct update` | as it is, as worldgen | turned round, by `/struct update` | turned round, as worldgen |
+|---|---|---|---|---|
+| the mouth | 1,412, 526 | 1,452, 526 | 11,084, 531 | 11,098, 526 |
+| the hall (its floor) | 1,288 to 1,313 (1,033) | 1,292 to 1,317 (1,033) | 11,281 to 11,306 (1,035) | 11,281 to 11,306 (1,033) |
+| the way, in tiles | 2,855 | 2,954 | 2,582 | 2,673 |
+| cut | 9,451 | 9,588 | 9,158 | 9,367 |
+| torches | 104 | 108 | 96 | 100 |
+| a half found again | once | once | never | never |
+| walked with falls of, jumps of (at the least) | 23, 5 | 23, 5 | 23, 4 | 23, 5 |
+| the nearest tile cut to anything of the Dungeon's | 14 | 11 | 15 | 16 |
+| the tallest run cut in one column | 21 | 18 | 19 | 19 |
+| the whole pass | 46 s | 41 s | 45 s | 46 s |
+
+Each was also held to everything the first try is held to in the rig: nothing changed but
+what was cut (the ground's own tiles), the hall, its torches and sand made fast; no liquid
+moved; nothing cut within 2 of water, 3 of anything built, 2 of a wall not the rock's, or on
+the graveyard's ground, the sea side above the cavern layer or the ball; the walls behind
+it; every torch standing; the door on its two Gray Brick and the flat way 42 level; and the
+whole world framed again after it with nothing near it going. 175 of 175 checks.
+
+As it is, by `/struct update`: from the mouth at x 1,412 the way goes down and seaward to
+the hall (x 1,288 to 1,313, floor 1,033); out of its seaward end up a little (30 rows) and
+on seaward over the Dungeon's halls; down past their seaward end under the beach, as far
+seaward as x 490; then back inland under them at rows 1,640 to 1,712, up a little and down
+again, into the top of the shaft at 904, 1,712. Coming down to the hall's near end it is
+squeezed between the rock kept round the hall and a pool beside it, and comes down its last
+26 rows three tiles wide, a turn at every drop of one or two (RELEASE_TODO).
+
+**How long.** 41 to 46 s in the rig for each run, from the start of the pass to its end,
+most of it the first try finding nothing, as before (31 and 34 s in §16.65's runs of it); a
+half found again took about 4 s more. The game stands still while `/struct update` makes it
+(RELEASE_TODO).
+
+**In code**, `Content/Structures/TheWayDown.cs` only: `RoundAbout`, `RoundMade`, `Again`,
+`Kept`, `Floors`, `Widen`, `Feet`, `InShaft`, `DungeonBox`, `Go`, `Place` and `Burrow`, new;
+the walk made general (`Walker`: from the places given to the goal given), `Walk` the first
+try's own as it was; `Take`'s test on its own (`Takes`), for the search to ask; the map's
+`Firm` (all it keeps away from but the loose things); the notes over the pass (ROUND ABOUT).
+
+### 2. Foigh shown at his pillar before his roar
+
+His end, from the blow that would kill him (or `/foigh end`):
+
+| part | ticks | |
+|---|---|---|
+| Dying | 40 at least | rocked by the blow, as before |
+| Shown | 156 | new: in the hall he is gone to the fourth pilaster as it begins (a ghost left where he stood); to black by 24, the player put down twenty tiles in front of him at 27, facing him, back by 70; the camera over to him from 82, 96 ticks, most of the way (0.88) as his roar begins; he gets his breath, the sword dragged, straight by the end |
+| Roar | 208 | as before, the camera on him from its voice (22) to its end; the hall's flames out from him but the five up his pilaster |
+| Fold | 170 | was 280: no fade now (it came before his roar); swaying a moment to 40 (it swayed to 150 while the camera came over), his knees by 86, the sword let go at 106, his hands down by 124, the sword down by 134; the camera on him |
+
+The rest as it was. In the rig (his whole rig, §4): struck down, rocked 41 ticks; then
+shown, the picture to black, the player put down 320 px (twenty tiles) before him and facing
+him, and back; the camera off for him at tick 82 and 0.88 of the way over as his roar
+begins, 156 ticks in; his roar from tick 22, the camera on him from its voice to its end;
+down with the picture as it is and the camera on him, the sword out of his hand at 106 of
+170. In the hall: gone to the fourth pilaster (column 179) as he is shown, the player put
+down 320 px down the hall from him, every flame still lit as his roar begins (146 of 146),
+and 141 put out by it, all but the 5 up his pilaster.
+
+In code: `Foigh.cs` (`Move.Shown`), `Foigh.End.cs` (the fade, the putting down and the pan
+moved to Shown; the flash to the pilaster at its start), `Foigh.Fight.cs` (Shown among his
+end's moves), `FoighMoves.cs` (`Showing`, his pose while shown; Fold's times).
+
+### 3. Triple Fart In A Horse Shoe Adorned Bottle
+
+`Content/Items/Accessories/TripleFartInAHorseShoeAdornedBottle.cs` and its picture, a
+stand-in (28 by 32: a corked flask full of green gas, a gold horseshoe nailed on its front).
+
+| | |
+|---|---|
+| Worn | three jumps in the air (`TripleFartJump`), each the Fart in a Jar's own: held up twice as long as a jump off the ground (30 ticks to 15), 1.75 times as fast across while it lasts, its sound and its green cloud; with the jump off the ground, four |
+| Its place among the game's | tried right after the Fart in a Jar's, before the Tsunami's and the Cloud's: worn with a Cloud in a Bottle, its three and then the cloud |
+| Back | all three once on the ground again, as every jump in the air comes back |
+| Falls | no fall damage, the game's flag for it set as a Lucky Horseshoe sets it; with wings too, which the mod's grounding of wings (`PSItem`) takes the flag from: the bottle sets it again after it (`TripleFartPlayer`) |
+| Worth | Yellow, 20 gold to buy and 4 to sell: the Bundle of Horseshoe Balloons', the game's own that quadruple jumps and negates fall damage |
+| Tooltip | *Allows the holder to quadruple jump* / *Negates fall damage*, as the game's say it; and *'The horseshoe is for luck. So is the cork.'*, mine |
+| Recipe | three Fart in a Jar and a Lucky Horseshoe at a Tinkerer's Workshop, commented out |
+
+The rig (`PAD_FOIGH_ONLY=fart`, the item and its jump registered as the game registers any
+mod's, worn by a player the game's own `Player.Update` moves, the jump key pressed for
+them): 125 of 125 checks: five presses, four jumps (off the ground at tick 2, the bottle's
+at 16, 30 and 44, the fifth nothing); each of the bottle's held 30 ticks to the ground
+jump's 15, and 5.25 px a tick across to 3 on the ground; all three back once down; the same
+again after landing; with a Cloud in a Bottle, the three and then the cloud; without it,
+none in the air; the game's flag for no fall damage set with it worn alone, with wings after
+it and with wings before it (the game hurts a fall only when that flag is not set and no
+wings are worn, as its `Player.Update` has it). And the game's own bottles, balloons and
+horseshoes read off the assembly, for the numbers above (`PAD_FOIGH_ONLY=fartfacts`): 105 of
+105.
+
+### 4. The rig
+
+Nothing of it is delivered. New: `FoighBench.Fart.cs`, `FartFacts.cs`. Changed:
+`FoighBench.End.cs` (Shown), `WayDownRig.cs` (round about: its walk across 5 and over a
+hole, the whole way in its pictures, its walks timed and the stopped ones written out),
+`FoighBench.Sword.cs`: the Rust Side Sword's verses have been yours since §16.62 and the
+first is 82 letters; the check that held them to 60 failed on that alone, and now tells
+their lengths.
+
+On the final build (the sources delivered, compiled: 0 errors, the 10 warnings as before),
+everything in the rig, one run after another: the default run, 489 of 489 checks; the
+world's flags, 152 of 152; weight and potions, 121 of 121; Foigh's whole rig with his end
+and the bottle, 1,148 of 1,148; his third phase's tally, 210 of 210; his film, 114 of 114;
+the Turned, 218 of 218; the Meat Hook, 196 of 196; the way down on Run of Bladders as in
+§16.60, eight seeds each way round, half as worldgen and half as `/struct update`: 379 of
+379 checks, and the sixteen ways the same as the way down made them before this (the same
+mouths, doors, tiles cut, torches and tallest drops); and on Errand Boy as in §1, 175 of
+175.
+
+### 5. Files
+
+| File | |
+|---|---|
+| `Content/Structures/TheWayDown.cs` | round about (§1) |
+| `Content/NPCs/Foigh/Foigh.cs`, `Foigh.End.cs`, `Foigh.Fight.cs`, `FoighMoves.cs` | shown before his roar (§2) |
+| `Content/Items/Accessories/TripleFartInAHorseShoeAdornedBottle.cs` + `.png` | new (§3) |
+| `Localization/en-US_Mods.PisAndDag.hjson` | the bottle's name and tooltip, beside Rage of a Thunder's |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md`, `PAD_World_Plan.md`, `PAD_NPC_Plan.md`, `PAD_Item_Plan.md`, `PlaceholderTextures.md` | notes |
+| `Claude outputs/way_round_*_1666.png` | pictures (below) |
+
+Pictures of the way round in Errand Boy, in the chat and in `Claude outputs` (structure
+generation's pictures go there, as §16.61 has it): `way_round_overview_1666.png`,
+`way_round_mouth_1666.png`, `way_round_hall_1666.png` and `way_round_shaft_1666.png`, of the
+run as it is by `/struct update` in §1, made by the code as delivered.
+
+---
+
+## 16.67 Later in session 7: the way down in Flacid, into the ball's hollow from the side
+
+What was asked after §16.66 was delivered, with a picture of the map of a new world, Flacid:
+
+> its currently not spawning a pathway, prob cuz it was obstructed by the dungeon, how about this, the access to the inner circle of the ball dont have to be from top down, it can be from any angle
+
+and then:
+
+> ill let it run for the rest of the night
+
+Nothing was asked back. How it was read:
+
+- *"prob cuz it was obstructed by the dungeon"*: so it was, read off the world's own file
+  and `client.log` (§1).
+- *"the access to the inner circle of the ball dont have to be from top down, it can be from
+  any angle"*: where no way can come to the top of the shaft, the way round about goes into
+  the ball's hollow (the inner circle: the chamber with the ring of twelve chests and the
+  bank) from whatever side is nearest, through the shell. The top of the shaft is still
+  tried first, by the first try and round about, as before: wherever it can be come to,
+  nothing is changed.
+- Mine: the way ends standing on the bank in the hollow, walked into, not fallen into. The
+  drop down the shaft is the ball's own; a way in from the side is the way's own, and the
+  way is made to be walked.
+
+### 1. Why nothing was made in Flacid
+
+Off `client.log` (the world being made, 03:10:14) and the world's own file (`Flacid.wld` and
+`.twld`, read whole):
+
+- The ball is crimson, its middle at 943, 2,160; the top of its shaft at 948, 1,743, as the
+  ball's pass kept it.
+- The Dungeon's entrance is at x 1,712. Its halls go down and seaward from there to its
+  lowest, from x 870 to 1,329 at rows 1,600 to 1,899: over the top of the shaft and either
+  side of it, its brick 32 rows over it, 25 tiles seaward of it and 188 inland, and down
+  onto the ball's shell.
+- The first try, keeping 40 off the Dungeon, found nothing (the log: *no way from the hall's
+  far end at 1305, 928 down to the shaft's top at 948, 1743*); nor did the way round about,
+  keeping 10 off it and out of the ball (*no way round from the hall's far end at 1305, 929
+  to the shaft's top at 948, 1743*). The top of the shaft lies in a pocket between the
+  Dungeon's lowest halls and the ball, shut in on every side by what the way keeps off:
+  11,517 places with room for the body in it, none of them joined to anywhere else (§4).
+- `/struct update` would have made nothing in Flacid either, and said *the top of the ball's
+  shaft could not be found*. The shaft's top is not saved; it is found again off the tiles,
+  straight up from the hollow, and in Flacid no column is open from the hollow further than
+  169 rows over its middle (230 are asked; the top is 417 over it): the shaft moved over a
+  column now and then as it was cut, and the ring's top knuckle hangs right under its foot.
+  Found now (§3).
+- Seen besides: the ball's hollow is full of the Dungeon's walls, 56,482 tiles of Pink
+  Dungeon wall within 200 tiles of its middle and none of its brick. The Dungeon was there
+  first, down to row 2,300, and the ball was made over it: its shell took the brick in its
+  reach, and its hollow kept the walls (`TheBallPass.Chamber` keeps a wall it finds). As it
+  was before this; not asked to change (RELEASE_TODO).
+
+### 2. Into the hollow from the side
+
+`TheWayDownPass.Make` now tries three, each only where the one before it found nothing: the
+first try (§16.60); round about into the top of the shaft (§16.66); round about into the
+ball's hollow from the side (`RoundAbout`, given why the second found nothing). The third is
+the second over again but for these:
+
+- **The map** reaches round the whole ball, 60 more either side of its reach, and down to
+  128 rows under its middle. The ball is not kept off. What the Dungeon left in the hollow,
+  its walls within 223 tiles of the ball's middle where there is none of its brick, is not
+  taken for the Dungeon: never cut, gone round as a pot is, not kept away from. In Flacid
+  all of them are within 200 of the middle; the ball's shell, 223 to 300 out, has none; the
+  Dungeon's own begins 300 out. Everything else is kept off as before: the Dungeon by 10,
+  water by 2, anything built by 3, walls not the rock's by 2, the graveyard's ground and the
+  sea side above the cavern layer.
+- **The hollow** is read off the world: every open tile within 223 of the ball's middle
+  joined to it (in Flacid 63,164). Higher than where one can stand on its bank, it is kept
+  off by 2, with the tiles round it: the way never cuts the hollow's side open over the
+  bank, nor runs along inside it, nor comes into it from over it.
+- **It ends** standing in the hollow, the feet in its open tiles, 5 to 68 rows under its
+  middle: on the bank (its top is 8 to 60 rows under the middle as the ball's pass rolls
+  it), or on what is set in it. Walked to, as the rest of the way is: steps of 1, jumps of
+  5, falls of 24.
+- **The search** aims at the box those places are in, and guesses what is left of the way to
+  the nearest of it.
+
+Then it is made as the way round about is (§16.66): cut, the hall built and the door stood,
+made wider, walked in its two halves and whole, found again where one walking it is stopped;
+the walls behind it (the ball's own near it), a torch every 18 to 32 tiles, the framing. The
+log, Flacid as it is, by `/struct update`:
+
+> The Way Down: no way down keeping 40 off the Dungeon (6 mouths and 0 ways tried, the last: no way from the mouth at 1428, 571 down to the hall's near end at 1345, 928); nor round about it into the top of the ball's shaft (6 mouths and 0 ways tried, the last: no way round from the hall's far end at 1304, 929 to the shaft's top at 947, 1743: it is shut in by what the way keeps off (11517 places with room for the body joined to it, that far end not one of them)); made round about it into the ball's hollow from the side, 10 off it at the least: the mouth at 1578, 581; the hall at 1181-1206, floor 1078, the door at 1193, 1075; into the hollow at 776, 2177, 168 tiles from its middle; 2045 tiles of way, 9301 tiles cut, 69 torches; walked from the mouth into the hollow (0 times found again where one walking it was stopped).
+
+**In Flacid** (the rig, on the world's own tiles: its 2,800 columns at the sea end, read off
+its file; as it is and turned round; by `/struct update` and as worldgen, run with the
+shaft's top as the game kept it):
+
+| | as it is, by `/struct update` | as it is, as worldgen | turned round, by `/struct update` | turned round, as worldgen |
+|---|---|---|---|---|
+| the mouth | 1,578, 581 | 1,578, 581 | 11,017, 580 | 11,036, 581 |
+| the hall (its floor) | 1,181 to 1,206 (1,078) | 1,181 to 1,206 (1,078) | 11,329 to 11,354 (1,069) | 11,436 to 11,461 (1,069) |
+| into the ball's shell at | 860, 1,835 | 860, 1,835 | 11,765, 1,847 | 11,754, 1,840 |
+| down through the shell, rows | 342 | 342 | 330 | 337 |
+| into the hollow at | 776, 2,177 | 776, 2,177 | 11,823, 2,177 | 11,823, 2,177 |
+| the way, in tiles | 2,045 | 2,183 | 2,283 | 2,075 |
+| cut | 9,301 | 9,729 | 9,919 | 8,963 |
+| torches | 69 | 73 | 82 | 74 |
+| a half found again | never | once | once | never |
+| walked with falls of, jumps of (at the least) | 24, 5 | 24, 4 | 23, 4 | 23, 5 |
+| the nearest tile cut to anything of the Dungeon's | 11 | 11 | 11 | 11 |
+| the tallest run cut in one column | 21 | 21 | 23 | 20 |
+| the whole pass | 37 s | 35 s | 42 s | 41 s |
+
+Each was also held to everything the way down is held to in the rig: nothing changed but
+what was cut (the ground's own tiles), the hall, its torches and sand made fast; no liquid
+moved; nothing cut within 2 of water, 3 of anything built, 2 of a wall not the rock's, 10 of
+the Dungeon, or on the graveyard's ground or the sea side above the cavern layer; nothing of
+the Dungeon's changed, its walls in the hollow too; the way open from the mouth to where it
+stands in the hollow, and walked; the walls behind it; every torch standing; the door on its
+two Gray Brick and the flat way 42 level; and the whole world framed again after it with
+nothing near it going. 175 of 175 checks.
+
+As it is, by `/struct update`: from the mouth at x 1,578 the way goes down and seaward to
+the hall (x 1,181 to 1,206, floor 1,078); from its seaward end on down, seaward of the
+Dungeon's halls and 11 tiles off them at the nearest, and into the ball's shell over its
+seaward top at 860, 1,835; down through the shell 342 rows, through a chasm in it at about
+790, 1,970, to the hollow's seaward side, the last of it alongside the hollow with two tiles
+of shell between; and into the hollow at 776, 2,177, 17 rows under its middle, at the top of
+the slope down to the bank (`way_into_hollow_*_1667.png`). Turned round, the same, the other
+way round (into the hollow at 11,823, 2,177).
+
+### 3. The shaft found as it winds
+
+`FindShaft` tries the old way first, unchanged (`StraightShaft`): the column through the
+middle of the ball open furthest up from 40 rows over its middle. Where that finds nothing,
+the shaft is followed up as it was cut (`WindingShaft`): from every open tile 40 rows over
+the middle, and 116 over it (over the ring's top knuckle, under the hollow's roof where it
+comes lowest), within 60 columns of the middle; straight up while it can, else over to the
+nearest tile along the row that is open over it (4 at the most, every tile between open, and
+never more than 20 from where it began). The highest any of them comes to, across the middle
+of the open tiles there; and only if it is as far up as the old way asks. In Flacid: 947,
+1,743 (the ball's pass had kept 948, 1,743). In The Run of Bladders and Errand Boy the old
+way finds it, as before.
+
+### 4. A shut-in end is not looked for
+
+Round about, before a way is looked for from a hall's far end, every place with room for the
+body joined side by side to where the way must end is counted (`Burrow.Joined`; room for the
+body is two tiles wide and three tall, nothing in it the way keeps off, nothing in it that
+may not be dug; 1,500,000 at the most, and if there are more it is not used). Every move one
+walking it makes goes from place to place so joined; so where none of a hall's far end is
+one of them, no way can be found from there, and none is looked for (nor the way down to
+that hall). In Flacid the top of the shaft is shut in so: 11,517 places (11,693 turned
+round), and none of any hall's far end among them. The way round about into the shaft took
+127 s in Flacid in the rig before this, looking in vain from 24 halls' far ends (634,000
+places each); now about 1 s. Where the end is not shut in, it changes nothing: nothing is
+passed over that could have been found.
+
+### 5. How long
+
+In the rig, Flacid's whole pass took 35 to 42 s: the first try finding nothing 22 to 31 s of
+it, as in Errand Boy before (§16.65); round about into the shaft 1.1 to 1.3 s; into the
+hollow 9 to 12 s. `/struct update` then frames the world again, as after anything it places:
+15 to 19 s in the rig for its 2,800 columns. Before §4 the way round about into the shaft
+alone took 127 s more.
+
+### 6. The rig
+
+Nothing of it is delivered. `WayDownRig.cs`: Flacid (`PAD_WAYDOWN_WORLD=flacid`: its ball,
+its Dungeon, its graveyard, its layers, and the shaft's top as worldgen kept it, off its
+files and the log); a way into the hollow checked as above (where it stands, the Dungeon's
+walls left in the hollow not counted as the Dungeon, none of the Dungeon's changed); a vine
+that hung from what was cut, or a plant that stood on it, let go as the game would let it
+go, not counted as cut beside what it was beside; where the time goes
+(`PAD_WAYDOWN_TIMES=1`).
+
+On the final build (the sources delivered, compiled: 0 errors, the 10 warnings as before),
+one run after another: the way down in Flacid as in §2, 175 of 175 checks; on Errand Boy as
+in §16.66, 175 of 175, the four ways the same as §16.66 made them (the same mouths, doors,
+tiles cut, torches and tallest drops, and the same lines in the log, word for word); on The
+Run of Bladders as in §16.60, eight seeds each way round, half as worldgen and half as
+`/struct update`, 379 of 379, and the sixteen ways the same as the way down made them before
+(the same mouths, doors, tiles cut, torches and tallest drops); and everything else in the
+rig: the default run, 489 of 489; the world's flags, 152 of 152; weight and potions, 121 of
+121; Foigh's whole rig with his end and the bottle, 1,148 of 1,148; his third phase's tally,
+210 of 210; his film, 114 of 114; the Turned, 218 of 218; the Meat Hook, 196 of 196.
+
+### 7. Files
+
+| File | |
+|---|---|
+| `Content/Structures/TheWayDown.cs` | into the hollow from the side (§2), the shaft found as it winds (§3), a shut-in end not looked for (§4) |
+| `Content/Structures/TheForces.cs` | the hollow's roughness, the ring's radius and the bank's depth made public, for the way down to read; nothing else |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md`, `PAD_World_Plan.md` | notes |
+| `Claude outputs/way_into_hollow_*_1667.png` | pictures (below) |
+
+Pictures of the way into the hollow in Flacid, in the chat and in `Claude outputs`:
+`way_into_hollow_overview_1667.png` (all of it), `way_into_hollow_shell_1667.png` (through
+the shell) and `way_into_hollow_end_1667.png` (into the hollow), of the run as it is by
+`/struct update` in §2, made by the code as delivered.
+
+---
+
+## 16.68 Later in session 7: a dash in the air gives nothing back
+
+What was asked after §16.67 was delivered:
+
+> Why is the dash regenerating my farts? is it because it goes vel.Y = 0 so it registers? maybe make it falls down very slightly. so the fart, flight and rocket boots wont regen itself
+
+Nothing was asked back. How it was read:
+
+- *"is it because it goes vel.Y = 0 so it registers?"*: it is, read in the 1.4.4 assembly
+  and seen in the rig (§1).
+- *"maybe make it falls down very slightly"*: a dash in the air keeps a hair of its fall,
+  0.002 px a tick (`LevelDash.Hair`): a pixel in about eight seconds of dashing, a tenth of
+  one over the whole of a dash of Tabi's.
+- *"so the fart, flight and rocket boots wont regen itself"*: nor the Cloud's or any other
+  jump in the air, nor a jump as if off the ground taken in the air.
+- Mine: within a step of the ground (where the game's own step down could set the player on
+  it) the whole of the fall is taken, as before, so that along the ground, up and down
+  slopes and stairs and over platforms a dash goes exactly as it went (§2).
+
+### 1. Why the farts came back
+
+`LevelDash.PreUpdateMovement` set `velocity.Y` to 0 for as long as a dash is under way
+(`Player.dashDelay < 0`, §14.1). `Player.Update` takes a player who is not falling at all at
+the start of a tick for one standing on the ground, and reads it before gravity is added,
+before the hook:
+
+- `velocity.Y == 0f || sliding`: `RefreshDoubleJumps()`, every jump in the air given back
+  (the bottle's three farts, `TripleFartJump.OnRefreshed`; a Cloud's); otherwise
+  `ExtraJumpLoader.ConsumeAndStopUnavailableJumps`.
+- wings: `(velocity.Y == 0f || sliding) && releaseJump` (or `autoJump && justJumped`):
+  `wingTime = wingTimeMax`, and the mount's flight with it. Their flight begins only for one
+  whose `velocity.Y` is not 0.
+- rocket boots: `velocity.Y == 0f || sliding` (or `autoJump && justJumped`): `rocketTime`
+  set to `rocketTimeMax`.
+- `JumpMovement`: a jump off the ground for one at rest.
+- `HorizontalMovement`: one going faster than they run, or holding no key, is slowed by
+  `runSlowdown` a tick at rest, by half of it in the air.
+- for the player at the keyboard, a landing: the fall's damage if it was further than 25
+  tiles (and `extraFall`), and the fall's start set where they are.
+
+In the rig, on the build as delivered (§16.67), the bottle's three farts used and then a
+dash with Tabi 155 px over the floor: all three back in the dash, and a jump pressed in it
+taken as one off the ground; the same with the Shield of Cthulhu; a Cloud in a Bottle, used,
+back; Rocket Boots back to 7 of 7 from 5; Angel Wings (flight let in, as after the Empress)
+back to 60 of 60 from 45. A dash in the air was slowed as on the ground: Tabi's 35 ticks and
+343.4 px along, the same as along the floor.
+
+### 2. The change
+
+`LevelDash.PreUpdateMovement`, while a dash is under way:
+
+1. **The game's own step down** (`StepDown`). Just before this hook the game sets a player
+   down onto ground more than 7 px and less than 17 px under their feet, under where they
+   are going (`Collision.StepDown`, between its slope down and its step up), but only if
+   their fall at that point of the tick is its gravity alone (`velocity.Y == gravity`), that
+   is only if they were at rest when the tick began. A dash that ended the last tick in the
+   air with the hair is passed over by it, and it is taken here in its place, on the
+   conditions the game asks (not shimmering, not in a minecart or on the six mounts it
+   leaves out) and only for a fall of the tick's gravity and no more than the hair. A dash
+   that began the tick at rest was stepped down by the game itself, and is not stepped
+   again.
+2. **The fall** (`OverGround`): taken whole if the game's step down, looking where it looks,
+   finds ground less than 17 px under the feet (or at them, or over them, as on a slope):
+   `Collision.StepDown`'s own search, read from the assembly and written out without the
+   step (the columns under where they will be after the move; the row their feet are in or
+   stand on and the one under it; a tile counted only if, lifted 17 px, it overlaps them; a
+   half block 8 px down; a pool's top for one who walks on water; the world's lowest 42 rows
+   as ground). Otherwise all but the hair. With the gravity turned upside down, or
+   shimmering, where the game takes no step, always the hair.
+
+Why the fall is taken whole near the ground, and not only the hair left everywhere: the
+level dash went down a hill a tile at a time, the hill falling away under it each tick and
+the game's step setting it back down on the next, the dash at rest all the while. In the
+rig, down a slope of 45 degrees twelve tiles long:
+
+- the hair alone: the step was not taken after the first tick off the slope, and the dash
+  went level off the hill (down 0.082 px over 46 ticks, then a fall of 84 px when it was
+  spent);
+- the hair and the step: down the hill a tile at a time as before, but the dash in the air
+  between the steps and slowed as in the air: 410.5 px along in 40 ticks, against 343.4 in
+  35;
+- as delivered: as before, to the thousandth of a pixel.
+
+7 px or less over the ground, where the step does not go, a dash is at rest over it, as
+before: taken for one on the ground.
+
+The class's comment says all of this, and two things more: what a jump or flight used in a
+dash in the air does now (§3); and no dash is under way on a mount (`Mount.SetMount` sets
+`dashDelay` to 0, and `DashMovement` begins none on a mount), where it said the mounts that
+dash went level too.
+
+### 3. What is changed and what is not
+
+- **In the air, out of the step's reach** (17 px or more over the ground, a little less
+  where the game's search does not look): nothing is given back while it dashes, and on
+  landing the farts come back two ticks after, as without a dash. With no jump left in the
+  air, one pressed in the dash does nothing. It is slowed as the game slows one in the air,
+  and goes as far as the game's own dash does there: Tabi's lasts 48 ticks and goes 485.3 px
+  along where it went 343.4 in 35 (two fifths further), the Shield of Cthulhu's 15 ticks
+  where it was 13. It sinks by the hair: 0.09 px over the whole of Tabi's.
+- **A jump or flight used in a dash in the air** is spent as the game spends it, and lifts
+  nothing till the dash is spent: the dash holds the player level, as it always did. In the
+  rig: a fart left and the jump key pressed in the dash, the fart begun and spent (one left,
+  then none), the player level; Angel Wings with the key held 31 ticks of a dash, their time
+  51 down to 20, level; Rocket Boots held 25, 6 down to 3, level. On the build before, a
+  jump off the ground begun instead and the farts all back, the wings back to 60, the boots
+  to 7. Not asked, and not changed: whether a dash should keep the jump key till it is spent
+  (nothing begun, nothing spent), or let a jump or flight begun in it lift. Either can be
+  had (RELEASE_TODO).
+- **A landing, for the player at the keyboard**: a dash in the air is no longer one. No fall
+  damage in the air in the middle of a fall, and the fall is counted from where it began, as
+  for any fall. Read in the assembly; not tried in the rig, where the landing is the
+  keyboard player's alone and the rig's player is another machine's (§16.66).
+- **Within a step of the ground**: as before, to the thousandth of a pixel, in the rig:
+  along a level floor, up a slope of 45 degrees twelve tiles high and down one, up and down
+  steps a tile high every two, down half steps, over a bridge of platforms (each 35 ticks
+  and 343.4 px along, before and after, every tick's place and fall the same).
+- **Ground come within a step of a dash in the air** (a block 40 px high under a dash 50 px
+  up): set down onto it by the game's step, as before; the ticks before it, in the air,
+  slowed as in the air (386.9 px along in 38 ticks, against 343.4 in 35).
+- **The Legends codex** (`Dash`: *A dash carries you level, even over a drop. You fall again
+  the moment it is spent.*): still so; not changed.
+
+### 4. The rig
+
+Nothing of it is delivered. `FoighBench.Dash.cs` (`PAD_FOIGH=1 PAD_FOIGH_ONLY=dash`, and a
+part of Foigh's whole rig): a player the game's own `Player.Update` moves (another
+machine's, the keys held for them), wearing Tabi or the Shield of Cthulhu and the bottle, a
+Cloud in a Bottle, Rocket Boots, or Angel Wings with flight let in; they jump, use what they
+have in the air, then dash, the right key tapped twice as the game asks it, and every tick
+is read: the farts left, the Cloud's, the boots' and the wings' time, how high they are, how
+fast they fall, what a jump pressed in the dash begins; then the same against a run without
+a dash, for when the farts come back after landing. Told besides, not checked: a fart left
+and the jump key pressed in the dash, and the wings' and the boots' key held through one
+(§3). Then a dash along the ground's shapes above, each with a mark of its path (where the
+player was and how fast falling at the end of every tick, from the dash's first to twenty
+after its last), to set one build's beside another's (`PAD_DASH_TRACE=1` writes every tick).
+23 checks.
+
+On the build as delivered in §16.67, 126 of 137: the 11 of the air failing as in §1, the
+ground's 7 passing. On the final build (the source delivered, compiled: 0 errors, the 10
+warnings as before), 137 of 137, every mark of the ground the same as before; and everything
+else in the rig, one run after another: the default run, 489 of 489; the world's flags, 152
+of 152; weight and potions, 121 of 121; Foigh's whole rig with his end, the bottle and the
+dash, 1,171 of 1,171; his third phase's tally, 210 of 210; his film, 114 of 114; the Turned,
+218 of 218; the Meat Hook, 196 of 196. The way down's runs were not made again: they make
+worlds, and no player's update is in them.
+
+### 5. Files
+
+| File | |
+|---|---|
+| `Content/PADplayer/LevelDash.cs` | the hair, the step down taken for a dash in the air, the fall taken whole within a step of the ground; its comment |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md` | notes |
+
+---
+
+## 16.69 Later in session 7: Bone Squad, a summoner's staff after Plantera that calls six of the Dungeon's skeletons, each with the game's own AI for it
+
+What was asked after §16.68 was delivered:
+
+> Create a summoner weapon called: Bone Squad
+> rarity and price ur choice but its post plantera
+> recipe: 400 bones, 1 skull, soul of night 30, soul of fright 30, pygmy staff at mythril anvil
+> Summons a squad of minions using their AIs and defaults: Bone Lee, Giant Cursed Skull, Rusty Armored bones or Blue armor bones or hell armored bones x2 different variation(speed by +0.6f5), necromancer or ragged caster or diabolist(boost shoot frequency), skeleton archer. (all boost shoot speed)
+> All for the cost of 5.5 minions
+> All minion proj is desaturated and opacity like hoard of undead's but lerp glow:#34eb4f,#6afc94,#16c90c,#a3de57
+> Any question js ask
+
+and then:
+
+> texture from the game files
+
+Eight things were asked back, and answered:
+
+| Asked | Answer |
+|---|---|
+| Damage: each skeleton the game's own, or one number for all | Each keeps its own |
+| Summoning: what one use calls, and what a second use does | One squad, re-rolled: every use calls all six for 5.5 slots, a second use sends them away and calls six more, picked anew; it needs 5.5 slots |
+| Speed: what *"+0.6f5"* is, and for whom | +0.65, the Armored Bones |
+| Glow: what *"lerp glow"* is | An outline, its colours going round (as Hoard of Undead's) |
+| The staff's look | *"Skull with that green colors glow"* |
+| The spells' and arrows' look | The same look as the squad's |
+| What *"boost shoot frequency"* and *"boost shoot speed"* come to | The caster twice as often; every spell and arrow 1.5 times as fast |
+| Where the caster appears | Near what it goes for, as the game's do |
+
+### 1. The device, read first
+
+- The folders the new files go in (`Content/Items/Summoner`, `Content/Projectiles/Summoner`,
+  `Content/Buffs`) were listed: as §16.68 left them, none of the new files there. The
+  `.hjson` this adds to and the three notes were read back from the device before anything
+  was written: byte for byte §16.68's.
+- The game's own pictures used were read from its `Content/Images` (the squad's sheets
+  `NPC_110`, `NPC_269` to `NPC_287` and `NPC_289`, `Projectile_82`, `Item_1274`, `Buff_50`,
+  `Dust`, and the five spells' `Projectile_290` to `Projectile_293` and `Projectile_299`,
+  one clear texel each), unpacked with the game's own decoder (FNA's), for the pictures of
+  §8 and to measure them; nothing of them goes in the mod's folder: the code asks the game
+  for its own at run time.
+- The decompiled 1.4.5 source in `Downloads\DK` was read as a map only; every number and
+  step below is the 1.4.4 assembly's, read there. Where they differ, 1.4.4's was taken (§4).
+
+### 2. Readings
+
+1. *"Bone Squad"*: the item's name as written.
+2. *"rarity and price ur choice but its post plantera"*: **Mine**: Yellow, selling for 10
+   gold, as the Dungeon's own staffs after Plantera are (the Shadowbeam Staff: Yellow, 6
+   gold) and above the Pygmy Staff it is made from (Lime, 7).
+3. *"recipe: 400 bones, 1 skull, soul of night 30, soul of fright 30, pygmy staff at mythril
+   anvil"*: 400 Bones, a Skull (the vanity mask), 30 Souls of Night, 30 Souls of Fright and
+   a Pygmy Staff at a Mythril Anvil (an Orichalcum Anvil is the same tile): written out and
+   commented, as the other weapons' recipes are.
+4. *"Summons a squad of minions using their AIs and defaults"*: each skeleton is the game's
+   NPC of its kind: its own AI, taken over step by step as 1.4.4 has it, with the game's
+   numbers; its size, its frames, its picture; its contact damage and its spells' and
+   arrows' damage as the game gives them (normal mode); against enemies instead of players
+   (§3).
+5. *"Bone Lee, Giant Cursed Skull"*: one of each.
+6. *"Rusty Armored bones or Blue armor bones or hell armored bones x2 different variation"*:
+   two of the twelve Armored Bones (four Rusty, four Blue, four Hell), never the same kind
+   twice.
+7. *"(speed by +0.6f5)"*, with your answer: the Armored Bones' top speed, each its kind's
+   own, 0.65 more.
+8. *"necromancer or ragged caster or diabolist"*: one caster, any of the six (each comes in
+   two kinds).
+9. *"(boost shoot frequency)"*, with your answer: the caster's clock runs twice as fast, so
+   it casts twice as often. The clock that times its casts also times when it goes away and
+   comes back, so it does that twice as often too.
+10. *"skeleton archer"*: one.
+11. *"(all boost shoot speed)"*, with your answer: every spell and arrow 1.5 times the
+    game's speed: the archer's arrow, the caster's spell, the skull's shadowflame. The lost
+    soul's speed towards an enemy is raised with its speed out.
+12. *"All for the cost of 5.5 minions"*, with your answer: the six together take 5.5 slots
+    (the Armored Bones 0.75 each, the rest 1); one use calls all six; used again, the six go
+    and six more come, picked anew; it cannot be used with fewer than 5.5 slots (fewer than
+    6, slots being whole). Other minions go as the game sends them away for any staff, to
+    make the room.
+13. *"All minion proj is desaturated and opacity like hoard of undead's but lerp glow:
+    #34eb4f, #6afc94, #16c90c, #a3de57"*, with your answer: as Hoard of Undead's zombies are
+    drawn: the game's own picture a fifth of the way to grey, at 70% of the colour the game
+    draws it in, an outline one art pixel wide in the four greens at 70%, going round
+    counter clockwise, a turn every 2 seconds, not lit. *"proj"*: the spells, arrows and
+    their dust too.
+14. *"texture from the game files"*: every picture is the game's own: the six NPCs', the
+    arrow's, the dust's, the staff's (the Skull, by your answer, with the outline round it),
+    the buff's icon (§6).
+
+### 3. The squad
+
+| Who | The game's | Slots | Hurts by touch | Its own |
+|---|---|---|---|---|
+| Bone Lee | NPC 287, `AI_003_Fighters` | 1 | 90 | runs at 5, leaps |
+| Armored Bones, two | NPC 269 to 280, `AI_003_Fighters` | 0.75 each | 40 to 85 by kind | 1 to 3.25 by kind, and 0.65 |
+| Ragged Caster, Necromancer or Diabolist | NPC 281 to 286, aiStyle 8 | 1 | 35 to 60 by kind | stands, casts, goes and comes back |
+| Skeleton Archer | NPC 110, `AI_003_Fighters` | 1 | 45 | stops and shoots flaming arrows |
+| Giant Cursed Skull | NPC 289, aiStyle 10 | 1 | 60 | flies through everything, spits shadowflame |
+
+What it goes for, all six: the enemy its owner has marked, or else the nearest enemy within
+60 tiles of it, picked as `NPC.TargetClosest` picks a player (how far across and up or down,
+added), each tick; with none, its owner (each as below). More than 75 tiles from its owner
+it is put back at their feet (the skull at their middle), from a fight too. Touching an
+enemy it hurts it for its NPC's damage, and the same enemy again 35 ticks later (as Hoard of
+Undead's).
+
+Damage: the staff shows 60, about the squad's middle; each skeleton hurts for its own NPC's,
+times the staff's damage over 60 (so a prefix raises or lowers all of them alike), with the
+summoner's bonuses, as every minion's. Its spells and arrows likewise, fixed when made.
+
+### 4. Their AIs, from the 1.4.4 assembly
+
+**The walkers** (Bone Lee, the Armored Bones, the archer): `NPC.AI_003_Fighters` as Hoard of
+Undead's zombie has it (§16.63), each in its own place in it: its gravity (0.3 a tick, less
+high in the sky, the game's in water, honey and shimmer), falling at most 10, its step up a
+block, its jumps (8, 7, 6 or 5 up for what is in front of it, 8 and half again across a drop
+to a goal above, 5 when stuck, 7.9 at a goal above in Expert and Master), down through
+platforms to a goal below, 60 ticks getting nowhere and it gives up on it for nine seconds,
+walking on the way it faces and turning round at what stops it. With nothing to fight it
+walks back to its owner and stands behind them, 30 px behind and 22 more for each walker of
+theirs before it (Hoard of Undead's).
+
+- **Bone Lee**: at most 5 a tick, 0.2 faster a tick; faster than that on the ground, slowed
+  by three tenths a tick. On the ground, running at an enemy (1 a tick or more) within 150
+  across and 50 up or down, it leaps: 8 across, 4 up. Every jump of its is then 1.2 times as
+  fast across and 1.1 times as fast up. Its frames as the game gives it (the town NPCs'
+  code): 0 standing, 1 in the air, 2 to 15 its run, a frame every 6 counts, the count its
+  speed twice and one a tick.
+- **The Armored Bones**: at most their kind's speed (Rusty: 2, 1, 1.5, 3; Blue: 1.25, 3,
+  3.25, 2; Hell: 2.75, 1.8, 1.3, 2.5) and 0.65 (yours), 0.07 faster a tick, slowed by a
+  fifth a tick on the ground when faster. The Hell ones give off light (0.2, 0.1, 0) and are
+  drawn at full red and at least 175 green whatever the light (`Main.DrawNPCDirect`). Five
+  of them are drawn 2 px higher (`Main.NPCAddHeight`). Frames: 0 standing and in the air,
+  its walk from 2 on.
+- **The Skeleton Archer**: on the ground, with an enemy in sight and within 700 (from its
+  middle to just over the enemy's middle (§7), each way a little off, up to 40), it slows by
+  half and draws: 70 ticks, slowing by a tenth a tick and facing it, in one of five poses by
+  where it aims; at 35 it lets the arrow go from a step in front of it, aimed again (and a
+  little off again) at 16.5 a tick, the game's 11 and half again (yours); it is not bored
+  while drawn, nor turned round. In the air it stops drawing. Not drawn, it walks, 1 a tick
+  at most, 0.07 faster a tick. Frames: its pose while drawn, its walk from 6 on, 0 in the
+  air. 1.4.4 counts its walk by twice its speed and its speed again with its sign, so that
+  it steps three times as fast walking right as walking left (1.4.5 counts three times its
+  speed either way): kept.
+
+**The caster** (aiStyle 8): it stands (its speed across 7% less a tick, and nothing under
+0.1), faces what it goes for and, by its clock, which starts at 500 and runs on one a tick
+in the game's and two a tick here: raises its hands for 30 ticks and casts at 25 of them,
+the Ragged Caster at 100, 120, 140, 200, 220, 240, 300, 320 and 340 (its clock to 700 at
+540), the Necromancer at 100, 150, 200, 250 and 300 (to 700 at 450), the Diabolist at 100,
+200 and 300 (to 650 past 400). At 650 its clock starts over at 1, and it picks where to go:
+near what it goes for (`NPC.AI_AttemptToFindTeleportSpot`: a hundred tries at a tile within
+20 of it, each looking down for ground with room over it (3 tiles across, 4 up), not under
+lava, not its own tile nor one next to it, not within 5 tiles of an enemy or of where one
+will be in 20 ticks; not at all if it is more than 2000 px from there); it raises its hands
+for 20 ticks and is there from the next tick, its sound and 50 puffs where it was and where
+it is. Frames: 0 standing, 1 hands up, 2 in the air. Its spells, from the top of its head at
+the enemy's middle:
+
+- the Ragged Caster's lost soul, 6 a tick (the game's 4);
+- the Necromancer's shadow beam, 9 a tick (the game's 6), a little off (up to 30 either
+  way), at where the enemy was ten ticks of its speed ago, as the game's aims;
+- the Diabolist's inferno bolt, 12 a tick (the game's 8), told where the enemy stands.
+
+1.4.4's casters cast whether they can see their player or not (1.4.5 asks first), and its
+spells last 300 ticks (set after they are made).
+
+**The Giant Cursed Skull** (aiStyle 10): it flies through everything at what it goes for:
+towards it at 1 a tick, 0.011 faster a tick; past 250 at 1.5 (0.1), past 300 at 3 (0.2),
+past 350 at 5 (0.3); within 250 weaving about it; every 600 ticks a rush at 4, eight times
+as quick to turn, for 50; turned to face it (1.4.4's half turn is 3.14, not pi). Within 500
+of an enemy: its jaw shut for 120 ticks, then open for 40, a shadowflame at 20 of them at 9
+a tick (the game's 6); farther, it starts over. Frames: three a turn of eight ticks, the
+next three with its jaw open. Drawn in its own light, whatever the light where it is
+(`NPC.GetAlpha`: 250, 250, 250, 50), two rows short of its frame, as the game draws it. With
+nothing to fight, it keeps to a point 40 behind and 60 over its owner (mine).
+
+### 5. Their spells and arrows
+
+Each is the game's own, taken over: its size, its AI step by step, what it does at a block
+and when it dies, its sounds and its dust. Each keeps its AI kind, so that what the game
+does by that (the wind, which way an enemy is knocked) is done as for the game's own; the
+game's AI for it is not run (this is it).
+
+| Whose | The game's | Does |
+|---|---|---|
+| Skeleton Archer | Flaming Arrow, 82 | the bow's sound; straight for 15 ticks, then falling, 0.1 faster a tick, at most 16; a torch's flame behind it every tick; at a block or an enemy it ends: a tap and ten flames; one enemy in three set on fire for 7 seconds |
+| Necromancer | Shadow Beam, 290 | its sound; 101 moves a tick, 300 moves in all; off every block; through any number of enemies; a thin line of shadow |
+| Diabolist | Inferno, 291 | its sound; through blocks; a trail of fire; past where the enemy stood, across and up or down, or after 300 ticks, it bursts; on fire for 8 to 15 seconds |
+| Diabolist | Inferno, 292 | its burst: its sound, then fire welling out of a space 130 px across for 9 seconds, burning what is in it, through blocks; on fire for 8 to 15 seconds |
+| Ragged Caster | Lost Soul, 293 | its sound; two moves a tick; through blocks; bending slowly towards the nearest enemy within 200 (across and up or down, added) at 4.5 (the game's 3); a wisp of spirit |
+| Giant Cursed Skull | Shadowflames, 299 | three moves a tick; through blocks, water and enemies; on its seventh move its sound and a burst, then a trail of shadowflame |
+
+Each hurts the same enemy again only 10 ticks after any of its kind did (mine). The debuffs
+the game's give a player are given to an enemy only where an enemy can have them: On Fire
+(Slow, Blackout and Cursed do nothing to an enemy: nothing of the game's reads them on one).
+The game draws nothing of the five spells (see-through, each picture one clear texel); their
+dust is what is seen. The arrow is drawn where and as the game draws one.
+
+1.4.4's inferno bolt bursts when its corner has gone past the enemy's middle both across and
+up or down (1.4.5 asks which way it is going instead).
+
+### 6. How they look
+
+- The squad: the game's own picture of each, a fifth of the way to its own grey, at 70% of
+  the colour the game draws it in; an outline one art pixel (2 by 2 texels) wide round it,
+  in #34eb4f, #6afc94, #16c90c and #a3de57 at 70%, each pixel of it the colour of where it
+  is round the middle of the whole sheet, going round counter clockwise, a turn every 2
+  seconds, not lit (`BoneSquadLook`).
+- The dust they make: the game's own (the torch's, the shadow's, the fire's, the spirit's,
+  the shadowflame's), moving and lit as the game's does, drawn the same way, its outline as
+  faint as the dust (`BoneSquadDust`).
+- The arrow: the same way.
+- The staff: the game's Skull, as it is (not greyed), with the outline round it, in the
+  inventory, on the ground and swung.
+- The buff: *Bone Squad*, *"The skeletons will fight for you"*; its icon the game's own, the
+  Baby Skeletron Head's skull (mine).
+
+Every picture was measured: each of the squad's sheets has its art on the even 2 by 2 grid
+in every frame (one stray texel in one frame of the Hell Armored Bones with a sword), the
+Skull and the arrow too; none has a texel half see-through.
+
+### 7. Mine, besides
+
+- The staff used as the game's own summoning staffs are: 36 ticks with a swing, 10 mana,
+  used again while held, the summoning sound most of them make; the Pygmy Staff's knockback
+  of 3. The squad comes up at the cursor, or at the summoner's feet when the cursor is in
+  the ground (Hoard of Undead's). The tooltip: *"Summons a squad of six skeletons to fight
+  for you"*, *"Takes 5.5 minion slots"*. Their names the game's; the caster's *Dungeon
+  Caster*, since it may be any of three.
+- While the staff is used, the squad out takes no room (it is about to go), so the game
+  sends no other minion away for it (`BoneSquad.CanUseItem`, given back after the use by
+  `BoneSquadPlayer` and by each of them every tick).
+- The caster casts, and raises its hands, only at an enemy: with none it has nothing to cast
+  at. With none it goes to its owner, appearing near them. The game's casters also want the
+  Dungeon's wall behind where they appear; these go where their owner goes, so not (but
+  never under lava, as the game's). They keep away from enemies where the game's keep away
+  from players.
+- Bone Lee leaps only at enemies, not at its place behind its owner.
+- The archer's arrow is aimed over the enemy by four ninths of the game's tenth: a half
+  again as fast, it is in the air two thirds as long and drops four ninths as far.
+- The lost soul, which seeks enemies as the Spectre Staff's own does, the Lunatic Cultist
+  takes less from, as from the Spectre Staff's.
+- Left out of their AIs: their moans, their leaving at daybreak, the doors they open (a
+  closed door is a wall to them) and their being turned by shimmer (in shimmer they are only
+  slowed), as for Hoard of Undead's zombie; and all they do when hit, since nothing hits a
+  minion.
+- The archer's arrows meet shimmer as the player's own do: the game sends one falling into
+  it back up, or ends it deep in it; to the game's archer's, being hostile, it does neither.
+  To the spells' kinds it does nothing, and the shadowflame does not see liquids at all.
+  Left as the game does it.
+
+### 8. Checked
+
+- Compiled against the 1.4.4 assemblies: 0 errors, the 10 warnings as before.
+- Every number and step in §3 to §6 read in the 1.4.4 assembly (`NPC.AI_003_Fighters` for
+  each of the fourteen walkers, `NPC.VanillaAI_Inner` for aiStyles 8 and 10,
+  `NPC.VanillaFindFrame`, `NPC.SetDefaults`, `Main.NPCAddHeight`, `Main.DrawNPCDirect`,
+  `NPC.AI_AttemptToFindTeleportSpot`, `NPC.Collision_DecideFallThroughPlatforms`,
+  `NPC.UpdateNPC_Inner`, `Projectile.SetDefaults1`, `Projectile.AI_001`,
+  `Projectile.VanillaAI`, `Projectile.HandleMovement`, `Projectile.Update`,
+  `Projectile.Damage`, `Projectile.Kill`, `Projectile.StatusPlayer`, `Projectile.Shimmer`,
+  `NPC.UpdateNPC_BuffSetFlags`, `Player.FreeUpPetsAndMinions`, `Player.ItemCheck_Inner`,
+  `Main.npcFrameCount`).
+- Not run: the rig of §16.63 to §16.68 went with the old workspace and was not made again
+  for this. Nothing of it has been run in the game, nor with a second player.
+- Pictures (in the chat): every kind of the squad in its frames, drawn from the game's own
+  files by the same steps as the code, with the arrow, the staff and the buff.
+
+### 9. Files
+
+| File | |
+|---|---|
+| `Content/Items/Summoner/BoneSquad.cs` (new) | `BoneSquad`, the staff; `BoneSquadPlayer`, the slots given back; `BoneSquadHeldGlow`, the outline in hand; the recipe, commented |
+| `Content/Buffs/BoneSquadBuff.cs` (new) | `BoneSquadBuff`: up while any are out; cancelled, they go |
+| `Content/Projectiles/Summoner/BoneSquadMinion.cs` (new) | `BoneSquadMinion`, what all six do (what they go for, the fetch, the damage, the drawing); `BoneSquadBody`, the gravity and the moving of those the ground holds |
+| `Content/Projectiles/Summoner/BoneSquadWalker.cs` (new) | `BoneSquadWalker`, `AI_003_Fighters`; `BoneSquadBoneLee`, `BoneSquadArmored`, `BoneSquadArcher` |
+| `Content/Projectiles/Summoner/BoneSquadCaster.cs` (new) | `BoneSquadCaster`, aiStyle 8 |
+| `Content/Projectiles/Summoner/BoneSquadSkull.cs` (new) | `BoneSquadSkull`, aiStyle 10 |
+| `Content/Projectiles/Summoner/BoneSquadShots.cs` (new) | the six spells and arrows |
+| `Content/Projectiles/Summoner/BoneSquadDust.cs` (new) | the game's dust, drawn as the squad is |
+| `Content/Projectiles/Summoner/BoneSquadLook.cs` (new) | how all of it is drawn |
+| `Localization/en-US_Mods.PisAndDag.hjson` | the staff's name and tooltip, the buff's name and line, the names of the six and of their spells and arrows; nothing of yours changed |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md`, `PAD_Item_Plan.md` | notes |
+
+---
+
+## 16.70 Later in session 7: Bone Squad's melee walkers jump up to 10 blocks, and are brought back when they have not been back for 5 seconds
+
+What was asked after §16.69 was delivered:
+
+> Make all melee bone minions be able to jump 10 blocks and if its on the return state but havent return for 5 sec, js tele them back
+
+### 1. Readings
+
+1. *"all melee bone minions"*: Bone Lee and the two Armored Bones, the three that fight by
+   touch. Not the Skeleton Archer, which shoots (it walks and jumps as it did), the caster
+   (it goes away and comes back by itself) or the Giant Cursed Skull (it flies through
+   everything).
+2. *"be able to jump 10 blocks"*: onto what stands 10 blocks over its feet, and not onto 11,
+   as *"jump height to 6 tiles"* was read for Hoard of Undead (§16.64). The game's walkers
+   have one highest jump, 8 up, at a wall four blocks high or more and over a drop at what
+   they go for above them; the melee ones' now goes as high as that wall, or what they go
+   for, stands over their feet: they look up the wall in front of them, up to 10 blocks, and
+   leave the ground fast enough that their feet rise to half a block under its top, against
+   their gravity (0.3), and step up the last half block as they step up a block; never lower
+   than the game's 8, never higher than for 10 blocks. Their lower jumps (5, 6 and 7), the
+   jump of Expert and Master at what they go for above them (7.9) and Bone Lee's leap at an
+   enemy are the game's. In a liquid, the game's 8, as Hoard's (§16.64).
+3. *"if its on the return state but havent return for 5 sec, js tele them back"*: the return
+   state is having nothing to fight, when a walker goes back to its owner and stands behind
+   them. When it has not been back with its owner for 5 seconds together (300 ticks), it is
+   put at its owner's feet, as it is from 75 tiles off, with nothing to show it. Back
+   (mine): within 10 tiles of its owner, middle to middle, with nothing solid between them
+   (`Collision.CanHit`; a closed door is solid, a platform is not). An enemy to fight, or
+   being back, starts the count over. Only its owner's machine brings it back; the others
+   are told.
+
+The highest jump, in the game's speed up for each height of wall (a tick's gravity is added
+before each move, so leaving at v the feet rise v * v / 0.6 - v / 2):
+
+| Wall, blocks | Armored Bones (the game's: 8) | Bone Lee, a tenth faster up once off the ground (the game's: 8.8) |
+|---|---|---|
+| 4 to 6 | 8 | 8.8 |
+| 7 | 8.05 | 8.8 |
+| 8 | 8.64 | 8.8 |
+| 9 | 9.18 | 9.18 |
+| 10 and higher | 9.70 | 9.70 |
+
+So a wall it got over before it jumps much as before, and the highest jump lifts its feet
+152 px, 9.5 blocks. Mine: by the wall's height, so that a wall four high does not send it
+nine and a half blocks up; the other reading, the highest jump always 9.70, is a small
+change (say).
+
+### 2. Why back is near and in sight, and not at its place
+
+A walker's place behind its owner can be in a wall, when they stand close in front of one,
+facing away from it. Counted as back only at its place, the farther walkers would be brought
+back every 5 seconds for as long as their owner stood there. Near and in sight, a walker
+that cannot get through to its owner is not back: behind a wall it cannot jump, behind a
+closed door, under a ledge more than 10 blocks up, left behind by an owner who runs faster
+than it walks.
+
+### 3. Found on the way, and put right
+
+- A walker coming to its place beside a wall jumped at it once as it slowed: it was still
+  going the way it faced for a few ticks, and the game's jump looks only at what is in
+  front. With the 10-block jump that hop was nine and a half blocks. No walker jumps now
+  while it is at its place, the archer too, since they share it (mine).
+
+### 4. Left as it was
+
+- When a walker's place is in a wall, it walks at the wall, gives up on it after a second as
+  the game's do, and walks off the other way for nine seconds; it is brought back now 5
+  seconds after it is out of reach, or from 75 tiles as before, whichever comes first. In
+  the rig, with a wall 2 tiles behind the owner: Bone Lee, its place free, stood still for
+  50 seconds; the two Armored Bones, their places in the wall, were brought back 10 times
+  between them, from 59.6 and 75.2 tiles off. Not asked; say if a walker that gives up on
+  its place should stand where it is instead.
+- Standing within six tiles of a drop of more than 10 blocks, facing away from it, a walker
+  whose place is over the drop goes down it and is brought back every 5 seconds or so.
+- Within 10 tiles and in sight it is back even where it cannot get to its place: its owner
+  on a ledge up to 10 blocks over it, facing away from the edge so that the walker's place
+  is out past it, it stands below, under its place.
+- A walker summoned on the ground hops once on its first tick, the game's jump for one that
+  has not moved (Hoard of Undead's too).
+
+### 5. The rig
+
+The rig of §16.63 to §16.68 went with the old workspace; a new one was made for this, in the
+workspace only (nothing of it is delivered): the mod's walkers as compiled, each ticked by
+its own `AI()`, on the game's own engine (`tModLoader.dll`'s tiles, its own tile data,
+`Collision`), in a world made there. 76 checks, all passing:
+
+- The highest jump for heights from below its feet to 25 blocks, for each walker, on land
+  and in a liquid: as the table above; never a number that is not one.
+- A wall 10 wide, an enemy on top of it, 4 to 12 blocks high, for each of the twelve Armored
+  Bones and Bone Lee: onto 4 to 10, not 11 or 12, each jump as fast as the table; its feet
+  rise 152.03 px. The Skeleton Archer, its owner up there instead: onto 7, not 8, as before.
+- Over a drop 3 wide at an enemy on a ledge 6, 8, 9, 10 and 11 blocks up (two Armored Bones,
+  the fastest and the slowest, and Bone Lee): the jump at the edge as fast as the enemy's
+  height wants; onto 6, 8, 9 and 10, not 11. Bone Lee's leap: 4.4 up and 9.6 across, the
+  game's.
+- Nothing to fight: 30 tiles off on flat ground, Bone Lee and the slowest and the fastest
+  Armored Bones walk back and are never brought back, and stand at their places; behind a
+  wall 15 high 20 tiles off, each brought back at tick 300, to its owner's feet, once; the
+  slowest 50 tiles off, brought back at 300; a pillar 20 high between them 6 tiles off, at
+  300; its owner on a cliff 12 high, brought back at 300 and then at its place up there; its
+  owner on a ledge 8 high, the slowest jumps up to them and is never brought back; 200 ticks
+  out of reach, a tick back, then out again: brought back 300 ticks after; back at 159 px,
+  not at 161, not behind a pillar 3 high, back over a block 1 high.
+- Not brought back by the count: on a machine not its owner's; with an enemy to fight beyond
+  a wall it cannot get over (from 75 tiles, as before, on both); the archer.
+- The four walkers at their places on flat ground and down stairs behind their owner: none
+  brought back in 3,000 ticks, each within a tile of its place.
+- Its owner running at 4 a tick: Bone Lee keeps up and is never brought back; the slowest
+  Armored Bones is brought back at ticks 351, 701 and 1,051.
+- 100 tiles off: brought back the first tick, as before.
+
+Not in the game: none of Bone Squad has been run there yet.
+
+### 6. Files
+
+| File | |
+|---|---|
+| `Content/Projectiles/Summoner/BoneSquadWalker.cs` | `BoneSquadMelee`, new: the 10-block jump and the bringing back; Bone Lee and the Armored Bones on it; the walkers' highest jump given the height; no jump at its place |
+| `Content/Projectiles/Summoner/BoneSquadMinion.cs` | the walkers' gravity (`Pull`) open to them |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md`, `PAD_Item_Plan.md` | notes |
+
+---
+
+## 16.71 Later in session 7: five recipes for the game's own items, a Molten Charm from the Voodoo Demon, Boots, and four accessories: Metallurgist's Brilliant Stone, Dryad's Blessing, Necklace Of The Academy and Bone Casing
+
+What was asked after the count of weapons by class:
+
+> New recipe: cloud in a bottle anywhere
+> 25 cloud blocks, 1 bottle
+>
+> Whoopie Cushion:
+> Poo x3 Silk x2
+>
+> Ice skate: Tinkerer Workshop
+> Boots(new item)x1, iron bar x4, ice block x 20
+>
+> Hermes boots:Tinkerer Workshop
+> Boots, Cloud block x50.
+>
+> Water walker boots:Tinkerer Workshop
+> Boots, Gel x 50, Water bucket x1
+>
+> Add molten charm in possible drops by voodoo doll demon. 1/10
+>
+> New items:
+> New Item: Boots equipable, doesnt have any affect but wear on shoes (reuse wearing texture of hermes boots)
+> Silk x10, Leather x5, Iron bar x2
+>
+> New Accessories:
+>
+> Metallurgist's Brilliant Stone.
+> In a 38(wide)x39 rectangle, every ore that can be turned on by spelunker, will be draw with no light level.
+> Sold by Merchant for 30 gold.
+>
+> Dryad's Blessing (A four leaf clover)
+> Will survive an attack that will kill you with 25 HP, Gives you a buff that boosts your regen by 20hp/s for 5 sec and 1.5 sec of invinciblity (is this too much check others)
+> On surviving: plays a good sound effect you create and have some effect of leaves circling.
+> Cooldown for this: 15 mins or respawn.
+> Obtained after engaging in dryad's questline:
+> Questline I update later.
+>
+> Necklace Of The Academy (first hint at the Havu Lainey Magic Academy)
+> has a bool BasicNecklace in globalplayer, +1 slot in arsenal,
+> +5% magic damage.
+> Obtained 1/15 chance from dark caster.
+>
+> Bone Casing
+> 15 min cool down or by respawn:
+> Gives a ribcage shaped shield over the entire body, wont disappear until you die. ribcage has 100HP, every attack on the player will be absorbed by this and it acts like a dark night's shield from clash royale.
+> Even if its a huge damage attack, it will still leave the player standing and just breaks the ribcage.
+> Obtained 1/4 chance dropped when beating Skeletron.
+>
+> Make it beautiful
+
+### 1. The game's own items
+
+The game gives none of these five a recipe. Theirs are in `PADRecipes`, live, as the Greater
+Mana Potion's is (the mod's own items' recipes stay commented out; these are the game's
+items):
+
+| Item | From | Where |
+|---|---|---|
+| Cloud in a Bottle | 25 Clouds, a Bottle | anywhere, as asked |
+| Whoopie Cushion | 3 Poo (the game's `PoopBlock`), 2 Silk | anywhere: no place was named (mine) |
+| Ice Skates | a pair of Boots, 4 Iron Bars, 20 Ice Blocks | a Tinkerer's Workshop |
+| Hermes Boots | a pair of Boots, 50 Clouds | a Tinkerer's Workshop |
+| Water Walking Boots | a pair of Boots, 50 Gel, a Water Bucket | a Tinkerer's Workshop |
+
+The Iron Bars are the game's "Any Iron Bar" (`RecipeGroupID.IronBar`), so Lead Bars do too.
+The Water Bucket goes, bucket and all: nothing in the game's crafting gives an empty bucket
+back (`Recipe` and `Main.CraftItem` were looked through), as for the game's own recipes that
+take one.
+
+The Molten Charm: one Voodoo Demon in 10 drops one (`Content/NPCs/VanillaLoot.cs`, new, a
+place for the game's items in the game's enemies' loot), rolled on its own for each kill, in
+every mode, beside the Guide Voodoo Doll it drops every time
+(`ItemDropDatabase.RegisterMiscDrops`).
+
+### 2. Boots
+
+`Content/Items/Accessories/Boots.cs`, new. Worn, they do nothing. On the feet they are the
+Hermes Boots' own picture: `Item.shoeSlot` is the Hermes Boots'
+(`ArmorIDs.Shoe.HermesBoots`, 6, what the game's `Item.SetDefaults` gives item 54), so
+nothing was drawn for them, and the slot's eye hides them as it hides any shoe. White, a
+fifth of the Hermes Boots' worth (mine). Their own recipe, 10 Silk, 5 Leather and 2 Iron
+Bars (no place named, so anywhere), is written and commented out, as every recipe of the
+mod's own items is: until it is uncommented, the three boots above are made from a pair got
+some other way.
+
+### 3. Metallurgist's Brilliant Stone
+
+Readings:
+
+1. *"In a 38(wide)x39 rectangle"*: tiles; about the tile the middle of the wearer is in: 19
+   to its left and 18 to its right, 19 above and 19 below. The wearer alone sees it.
+2. *"every ore that can be turned on by spelunker"*: what is in the game's list of ores
+   (`TileID.Sets.Ore`, nineteen) and lit by the Spelunker Potion (`Main.IsTileSpelunkable`,
+   which asks other mods first): sixteen of the nineteen, copper, tin, iron, lead, silver,
+   tungsten, gold, platinum, meteorite, cobalt, palladium, mythril, orichalcum, adamantite,
+   titanium and chlorophyte. Not demonite, crimtane or hellstone: the potion does not light
+   them (`Main.tileSpelunker` is set for 46 kinds of tile in
+   `Main.Initialize_TileAndNPCData1_Part2`, and not for those three). Not the gems, chests,
+   pots and the rest the potion lights: they are not ore.
+3. *"will be draw with no light level"*: drawn as it looks in full light, however dark it is
+   there, and only that. Now and then one glints: the potion's own spark
+   (`TreasureSparkle`), for 1 ore in 300 a tick, far fewer than the potion makes.
+4. *"Sold by Merchant for 30 gold"*: his shop asks what it is worth (`Item.value`, 30 gold
+   to buy), before his mood moves it, as it moves all his prices. Green (mine).
+
+How it is drawn. The game will not draw a tile that has no light on it at all, and decides
+that before any mod is asked (`TileDrawing.DrawSingleTile`: the light, then whether the tile
+is seen, then `TileLoader.DrawEffects`, then a tile not seen is left), so a hook there
+cannot do it. The stone draws the ore a second time, over the game's: once a frame, straight
+after `Main.DoDraw_Tiles_Solid` ends the batch its solid tiles were drawn in and before it
+calls `Main.DrawTileEntities`. There is no hook there, so an IL edit puts the call in. Drawn
+there, everything that stands among the tiles is still drawn over it: the mannequins and the
+like, the cracks of a block being mined (`HitTile`, later in the same method), the NPCs,
+players and projectiles. Each tile goes through the game's own `TileDrawing` as
+`LegendsPlate` draws one: `GetTileDrawData` for its frame and, for slopes and half blocks,
+the game's private `DrawBasicTile`, at full light; a whole, level block is its frame drawn
+once. Paint is kept (`GetTileDrawTexture`), ore under the Echo Coating is shown only if the
+game shows it (`TileDrawing.IsVisible`), ore turned off by an actuator is not drawn. If the
+game's `DrawBasicTile` or the call it is put before have gone, the stone shows nothing and
+says so in the log; if drawing ever throws, it stops until the mod reloads and says so once.
+
+### 4. Dryad's Blessing
+
+Readings:
+
+1. *"Will survive an attack that will kill you with 25 HP"*: a hit through the game's
+   `Player.Hurt` that would take the last of its wearer's life leaves them at 25 (or all
+   their life, if they have less than that at most): any hit, whatever dealt it, the world's
+   own included (a fall, lava, spikes). Not a death that is not a hit: burning, poison and
+   the other harm a second, drowning, and the deaths the mod's own story deals out by name
+   go straight to `KillMe`.
+2. *"a buff that boosts your regen by 20hp/s for 5 sec"*: Spared, 5 seconds of `lifeRegen`
+   40 more (the game counts `lifeRegen` every tick and gives a life for every 120 counted:
+   40 is 20 a second), added after the game has taken what it takes for burning and the like
+   (`ModPlayer.UpdateLifeRegen` comes after `Player.UpdateBadLifeRegen`, which zeroes a
+   positive regeneration under those), so it is 20 more whatever else is on them.
+3. *"and 1.5 sec of invinciblity"*: `SetImmuneTimeForAllTypes(90)`: no hit of any kind lands
+   for a second and a half.
+4. *"(is this too much check others)"*: kept as asked. Calamity's two revives give back far
+   more on far shorter waits: its Nebulous Core 300 life, ready again in 90 seconds; its
+   Permafrost's Concoction three tenths of the most life and three seconds encased, in three
+   minutes; both late in a game. The game itself has nothing that keeps a player from death.
+   25 life, then 100 more over five seconds, once in fifteen minutes, is mild beside them.
+5. *"plays a good sound effect you create and have some effect of leaves circling"*: the
+   sound is in §7. The leaves: ten on a tilted ring about the wearer's middle while Spared
+   lasts, six of the game's own forest leaf turning over as it goes (the falling leaf of a
+   tree, `Gore_910`, unpainted), and four of the clover's own; the near half of the ring
+   over the wearer, the far half behind them and their wings, darker and smaller. They burst
+   out from the wearer with a little overshoot in the first third of a second, breathe in
+   and out a little as they go round (a turn in about a second and a half), and in the last
+   three quarters of a second drift outward and up and fade. A burst of green motes (the
+   game's own Dryad's Ward dust), grass and sparks with the sound, and a soft green light
+   about the wearer while the leaves are out.
+6. *"Cooldown for this: 15 mins or respawn"*: Wilted Clover, 15 minutes. Death takes it, as
+   it takes every buff the game does not keep (`Player.UpdateDead`), so after a respawn the
+   clover is ready.
+7. *"Obtained after engaging in dryad's questline: Questline I update later"*: nothing gives
+   it yet. Orange (mine).
+
+How. In `Player.Hurt` the game calls `OnHurt`, takes the hit off the player's life and, if
+that leaves none, calls `KillMe` on that player's own machine straight after (`PostHurt` is
+not called for a hit that kills); `KillMe` asks every `PreKill` first, and a false leaves
+them alive. `OnHurt` notes whether this hit is the one; `PreKill`, on the wearer's machine,
+spares them if it was, the clover is worn and it has not wilted. The other machines are told
+their life (the game's `PlayerLifeMana` message, sent after the hit's own) and get the buffs
+as the game sends them; each plays the sound and shows the burst the tick Spared is first
+on, and draws the leaves from how long it has been on, so every machine draws the same.
+
+### 5. Necklace Of The Academy
+
+1. *"has a bool BasicNecklace in globalplayer"*: `PADPlayer.BasicNecklace`, on the mod's
+   player for what equipment switches on (reached with `player.PAD()`), set by the necklace
+   every tick it is worn.
+2. *"+1 slot in arsenal"*: the Magic Arsenal opens one more slot while it is worn, the first
+   past those earned (`MagicArsenal.NecklaceSlot`); `OpenSlots` counts it. The arsenal reads
+   the flag once everything worn has had its say and holds it until the next time, so the
+   slot does not shut and open again between ticks. Taken off, the slot shuts with whatever
+   is in it, and it stays there: not cast, not up, not in the cycle (`Selected` and `Select`
+   now ask for a cast in an open slot, `HoldsOpen`), shown faint over the bands; a click
+   near a house gives it back; nothing can be put in. Nothing in it is ever lost. Mine: the
+   necklace's slot is a little bluer than the others and wears a small picture of the
+   necklace in its corner; hovered empty, it says it is held open by the necklace; hovered
+   shut with a cast in it, it says the cast can still be taken out; `/magicarsenal` says
+   when a slot is held open by it, and `/magicarsenal normal` keeps that slot.
+3. *"+5% magic damage"*: `GetDamage(DamageClass.Magic) += 0.05`.
+4. *"Obtained 1/15 chance from dark caster"*: 1 in 15 Dark Casters, in every mode.
+5. *"first hint at the Havu Lainey Magic Academy"*: its last tooltip line, *'A first year's
+   necklace. The clasp reads H. L.'*: a school with years, and two letters of its name, no
+   more. The Lore Bible names no academy yet. Whether it is the Arcanum (§XXIV), the
+   research institution the Bible says should not feel like a generic school, or apart from
+   it is not said here: the necklace's words name neither. Green, as the dungeon's other
+   finds (mine).
+
+### 6. Bone Casing
+
+Readings:
+
+1. *"a ribcage shaped shield over the entire body"*: a cage of ribs drawn round its wearer:
+   the spine and the backs of the ribs behind them, the breastbone, collarbones and the near
+   sides of the ribs over them, from the collarbones to the hips.
+2. *"ribcage has 100HP, every attack on the player will be absorbed by this"*: every hit
+   something deals is taken by the ribs instead: what it would have taken off their wearer,
+   after their defense, off the ribs. An attack: an enemy's touch, a shot, a hit by any of
+   the mod's bosses, their holds and drains included. Not what the world does by itself, the
+   hits the game calls `PlayerDeathReason.ByOther` (a fall, lava, spikes and the other
+   blocks that hurt, being turned to stone, and the like), so a fall does not break a
+   fifteen minute shield (mine). Not a hit from another player: the game works those out on
+   the striker's machine, where no dodge of anyone's is tried, the game's own included.
+3. *"acts like a dark night's shield from clash royale. Even if its a huge damage attack, it
+   will still leave the player standing and just breaks the ribcage"*: the Dark Prince's
+   shield takes blows until it breaks, and what is left of the blow that breaks it goes
+   nowhere: so here.
+4. *"wont disappear until you die"*: it stands until it is broken or its wearer dies, and
+   keeps the damage it has taken: nothing mends it but breaking and the wait.
+5. *"15 min cool down or by respawn"*: Splintered, 15 minutes after the ribs break; at every
+   respawn the cage is whole again, wait or no wait.
+6. *"Obtained 1/4 chance dropped when beating Skeletron"*: 1 in 4, from Skeletron in classic
+   and from its bag in expert and master, as vanilla drops what is in a bag. Green, as
+   Skeletron's other drops (mine).
+
+How. In `Player.Hurt`, a hit that can be dodged is offered to the game's own dodges first
+(the Black Belt's, the Brain of Confusion's, the shadow dodge) and then to every
+`ConsumableDodge`: the ribs take it there, so they never pay for a hit one of those would
+have turned. A hit that cannot be dodged (`Dodgeable` false: the drains of the Wall, of
+Queen Slime's grip and of the slimes in Legends, and Foigh's blows that go through whatever
+would turn them) is never offered; the ribs take it where its damage is known
+(`HurtModifiers.ModifyHurtInfo`) and cancel it. Either way their wearer gets the time the
+game gives after a hit that lands, before the next can (`Player.Hurt`'s own: two thirds of a
+second, a third for a hit of 1, twice as long with the Cross Necklace, per kind of hit), so
+a touching enemy wears the ribs down no faster than it would have worn the wearer. Their
+wearer is not hurt, so their life goes on mending as it was. Only the wearer's machine
+decides; what is left of the ribs goes to every other (a `PADPacket.BoneCasing` each time it
+changes, through `SendClientChanges`; as it is, on joining), and each shows what changed.
+Saved with the player.
+
+What is seen. A blow: the life it took over the wearer in bone white, the game's skeleton
+hit, bone spraying the way the hit pushed, the cage lit up and shaken a pixel side to side.
+The break: the game's skeleton death with a lower crack under it, a burst of bone dust and
+seven pieces of rib flying (gores of their own). Standing again: bone dust drawn in, the
+rattle of the game's skeletons rising (`DD2_SkeletonSummoned`), the cage growing into place
+over six tenths of a second and fading in. The cage has three looks: whole, cracked (two
+thirds of its life left or less), broken through (a third or less). While it stands, a buff,
+Bone Casing, shows what is left of it (no time on it; it cannot be clicked off); Splintered
+shows the wait. The slot's eye hides the cage and nothing else.
+
+### 7. Pictures, a sound, and words
+
+Pictures, every one a stand-in (PlaceholderTextures.md), nothing soft in any: the five
+items' (1x, as the mod's own Triple Fart bottle), the cage on its wearer (40x56 frames, a
+player's, 2x art, as the game's characters), three rib pieces, the clover's leaf for the
+ring, and four buff icons (16x16 art at 2x, in the house's look: a lit tile, a dark border,
+the corners cut). The bone is the ramp of the mod's own Boss Active buff, a step added at
+either end.
+
+The sound, `Content/Sounds/DryadsBlessing.ogg`, made here: a rising run of six soft bells in
+E major's pentatonic from E6 to G#7 over a lower bell, a breath of leaves lifting under it
+(noise through a resonance sweeping up), a warm open fifth swelling beneath (E4 and B4), a
+few glints high up, and a room around it; 2.3 seconds, mono, 44.1 kHz, Vorbis at quality 8
+(as Amalgaermis's voice, §16.23). At its loudest 2 dB under full scale, -16 dB while it
+sounds, as loud as the game's Life Crystal (-17.5) and Research (-17). Measured, not heard.
+The script that makes it is in the session's workspace only, not in the mod folder; it is
+seeded, and the numbers above are all it takes.
+
+Words: every tooltip and buff in `Localization`, with a flavour line each (*'Plain enough.
+Someone handy could make more of them.'*; *'The metal answers it, even in the dark.'*; *'She
+does not let go of what she is handed.'*, which reads one way of the Dryad and another of
+Life, §VI; *'A first year's necklace. The clasp reads H. L.'*; *'It held a heart once. It is
+not fussy about whose.'*), and two lines of the arsenal's.
+
+### 8. Checks
+
+- Compiled against tModLoader 1.4.4: 0 errors, the 10 warnings there were.
+- Read in tModLoader 1.4.4's own code: `Player.Hurt` both ways (the order of the dodges,
+  `ModifyHurtInfo`'s cancel, what `Hurt(HurtInfo)` does and when it calls `KillMe`),
+  `KillMe` (`PreKill` first), `Player.UpdateLifeRegen` (the count of 120, the order of the
+  hooks), `Player.UpdateDead` (the buffs it takes), `AddBuff` (expert lengthens only what is
+  marked to be), `Main.DoDraw_Tiles_Solid`, `TileDrawing.DrawSingleTile` and
+  `DrawBasicTile`, the Ice Barrier's draw (where the cage is centred),
+  `GoreLoader.AutoloadGores` (any picture in a `Gores` folder), the ores and the potion's
+  tiles, the drops of the Voodoo Demon.
+- Pictures in the chat, not committed: the cage on a player at each stage, a blow and the
+  cage forming; the leaves frame by frame, made by the same sums as their drawing; the
+  stone's view, mocked from the game's tiles; the arsenal window, mocked from its own
+  pictures.
+- Not in the game: none of this has been run there yet.
+
+### 9. Left open (RELEASE_TODO)
+
+Where Whoopie Cushion and Boots are made; Boots' recipe commented out; the rarities and
+worths; Dryad's Blessing's source; what the stone counts as ore; what the ribs take and what
+the clover spares; the two waits saved with the player. Rough edges: none of it seen in the
+game; a whole ore block beside a half block drawn whole; the stand-ins.
+
+### 10. Files
+
+| File | |
+|---|---|
+| `PADRecipes.cs` | the five recipes |
+| `Content/NPCs/VanillaLoot.cs` | new: the Molten Charm from the Voodoo Demon |
+| `Content/Items/Accessories/Boots.cs` + `.png` | new |
+| `Content/Items/Accessories/MetallurgistsBrilliantStone.cs` + `.png` | new: the stone, the Merchant's shop, the glints, `MetallurgistsSight` (the drawing and its IL edit) |
+| `Content/Items/Accessories/DryadsBlessing.cs` + `.png`, `DryadsBlessingLeaf.png` | new: the clover, what it spares, the leaves |
+| `Content/Items/Accessories/NecklaceOfTheAcademy.cs` + `.png` | new: the necklace and its drop |
+| `Content/Items/Accessories/BoneCasing.cs` + `.png`, `BoneCasingRibs.png` | new: the item, its drops, the ribs, the pieces, the cage's two draw layers |
+| `Content/Gores/BoneCasingShard1.png`, `2`, `3` | new |
+| `Content/Buffs/Spared.cs` + `Spared.png`, `WiltedClover.png` | new: Spared and Wilted Clover |
+| `Content/Buffs/BoneCasingBuff.cs` + `BoneCasingBuff.png`, `Splintered.png` | new: Bone Casing and Splintered |
+| `Content/Sounds/DryadsBlessing.ogg` | new |
+| `Content/PADplayer/PADPlayer.cs` | `BasicNecklace` |
+| `Content/PADplayer/MagicArsenal.cs` | the necklace's slot; a cast in a shut slot not cast or up |
+| `Content/UI/MagicArsenalUI.cs` | the necklace's slot drawn; a shut slot's cast shown and given back |
+| `MagicArsenalCommand.cs` | says when a slot is held open by the necklace |
+| `PisAndDag.cs` | `PADPacket.BoneCasing` |
+| `Localization/en-US_Mods.PisAndDag.hjson` | five items, four buffs, two lines of the arsenal's |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md`, `PAD_Item_Plan.md`, `PlaceholderTextures.md` | notes |
+
+---
+
+## 16.72 Later in session 7: Bone Casing's wait a minute and a half, Dryad's Blessing's 10 minutes, and the Metallurgist's Brilliant Stone's field 58 by 45
+
+Asked after the Iron Flow's parry window was answered (42 ticks: 6 before it does anything,
+8 in which it does, 28 after; `ParryTiming.CurvedSword`; nothing changed):
+
+> Change bone Casing cooldown to 1.5 mins and Blessing cool down to 10 mins, also change the range of Metallurgist's Brilliant Stone to  58 wide and 45 high
+
+### 1. What changed
+
+| What | Was | Now | Where |
+|---|---|---|---|
+| Splintered, Bone Casing's wait after the ribs break | 15 minutes (54,000 ticks) | a minute and a half (5,400 ticks) | `Splintered.Duration`, `Content/Buffs/BoneCasingBuff.cs` |
+| Wilted Clover, Dryad's Blessing's wait after it spares | 15 minutes (54,000 ticks) | 10 minutes (36,000 ticks) | `WiltedClover.Duration`, `Content/Buffs/Spared.cs` |
+| The stone's field | 38 tiles across by 39 down: 19 left, 18 right, 19 up, 19 down | 58 across by 45 down: 29 left, 28 right, 22 up, 22 down | `MetallurgistsSight.Left`, `Right`, `Up`, `Down` |
+
+Both waits still end at a respawn, are still saved with the player, and are still as long in
+expert and master as in classic. The field is still counted from the tile the wearer's
+middle is in; 58 is even, so one side has a column more than the other, and it is the left,
+as before (mine). 58 by 45 tiles is 928 by 720 pixels: on a 1920 by 1080 screen at the
+game's 100% zoom, all of it is on screen.
+
+The tooltips say so: Dryad's Blessing's *"Ready again after 10 minutes, or when you
+respawn"*, Bone Casing's *"They stand again after 1.5 minutes, or when you respawn"*. The
+stone's says no number. The doc comments of the five files say the new numbers, with the
+request quoted after the first.
+
+A wait already running when this comes in keeps the time it had left: the buff's time is
+saved with the player, not worked out again from the new length. It runs out, or a death
+takes it.
+
+### 2. Your edit to the localization file, kept
+
+The device's `en-US_Mods.PisAndDag.hjson` had changed since §16.71 was committed (`mtimeMs`
+1791919717702): the quotes were taken off three values, `BoneCasingBuff`'s `Description`,
+and the arsenal's `LockedKept` and `NecklaceSlot`. Kept as they are. They mean the same:
+parsed with tModLoader's own Hjson (3.0.0, `HjsonValue.Parse`, as
+`LocalizationLoader.LoadTranslations` does), each comes out the same string, `{0}` and all.
+My two lines were changed on that copy.
+
+### 3. A doc comment put right
+
+`BoneCasing`'s summary said the ribs, hurt but not broken, keep what they have left "through
+death too (a fresh cage at every respawn)", which says two things. The code does the second:
+`OnRespawn` stands them whole. It now says they keep what they have left, saved with the
+player, and nothing mends them but breaking and the wait, or a respawn. Nothing in the code
+changed for it.
+
+### 4. Checks
+
+- Compiled against tModLoader 1.4.4: 0 errors, the 10 warnings there were.
+- Nothing else in the mod reads the waits or the field: `Splintered.Duration` and
+  `WiltedClover.Duration` are used once each, where the buff is put on; the field only
+  through `MetallurgistsSight.Field`, by the drawing and the glints.
+- Not run in the game.
+
+### 5. Files
+
+| File | |
+|---|---|
+| `Content/Buffs/BoneCasingBuff.cs` | `Splintered.Duration` 90 seconds |
+| `Content/Buffs/Spared.cs` | `WiltedClover.Duration` 10 minutes |
+| `Content/Items/Accessories/MetallurgistsBrilliantStone.cs` | the field 58 by 45 |
+| `Content/Items/Accessories/BoneCasing.cs`, `DryadsBlessing.cs` | doc comments |
+| `Localization/en-US_Mods.PisAndDag.hjson` | two tooltip lines; your three quoteless values kept |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md`, `PAD_Item_Plan.md`, `PlaceholderTextures.md` | notes |
+
+---
+
+## 16.73 Later in session 7: Betsy's Flames, the Wooden Crossbow and Mycellaneous
+
+Asked:
+
+> Create an Incantation:
+>
+> Betsy's Flames
+> Type: Dragonic
+> grotesque transforms player's head into Betsy's and open her mouth and shoots flames at cursor for 5 seconds.
+> Each sec consumes 30 mana.
+> Same breathe as the game.
+> Use game sounds too with roars effect and shakes shi.
+> enough damage to rival blaze no upgrade.
+> 1/20 chance to drop by betsy
+
+and, while that was being built:
+
+> Create ranged Weapon: Wooden Crossbow
+> 12 damage, 40 use time
+> Woodx 15, iron bar 1 at work bench, higher shootspeed than wooden bow.
+>
+> Mycellaneous
+> a bow that any arrow hit an enemy will generate the player's life by either 2,3 or 5 on crit
+> 13 damage, 20 use time. higher shootspeed than wooden bow.
+> Glowing Mushroom x50, wooden bow
+
+and, while the bows were being built:
+
+> add the cool particle for  mycellaneous that cones back to the player
+
+### 1. Betsy's Flames: the cast
+
+An incantation, cast through a seal. Its type line says Dragonic, as asked (the cast's
+`CastType`, shown as words; no colour of its own); its element is Flame, the mod's own
+(mine), so Rage! Sweet Fire burns it hotter: `FireAffinity` counts its breath as fire. 108
+damage, 30 mana, 20 ticks to cast, no knockback. Yellow, selling for 5 gold, as her Betsy's
+Wrath (mine). One at a time: it cannot be cast again until the head has gone back. Its mana
+line reads *"Uses 30 mana a second"*.
+
+**Where it comes from:** Betsy, 1 in 20, in classic; her treasure bag, 1 in 20, in expert
+and master, which is how the game drops her own weapons.
+
+**What it does,** in four parts (`BetsysFlamesBreath`):
+
+1. **The change**, 20 ticks: the caster's head is gone at once and Betsy's swells up out of
+   the neck, small to whole and a little past, raw red going to her own colours, with blood
+   (the mod's blood droplets and the game's blood dust) and two wet sounds (the game's
+   `NPCDeath1` and `NPCHit1`, pitched down).
+2. **The roar**, 30 ticks: she rears back with her mouth wide (her own frames for it: 2, 3
+   and 4, shaking between the last two), her scream (`DD2_BetsyScream`, following the
+   mouth), two rings of fire thrown out from her, sparks off her mouth, and the screen
+   shaking.
+3. **The breath**, 5 seconds: the game's own flame breath, held. The game throws Betsy's in
+   one go, a projectile of 78 ticks; here the same flames come for as long as the breath
+   lasts and then the last of them leave the same way. Drawn by the game's own sums for it
+   (`Main.DrawProj`, type 687): fifteen puffs of its picture going out 400 pixels in 40
+   ticks, white, then red, then smoke; its light along three lines, its dust and its smoke
+   as the game makes them. It hurts what it touches as hers does, along a line out of the
+   mouth 40 wide and out to 400 in 25 ticks (`Projectile.Colliding`, 687), each thing in it
+   every 10 ticks, and sets it on fire for 7 to 10 seconds, as hers sets a player
+   (`Projectile.StatusPlayer`). Her breath sound (`DD2_BetsyFlameBreath`) again every 45
+   ticks, no more than three at once, and the screen trembling.
+4. **Back**: the last flames leave the way the game's do (40 ticks); the mouth shuts over
+   the first 16 of them and the head shrinks back into the neck over the last 16, with blood
+   and a wet pop; theirs is there again. Stopped before it breathed, the head shrinks back
+   at once.
+
+It turns toward the cursor at most 0.12 of a radian a tick, so it sweeps as hers does. The
+head faces the way it breathes and the caster turns with it. Betsy's breath leaves her 16.4
+degrees under the way she faces (the game's `AI_136_BetsyBreath`: from her middle to her
+mouth is 102 along and 30 down); the head is turned so that the breath goes where it is
+aimed.
+
+**Mana:** the cast's own 30 pays for the first second of breath; then 30 a second (less with
+mana cost reductions), a point at a time, as Aquatic Firearms pays. Out of mana, it stops
+there. It stops too if the seal leaves the hand or another cast is picked on it, or the
+caster cannot act (`CCed`, `noItems`); the head goes back either way. It is not held: once
+cast it breathes the 5 seconds, and letting go does nothing.
+
+**Damage:** "blaze" read as the game's Nebula Blaze, and "no upgrade" as without its
+stronger shot: one in five of its shots is the next one up, three times as hard
+(`Player.ItemCheck_Shoot`). Its plain shot is 130 damage every 12 ticks, 650 a second to one
+target. The breath hurts each thing in it every 10 ticks, so 108 is 648 a second to each,
+before either's bonuses.
+
+**Her head on the caster** (`BetsysFlamesHead`, a player draw layer): drawn from the game's
+own picture of her (`NPC_551`, asked of the game at run time; nothing of it is in the mod's
+folder), at half size, which is every one of her pixels one to one (they are 2 by 2 in her
+sprite). Eight of her eleven frames are used (0, 2, 3, 4, 7, 8, 9, 10), the head cut out of
+each from the neck forward and kept as strips two pixels tall (`BetsysFlamesHeadCut`, made
+here from her sprite), drawn about the neck, turned over when the caster faces left or hangs
+upside down. Lit where they stand, as what is worn on the head is; her eyes and the fire in
+her mouth at full light. Raw red while it swells and shrinks; trembling a pixel while it
+breathes. Their own head is hidden while it is on: face, hair, hat and what they wear on the
+face. Pictures of the head alone (the map's icon) show their own. Where the neck is: the
+game's own head origin, with the walk's bob the game gives what is worn on the head
+(`Main.OffsetsPlayerHeadgear`).
+
+**Mine:** the breath stops a little into the first solid tile on its way (hers goes through
+walls); the 20 and 30 ticks before the fire; the turning; the shaking (8 for half a second
+at the roar, 1.6 every tenth of a second while it breathes, for each player within 900
+pixels of it, on their own screen); the wet sounds.
+
+**With a second player:** the owner's machine decides the aim and the stop and sends the aim
+on when it has turned more than 0.03 of a radian, at most every 3 ticks; every other machine
+follows from those. Only the owner's hits count.
+
+**Its page** (`BetsysFlames.png`, 60 by 60) is a stand-in: the incantation template under an
+emblem drawn here, a dragon's head in Betsy's reds, purples and greens breathing a cone of
+fire.
+
+**Words:** *"Turns your head into Betsy's to breathe her fire at the cursor for 5 seconds"*,
+*"The flames set foes on fire"*, and *'It borrows her face. Your jaw aches for days.'*
+
+### 2. Wooden Crossbow
+
+`Content/Items/Ranged/WoodenCrossbow.cs`. As asked: 12 ranged damage, 40 ticks a shot,
+arrows at 9 a tick (the game's Wooden Bow: 6.1). It shoots whatever arrows are loaded, as a
+bow does.
+
+Mine: knockback 3 (the Wooden Bow has none); not fired again by holding the button (the
+Wooden Bow is not either); White, selling for 2 silver; its sound the game's ballista
+tower's shot (`DD2_BallistaTowerShot`), higher and softer, a small crossbow's. Held level,
+as the game's repeaters are, and at the trigger: the game draws a held gun from 10 pixels in
+front of the point it holds it at (`Main.DrawPlayerItemPos`), this one from 6 behind, so the
+stock comes back to the shoulder.
+
+Its recipe is written out and commented, as every recipe of the mod's own items is: 15 Wood
+(the game's Any Wood) and an Iron Bar (Any Iron Bar, so Lead too) at a Work Bench. Until it
+is uncommented nothing makes it.
+
+Its picture is a stand-in, 52 by 32: a wooden stock and prod, the string drawn back to an
+iron nut, an iron trigger and stirrup, in the Wooden Bow's wood and outline.
+
+*'Wood, string, and one stubborn iron trigger.'*
+
+### 3. Mycellaneous
+
+`Content/Items/Ranged/Mycellaneous.cs`. As asked: a bow, 13 ranged damage, 20 ticks a shot,
+arrows at 7.5 a tick (the Wooden Bow's 6.1). Every arrow it shoots that hits an enemy sends
+its shooter back 2 or 3 life, evenly, or 5 on a critical hit.
+
+"Any arrow" read as every arrow it shoots, whatever is loaded, and every hit of an arrow
+that goes through more than one. "An enemy" read as not a critter, not friendly, not
+unhurtable (the target dummy) and with more than 5 life.
+
+**The life comes back on a spore** (`MycellaneousSpore`), as asked after: a spore of blue
+light leaves the struck enemy the way the arrow was going (a little to either side, a little
+up), slows for 10 ticks, and curves back to whoever shot it, faster and turning harder the
+longer it flies (3 a tick going to 24, a wide curve going to straight at them). The life
+lands when it reaches them (`Player.Heal`, the green number and all), as the game's own life
+stealing orbs land theirs (the Vampire Knives' and the Spectre Hood's: aiStyle 52 in
+`Projectile.VanillaAI`, which heals on reaching the player). Worked out step by step: it
+swings out about 30 pixels, and is home in 0.4 seconds from a hit at point blank, 0.7 from
+200 pixels, 0.9 from 500, 1.2 from 900, and 1.6 from 300 with its shooter running away at 12
+a tick.
+
+Moon Bite takes the life, as it takes the game's (`Player.moonLeech`, checked where the game
+checks it); a shooter who dies first gets nothing; one gone further than 2,400 pixels (a
+mirror, a teleporter) gets it at once, and so does one it has not reached in 5 seconds,
+which it never needs. It does not count against the game's limit on life stealing (the
+Vampire Knives' `Player.lifeSteal`), so there is no cap on how much comes back (mine).
+
+It is shot on the shooter's machine and the game sends it on, so every player sees it fly;
+only the shooter's machine gives the life, and the game sends their life on from there
+(`Main.TrySyncingMyPlayer`). Every machine shows it landing: when it reaches the shooter
+there, or when the kill the shooter's machine sends arrives first (`Projectile.Kill`).
+
+How it looks: no picture of its own. It is drawn in light: a bloom (the mod's
+`BloomGeneric`, as Meagre Flame's ball is drawn) in deep blue, pale blue and a white heart,
+breathing a little, over a tail of light eight ticks long; it sheds soft blue motes that
+hang, rise a little and go out (`SporeMote`, new: the Ember's dot, keeping its colour), and
+every sixth tick one of the game's own glowing mushroom spores (`DustID.GlowingMushroom`,
+which the game keeps drifting and lit for a few seconds, as in the caves); it lights its
+way. A burst where it leaves and where it lands: a flash, motes thrown out, two of the
+game's spores. It is bigger for more life: 2, 3, then a critical hit's 5.
+
+The first build of it, before the spore was asked for, gave the life back at once on the hit
+with a puff of the game's spores; it was never delivered.
+
+Mine: no knockback, as the Wooden Bow; not fired again by holding the button, as it is not;
+Blue, selling for 20 silver; a little of the Glowing Mushroom's light about whoever holds
+it.
+
+Its recipe is written out and commented: 50 Glowing Mushrooms and a Wooden Bow, anywhere, no
+place being named (mine).
+
+Its picture is a stand-in, 26 by 44: a bow facing right as the game's are, its stave of
+mushroom stalk, a glowing blue thread for its string, a cap on its top tip, two glowing
+mushrooms growing off its limbs and its grip wound in blue.
+
+*"Arrows that hit an enemy send you back 2 or 3 life, 5 on a critical hit"*, and *'Mushrooms
+grow on what is done with. So do you.'*
+
+### 4. Checks
+
+- Compiled against tModLoader 1.4.4: 0 errors, the 10 warnings there were.
+- Read in tModLoader 1.4.4's own code: Betsy's breath (`AI_136_BetsyBreath`, its collision,
+  its drawing in `Main.DrawProj`, `StatusPlayer`), her sprite's frames, her sounds and her
+  drops; the Nebula Blaze (`Item.SetDefaults`, `ItemCheck_Shoot`); the player's draw layers
+  and `Main.OffsetsPlayerHeadgear`; the Wooden Bow's numbers; how a held gun is placed
+  (`Main.DrawPlayerItemPos`, `ItemLoader.HoldoutOffset`, `DrawPlayer_27_HeldItem`); the life
+  stealing orbs (aiStyle 52, `vampireHeal`); `Projectile.Kill` and the kill sent on;
+  `Main.TrySyncingMyPlayer`; the game's glowing mushroom spore in `Dust.UpdateDust` (kept
+  under 0.75 a tick, lit by its size); the sprite batch `Main.DrawProjectiles` begins, which
+  the spore's drawing puts back; that every projectile gets its own new copy of the mod's
+  class (`ModType.NewInstance`), so each spore keeps its own tail.
+- Pictures in the chat, not committed: the breath and the head on a player, made by the
+  code's sums from the game's own pictures; the three new pictures beside the game's own;
+  the spore flying home, made by the same steps as its AI and drawing.
+- Not in the game: none of this has been run there yet.
+
+### 5. Left open (RELEASE_TODO)
+
+Betsy's Flames' readings (Dragonic, Flame, the blaze, the mana, the 5 seconds, the drop) and
+what is mine in it; the two bows' recipes, commented, and what is mine in them; how
+Mycellaneous's life comes back. Rough edges: none of it seen in the game; the stand-ins.
+
+### 6. Files
+
+| File | |
+|---|---|
+| `Content/Items/Mage/Incantation/BetsysFlames.cs` + `.png` | new: the cast, its drop from Betsy and her bag |
+| `Content/Projectiles/Magic/BetsysFlamesBreath.cs` | new: the breath, the head's look tick by tick, the caster's own head hidden (`BetsysFlamesPlayer`), her head drawn (`BetsysFlamesHead`) |
+| `Content/Projectiles/Magic/BetsysFlamesHeadCut.cs` | new: her head cut out of eight of her frames |
+| `Content/Combat/FireAffinity.cs` | Betsy's Flames' breath counts as fire |
+| `Content/Items/Ranged/WoodenCrossbow.cs` + `.png` | new |
+| `Content/Items/Ranged/Mycellaneous.cs` + `.png` | new: the bow and its arrows (`MycellaneousArrow`) |
+| `Content/Projectiles/Ranged/MycellaneousSpore.cs` | new: the spore that carries the life home |
+| `Content/Particles/SporeMote.cs` | new: the motes it sheds |
+| `Localization/en-US_Mods.PisAndDag.hjson` | three items, two projectiles' names, the mana a second line |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md`, `PAD_Item_Plan.md`, `PlaceholderTextures.md` | notes |
+
+---
+
+## 16.74 Later in session 7: Betsy's Flames hits faster, goes half as far again and through walls, is measured against the Nebula Arcanum, shakes only at the roar, wears your picture of her head, and changes more grotesquely
+
+Asked, with a picture of Betsy's head:
+
+> Make the breathe have lower localhittime or some bs for the breathe, extend the range by 1.5x, dont shake when breathing fire, js shake when roar, remap the head (check ref)
+
+and, while that was being built:
+
+> and it can go thru walls, no i mean nebula arcaenum
+
+> also makes the transformation more grotesque
+
+The game had been played after §16.73 (`client.log`, of the 14th): nothing of the mod's in
+it but its own lines at the load, and tModLoader's "Expected Re-Logic file format" twice at
+each of its two loads, as before.
+
+### 1. The hits, and the damage measured against the Nebula Arcanum
+
+The breath hurts each thing in it every 5 ticks instead of 10 (`HitCooldown`, the
+projectile's own immunity for each enemy; how much lower, mine): 12 times a second.
+
+"blaze" was read in §16.73 as the Nebula Blaze; it is the Nebula Arcanum. Read in 1.4.4: 70
+damage, 30 ticks a use, 30 mana (Item 3476). Its orb (617, through 3 enemies) slows and then
+homes, throwing off a spark (618) of half its damage, 35, every 30 ticks, and bursts at its
+end (its third hit, or ten seconds) into two sprays of 5 to 8 shards (620), each 65% of its
+damage, 45. On one enemy:
+
+- The orbs and their sparks keep no immunity of their own (`localNPCHitCooldown` -2, which
+  `Projectile.Damage` takes as the enemy's own 10 ticks for that player), so no more than 6
+  of them land a second: 210 to 420.
+- The shards, one hit each, pass any immunity and give none (one hit: `maxPenetrate` 1, from
+  `SetDefaults_End`), and how many land depends on the enemy's size. Worked out by their
+  numbers (`Projectile.Kill` for 617, aiStyle 29 in `Projectile.VanillaAI` for 620), the orb
+  dying anywhere over the enemy: 6.1 of a burst land on an enemy a player's size, 8.5 on one
+  of 40 by 56, 11.7 on one of 160 by 160; at two bursts a second, 550, 766 and 1,055 a
+  second.
+
+In all, about 760 to 970 a second on an enemy a player's size, 975 to 1,185 on one of 40 by
+56, 1,265 to 1,475 on one of 160 by 160. The breath: 84 every 5 ticks, 1,008 a second to
+each thing in it, within the Arcanum's on the middle one (mine). It was 108 every 10, 648,
+against the Blaze's plain shot. Both before either's bonuses.
+
+### 2. Half as far again, and through walls
+
+`Reach` 600, the game's 400 and half again; and through walls, as hers (the stop a little
+into the first solid tile, mine in §16.73, is gone). The flames keep her speed: a puff takes
+60 ticks out instead of 40, the hurting line 37.5 instead of 25, the last flames 60 to leave
+after it stops instead of 40; 22 puffs instead of 15 (half again would be 22.5), so they are
+about as close together as hers; the game's smoke at three quarters of the way, now 450. So
+the head goes back 60 ticks after the breath stops instead of 40.
+
+### 3. The shaking
+
+At the roar only: 8 for half a second, for players within 900 pixels, as before. The small
+shake while it breathed (1.6, every tenth of a second) is gone, and so is the head's own
+trembling (under a pixel).
+
+### 4. The head, from your picture
+
+Your picture is the game's own picture of Betsy's head (`Gore_1081`, what falls when she
+dies) turned to face left, with the neck taken off (884 of its pixels), her eyes opened and
+the dead veins round them gone (204 of its pixels recoloured) and a fin's tip added (56);
+the rest, 5,312 pixels, the game's own as they are. The head is that picture now:
+
+- The game's pixels are drawn from the game's own picture at run time, strip by strip
+  (`BetsysFlamesHeadCut`, made again by a script), so as before nothing of the game's is in
+  the mod's folder; only your own 260 pixels are (`BetsysFlamesHead.png`). Put back together
+  they are your picture to the pixel (checked).
+- Half size, as before (the picture's pixels are 2 by 2, so this is its art one to one):
+  about 46 by 53 on screen. Set by the back of the jaw on the caster's neck (the point the
+  game draws their head about), turned with them, facing the way it breathes; turned over
+  upside down.
+- The mouth opens: the jaw, everything under the lips from the mouth's corner to the front
+  with what hangs under the chin, turns about the corner, 0.5 of a radian at the roar and
+  0.36 while it breathes. Behind it the inside of the mouth (`BetsysFlamesMaw.png`, a
+  stand-in in Betsy's own colours from her sprite: dark, purple teeth) opens as far as the
+  jaw does, and while she breathes fire glows in it, flickering (`BetsysFlamesMawGlow.png`,
+  her sprite's hot colours, drawn added).
+- The breath leaves along the middle of the open mouth, 0.18 of a radian under the way the
+  head faces, and the head is turned so that is the aim.
+- At the roar the head is thrown back, snout up, up to 0.32 of a radian, the jaw flung wide
+  and shaking.
+
+### 5. The change, more grotesque
+
+48 ticks instead of 20, and then the roar's 30, so the fire comes at 1.3 seconds (78 ticks),
+not 0.83 (50). How, all mine:
+
+1. Their head bursts: the skull cracking (the Skeleton's hit, `NPCHit2`, lower), the wet
+   death of the Brain of Cthulhu and The Hungry (`NPCDeath11`) and the slimes' death
+   (`NPCDeath1`), lower; 60 drops of blood up and out, a red haze (the mod's `BloodFume`),
+   the game's blood and bone dust; the neck spurting for a quarter of a second.
+2. Her head comes up out of the neck in seven heaves, from tick 5 to 37: each a jump in size
+   that overshoots and sags back, the head bulging one way and then the other, jerking, the
+   jaw hanging and working; raw red, coming to her own colours from tick 18 to 44; and her
+   dead face, the game's own, eyes shut. Each heave wet (The Hungry's hit, `NPCHit9`; every
+   other one the Wall of Flesh's as well, `NPCHit8`) and bloody.
+3. At tick 39 her eyes open, your picture's, with a small wet sound (the slimes' hit,
+   `NPCHit1`, higher).
+4. As long as the head is on, the neck drips.
+5. Going back: the mouth shuts in the first 16 ticks after the breath stops, while the last
+   flames go out along it; over the last 16 of the 60 the head sags, throbs and shrinks into
+   the neck, dead-eyed and raw again, with blood and a red haze and a wet sound as it starts
+   and as it ends. Stopped before it breathes, it does that at once.
+
+Which enemy each sound is was read in `NPC.SetDefaults`: the Skeleton's hit `NPCHit2`; The
+Hungry's, the Brain of Cthulhu's and the Creeper's `NPCHit9` and `NPCDeath11`; the Wall of
+Flesh's hit `NPCHit8`; the Blue Slime's and the Demon Eye's `NPCHit1` and `NPCDeath1`.
+
+### 6. Checks
+
+- Compiled against tModLoader 1.4.4: 0 errors, the 10 warnings there were.
+- Read in tModLoader 1.4.4's own code: the Nebula Arcanum (Item 3476's defaults; projectiles
+  617 to 620: their defaults, the orb's sparks and its ten seconds and the shards' flight in
+  `Projectile.VanillaAI`, the orb's end in `Projectile.Kill`); `Projectile.Damage`'s
+  immunity (`localNPCHitCooldown` -2, a one-hit projectile passing the enemy's immunity);
+  `Main.LoadGore`, `TextureAssets.Gore`, `GoreID.DD2BetsyHead` (1081); `DrawData` with a
+  scale each way; `DustID.Bone` (26); the sounds above.
+- Your picture rebuilt from the strips and your pixels: the same to the pixel; with the dead
+  face instead, the same outline.
+- Pictures in the chat, not committed: the head on a stand-in body through the change, the
+  roar, the breath and going back, facing left and upside down, by the same sums as its
+  drawing; the breath at 600.
+- Not in the game.
+
+### 7. Left open (RELEASE_TODO)
+
+The Arcanum reckoned rather than run; your picture's mouth opened by turning its jaw, and
+the inside of it, a stand-in; the readings and what is mine in Betsy's Flames brought up to
+date; §16.74 in the game.
+
+### 8. Files
+
+| File | |
+|---|---|
+| `Content/Projectiles/Magic/BetsysFlamesBreath.cs` | hits every 5 ticks; 600 and through walls; shaking at the roar only; the head from your picture, its jaw and mouth, the dead face, the change and going back |
+| `Content/Projectiles/Magic/BetsysFlamesHeadCut.cs` | made again: the head from your picture |
+| `Content/Projectiles/Magic/BetsysFlamesHead.png` | new: your picture's own pixels |
+| `Content/Projectiles/Magic/BetsysFlamesMaw.png`, `BetsysFlamesMawGlow.png` | new: the inside of her mouth and the fire in it (stand-ins) |
+| `Content/Items/Mage/Incantation/BetsysFlames.cs` | 84 damage; the Arcanum in its doc |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md`, `PAD_Item_Plan.md`, `PlaceholderTextures.md` | notes |
+
+---
+
+## 16.75 Later in session 7: the Blind Tusker, which carries the Iron Flow; the Dryad's wound and her Bezoar; the Trumpet's recipe; Amalgaermis's health; a pre-hardmode checklist against Calamity's
+
+Asked first, and answered in the chat, with nothing written:
+
+> Look at calamity and look at our mod, how well is their prehardmode progression compared to ours
+
+Then:
+
+> Create check list to rival theirs
+> Change amalgaermis to 10000,12000,15000 x1.5 legends.
+> Other things has recipe already
+>  Iron Flow obtain:
+> Create a four legged four tusk blind creature width: 16*5, height: 3*16, with texture close to calamitys and use iron flow's coloring to color.
+> 200HP, born in desert rarely, twice as rare as Antlion (yes prehardmode)
+> What the npc does:
+> It charges at the player reaching top speed of 36 mph and can jump over long holes and can jump up to 15 tiles
+>
+> Dryad's Blessing:
+> 1/4 chance the dryad will talk something about Bezoar is needed to heal her wound.
+> If player has bezoar in inventory, then there will be a button "The Bezoar" with its icon.
+> clicking it will have the dryad thanking you and giving you the blessing.
+>
+> Trumpet :any gold 3, any iron 6, any copper 14 at anvil
+
+Since §16.74 the game was started once (`client.log`, of the 14th: its first seven lines and
+nothing after; nothing of the mod's in it). In the mod's folder, your own changes, kept as
+they are: the recipes of the Boots, the Chlorophyte Rifle, Mycellaneous and the Wooden
+Crossbow uncommented, and the Wooden Crossbow at 14 damage and 5 knockback (12 and 3
+before); the Iron Flow's file saved again, unchanged.
+
+### 1. How it was read
+
+1. "Create check list": a list to tick, stage by stage, in a file of its own,
+   `PAD_Prehardmode_Checklist.md` (its name, its shape, its targets and every proposal in
+   it, mine).
+2. "Other things has recipe already": the recipes you uncommented. So the Trumpet's is live
+   as well, where the mod's own items' recipes had been kept commented out (mine).
+3. "Iron Flow obtain:" and the creature under it: the creature is where the Iron Flow comes
+   from. It drops it, one in four (mine); the sword's recipe stays commented out.
+4. "width: 16*5, height: 3*16": its body, 80 by 48 pixels.
+5. "texture close to calamitys": drawn the way Calamity draws its creatures, measured on
+   four of them (below), none of their pixels.
+6. "use iron flow's coloring": the Iron Flow's own eight colours, and no others.
+7. "twice as rare as Antlion": half the Antlion's chance, wherever the game puts an Antlion.
+8. "top speed of 36 mph": on the game's stopwatch.
+9. "jump over long holes": any hole with ground across it that it can reach; "jump up to 15
+   tiles": a wall 15 high.
+10. "1/4 chance the dryad will talk": one chat in four, until the player has brought her
+    one.
+11. "giving you the blessing": the Dryad's Blessing. She takes the Bezoar, and it is once
+    for each player (both mine).
+12. "any gold 3, any iron 6, any copper 14 at anvil": Gold or Platinum, Iron or Lead, Copper
+    or Tin, at an Iron or Lead Anvil.
+13. "10000,12000,15000 x1.5 legends": classic, expert and master, and half as much again in
+    Legends.
+
+### 2. The Blind Tusker
+
+`Content/NPCs/Desert/BlindTusker.cs` and `.png`. The name is mine.
+
+| What | How |
+|---|---|
+| Body | 80 by 48; 200 life |
+| Contact damage | 30 (mine: between the Antlion Charger's 25 and the Giant Antlion Charger's 38, read in `NPC.SetDefaults` for 580 and 508) |
+| Defence | 10, the Antlion Charger's (mine) |
+| Knockback taken | a quarter (mine) |
+| Worth | 4 silver (mine) |
+| Sounds | the Pigron's hit and death (`NPCHit27`, `NPCDeath30`, read for 170, 171 and 180), lower (mine); a lower squeal of the same as it starts a charge, the same at a bump, and the game's dig sound, low, as it lands |
+| Drops | the Iron Flow, one in four (mine) |
+
+**Where.** Wherever the game puts an Antlion (`NPC.SpawnNPC`, 1.4.4), at half her chance
+there, as tModLoader reckons each of those places (`SpawnCondition`): on sand by day her one
+in five (`OverworldDayDesert`, where her sandstone test, `NPC.Spawning_SandstoneCheck`,
+passes); in a sandstorm before the Eye and hardmode her one in four (`SandstormEvent`);
+under the desert one pick in five, not turned to something else one time in fifteen
+(`DesertCave`), and in hardmode a fifth of that. The rarer things the game tries before her
+in each (a scorpion, a tumbleweed, a lost golfer, a tomb crawler) are left out. Only where
+it has room: five tiles by three clear over the spawn tile.
+
+**What it does** (all of it mine but the speed and the jump):
+
+- It is blind and hears: any living player within 50 tiles across and 25 up or down, through
+  anything.
+- It charges: the way they are, gathering 0.15 a tick to 7.04 (36 mph on the stopwatch,
+  which shows pixels a tick times 216000 over 42240, `Main.DrawInfoAccs`); on past them
+  until it is 8 tiles beyond; then it skids, 0.4 a tick off, about four tiles, turns and
+  comes again. With nobody to hear it skids and goes back to wandering.
+- A wall: seen from a few ticks off (6 ticks' running and a tile), and jumped with the least
+  launch that lifts its feet 4 pixels over the top, up to 15 tiles. A wall of 16 or more it
+  runs into, and is thrown back; then it comes again.
+- A gap narrower than itself (under five tiles) it runs straight over, held up by one side
+  or the other.
+- A hole: looked at from as far off as it would take to stop, and leapt from its edge.
+  Ground across it at its own level or above first, nearest first; failing that, lower
+  ground, as far as 15 tiles under its feet, the hole's own floor among it; three columns
+  side by side, with room over them. The leap is worked out by the game's order (gravity is
+  added before each move, so after t ticks a launch v has it t v + 0.3 t (t + 1) / 2 down):
+  its middle comes down on the landing's second column, and its front clears the landing's
+  near edge by 4 pixels; at its own speed (at least 5) or failing that at top speed; never
+  more than its 15-tile jump. Nothing it can reach: a hole up to 8 deep it runs into; a
+  deeper one it skids short of, and it stands at the edge facing them, still in the charge,
+  until they move.
+- Nobody to hear: it wanders at 1.2, stops now and then for 40 to 100 ticks and turns now
+  and then (the server's to choose, and sent), and turns back from walls of two tiles or
+  more and from holes.
+- Single steps it takes as the game's walkers do (`Collision.StepUp`).
+- ai[0] what it is doing, ai[1] ticks in it, ai[2] its way, ai[3] its speed in the air or
+  the ticks of a stop.
+
+**How it is drawn.** Nine frames one under the other: standing, six of a gallop, in the air,
+skidding. The gallop turns over a frame every 28 pixels run, four ticks at top speed; in the
+air it is tipped by its fall. Drawn by hand (`PreDraw`): its feet on the bottom of its box,
+turned to its way (the picture faces left). The bestiary shows it running.
+
+**The picture.** Drawn by code: there is no image model here, so every pixel was placed by a
+script, and a creature is the hardest thing to make that way; take it as a stand-in for
+yours (PlaceholderTextures). How Calamity draws its creatures was measured on four of them
+(the Rimehound, the Rotdog, the Horrible Hog, the Piggy): every pixel of the art 2 by 2, a
+dark outline all round, 10 to 22 colours, the picture wider than the body. Here: 116 by 576,
+nine frames of 116 by 64; every art pixel 2 by 2; the Iron Flow's eight colours, no others;
+no half-clear pixels. What it is (mine): a heavy boar of folded hide, shoulders high and
+rump low; four tusks, the lower two hooking up in front of the snout, the upper two out
+through the snout and back over the brow, the far pair darker; one milky eye with no pupil;
+four legs, the far two darker; a row of bone spines down the back, in the tusks' ivory.
+
+**Its words** (mine). Its name, "Blind Tusker", and the bestiary's line:
+
+> Its eyes are white all through. It hears you through the sand, and it does not stop for anything it cannot climb. Men went after it with curved swords. Some of the swords came back.
+
+**The parry.** At 80 wide it is over the parry's 60: a Giant, so its charge lands through a
+parry, the parry's blow lands on it once, and it is never staggered (`ParryRules`). Left so.
+
+### 3. The Dryad's wound
+
+`Content/NPCs/DryadBezoar.cs` (new): `DryadBezoarTalk`, `DryadBezoarHint`,
+`DryadBezoarPlayer`.
+
+- One chat in four with her (`GetChat`), until the player talking has brought her one, is
+  the wound:
+
+> There is a wound in my side that has not closed in years. Leaves do nothing for it. A Bezoar would draw it out. The hornets carry them, though not often.
+
+- While they carry a Bezoar and have not brought one, "The Bezoar", with its icon, is under
+  her dialogue (`TalkOptions`). Clicking it takes one Bezoar (`Player.ConsumeItem`) and
+  gives them the Dryad's Blessing (`QuickSpawnItem`, as a gift), and she says:
+
+> Thank you. I can feel it working already. Take this. Clover comes up wherever I rest, and this one came up with four leaves. Keep it on you. Once in a while, it will not let you fall.
+
+- Once for each player, saved with the player (`DryadBezoarPlayer`); after it, neither the
+  wound nor the line is offered to them.
+- The Bezoar, read in 1.4.4 (`ItemDropDatabase.RegisterStatusImmunityItems`): one in a
+  hundred from the Hornet and its five kinds, the Moss Hornet and the Toxic Sludge; in
+  expert a second try (`ItemDropRule.StatusImmunityItem`). So the hint names the hornets,
+  not a place.
+- The lines (Lore Bible: the Dryad; §XVII, the Jungle the Low Court poisoned): that there is
+  a wound and what would draw it out are said; what made it, and what is in it, are not. The
+  clover coming up where she rests is said; why is not.
+
+### 4. The Trumpet's recipe
+
+Live: 3 of Any Gold Bar (Gold, Platinum), 6 of the game's Any Iron Bar, 14 of Any Copper Bar
+(Copper, Tin), at an anvil (`TileID.Anvils`: the Iron and the Lead Anvil). The game has a
+group for iron bars alone, so the gold and the copper ones are new
+(`PADRecipes.AddRecipeGroups`), named as the game names its own (`Recipe.SetupRecipeGroups`:
+`Lang.misc[37]`, "Any", and the item's name): "Any Gold Bar", "Any Copper Bar".
+
+### 5. Amalgaermis's health
+
+`AbomanationHead.LifeForMode`: 10,000, 12,000 and 15,000 (16,000, 26,000 and 36,000 before);
+`Abomanation.LegendsLife` 1.5 (1.25 before), so 15,000, 18,000 and 22,500 in Legends. Its
+body and tail take their health from the head (`realLife`); what else is reckoned from it is
+a fraction of it (the rush's feed, the vent, the point it rages at), so moves with it.
+
+### 6. The checklist
+
+`PAD_Prehardmode_Checklist.md` (new). Calamity's pre-hardmode read from its own assembly
+(2.2.2, the Workshop copy), everything of rarity White to Orange: 143 weapons (melee 26,
+ranged 24, magic 24, summon 26, rogue 42, one of no class), 74 accessories (4 for expert), 7
+armour sets of 28 pieces, 25 tools and gadgets, 26 potions with its food and drink, 12
+materials, 13 lore items; five bosses (the Desert Scourge, Crabulon, the Hive Mind, the
+Perforators, the Slime God), the Giant Clam, the first tier of Acid Rain. The mod's own,
+read where each comes from in its code (recipes, drops, shops, gifts): 13 weapons (melee 5,
+ranged 2, magic 4 and a cast that only shields, summon 2), 2 catalysts, 6 accessories, the
+Trumpet, the Makeshift Altar, Essence of the Fouled, 3 lore items, two bosses, both in Grand
+worlds. Then, stage by stage, what is built, what is planned and where, and proposals of
+mine (marked so) toward Calamity's numbers less its rogue class: pistols and daggers in
+every ore, three bosses (a Gemmason construct, the Low Court's works in the Jungle, a
+machine in the Goblin facility), the works' overflow as an event, an old bull among the
+Tuskers as a miniboss, seven armour sets, ground movement, tonics, materials.
+
+### 7. Checks
+
+- Compiled against tModLoader 1.4.4: 0 errors, the 10 warnings there were, with your four
+  changed files in.
+- The Trumpet's recipe compiled; the Hjson read back after the merge (an Hjson reader).
+- The Blind Tusker run in a rig: the mod's own compiled class, its `AI` ticked in the order
+  `NPC.UpdateNPC_Inner` runs it (gravity set by `UpdateNPC_UpdateGravity`, `AI`, gravity
+  added and capped, a speed under 0.005 zeroed, `UpdateCollision`), on tModLoader's own
+  collision, in a world of sand made there. 31 checks, all passed:
+- In the rig, 7.0400 a tick at the most: 36.000 mph on the stopwatch; from a stand, 47 ticks
+  of gathering. It ran past 8.85 tiles, skidded, turned and came again, over and over.
+- In the rig, walls 1 to 15 high: on top of each; 16, 17 and 18: not, bumping, again and
+  again.
+- In the rig, pits 50 deep: 2, 3 and 4 wide run over without a leap; 5, 6, 8, 12, 16, 20,
+  24, 28, 30 and 31 wide leapt; 32, 34, 38 and 44 wide stood short of, its front 10 pixels
+  from the edge; never fallen into.
+- In the rig, across a pit 12 wide: onto far sides 15, 12, 8 and 4 down, level, and 4, 8,
+  11, 12 and 13 up; not 15 or 16 up (too far across for a jump of 15); never fallen in.
+- In the rig, pits 50 wide: 4, 8, 9, 12 and 15 deep, in and out the far side; 16 and 20
+  deep, it stays out. Pits 12 wide, 5, 10 and 15 deep with level ground across: over them,
+  not into them.
+- In the rig, with nobody to hear, between a wall 3 high and a pit, for 20,000 ticks: 54
+  turns, never off the ground.
+- Read in 1.4.4: the update's order above; `UpdateNPC_UpdateGravity` (0.3 and 10, less only
+  high in the sky and in liquids); `Collision_MoveWhileDry` (`collideX`, `collideY`, the
+  move); the Antlion Chargers' numbers and names (580 the Antlion Charger, 508 the Giant);
+  the Pigrons' sounds; the Bezoar's droppers and `StatusImmunityItem`; `RecipeGroup`'s
+  constructor and `RegisterGroup`, `Recipe.AddRecipeGroup`, `ModSystem.AddRecipeGroups`;
+  `Player.ConsumeItem`, `HasItem`, `QuickSpawnItem`, `Entity.GetSource_GiftOrReward`.
+- The picture: the Iron Flow's eight colours and no others, no half-clear pixels, every art
+  pixel 2 by 2, its feet on the bottom row standing.
+- Pictures in the chat, not committed: the sheet, and the rig's paths drawn over the ground
+  they ran on.
+- Not in the game.
+
+### 8. Left open (RELEASE_TODO)
+
+The Blind Tusker's readings and what is mine; the Dryad's Bezoar; the Trumpet's recipe live;
+the checklist's targets and proposals; the Tusker a Giant to the parry; §16.75 in the game.
+Done, by your hand: the Boots', the Wooden Crossbow's and Mycellaneous's recipes; done here:
+the Dryad's Blessing's source.
+
+### 9. Files
+
+| File | |
+|---|---|
+| `Content/NPCs/Desert/BlindTusker.cs`, `BlindTusker.png` | new: the Blind Tusker |
+| `Content/NPCs/DryadBezoar.cs` | new: the Dryad's wound, her Bezoar and the clover |
+| `Content/Items/Accessories/DryadsBlessing.cs` | where it comes from, in its doc |
+| `Content/Items/Melee/IronFlow.cs` | where it comes from, in its doc |
+| `Content/Items/Instrument/Trumpet.cs` | its recipe |
+| `PADRecipes.cs` | Any Gold Bar, Any Copper Bar |
+| `Content/NPCs/Abomanation_Small/AbomanationHead.cs`, `Abomanation.cs` | its health; Legends half as much again |
+| `Localization/en-US_Mods.PisAndDag.hjson` | the Tusker's name and bestiary line; the Dryad's wound |
+| `PAD_Prehardmode_Checklist.md` | new: the checklist |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md`, `PAD_Item_Plan.md`, `PAD_NPC_Plan.md`, `PlaceholderTextures.md` | notes |
+
+---
+
+## 16.76 Later in session 7: Betsy's Flames is Draconic, and a Transmutation
+
+Asked:
+
+> the element of betsy flame is draconic, type you think.
+
+and, while that was being done:
+
+> #b0a158, #db184c
+
+### 1. Betsy's Flames
+
+Its element is Draconic, as asked; it was Flame (§16.73, mine). Its type is Transmutation
+(mine); it was Dragonic, which §16.73 read as the type line. On the chart of schools the
+casts already use, a Transmutation turns one thing into another (Chlorophyte, Arm Me is
+one), and this cast turns the caster's head into Betsy's. Evocation (it destroys: Cold Call
+and Meagre Flame) would have fitted the breath, but not the head.
+
+Nothing in play changes but the two words and their colours. Rage! Sweet Fire still burns
+the breath hotter: `FireAffinity` counts the breath (`BetsysFlamesBreath`) as fire by what
+it is, not by its element. Nothing else in the code reads a cast's type or element: the
+tooltip prints them, and the element's colours are looked up by its name.
+
+Draconic stands by the Lore Bible's rule for elements (§XXIV: anything the world has enough
+of, and nothing outside it): the world has its dragons, the sky's wyverns and Armageddon
+(§IX), and the one in the Font (§XIX).
+
+### 2. Its colours
+
+`MagicColours.Elements["Draconic"]`: fill `#b0a158`, stroke `#db184c`. In the order sent,
+which is the order every element's are written in, fill and then stroke (`PAD_Item_Plan.md`
+§4.7); that reading is mine. One colour of stroke, no ramp. They show in two places: the
+word Draconic on the cast's tooltip (`Castable`), and the cast's name on a seal's "Up:" line
+while it is the incantation up (`Catalyst`).
+
+### 3. Checks
+
+- Compiled against tModLoader 1.4.4: 0 errors, the 10 warnings there were.
+- Searched: `CastType` and `Element` are read only by `Castable`'s tooltip lines and
+  `Catalyst`'s "Up:" line; `FireAffinity` lists the breath by its projectile type.
+- The device copies of the five files matched what was last delivered before they were
+  changed.
+- Not in the game.
+
+### 4. Left open (RELEASE_TODO)
+
+Betsy's Flames' readings, its first rewritten: the element, the type (mine), the colours'
+order (mine); §16.76 in the game.
+
+### 5. Files
+
+| File | |
+|---|---|
+| `Content/Items/Mage/Incantation/BetsysFlames.cs` | its type and element, and its doc |
+| `Content/Items/Mage/MagicColours.cs` | Draconic's colours |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md`, `PAD_Item_Plan.md` | notes |
+
+---
+
+## 16.77 Later in session 7: the pre-hardmode checklist counted again
+
+Asked:
+
+> re run it, there should be more weapons, also what are the accessories prehardmode?
+
+Read as: count both sides again, the mod's and Calamity's, and name the accessories of both
+(mine: the question names neither, so both are named, the mod's in the chat and both in the
+checklist).
+
+While this was being done, your own change in the mod's folder, kept as it is: the Meat
+Hook's recipe made live and changed, to a Shotgun, 3 Gold Bars, 10 Chain and 10 Essence of
+the Fouled at an anvil (commented out before: a Shotgun, a Grappling Hook, 10 Chain and 10
+Souls of Night at a Mythril Anvil). The Arms Dealer sells the Shotgun only in hardmode
+(`NPCShopDatabase.RegisterArmsDealer`, `Condition.Hardmode`), and nothing else gives it, so
+the Meat Hook comes after the Wall.
+
+### 1. What was wrong
+
+- The mod's: the Handswitch was missed. It is always the first thing in the chest in the
+  lookout of the Curtain's watch tower, in Grace (`GraceBuilder.Curtain`), so a player has
+  it before the Wall in a Grand world.
+- Calamity's: §16.75 took rarity White to Orange as before the Wall. Calamity gives its last
+  boss before the Wall, the Slime God, Light Red, the rarity of early hardmode, so the Slime
+  God's drops and what is made from its Purified Gel were left out. The reader also missed
+  weapons whose rarity or damage is not set plainly in `SetDefaults` (the Acidwood and
+  Driftwood bows and swords, which set no rarity; the Broken Biome Blade; Skynamite), and
+  counted the Wulfrum Fusion Cannon (the Wulfrum armour's held gun, which nobody is given)
+  and six vanity accessories.
+
+### 2. How it was counted this time
+
+- Calamity's assembly read again: every method that names an item (`ModContent.ItemType<T>`,
+  `Recipe.AddIngredient<T>`), every shop entry with its conditions (`NPCShop.Add<T>`), and
+  every recipe written in an `AddRecipes`, read from the IL into its ingredients, stations,
+  groups and conditions.
+- White to Orange counts, unless every source needs hardmode or there is none: the Astral
+  Infection's wood (the Monolith Bow and Sword), fruit (Cometfruit, Lotus, Mangosteen,
+  Barberry, off its trees) and water (Star-Struck Water); the Bottled Panacea and the Will O
+  Wisp, which nothing in its code gives.
+- Light Red counts when the Slime God drops it (its core and its bag), when one of its
+  recipes is all things had before the Wall, or when it has another source before the Wall.
+- The game's own things that come only after the Wall were read in tModLoader 1.4.4 where it
+  was not plain: Grapes (the Derpling and the Giant Flying Fox), Star Fruit and Dragon Fruit
+  (the Hallow's trees), Living Fire Blocks (the Underworld, in hardmode), the Land Mine (the
+  Demolitionist, after Plantera and the pirates), the Spell Tome (the Wizard). Their names
+  and rarities were read by running the game's own `Item.SetDefaults` in a rig.
+- Read one by one: the Rogue Emblem comes before the Wall only in a Zenith-seed world (the
+  Hive Mind's rule, `DropHelper.GFB`), so it is not counted; The Pact is sold once the
+  Dreadnautilus is down, and the Dreadnautilus comes only in hardmode
+  (`Projectile.FishingCheck_RollEnemySpawns`); Howl's Heart is the Wizard's; Draedon's
+  Dubious Plating and Mysterious Circuitry wear his own rarity but lie in his laboratories'
+  chests from the start, so the Arsenal's first five count; the Giant Shell and the Craw
+  Carapace drop before the Wall too (always in hardmode, and 1 in 7, or 1 in 4 in expert,
+  before it).
+
+### 3. What it gives
+
+| | §16.75 | now |
+|---|---|---|
+| Calamity's weapons | 143 | 161: melee 32, ranged 30, magic 27, summon 27, rogue 43, two of no class |
+| Calamity's accessories | 74 (4 for expert) | 72 (5 for expert) |
+| Calamity's armour | 7 sets, 28 pieces | 8 sets, 35 pieces (the Statigel set) |
+| Calamity's tools and gadgets | 25 | 29 |
+| Calamity's potions, food and drink | 26 | 24 |
+| Calamity's materials | 12 | 14 |
+| Calamity's lore items | 13 | 14 |
+| The mod's weapons | 13 | 14 (the Handswitch) |
+| The mod's accessories | 6 | 6 |
+
+The targets move with them: 116 weapons (melee 32, ranged 30, magic 27, summon 27), 72
+accessories, 8 armour sets, 29 tools and gadgets, 24 potions, food and drink, 14 materials.
+
+### 4. In the checklist
+
+Section 1's reading of Calamity's numbers, its table and the paragraph under it; the
+Handswitch in 2.1; section 3's and the tally's targets; and two new sections. Section 5
+names the mod's own, and what is built but not counted, and why: after the Wall, the Dented
+Megashark, the Chlorophyte Rifle, Betsy's Flames, the Meat Hook and two casts that hurt
+nothing; nothing gives them yet, Foigh's Rust Side Sword, Bone Squad, the Greatbow of a
+Pilgrim, Aquatic Firearms, the Triple Fart bottle, Rage of a Thunder and the Reliquary Key.
+Section 6 names Calamity's, and marks its Light Red ones.
+
+### 5. Checks
+
+- §16.75's 143 was first got back from its own rule and reading, so that what changed, and
+  why, is known item by item.
+- Every weapon and accessory counted on Calamity's side has a source found in its code.
+- No code of mine changed. Compiled once, with your Meat Hook in: 0 errors, the 10 warnings
+  there were.
+
+### 6. Left open (RELEASE_TODO)
+
+The checklist's entry: since §16.77 its counts are re-run, and the reading of what comes
+before the Wall is mine. Done, by your hand: the Meat Hook's source (after the Wall).
+
+### 7. Files
+
+| File | |
+|---|---|
+| `PAD_Prehardmode_Checklist.md` | the counts, the Handswitch, sections 5 and 6 |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md` | notes |
+
+---
+
+## 16.78 Later in session 7: the Worminator and the Vulture Staff
+
+Asked, with a picture of `Content/Items/Ranged` (the Handswitch, the Meat Hook, Mycellaneous
+and the Wooden Crossbow):
+
+> range 4
+> melee 5
+>
+> Create new Summoner Weapon:
+> Worminator
+> prehardmode dropped by giant worm 1/5 chance
+> Summons a worm, base 3 body segment.(+1 head 1 tail) each additional minion adds 1 segment
+> Currently port vanilla textures onto the proj folder so i can fix and use.
+> Same deal with the stardust dragon but this one only in the ground, so AI like giant worm, 2x speed.
+> 8 damage all around.
+>
+> New summoner weapon:
+> Vulture Staff:
+> Summon minion vultures to fight for you (modify vultures textures)
+> idle: sit on ur 2 shoulders and stack into 2 towers.
+> I guess like finch staff but you can use your creativity to make it more interesting.
+>
+> Im going shower, make it beautiful
+
+Read as:
+
+- "range 4", "melee 5": your count of the mod's ranged and melee weapons before the Wall,
+  the four in the picture. §16.77 counted three ranged and put the Meat Hook after the Wall,
+  its Shotgun being sold only in hardmode; the checklist now takes your count, and the
+  Shotgun stays in RELEASE_TODO to decide (a Boomstick, which lies in Jungle chests, would
+  put it before the Wall: `WorldGen.GetNextJungleChestItem`). The Meat Hook's code is as you
+  left it.
+- "port vanilla textures onto the proj folder": the game's own pictures copied into the
+  mod's folder, as they are, beside the classes that use them, for you to change; for the
+  Vulture Staff too, "modify vultures textures" being read as the vulture's picture changed
+  from the game's (the change yours, mine).
+- "Same deal with the stardust dragon": put together as the Stardust Dragon is (below);
+  "only in the ground, so AI like giant worm, 2x speed": the Giant Worm's own moving, run
+  twice a tick.
+- "8 damage all around": 8 for every segment, each hitting on its own.
+- "make it beautiful", "use your creativity": what is marked mine below.
+
+### 1. The Worminator
+
+- The item: `Content/Items/Summoner/Worminator.cs`. 8 summon damage, knockback 2, 10 mana,
+  36 ticks with a swing, used again while held, the summoning sound (`Item44`), Blue, sells
+  for 1 gold (mine, as Hoard of Undead's). Its picture is the game's Worm (the bait), as it
+  is.
+- The drop: `WorminatorDrop`, one time in 5 from the Giant Worm (`NPCID.GiantWormHead`; the
+  head is the segment whose loot it is).
+- The worm (`Content/Projectiles/Summoner/WorminatorSegments.cs`), as the Stardust Dragon is
+  put together: one projectile a segment; the head and the tail take no minion slot and the
+  game never lets them go to make room for another minion
+  (`ProjectileID.Sets.MinionCannotBeFreed`); the slots are held by the bodies
+  (`WorminatorBody`, one each, `MinionSacrificable`). The first summon makes the head, three
+  segments and the tail: two of the three (`WorminatorNeck`, drawn as bodies) take no slot,
+  so the first worm takes the one slot a summon takes. Each summon after it puts one more
+  body in, before the tail, and takes one more.
+- Its order: each segment has a key (`ai[0]`: the head 0, the necks 1 and 2, the bodies 3
+  and up, the tail 1,000,000) and follows the one with the next lower key; a body the game
+  lets go from the middle closes the worm up behind it. With no body left the head goes, and
+  with no head every segment goes (on its owner's machine, which tells the rest).
+- How it moves: the Giant Worm's head (`NPC.AI_006_Worms`, type 10, as 1.4.4 has it): top
+  speed 6 and 0.05 a move to change it; in the ground it steers for what it goes after (both
+  its place and the goal taken to the corner of their tiles, as the game does); out of the
+  ground it falls (0.11 a move, to 6) and steers only as the game's does. Ground is what the
+  game counts: a solid block not actuated, a platform of the first kind, or a quarter tile
+  of liquid. The rest follows as the body does: each segment its own width (14) behind the
+  one ahead, along the line to it. "2x speed": two of those moves a tick while it has an
+  enemy, or is more than 480 from its owner; one otherwise (mine), so that it goes the Giant
+  Worm's own way at twice its pace in a fight.
+- What it goes for (mine): the enemy its owner marks, within 1,200 of them; else the nearest
+  within 700 of its owner, kept while it stays within 700.
+- With nothing to fight (mine): it circles under its owner, about 9 blocks under the top of
+  the ground below them, swinging 6 blocks to each side; the Giant Worm's loops take it out
+  of the ground now and then of themselves.
+- Far: more than 1,000 from its owner in both directions and out of the ground, it moves as
+  in the ground, back to them through the air (the Giant Worm's rule, for any player); more
+  than 2,400, the whole worm is put back in the ground under its owner (mine).
+- Hits: each segment 8 by touch, summon damage, the same enemy again after 12 ticks (mine;
+  the Stardust Dragon's segments 7), an enemy knocked away from the segment that hit it
+  (mine).
+- Seen and heard: the head draws the whole worm, tail first, each segment turned with it and
+  lit where it is, behind the blocks as the Giant Worm is drawn
+  (`Main.DrawCacheProjsBehindNPCsAndTiles`: before the blocks, after them with a Hunter
+  Potion, `DoDraw_WallsTilesNPCs`). In the ground it shows by its dirt: one time in 100 for
+  each block a segment overlaps, each move, the dust of a blow that does not break it
+  (`WorldGen.KillTile`, failing, effect only, which makes the dust and nothing else), as the
+  game's does. Its digging sound is the Giant Worm's (`SoundID.WormDig`) at a quarter of its
+  loudness (`WormDigQuiet`, mine), as often as the Giant Worm's (10 to 20 ticks apart by how
+  far it has to go). A spray of the block's dust where it breaks out of the ground and goes
+  back in (mine). Summoned, it comes up out of the ground under the cursor (two blocks under
+  its top), going up, with the Giant Worm's sound at its full loudness and a spray; with no
+  ground within 40 blocks under the cursor, under its owner.
+- Pictures: the Giant Worm's head, body and tail (`NPC_10`, `NPC_11`, `NPC_12`) as they are,
+  as `WorminatorHead.png`, `WorminatorBody.png` and `WorminatorTail.png`; the buff's, drawn
+  here, the Giant Worm's head on a tile as the mod's other buff icons are.
+- Buff: `WorminatorBuff`, "Worminator", "The worm will fight for you"; up while the head is
+  out.
+
+### 2. The Vulture Staff
+
+- The item: `Content/Items/Summoner/VultureStaff.cs`. Mine: 12 summon damage (the Finch
+  Staff's is 7 and the Slime Staff's 8), knockback 3, the rest as the Worminator's; one
+  minion slot a vulture. It comes out at the cursor and flies to its shoulder. Its picture
+  is the game's Vulture perched, cut from its sheet.
+- No source: none was asked for. One is written out in the file and left off (the Vulture,
+  one time in 25, mine), as the other items without one are.
+- On the shoulders (`VultureMinion.Home`): placed as the Baby Finch is placed on the head
+  (`Projectile.AI_158_GetHomeLocation`: on its owner's middle, turned with them, with the
+  head's bob as they walk). The first on the shoulder its owner faces with, the second on
+  the other, the third on the first's back, the fourth on the second's, and so on: two
+  towers, each vulture 24 higher than the one under it and 3 further out, so that the towers
+  part as they rise (mine). Feet on the top of the shoulders, 5 above the player's middle
+  (read off the game's body picture); both towers behind their owner, the far one behind the
+  near one.
+- Mine, to make it more interesting: they face the way their owner does and hop across when
+  the owner turns round; flap to keep their balance when the owner jumps or lands; stretch
+  their wings now and then; the higher ones lean back when the owner runs.
+- Hunting, mine: they go for the enemy near their owner (640, in their sight) with the least
+  of its life left, the marked one (1,000) before any, and keep it while it has no more than
+  a twentieth more left than the weakest. They take off with a beat of wings, circle over it
+  together (one circle 220 wide and 77 high, 150 above it, a turn every 3 seconds, spread
+  evenly round it), and dive on it one after another with a screech (the Vulture's own hurt
+  sound, higher): 48 ticks circling between dives, 18 apart at the first take-off; a dive
+  gets 1.1 a tick faster at it, to 15, for at most 40 ticks, with a streak of where it was.
+  A hit or a miss pulls it up for 18 ticks, then back to the circle. With nothing to fight
+  they fly home and sit.
+- "Vultures": 25% more damage to an enemy under half its life. A kill by any of them halves
+  the circling between dives, for 3 seconds, for all of the owner's (`VultureFrenzy`); in a
+  frenzy the streak is red.
+- Far: more than 2,000 from its owner, back on its shoulder at once (the Baby Finch's).
+- Pictures: the game's Vulture (`NPC_61`) as it is, as `VultureMinion.png` (six frames of 78
+  by 60, facing left; 0 perched, 1 to 5 its wings); flying, its wings go round 1 to 5, five
+  ticks each; diving, frame 3. Its perch is set for this picture: a smaller one wants
+  `ShoulderX` and the rest changed. The staff's picture is its frame 0 cut to 38 by 38; the
+  buff's, drawn here, its head on a tile.
+- Buff: `VultureStaffBuff`, "Vultures", "The vultures will fight for you".
+
+### 3. Checks
+
+- Compiled against tModLoader 1.4.4: 0 errors, the 10 warnings there were.
+- The worm's steering as written in the mod, compiled on its own against FNA and run beside
+  a port of the game's `AI_006_Worms` read from the 1.4.4 assembly: 1,800 ticks of two moves
+  a tick at an enemy, in single precision, the same to 0.00003 of a pixel.
+- In a flat ground, by that port: at an enemy standing on the ground, the head goes through
+  it about every 3 seconds and out of the ground up to 11 blocks; with nothing to fight it
+  breaks out of the ground about every 7 seconds (17 times in 2 minutes, the summon's among
+  them; at most 21 seconds apart).
+- The vultures' hunting, run in a flat scene as written: four take off one after another,
+  circle, dive in turn, kill two enemies (the second in a frenzy) and sit again. Their
+  towers drawn on the game's own player pictures, one to six vultures, facing each way.
+- Read in the 1.4.4 assembly: `Player.FreeUpPetsAndMinions` (it sorts by slots and passes
+  over `MinionCannotBeFreed`), the slot check in `Projectile.Update` (a minion of no slots
+  is never let go by it), `Main.CacheProjDraws` (`DrawBehind` asked of every projectile),
+  `Main.DrawProj` (the screen check, `DrawScreenCheckFluff`), `WorldGen.KillTile` (failing
+  and effect only: the dust, no sound), `Projectile.Kill` (the owner's machine tells the
+  rest), `Projectile.AI_158_GetHomeLocation` and `Main.OffsetsPlayerHeadgear`.
+- Not in the game.
+
+### 4. Left open (RELEASE_TODO)
+
+The Worminator's readings and what is mine; the Vulture Staff's; the Vulture Staff has no
+source; the pictures are the game's own, as asked, and the two buff icons stand-ins; the
+Meat Hook's Shotgun (Provisional); §16.78 never run in the game; and a test in Last.
+
+### 5. Files
+
+| File | |
+|---|---|
+| `Content/Items/Summoner/Worminator.cs` + `.png` | the item, its drop |
+| `Content/Projectiles/Summoner/WorminatorSegments.cs` | the worm |
+| `Content/Projectiles/Summoner/WorminatorHead.png`, `WorminatorBody.png`, `WorminatorTail.png` | the Giant Worm's own |
+| `Content/Buffs/WorminatorBuff.cs` + `.png` | its buff |
+| `Content/Items/Summoner/VultureStaff.cs` + `.png` | the item |
+| `Content/Projectiles/Summoner/VultureMinion.cs` + `.png` | the vulture, its frenzy |
+| `Content/Buffs/VultureStaffBuff.cs` + `.png` | its buff |
+| `Localization/en-US_Mods.PisAndDag.hjson` | their names and tooltips |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md`, `PAD_Item_Plan.md`, `PlaceholderTextures.md`, `PAD_Prehardmode_Checklist.md` | notes |

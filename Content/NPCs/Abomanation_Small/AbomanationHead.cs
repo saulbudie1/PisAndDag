@@ -280,11 +280,12 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         /// <summary>
         /// Health per difficulty, written rather than scaled, for the reason Megashark
         /// gives: the automatic expert scaling doubles whatever SetDefaults left behind,
-        /// so a number picked in one place lands somewhere else in the other modes.
+        /// so a number picked in one place lands somewhere else in the other modes. By
+        /// request: "Change amalgaermis to 10000,12000,15000 x1.5 legends."
         /// </summary>
         private static int LifeForMode()
         {
-            int life = Main.masterMode ? 36000 : Main.expertMode ? 26000 : 16000;
+            int life = Main.masterMode ? 15000 : Main.expertMode ? 12000 : 10000;
             return PADWorld.Legends ? (int)(life * Abomanation.LegendsLife) : life;
         }
 
