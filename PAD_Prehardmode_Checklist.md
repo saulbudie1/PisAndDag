@@ -33,8 +33,8 @@ named in section 6, and each of the mod's own in section 5.
 | Bosses | 5: the Desert Scourge, Crabulon, the Hive Mind, the Perforators, the Slime God | 2: Amalgaermis, 'Dame' Quilt (both Grand) | 5 |
 | Minibosses | 1: the Giant Clam | 0 | 1 or 2 |
 | Events | 1: Acid Rain, its first tier | 0 | 1 |
-| New places | 2 biomes: the Sulphurous Sea, the Sunken Sea | the Wasted Mile, the Cleared Ground and Grace (Grand); the Blood Shrine, the shoreline graveyard, the Mors monument | one in every world size |
-| Weapons | 161: melee 32, ranged 30, magic 27, summon 27, rogue 43, two of no class | 16: melee 5, ranged 4, magic 4 casts (a fifth only shields; and 2 catalysts), summon 3 | 116: melee 32, ranged 30, magic 27, summon 27 (there is no rogue here) |
+| New places | 2 biomes: the Sulphurous Sea, the Sunken Sea | the Wasted Mile, the Cleared Ground and Grace (Grand); the Blood Shrine, the shoreline graveyard, the Mors monument; the Vast Ocean, through the waygate on the beach (every world) | one in every world size |
+| Weapons | 161: melee 32, ranged 30, magic 27, summon 27, rogue 43, two of no class | 17: melee 5, ranged 4, magic 4 casts (a fifth only shields; and 2 catalysts), summon 4 | 116: melee 32, ranged 30, magic 27, summon 27 (there is no rogue here) |
 | Accessories | 72 (5 for expert) | 6 | 72 |
 | Armour | 8 sets, 35 pieces | 0 | 8 |
 | Tools and gadgets | 29 | 1, the Trumpet (and a crafting station, the Makeshift Altar) | 29 |
@@ -44,7 +44,7 @@ named in section 6, and each of the mod's own in section 5.
 | Difficulty | Revengeance, Death and its other modes | Legends (the Game Changing Orb) | |
 
 What there is is deep (every built thing has its own machinery, words and art) and thin: two
-fights in five stages, four ranged weapons and three summon weapons, and nothing to wear, drink
+fights in five stages, four ranged weapons and four summon weapons, and nothing to wear, drink
 or mine. Both bosses, what they give, and the Handswitch are in Grand worlds only. The targets
 above are mine: Calamity's numbers, less its own class.
 
@@ -93,6 +93,8 @@ The world: spawn in forest, snow two hundred tiles east, desert and the evil wes
 - [x] Summon: **Hoard of Undead** (any zombie, 1 in 50).
 - [x] Summon: **Worminator** (the Giant Worm, 1 in 5): a worm that goes through the ground
   after what you fight, a segment longer for each summon.
+- [x] Summon: **Vulture Staff** (the Vulture, 1 in 40, your edit, PADWorkFlow §16.79):
+  vultures that sit on your shoulders and dive on the weakest enemy near you.
 - [x] Catalyst: **Seal of a Clothier** (the Guide's Witchcraft kit, in a new world; later the
   Clothier and Skeletron).
 - [ ] (mine) **Pistols and daggers in every ore.** A pistol (the game's magazines and
@@ -124,6 +126,12 @@ The world: spawn in forest, snow two hundred tiles east, desert and the evil wes
 - [ ] (mine) Tonics: a reload tonic, a steadying draught (no knockback, slower), sand-runner's
   oil.
 - [ ] (mine) Materials: tusker hide and tusker ivory (the Blind Tusker).
+
+**World**
+
+- [x] **The Vast Ocean** (every world): through the waygate on the beach, a sea three times as
+  deep as the game's deepest, a biome of its own, and the game's sea in every way (fishing,
+  Duke Fishron, its creatures) (PADWorkFlow §16.79).
 
 ### 2.2 After the Eye of Cthulhu
 
@@ -213,8 +221,8 @@ The world: spawn in forest, snow two hundred tiles east, desert and the evil wes
 - [x] The Wasted Mile, the Cleared Ground, Grace and the halls under it.
 - [ ] (mine) Grace's armouries and treasuries, read as loot: chests with the kingdom's own
   arms, so a Grand world pays for its walk.
-- [ ] (mine) One place of the mod's own in every world size, so that a world that is not Grand
-  has more than the Blind Tusker.
+- [x] (mine) One place of the mod's own in every world size, so that a world that is not Grand
+  has more than the Blind Tusker: the Vast Ocean (2.1, PADWorkFlow §16.79).
 
 ---
 
@@ -257,7 +265,7 @@ Update as boxes are ticked.
 | Bosses | 5 | 2 | 0 | 3 |
 | Minibosses | 1 or 2 | 0 | 0 | 1 |
 | Events | 1 | 0 | 0 | 1 |
-| Weapons | 116 | 16 | 4 (Gaping Jaw, the hand minion, the bow of teeth, the throw) | 14 pistols and daggers, and more |
+| Weapons | 116 | 17 | 4 (Gaping Jaw, the hand minion, the bow of teeth, the throw) | 14 pistols and daggers, and more |
 | Accessories | 72 | 6 | 0 | a handful |
 | Armour sets | 8 | 0 | 0 | 7 |
 | Tools and gadgets | 29 | 1 | 0 | 4 |
@@ -268,14 +276,15 @@ Update as boxes are ticked.
 
 ## 5. The mod's own, by name
 
-Read where each comes from in the mod's code (PADWorkFlow §16.77, §16.78). Counted in section
-1, as a player can have them before the Wall:
+Read where each comes from in the mod's code (PADWorkFlow §16.77, §16.78, §16.79). Counted in
+section 1, as a player can have them before the Wall:
 
-- **Weapons (16).** Melee: Fly Swatter, Iron Flow, Visus, Flesh Maiden (Grand), Blade of Mors.
+- **Weapons (17).** Melee: Fly Swatter, Iron Flow, Visus, Flesh Maiden (Grand), Blade of Mors.
   Ranged: Wooden Crossbow, Mycellaneous, Handswitch (Grand), Meat Hook (Grand; as you count it,
   §16.78). Magic: Meagre Flame, Cold Call, Court of Hands (Grand), Everhunger (Grand); and
-  Forest, Nurture Me, which only shields. Summon: Hoard of Undead, Worminator, Joint Arms of
-  the Defiled (Grand). Catalysts: Seal of a Clothier, Tree Branch Staff.
+  Forest, Nurture Me, which only shields. Summon: Hoard of Undead, Worminator, Vulture Staff
+  (§16.79), Joint Arms of the Defiled (Grand). Catalysts: Seal of a Clothier, Tree Branch
+  Staff.
 - **Accessories (6).** Boots, Metallurgist's Brilliant Stone, Dryad's Blessing, Bone Casing,
   Necklace of the Academy, and the Locket of a Book-Crazed Girl (Grand; a lore item as well).
 
@@ -286,9 +295,9 @@ Built, and not counted:
   Me (after Plantera) and Rage! Sweet Fire (Souls of Fright).
 - **Nothing gives them yet.** Weapons: Foigh's Rust Side Sword (Foigh comes only by `/foigh`),
   Bone Squad (its recipe is commented out, and needs hardmode things), the Greatbow of a
-  Pilgrim, Aquatic Firearms, the Vulture Staff (no source asked for; one written out and left
-  off). Accessories: the Triple Fart In A Horse Shoe Adorned Bottle (its recipe is commented
-  out; all of it is had before the Wall), Rage of a Thunder. A lore item: the Reliquary Key.
+  Pilgrim, Aquatic Firearms. Accessories: the Triple Fart In A Horse Shoe Adorned Bottle (its
+  recipe is commented out; all of it is had before the Wall), Rage of a Thunder. A lore item:
+  the Reliquary Key.
 
 ---
 

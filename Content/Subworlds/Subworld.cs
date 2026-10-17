@@ -16,13 +16,17 @@ namespace PisAndDag.Content.Subworlds
     /// anybody goes there, where its door stands. Any class of this kind in the mod is
     /// found and kept by itself, like an item or a tile.
     ///
-    /// What is true of every one of them, whatever it is (SubworldRules, SubworldScene,
-    /// SubworldFlags): nothing in it can be broken or built; nobody who dies in it leaves
-    /// a grave; nothing spawns; the clock stands still, at a quarter past eight in the
-    /// morning; all of it is lit as the surface is; a player weighs at any height in it
-    /// what they weigh on its ground; there is no music unless it names some; and its
-    /// flags are its world's, hard mode and every boss beaten among them, so that what is
-    /// done in it is done in the world.
+    /// What is true of every one of them unless it says otherwise (SubworldRules,
+    /// SubworldScene, SubworldFlags, and the members under "what may be done here"):
+    /// nothing in it can be broken or built (<see cref="Untouched"/>); nothing spawns
+    /// (<see cref="Spawns"/>); the clock stands still, at a quarter past eight in the
+    /// morning (<see cref="ClockRuns"/>); it is never the sea, and nothing is drawn behind
+    /// it but the sky (<see cref="IsSea"/>); all of it is lit as the surface is
+    /// (<see cref="SurfaceLine"/>). And what is true of every one of them whatever it says:
+    /// nobody who dies in it leaves a grave; no meteor falls on it; a player weighs at any
+    /// height in it what they weigh on its ground; there is no music unless it names some;
+    /// and its flags are its world's, hard mode and every boss beaten among them, so that
+    /// what is done in it is done in the world.
     ///
     /// THE EDGES. The game keeps a player 41 tiles in from a world's left and top edges and
     /// 42 from its right and bottom ones, and the camera with them, so that much of every
@@ -55,14 +59,16 @@ namespace PisAndDag.Content.Subworlds
 
         /// <summary>
         /// Where the way back stands: the top left tile of its door (SubworldDoor, two wide
-        /// and three tall). Whoever comes in is put down in front of it.
+        /// and three tall) or of its waygate (Waygate, two by two). Whoever comes in is put
+        /// down in front of it.
         /// </summary>
         public abstract Point Door { get; }
 
         /// <summary>
         /// Where somebody who dies here comes back: the tile their feet are on. The game
         /// wants the three columns over it clear, door and all, or it digs them out; so
-        /// beside the door, by default, and not in it.
+        /// beside the door, by default, and not in it. A place whose way back is a waygate
+        /// says where.
         /// </summary>
         public virtual Point Spawn => new Point(Door.X + SubworldDoor.Wide + 1, Door.Y + SubworldDoor.Tall);
 
@@ -91,6 +97,60 @@ namespace PisAndDag.Content.Subworlds
         /// cleared and sized, away from the main thread: write tiles, and nothing else.
         /// </summary>
         public abstract void Build();
+
+        // ---- what may be done here ---------------------------------------------------------
+
+        /// <summary>
+        /// The rules of subworlds hold here: nothing broken or built, nothing poured, no
+        /// actuator fitted (SubworldRules). A place whose ground may be worked as a world's
+        /// is says no; what it keeps of its own all the same is <see cref="KeepsTile"/>.
+        /// </summary>
+        public virtual bool Untouched => true;
+
+        /// <summary>
+        /// The tile here is one the place keeps of its own, whatever else may be done in it:
+        /// never broken, swapped, hammered, fitted with an actuator or blown up. Asked only
+        /// where the place is not <see cref="Untouched"/>, and not while the rules are lifted.
+        /// </summary>
+        public virtual bool KeepsTile(int x, int y) => false;
+
+        /// <summary>The game spawns here, as it would anywhere (SubworldQuiet holds it back otherwise).</summary>
+        public virtual bool Spawns => false;
+
+        /// <summary>
+        /// Time passes here: the clock, the weather, the moon, the world's slow changes and its
+        /// events, as in any world. The clock is the world's: it comes in with whoever comes,
+        /// and goes back with them (SubworldFlags), so that a night spent here is a night gone
+        /// in the world. Where it stands still it stands at a quarter past eight in the morning,
+        /// and going there and back is no time at all.
+        /// </summary>
+        public virtual bool ClockRuns => false;
+
+        /// <summary>
+        /// The game may take this place for the sea, as it takes the two ends of a world
+        /// (Player.ZoneBeach, by WorldGen.oceanDepths), and draw the sea's backdrop and its map
+        /// behind it. Otherwise it is never the sea, and nothing is drawn behind it but the sky
+        /// (SubworldScene).
+        /// </summary>
+        public virtual bool IsSea => false;
+
+        /// <summary>
+        /// The place's water is laid still, and the game's quick settling of water is not run in
+        /// it (Liquid.QuickWater: on every loading of a world, WorldFile.LoadWorld, and when too
+        /// much water is moving at once, Liquid.StartPanic). That settling looks along each cell
+        /// of water's row, through the water, to the next solid tile (Liquid.SettleWaterAt), so it
+        /// takes as long as the water is wide times as wide: across a sea thousands of columns
+        /// wide, many minutes. The water still moves as the game moves it, cell by cell.
+        /// </summary>
+        public virtual bool StillWater => false;
+
+        /// <summary>
+        /// The row the game's surface line is on, and its rock line (SubworldKeeper.Make).
+        /// By default both under anything that can be seen, 35 and 28 rows up from the bottom
+        /// edge: the game lights whatever is over the surface line as open air under the sky.
+        /// </summary>
+        public virtual double SurfaceLine => Height - 35;
+        public virtual double RockLine => Height - 28;
 
         protected sealed override void Register()
         {

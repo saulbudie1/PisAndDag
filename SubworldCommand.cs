@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Xna.Framework;
+using PisAndDag.Content.Structures;
 using PisAndDag.Content.Subworlds;
 using Terraria;
 using Terraria.DataStructures;
@@ -7,6 +8,7 @@ using Terraria.ID;
 using Terraria.ModLoader;
 using DoorItem = PisAndDag.Content.Items.Misc.SubworldDoor;
 using DoorTile = PisAndDag.Content.Tiles.SubworldDoor;
+using Waygate = PisAndDag.Content.Tiles.Waygate;
 
 namespace PisAndDag
 {
@@ -16,6 +18,12 @@ namespace PisAndDag
     ///   /subworld                 where this is, and where its places are kept
     ///   /subworld door            gives an Unmarked Door (there is no recipe yet)
     ///   /subworld undoor          takes up the door under the cursor: nothing else can
+    ///   /subworld gate            where this world's waygate is (BeachWaygate), or this place's
+    ///   /subworld gate raise      puts the shrine and its waygate down on the beach now, if this
+    ///                             world has none (it is looked for again at every load until then)
+    ///   /subworld ungate          takes up the waygate under the cursor: nothing else can. If it
+    ///                             was the beach's, its shrine stays, and another is raised the
+    ///                             next time the world is loaded (or with /subworld gate raise)
     ///   /subworld enter [place]   goes to a place with no door; coming back is to the world's spawn
     ///   /subworld leave           goes back from a place
     ///   /subworld rules on|off    the rules of subworlds (nothing broken, nothing built), off for
@@ -31,7 +39,7 @@ namespace PisAndDag
 
         public override string Command => "subworld";
 
-        public override string Usage => "/subworld [door | undoor | enter [place] | leave | rules on|off | remake [place]]";
+        public override string Usage => "/subworld [door | undoor | gate [raise] | ungate | enter [place] | leave | rules on|off | remake [place]]";
 
         public override string Description => "Subworlds: where this is, a door, going and coming back by hand.";
 
@@ -61,6 +69,45 @@ namespace PisAndDag
                     caller.Reply(DoorTile.TakeUp(at.X, at.Y)
                         ? $"Took up the door at {at.X}, {at.Y}."
                         : "No door under the cursor.", Color.LightGray);
+                    return;
+                }
+
+                case "gate":
+                    Gate(caller, args);
+                    return;
+
+                case "ungate":
+                {
+                    if (Main.netMode != NetmodeID.SinglePlayer)
+                    {
+                        caller.Reply("Single player only.", Color.OrangeRed);
+                        return;
+                    }
+
+                    Point at = (Main.MouseWorld / 16f).ToPoint();
+
+                    if (!Waygate.IsAt(at.X, at.Y))
+                    {
+                        caller.Reply("No waygate under the cursor.", Color.LightGray);
+                        return;
+                    }
+
+                    Waygate.TopLeft(at.X, at.Y, out int left, out int top);
+
+                    bool beach = !Subworld.Active && BeachWaygate.Gate.X == left && BeachWaygate.Gate.Y == top;
+
+                    Waygate.TakeUp(at.X, at.Y);
+
+                    if (beach)
+                    {
+                        BeachWaygate.Gate = new Point16(-1, -1);
+                        caller.Reply($"Took up the beach's waygate at {left}, {top}. Its shrine stays: break it by hand. Another is raised the next time the world is loaded, or now with /subworld gate raise.");
+                    }
+                    else
+                    {
+                        caller.Reply($"Took up the waygate at {left}, {top}.", Color.LightGray);
+                    }
+
                     return;
                 }
 
@@ -143,6 +190,73 @@ namespace PisAndDag
 
             caller.Reply("Which place? " + (names.Length > 0 ? names : "there are none") + ".", Color.OrangeRed);
             return null;
+        }
+
+        /// <summary>/subworld gate [raise]: where the waygate is, here or on this world's beach; or the beach's put down now.</summary>
+        private static void Gate(CommandCaller caller, string[] args)
+        {
+            bool raise = args.Length > 1 && args[1].Equals("raise", StringComparison.OrdinalIgnoreCase);
+
+            if (Subworld.Active)
+            {
+                if (raise)
+                {
+                    caller.Reply("Only a world's beach has a waygate to raise.", Color.OrangeRed);
+                    return;
+                }
+
+                Point door = Subworld.Current.Door;
+
+                caller.Reply(Waygate.StandsAt(door.X, door.Y)
+                    ? $"This place's waygate: {door.X}, {door.Y}{Away(caller.Player, door.X, door.Y)}."
+                    : "This place's way out is not a waygate.", Color.LightGray);
+                return;
+            }
+
+            Point16 gate = BeachWaygate.Gate;
+
+            if (raise)
+            {
+                if (Main.netMode != NetmodeID.SinglePlayer)
+                {
+                    caller.Reply("Single player only.", Color.OrangeRed);
+                    return;
+                }
+
+                if (gate.X >= 0)
+                {
+                    caller.Reply($"This world has its waygate already, at {gate.X}, {gate.Y}: /subworld ungate first.", Color.OrangeRed);
+                    return;
+                }
+
+                if (BeachWaygate.Raise(false))
+                    caller.Reply($"Raised the shrine. Its waygate: {BeachWaygate.Gate.X}, {BeachWaygate.Gate.Y}{Away(caller.Player, BeachWaygate.Gate.X, BeachWaygate.Gate.Y)}.");
+                else
+                    caller.Reply("No beach on either side has room for it (client.log says so too).", Color.OrangeRed);
+
+                return;
+            }
+
+            if (gate.X < 0)
+            {
+                caller.Reply("This world has no waygate yet. /subworld gate raise looks for a place for it now.", Color.LightGray);
+                return;
+            }
+
+            caller.Reply($"The beach's waygate: {gate.X}, {gate.Y}{Away(caller.Player, gate.X, gate.Y)}"
+                + (Waygate.StandsAt(gate.X, gate.Y) ? "." : ", but it is not there now."), Color.LightGray);
+        }
+
+        /// <summary>" (so many tiles left and up of you)", or nothing for a caller with no player.</summary>
+        private static string Away(Player player, int x, int y)
+        {
+            if (player == null)
+                return "";
+
+            int dx = x - (int)(player.Center.X / 16f);
+            int dy = y - (int)(player.Center.Y / 16f);
+
+            return $" ({Math.Abs(dx)} {(dx < 0 ? "left" : "right")}, {Math.Abs(dy)} {(dy < 0 ? "up" : "down")} of you)";
         }
 
         private static void Where(CommandCaller caller)

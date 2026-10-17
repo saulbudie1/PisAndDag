@@ -69,9 +69,13 @@ namespace PisAndDag.Content.Subworlds
         /// </summary>
         private const int Least = 200;
 
-        /// <summary>Rows from a subworld's bottom edge to its surface line, and to its rock line: both under anything that can be seen.</summary>
-        private const int SurfaceFromBottom = 35;
-        private const int RockFromBottom = 28;
+        /// <summary>
+        /// The biggest a place can be, each way. The game's grid of tiles is as big as the
+        /// biggest world it has held, and is grown to fit whatever world is cleared, a few
+        /// sections past it (ExtraLargeWorld, on WorldGen.clearWorld, which a place is made
+        /// through); its sides are counted in ushort.
+        /// </summary>
+        private const int Most = ushort.MaxValue - 1000;
 
         /// <summary>The game's own mark on a world made by this version of it (WorldFile.CreateMetadata).</summary>
         private const ulong GeneratorVersion = 1198295875585UL;
@@ -374,8 +378,8 @@ namespace PisAndDag.Content.Subworlds
         /// </summary>
         internal static void Make(Subworld place, WorldFileData world, string path)
         {
-            if (place.Width < Least || place.Height < Least || place.Width >= Main.tile.Width || place.Height >= Main.tile.Height)
-                throw new InvalidOperationException($"{place.FullName} is {place.Width} by {place.Height}: a subworld is at least {Least} each way, and no bigger than the game has room for.");
+            if (place.Width < Least || place.Height < Least || place.Width > Most || place.Height > Most)
+                throw new InvalidOperationException($"{place.FullName} is {place.Width} by {place.Height}: a subworld is at least {Least} each way, and at most {Most}.");
 
             var data = new WorldFileData(path, false)
             {
@@ -402,10 +406,12 @@ namespace PisAndDag.Content.Subworlds
             Main.worldName = data.Name;
             Main.worldID = Guid.NewGuid().GetHashCode() & int.MaxValue;
 
-            // The surface line under everything that can be seen: the game lights whatever is
-            // over it as open air under the sky, and draws no cave behind it.
-            Main.worldSurface = place.Height - SurfaceFromBottom;
-            Main.rockLayer = place.Height - RockFromBottom;
+            // The surface line, by default under everything that can be seen: the game lights
+            // whatever is over it as open air under the sky, and draws no cave behind it. A
+            // place may put it elsewhere (Subworld.SurfaceLine: the sea's is where the game's
+            // own sea would have it).
+            Main.worldSurface = place.SurfaceLine;
+            Main.rockLayer = place.RockLine;
 
             Point spawn = place.Spawn;
 

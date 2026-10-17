@@ -110,6 +110,39 @@ Items: {
 				'It held a heart once. It is not fussy about whose.'
 				'''
 		}
+
+		Mupral: {
+			DisplayName: M.U.P.R.A.L
+			Tooltip:
+				'''
+				Mechanic's Ultra Pressure Resistance Anchored Lantern, worn on the shoulder
+				Glow: a dim light around you, 6.1 tiles in air, 3.7 in water
+				Beam: a 30 degree beam, 50 tiles in water, 68 in air
+				While it beams, the glow around you is only 1.2 tiles
+				Blocks in its way cast shadows
+				Lights the deep of the Vast Ocean, where no other light reaches
+				'Rated for depths nobody has come back from to rate.'
+				'''
+			NowGlow: Now the glow. While worn, right click it or press {0} for the beam
+			NowBeam: Now the beam. While worn, right click it or press {0} for the glow
+			NoKey: its key (unset, in Controls)
+		}
+
+		HEATR: {
+			DisplayName: H.E.A.T.R
+			Tooltip:
+				'''
+				Hyper Engineered Abyssal Trench Roamer
+				Lets you breathe underwater
+				Immune to the water's weight, down to the floor of the Vast Ocean
+				Its lamp glows 20 tiles around you in water, 33 in air
+				and beams 45 degrees wide, 50 tiles in water, 68 in air, both at once
+				15% lower top speed and jump speed
+				'The lamp was the easy part.'
+				'''
+			TopSpeedWorn: Your top speed: {0} mph, {1} mph without it
+			TopSpeedOff: Your top speed with it: {0} mph, {1} mph now
+		}
 	}
 
 	Chlorophyte_Rifle: {
@@ -326,6 +359,18 @@ Items: {
 			'''
 	}
 
+	WaterResuscitateMe: {
+		DisplayName: Water! Resuscitate Me!
+		Tooltip:
+			'''
+			Asks the water to let you breathe it a while
+			Breathe water instead of air for {0} minutes
+			Safe from the water's weight down to {1} feet
+			Can only be asked again as it fades
+			'Best said while your mouth is still above water.'
+			'''
+	}
+
 	BetsysFlames: {
 		DisplayName: Betsy's Flames
 		Tooltip:
@@ -536,6 +581,18 @@ Buffs: {
 		DisplayName: Vultures
 		Description: The vultures will fight for you
 	}
+
+	WatersWeight: {
+		DisplayName: The Water's Weight
+		Description: The sea leans on you
+		Losing: Losing {0} life a second
+	}
+
+	Resuscitated: {
+		DisplayName: Resuscitated
+		Description: You breathe the water
+		Holds: Safe from the water's weight down to {0} feet
+	}
 }
 
 DeathText: {
@@ -559,6 +616,12 @@ DeathText: {
 	FoighSlash: "{0} was cut by a sword that was nowhere near."
 	FoighHook: "{0} came when the chain was pulled."
 	FoighLine: "{0} saw where the cut would be, and stood there."
+	Pressed1: "{0} went deeper than they were made to."
+	Pressed2: "{0} was pressed flat by the sea."
+	Pressed3: "{0} felt the whole sea lean on them."
+	Crushed1: "{0} went a fathom too deep."
+	Crushed2: "{0} caved in like an empty tin."
+	Crushed3: "{0} was made very small by the sea."
 }
 
 Tiles: {
@@ -566,6 +629,23 @@ Tiles: {
 	BladeOfMorsInStone.MapEntry: Blade Of Mors In Stone
 	MakeshiftAltar.MapEntry: Makeshift Altar
 	SubworldDoor.MapEntry: Unmarked Door
+	Waygate.MapEntry: Waygate
+	GiantTubeWorms.MapEntry: Giant Tube Worms
+	SeepTubeWorms.MapEntry: Seep Tube Worms
+	ColdWaterCoral.MapEntry: Cold-Water Coral
+	BubblegumCoral.MapEntry: Bubblegum Coral
+	BambooCoral.MapEntry: Bamboo Coral
+	BlackCoral.MapEntry: Black Coral
+	GlassSponge.MapEntry: Glass Sponge
+	CupSponge.MapEntry: Cup Sponge
+	SeaPen.MapEntry: Sea Pen
+	SeaLily.MapEntry: Sea Lily
+	DeepAnemone.MapEntry: Anemone
+	Xenophyophore.MapEntry: Xenophyophore
+	VentMouth.MapEntry: Black Smoker
+	WhiteVentMouth.MapEntry: White Smoker
+	SeepVent.MapEntry: Seep
+	LighthouseLens.MapEntry: Lighthouse Lens
 }
 
 Projectiles: {
@@ -632,6 +712,7 @@ Projectiles: {
 	WorminatorBody.DisplayName: Worminator
 	WorminatorTail.DisplayName: Worminator
 	VultureMinion.DisplayName: Vulture
+	ResuscitateCall.DisplayName: Resuscitate Call
 }
 
 NPCs: {
@@ -651,6 +732,13 @@ NPCs: {
 		DisplayName: Blind Tusker
 		Bestiary: Its eyes are white all through. It hears you through the sand, and it does not stop for anything it cannot climb. Men went after it with curved swords. Some of the swords came back.
 	}
+
+	CreviceEelHead: {
+		DisplayName: Hole Dweller
+		Bestiary: It waits in a crack in the rock with only its head out, its mouth opening and shutting as if it were counting. Bleed anywhere in the caves and it comes the whole way, every turn of them, and never once looks lost.
+	}
+
+	CreviceEelBody.DisplayName: Hole Dweller
 }
 
 Biomes: {
@@ -667,6 +755,21 @@ Biomes: {
 	GraceDeepBiome: {
 		DisplayName: Beneath Grace
 		TownNPCDialogueName: the halls beneath Grace
+	}
+
+	VastOceanBiome: {
+		DisplayName: The Vast Ocean
+		TownNPCDialogueName: the Vast Ocean
+	}
+
+	ForevernightZoneBiome: {
+		DisplayName: The Forevernight Zone
+		TownNPCDialogueName: the Forevernight Zone
+	}
+
+	AbyssalTrenchBiome: {
+		DisplayName: The Abyssal Trench
+		TownNPCDialogueName: the Abyssal Trench
 	}
 }
 
@@ -691,6 +794,26 @@ Subworlds: {
 	DoorNotAlone: It does not open while others share the world.
 	DoorForgot: It has forgotten where it leads.
 	DoorWall: It opened onto a wall.
+
+	Waygate: {
+		Question: Traverse the mysterious gateway?
+		Yes: Yes
+		No: No
+		Uncarried: The sea will not be carried.
+	}
+
+	DepthMeter: {
+		VastOcean: Vast Ocean
+		ForevernightZone: Forevernight Zone
+		AbyssalTrench: Abyssal Trench
+	}
+
+	Weight: {
+		Heavy: The water grows heavy
+		Brink: Any deeper and the sea closes in
+		GillsPotion: In the Vast Ocean it wears off faster the deeper you are, {1} times as fast from {0} feet
+		GillsFaster: Wearing off {0} times as fast at this depth
+	}
 }
 
 Tips: {
@@ -921,6 +1044,7 @@ Keybinds: {
 	Wind.DisplayName: Wind
 	SpellUp.DisplayName: Next Spell or Incantation
 	SpellDown.DisplayName: Previous Spell or Incantation
+	Lantern.DisplayName: Switch the M.U.P.R.A.L's light
 }
 
 Magic: {

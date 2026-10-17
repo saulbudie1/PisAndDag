@@ -42,9 +42,17 @@ namespace PisAndDag.Content.Subworlds
     /// ground (the offerings on the Wasted Mile, the Guide's first words being owed) is
     /// taken into a place and not brought back.
     ///
+    /// THE CLOCK, only where a place's clock runs (Subworld.ClockRuns: the Vast Ocean), both
+    /// ways and as it stands, not only so far as it adds: the time of day and whether it is
+    /// day, the moon's phase, a blood moon or an eclipse, the rain and the wind, and the
+    /// day's fish for the Angler with who has brought it in. Into such a place with
+    /// whoever goes; back to the world in the place's writing (a place whose clock stands
+    /// still writes none, and the world's own is left as it is). A night spent there is a
+    /// night gone in the world, and the Angler's fish is the same fish on both sides.
+    ///
     /// NOT CARRIED AT ALL: where anything is (a place has none of the world's ground), the
-    /// world's secret seed, its clock and weather and whatever is going on in it, the
-    /// bestiary and the kill counts, Journey's powers, and other mods' flags.
+    /// world's secret seed, any other event going on in it (an invasion, a party, a rain
+    /// of slime), the bestiary and the kill counts, Journey's powers, and other mods' flags.
     ///
     /// A flag of the mod's that a place should have goes in a list here as well as in its
     /// own system's save.
@@ -204,6 +212,16 @@ namespace PisAndDag.Content.Subworlds
         private const string KnownKey = "PADIntroduced";
         private const string HeardKey = "PADTalkHeard";
 
+        /// <summary>The clock, in one compound of its own: in a taking only where it is to be carried (<see cref="ClockGoes"/>).</summary>
+        private const string ClockKey = "PADClock";
+        private const string AnglerDoneKey = "PADAnglerDone";
+
+        /// <summary>
+        /// The clock goes with this taking: always from a world (it is only given to a place
+        /// whose clock runs), and from a place only if its clock runs.
+        /// </summary>
+        private static bool ClockGoes => !Subworld.Active || Subworld.Current.ClockRuns;
+
         /// <summary>Everything listed, as it stands in the world loaded.</summary>
         public static TagCompound Take()
         {
@@ -231,7 +249,83 @@ namespace PisAndDag.Content.Subworlds
             if (heard != null)
                 tag[HeardKey] = heard;
 
+            if (ClockGoes)
+                tag[ClockKey] = TakeClock();
+
             return tag;
+        }
+
+        /// <summary>The clock as it stands (the notes over this class say what that is).</summary>
+        private static TagCompound TakeClock()
+        {
+            var clock = new TagCompound
+            {
+                ["time"] = Main.time,
+                ["dayTime"] = Main.dayTime,
+                ["moonPhase"] = Main.moonPhase,
+                ["bloodMoon"] = Main.bloodMoon,
+                ["eclipse"] = Main.eclipse,
+                ["raining"] = Main.raining,
+                ["rainTime"] = Main.rainTime,
+                ["maxRaining"] = Main.maxRaining,
+                ["windSpeedTarget"] = Main.windSpeedTarget,
+                ["windSpeedCurrent"] = Main.windSpeedCurrent,
+                ["anglerQuest"] = Main.anglerQuest,
+                ["anglerQuestFinished"] = Main.anglerQuestFinished,
+            };
+
+            List<string> done = Copy(Main.anglerWhoFinishedToday);
+
+            if (done != null)
+                clock[AnglerDoneKey] = done;
+
+            return clock;
+        }
+
+        /// <summary>The clock as it was taken, put in place of this world's. What a taking does not have is left as it is.</summary>
+        private static void GiveClock(TagCompound clock)
+        {
+            if (clock.ContainsKey("time"))
+                Main.time = clock.GetDouble("time");
+
+            if (clock.ContainsKey("dayTime"))
+                Main.dayTime = clock.GetBool("dayTime");
+
+            if (clock.ContainsKey("moonPhase"))
+                Main.moonPhase = clock.GetInt("moonPhase");
+
+            if (clock.ContainsKey("bloodMoon"))
+                Main.bloodMoon = clock.GetBool("bloodMoon");
+
+            if (clock.ContainsKey("eclipse"))
+                Main.eclipse = clock.GetBool("eclipse");
+
+            if (clock.ContainsKey("raining"))
+                Main.raining = clock.GetBool("raining");
+
+            if (clock.ContainsKey("rainTime"))
+                Main.rainTime = clock.GetDouble("rainTime");
+
+            if (clock.ContainsKey("maxRaining"))
+                Main.maxRaining = clock.GetFloat("maxRaining");
+
+            if (clock.ContainsKey("windSpeedTarget"))
+                Main.windSpeedTarget = clock.GetFloat("windSpeedTarget");
+
+            if (clock.ContainsKey("windSpeedCurrent"))
+                Main.windSpeedCurrent = clock.GetFloat("windSpeedCurrent");
+
+            if (clock.ContainsKey("anglerQuest"))
+                Main.anglerQuest = clock.GetInt("anglerQuest");
+
+            if (clock.ContainsKey("anglerQuestFinished"))
+                Main.anglerQuestFinished = clock.GetBool("anglerQuestFinished");
+
+            if (clock.ContainsKey(AnglerDoneKey))
+            {
+                Main.anglerWhoFinishedToday.Clear();
+                Main.anglerWhoFinishedToday.AddRange(clock.GetList<string>(AnglerDoneKey));
+            }
         }
 
         /// <summary>
@@ -239,7 +333,7 @@ namespace PisAndDag.Content.Subworlds
         /// to under the copying: tried again once, and left out of this taking if it
         /// happens twice (what is not in a taking is not given).
         /// </summary>
-        private static List<string> Copy(HashSet<string> set)
+        private static List<string> Copy(IEnumerable<string> set)
         {
             for (int attempt = 0; attempt < 2; attempt++)
             {
@@ -308,6 +402,11 @@ namespace PisAndDag.Content.Subworlds
 
             Fill(DialogueIntroductions.Known, from, KnownKey, place);
             Fill(TalkMemory.Heard, from, HeardKey, place);
+
+            // The clock: into a place only if its clock runs; back to the world whenever the
+            // place wrote one, which it did only if its clock runs.
+            if (from.ContainsKey(ClockKey) && (!place || Subworld.Current?.ClockRuns == true))
+                GiveClock(from.GetCompound(ClockKey));
 
             // What the mod works out from a flag as a world is loaded (PADWorld.OnWorldLoad),
             // worked out again from the flag as it now is: an Empress beaten on the other

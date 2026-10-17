@@ -70,7 +70,12 @@ namespace PisAndDag.Content.Subworlds
     /// and what was carried is given them all the same (<see cref="Arrived"/>); a place
     /// with no backup is laid out afresh the next time it is gone to (<see cref="Lost"/>).
     ///
-    /// Single player only. On a server the door stays shut.
+    /// A waygate (Waygate) is gone through the same way, once its question has been answered
+    /// yes (WaygatePrompt): the same black, the same picture and tip, the same saving and
+    /// loading. Only its sound is its own, going and coming, and the player is stood in it
+    /// on the other side rather than in front of it.
+    ///
+    /// Single player only. On a server the door stays shut, and the waygate with it.
     /// </summary>
     public class SubworldPassage : ModSystem
     {
@@ -130,6 +135,9 @@ namespace PisAndDag.Content.Subworlds
 
         /// <summary>The door to be put down in front of on the other side, its top left tile: (-1, -1) for none.</summary>
         private static Point16 arrive;
+
+        /// <summary>What is heard on the other side as the black lifts: the door's closing, or a waygate's own sound.</summary>
+        private static SoundStyle arriving = SoundID.DoorClosed;
 
         /// <summary>The place could not be made, and this is the way back from finding that out.</summary>
         private static bool turnedBack;
@@ -334,6 +342,7 @@ namespace PisAndDag.Content.Subworlds
             file = null;
             from = new Point16(-1, -1);
             arrive = new Point16(-1, -1);
+            arriving = SoundID.DoorClosed;
             turnedBack = false;
         }
 
@@ -353,8 +362,31 @@ namespace PisAndDag.Content.Subworlds
             return Enter(SubworldDoor.LeadsTo, new Point16(left, top));
         }
 
+        /// <summary>
+        /// The waygate whose top left tile this is has been gone into, on this machine, its
+        /// question answered yes. In the world it leads to its place (Waygate.LeadsTo); in a
+        /// subworld, back. False if it stays shut.
+        /// </summary>
+        public static bool ThroughWaygate(int left, int top)
+        {
+            Vector2 heardAt = new Vector2(left + Waygate.Wide * 0.5f, top + Waygate.Tall * 0.5f) * 16f;
+
+            if (Subworld.Active)
+                return Leave(heardAt, Waygate.Going);
+
+            return Enter(Waygate.LeadsTo, new Point16(left, top), heardAt, Waygate.Going);
+        }
+
         /// <summary>From the world into a place. <paramref name="door"/> is the door gone through, to come back to: (-1, -1) for none (by hand).</summary>
         public static bool Enter(Subworld place, Point16 door)
+        {
+            Vector2 heardAt = door.X >= 0 ? new Vector2(door.X + 1, door.Y + SubworldDoor.Tall * 0.5f) * 16f : Main.LocalPlayer.Center;
+
+            return Enter(place, door, heardAt, SoundID.DoorOpen);
+        }
+
+        /// <summary>From the world into a place, through a door or a waygate, heard where it stands as <paramref name="sound"/>.</summary>
+        public static bool Enter(Subworld place, Point16 door, Vector2 heardAt, SoundStyle sound)
         {
             if (place == null || !CanGo() || Subworld.Active)
                 return false;
@@ -370,12 +402,15 @@ namespace PisAndDag.Content.Subworlds
             from = door;
             arrive = new Point16(place.Door.X, place.Door.Y);
 
-            Begin(door.X >= 0 ? new Vector2(door.X + 1, door.Y + SubworldDoor.Tall * 0.5f) * 16f : Main.LocalPlayer.Center);
+            Begin(heardAt, sound);
             return true;
         }
 
         /// <summary>From a subworld back to the world it was come into from.</summary>
-        public static bool Leave(Vector2? heardAt = null)
+        public static bool Leave(Vector2? heardAt = null) => Leave(heardAt, SoundID.DoorOpen);
+
+        /// <summary>From a subworld back to the world it was come into from, heard as <paramref name="sound"/>.</summary>
+        public static bool Leave(Vector2? heardAt, SoundStyle sound)
         {
             if (!CanGo() || !Subworld.Active)
                 return false;
@@ -392,7 +427,7 @@ namespace PisAndDag.Content.Subworlds
             from = new Point16(-1, -1);
             arrive = SubworldKeeper.HomeDoor;
 
-            Begin(heardAt ?? Main.LocalPlayer.Center);
+            Begin(heardAt ?? Main.LocalPlayer.Center, sound);
             return true;
         }
 
@@ -415,7 +450,7 @@ namespace PisAndDag.Content.Subworlds
             return true;
         }
 
-        private static void Begin(Vector2 heardAt)
+        private static void Begin(Vector2 heardAt, SoundStyle sound)
         {
             turnedBack = false;
             ticks = 0;
@@ -438,7 +473,7 @@ namespace PisAndDag.Content.Subworlds
             SubworldLoading.Open();
             opening = passed.Elapsed.TotalSeconds;
 
-            SoundEngine.PlaySound(SoundID.DoorOpen, heardAt);
+            SoundEngine.PlaySound(sound, heardAt);
         }
 
         private static void Say(string key)
@@ -486,7 +521,7 @@ namespace PisAndDag.Content.Subworlds
                     ticks++;
 
                     if (ticks == 1)
-                        SoundEngine.PlaySound(SoundID.DoorClosed, Main.LocalPlayer.Center);
+                        SoundEngine.PlaySound(arriving, Main.LocalPlayer.Center);
 
                     if (ticks <= SettleTicks)
                     {
@@ -924,7 +959,8 @@ namespace PisAndDag.Content.Subworlds
         /// read from their file with what was kept in it: nothing is given to that one.
         ///
         /// Then, if this is the passage's other side, they are stood in front of the door, if
-        /// it is there. Any other way into a world, nothing more is this passage's.
+        /// it is there, or in the waygate (its middle over their feet, on what it stands on).
+        /// Any other way into a world, nothing more is this passage's.
         /// </summary>
         internal static void Arrived(Player me)
         {
@@ -942,9 +978,26 @@ namespace PisAndDag.Content.Subworlds
 
             SubworldLoading.Arrive();
 
+            int wide = 0;
+            int tall = 0;
+
+            arriving = SoundID.DoorClosed;
+
             if (arrive.X >= 0 && SubworldDoor.StandsAt(arrive.X, arrive.Y))
             {
-                me.Bottom = new Vector2((arrive.X + SubworldDoor.Wide * 0.5f) * 16f, (arrive.Y + SubworldDoor.Tall) * 16f);
+                wide = SubworldDoor.Wide;
+                tall = SubworldDoor.Tall;
+            }
+            else if (arrive.X >= 0 && Waygate.StandsAt(arrive.X, arrive.Y))
+            {
+                wide = Waygate.Wide;
+                tall = Waygate.Tall;
+                arriving = Waygate.Coming;
+            }
+
+            if (wide > 0)
+            {
+                me.Bottom = new Vector2((arrive.X + wide * 0.5f) * 16f, (arrive.Y + tall) * 16f);
                 me.velocity = Vector2.Zero;
                 me.fallStart = (int)(me.position.Y / 16f);
                 me.fallStart2 = me.fallStart;

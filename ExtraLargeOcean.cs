@@ -38,6 +38,11 @@ namespace PisAndDag
     /// flattens rather than cut past it.
     ///
     /// None of this touches a small, medium or large world.
+    ///
+    /// A place that is all sea (Subworld.IsSea: the Vast Ocean, eighteen times wider than the
+    /// game's sea can reach) answers to both with its own width: every column of it is in
+    /// reach of an end, so to everything here that asks it is the sea from end to end. What
+    /// the game measures from the ends with numbers of its own is SubworldSea's.
     /// </summary>
     public class ExtraLargeOcean : ModSystem
     {
@@ -147,9 +152,12 @@ namespace PisAndDag
 
         // ------------------------------------------------------------------- the edits
 
-        private static int Beach(int vanilla) => BeachReach;
+        private static int Beach(int vanilla) => Sea ? Main.maxTilesX : BeachReach;
 
-        private static int Ocean(int vanilla) => OceanReach;
+        private static int Ocean(int vanilla) => Sea ? Main.maxTilesX : OceanReach;
+
+        /// <summary>In a place that is all sea (the notes over this class).</summary>
+        private static bool Sea => Content.Subworlds.Subworld.Current?.IsSea == true;
 
         /// <summary>
         /// Every read of beachDistance and oceanDistance in this method answers with

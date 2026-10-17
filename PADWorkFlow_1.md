@@ -17260,3 +17260,3488 @@ Meat Hook's Shotgun (Provisional); §16.78 never run in the game; and a test in 
 | `Content/Buffs/VultureStaffBuff.cs` + `.png` | its buff |
 | `Localization/en-US_Mods.PisAndDag.hjson` | their names and tooltips |
 | `PADWorkFlow_1.md`, `RELEASE_TODO.md`, `PAD_Item_Plan.md`, `PlaceholderTextures.md`, `PAD_Prehardmode_Checklist.md` | notes |
+
+---
+
+## 16.79 Later in session 7: the waygate on the beach, the Vast Ocean it leads to, and Pugream's fire
+
+Asked:
+
+> https://eldenring.wiki.fextralife.com/Waygates
+> Create things like this (basically a fancy door  for subworld) (with the effects, like the rays coming out) (right clicking on it give you two choices: Traverse the mysterious gateway? "Yes" "No")
+> For now create one that is generated in the middle of the beach that basically takes you to a subworld where it is  just the ocean,  take the thrice as deep as the deepest place of the ocean in normal world, witha  platform on the surface, water un buckettable, and sendiments are sand, shelfishes and the [ambient objects](https://terraria.wiki.gg/wiki/Ambient_objects)
+> Just make it feel vast and give it multiple shaders and its own biome called the Vast Ocean.
+> Sharks and sea creatures spawn, can summon duke fishron. All functions that can be done at the beach can be done here
+> What do you think should be added more to this biome?
+> Going to sleep i believe you can make it impressive and beautiful. And elden ring like.
+
+Then, while it was being made:
+
+> Also for Pugream encounter at the beach, he is by a fire place 3 blocks away from him(destroy any ambientt object)
+
+twice more with 6 in place of 3, and:
+
+> gate is 2x2 tiles
+
+Read as:
+
+- "Create things like this": a waygate as the Elden Ring page shows them, a ball of white
+  and gold light standing over the ground with rays turning out of it, that takes whoever
+  goes into it somewhere else; "basically a fancy door for subworld": gone through as the
+  Unmarked Door is. What stands under the light (a cradle of marble and gold), the rings,
+  the motes and the pool of light are mine.
+- The question word for word: "Traverse the mysterious gateway?", "Yes", "No". "Mysterious"
+  is on the voice's list of words not to use; it is yours, so it stays.
+- "generated in the middle of the beach": a small shrine in the middle of the dry sand
+  between the water's edge and where the sand ends; in a new world as the last of its
+  making, in a world made before the first time it is loaded.
+- "a subworld where it is just the ocean": the Vast Ocean, a place of the mod's subworlds,
+  gone into through the beach's waygate and come back from through its own.
+- "thrice as deep as the deepest place of the ocean in normal world": the deepest the game's
+  beach pass can dig, worked out from it (below): 149 rows of water; thrice is 447.
+- "a platform on the surface": a deck of old stone in the middle of it, on the water, with
+  the waygate on it.
+- "water un buckettable": the Empty Bucket and the two sponges that take up water cannot be
+  used there; pouring is as anywhere.
+- "sendiments are sand, shelfishes and the ambient objects": a floor of sand in long dunes,
+  drifts of Shell Pile in it, the game's shells and starfish, coral, seaweed, and of the
+  game's ambient objects the ones a sea would hold: stones, bones and skulls, wreckage of
+  wood, broken marble and gold.
+- "feel vast", "multiple shaders", "its own biome called the Vast Ocean": the biome; the sea
+  drawn behind everything, deepening; three screen shaders of the game's own; the sea's
+  music.
+- "Sharks and sea creatures spawn, can summon duke fishron. All functions that can be done
+  at the beach can be done here": to the game every column of it is the sea, as the two ends
+  of a world are; it spawns, its clock runs and is the world's.
+- "What do you think should be added more to this biome?": proposals at the end, not made.
+- "elden ring like": the waygate's look and its question, the drowned ruin of the platform
+  and the shrine.
+- Pugream's fire: 6, the later number: a Campfire up the sand from him, with six columns
+  clear between the one he stands on and the fire's nearest; the ambient objects where it
+  goes and between them taken up.
+- "gate is 2x2 tiles": the waygate is a tile object two tiles by two.
+
+### 1. The waygate
+
+- The tile: `Content/Tiles/Waygate.cs`. Two by two on two solid tiles, walked through like
+  furniture. It cannot be broken by anything, anywhere: its own hooks say no (`CanKillTile`,
+  `KillTile`, `CanExplode`, `CanReplace`, `Slope`), the game's checks are told the same
+  (`SubworldRules.NothingBreaks`), it is never framed (`TileFrame` keeps its frames and
+  never takes it apart), and the ground under it is held
+  (`TileID.Sets.PreventsTileRemovalIfOnTopOfIt` and the two like it). No item: the world
+  puts them down, and only `/subworld ungate` takes one up. Its light: about a torch's from
+  each of its four tiles, warm, breathing slowly (`ModifyLight`). On the map: "Waygate",
+  pale gold.
+- Its light drawn (`Content/Tiles/WaygateRadiance.cs`), after the tiles and before anything
+  that moves, so the player stands in front of it (`ModSystem.PostDrawTiles`, its own batch
+  in the game's zoom), all of it added to what is behind it: a pool of light on the stone
+  under it; two halos; 12 short rays and 4 long ones (up to 130 and 220 pixels long, each
+  swelling and shrinking) turning slowly, each its own length and its own way round; 3 rings
+  of 16 beads wound about it, each tilted its own way and turning, the leading bead
+  brightest; 26 motes drawn in to it on curves of their own; and the heart, white, in three
+  layers, rising and falling 1.5 pixels, 5 over the middle of its tiles. Nearer, brighter:
+  full within 8 tiles of the player, least past 24; under the cursor brighter by 18% and its
+  motes faster. All of it worked out from the clock: nothing is kept from frame to frame but
+  which gate the cursor is on.
+- The question (`Content/Subworlds/WaygatePrompt.cs`): right click, and across the screen, a
+  little under its middle, the way Elden Ring asks: a black band 620 by 116 faint at both
+  ends, a hair of gold over and under it, the question in it and "Yes" and "No" under the
+  question; the answer under the cursor lit, with a short gold line under it and the menu's
+  tick. It comes up in 10 frames and takes no click until it is up. Yes goes through; No,
+  walking 12 tiles off, the inventory, the map, the options, chat, a chest, a sign or
+  talking to anyone lets it go. Only the player who asked sees it; its click is read from
+  the button itself, as the mod's other late interface reads it (`PADMouse`). The words are
+  the hjson's.
+- Going through (`SubworldPassage.ThroughWaygate`): as through the Unmarked Door, the same
+  black, picture and tip, saving and loading, single player only; heard as the game's
+  teleport (`Item6`), lower (going: 0.8 loud, a quarter of an octave down; coming out, as
+  the black lifts: 0.55 loud, nearly half an octave down); on the other side the player
+  stands in the waygate, on its dais.
+
+### 2. The shrine on the beach
+
+`Content/Structures/BeachWaygate.cs`.
+
+- Which beach: the Dungeon's end of the world (a Grand world's one sea; in any other, the
+  Dungeon's side), so that it is the same beach in every world; the other end if that has no
+  room.
+- Where on it: walked in from the world's edge over the water to the first dry column (the
+  water's edge), and on over the sand to the first column that is not sand (its end); the
+  shrine as near the middle of that as it goes, trying further and further either way:
+  ground no more than 4 rows from flat across its 20 columns, nothing on it but sand, earth
+  and what grows or lies there (trees, palms, saplings, sea oats, shells, the game's piles,
+  whatever a blade cuts; not pots), no water and no walls over it. The first 24 columns up
+  from the water are kept for Pugream and his fire (12 where the beach is narrow).
+- What: the ground made level (what stands over it cut, what is under it filled with its own
+  ground), everything grown on it taken up whole (a tree all of it); a dais of marble two
+  steps high (8 and 6 wide); the waygate on it; two pairs of broken marble columns on feet
+  of slab, 7 either side of its middle, lower and lower toward the sea (5 and 4 high on the
+  land's side, 3 and 2 on the sea's), the top of the lower of each pair broken to a half
+  block.
+- When: once (`PADWaygateX`, `PADWaygateY`, saved with the world and sent to every client);
+  in a new world as the last of its making (`PostWorldGen`), in a world made before the
+  first time it is loaded (`PostWorldLoad`, not on a client, not in a subworld). If no place
+  will do, it is tried again at the next load, and `client.log` says so either way
+  (`Waygate: put down on the ... beach, its top left tile at ...`).
+
+### 3. The Vast Ocean
+
+`Content/Subworlds/VastOcean.cs` (the place, its platform), `VastOceanBuild.cs` (laying it
+out), `VastOceanSea.cs` (its water and its creatures).
+
+- How deep. The game digs its seas in its beach pass (the lambda of `WorldGen.AddGenPasses`
+  that calls `WorldGen.TuneOceanDepth`, 1.4.4): from where the water starts, 220 to 259
+  columns in from the edge (275 on one side), a column at a time toward the edge, each
+  deeper than the last by a roll of 10 to 19 times a step that shrinks with the count; one
+  world in four has one sea sloped the other way ("Florida"); water from the surface row to
+  three quarters of the depth less three. At the deepest column anyone can reach (41 in from
+  the edge), with every roll at 19, on the 275 side, sloped the steep way: 149 rows of
+  water, the deepest the game can make. In 20,000 worlds rolled as it rolls them the deepest
+  was 119, half of them 69 or less. Thrice 149 is 447: from the surface row to the sand at
+  the floor's deepest.
+- Its size: 759 columns by 740 rows. 759 is the widest a place can be with every column the
+  sea's by the game's count (`WorldGen.oceanDepths`: within 380 of either edge), and Duke
+  Fishron's temper over a player more than 400 from both edges never comes. The water's
+  surface is row 220, half full as the game leaves its own; 179 rows of sky over it to the
+  top that can be seen.
+- The game's lines: the surface line 70 rows under the water's surface, as the game's own
+  sea has it: a bobber on the surface fishes the sea (`Projectile.FishingCheck`), and Duke
+  Fishron fights a player near the surface and rages at one gone 70 rows down, as at home.
+  The rock line past the bottom of the world, so that the game's line for the sea
+  (`oceanDepths`: halfway between the two, and 40 more, row 700) is under the lowest row
+  that can be seen: the whole of it, to the sand, is the sea (`Player.ZoneBeach`), and the
+  game spawns its own sea's creatures on its floor.
+- The floor: dunes of four long swells from the world's seed, its lowest point exactly 447
+  under the surface row and its highest 24 rows over that; sand 14 rows deep, hardened sand
+  to 32, sandstone to the bottom; 14 to 19 drifts of Shell Pile in the sand's top, two rows
+  deep at their middles; its top worn smooth as the game wears its own (`Tile.SmoothSlope`).
+- What lies on it, on its level tops only, each put down by the game's own hand
+  (`WorldGen.PlaceTile`, `PlaceSmallPile`, `GrowCheckSeaweed`): large piles 4 level columns
+  in 100 (`LargePiles`: bones and skulls, rubble, a helm and a sword in the stones, wreckage
+  of wood; `LargePiles2`: a skull and its bones, a ball of marble, the broken marble and
+  gold of a fallen hall); small piles two wide 6 in 100 and one wide 10 (stones, bones,
+  broken marble, sand, wood); shells and starfish 14 (the game's own odds: a sea shell or a
+  starfish, one in ten a junonia, one in ten a lightning whelk, one in fifty a tulip shell);
+  coral 11; seaweed 15, on sand, grown from 2 to 12 tall.
+- The platform, in the middle on the water: a deck 42 long two rows over the water's
+  surface, slab over brick, its ends worn to a slope; its body under the water narrowing row
+  by row, ragged at the bottom, green with moss at the waterline; four piers of brick 3 wide
+  going down into the dark (34, 52, 46 and 38 rows under the body), a band of slab every 7
+  rows, Coralstone over them more the deeper, their ends broken off; on the deck a marble
+  dais two steps high with the waygate on it, and two broken columns of marble on slab, the
+  left the taller. The same in every world (nothing of the seed in it). None of it can be
+  broken, hammered or swapped (`Subworld.KeepsTile`); everything else in the place can be
+  dug, built and broken as in a world. Whoever dies there comes back on the deck, left of
+  the dais.
+- Spawning (`VastOceanSea.cs`): the game spawns there as on a beach, but only where it finds
+  ground under the spot it rolls, so: the game is let spawn its own on the floor's sand
+  (water over sand: its sea's crabs, snails, squid, jellyfish, sharks by its own rules) and
+  for invasions, and nothing on the platform or anything dry; in open water, where the floor
+  is out of the game's reach, the sea's creatures are put down by the place itself, at the
+  game's own rate and up to its own most, off the screen as the game puts its own, by depth
+  (mine): at the surface a seagull one in ten, else one in ten a sea turtle or a dolphin,
+  and in the rain now and then a flying fish; in the first 120 rows a seahorse one in thirty
+  (gold at the game's odds for a golden critter), a squid one in eighteen, a shark one in
+  eight, else a pink jellyfish; to 280 rows sharks one in six, squid one in ten, the caves'
+  jellyfish one in three (blue; in hard mode half of them green), in hard mode an angler
+  fish one in twelve, else pink jellyfish; deeper, the caves' jellyfish mostly, angler fish
+  one in six in hard mode, squid one in eight, a shark one in fourteen.
+- Water that cannot be carried: the Empty Bucket, the Super Absorbant Sponge and the Ultra
+  Absorbant Sponge cannot be used there, and over the head of whoever tries, at most once a
+  second: "The sea will not be carried." Full buckets pour as anywhere.
+- The clock (`Subworld.ClockRuns`): the world's, carried in with whoever goes and back with
+  them: the time and whether it is day, the moon's phase, a blood moon or an eclipse, the
+  rain and the wind, and the Angler's fish of the day with who has brought it in
+  (`SubworldFlags`). A night spent there is a night gone at home, and the Angler's fish
+  caught there counts.
+- No meteor falls in any subworld (`WorldGen.dropMeteor`, by detour): a place is too small
+  to lose a piece of to one.
+- Duke Fishron: the game's own, with a Truffle Worm on a line anywhere in it.
+- Music: the game's Ocean by day, Ocean Night by night. The full screen map: the game's
+  picture of the sea.
+
+### 4. The biome and its look
+
+`Content/Biomes/VastOceanBiome.cs` (the biome: all of the place, high priority),
+`VastOceanSky.cs` (its look), `Content/Subworlds/SubworldScene.cs` (the sea left to the
+game).
+
+- The water behind everything. The game fills everything under its surface line with black
+  behind the tiles (`Main.DrawBackgroundBlackFill`, drawn after the sky and before the
+  walls, in screen space with the camera's zoom: `Main.DoDraw`); in the Vast Ocean that is
+  replaced, by detour, with the sea, worked out from the clock and the camera: its colour
+  row by row, clear and blue at the surface with the game's own sea backdrop showing
+  through, deep blue by 60 rows, black by 300 and past, the shallows dimmer by night; a haze
+  along the horizon, pale by day; shafts of sun slanting down from the surface by day,
+  swaying, leaning with the hour; snow of the sea, flecks sinking slowly through the light,
+  and under 160 rows now and then one glowing blue or green; and two passes in three, far
+  off in the blue 90 to 240 rows down, the shadow of a shark the size of a ship going by,
+  and about one in eight of those the Duke (the game's own pictures, darkened).
+- Three screen shaders, the game's own passes set up as the game sets up its own
+  (`ScreenEffectInitializer.Load`), no shader of the mod's: `PisAndDag:VastDepth`
+  (`FilterMiniTower`, deep blue: a fifth at the surface to two thirds at the floor, by how
+  deep the screen's middle is); `PisAndDag:VastGold` (`FilterMiniTower`, old gold: faint
+  over the water by day, stronger as the sun is low); `PisAndDag:VastShimmer`
+  (`FilterHeatDistortion` on the game's noise: the screen wavers as through water, under the
+  surface only, and not at all with the game's heat distortion turned off).
+- To the game it is the sea (`Subworld.IsSea`): the player is on a beach, the game draws its
+  sea's backdrop, and its sea's picture behind the full screen map.
+
+### 5. Pugream's fire
+
+`Content/NPCs/Pugream/PugreamPresence.cs`.
+
+- Laid the first time he is put down on the shore, as unseen as he is, and only that once
+  (`FireLaid`, `FireAt`, saved with the world): taken away, it does not come back.
+- Where: up the sand from him, six columns clear between his and the fire's nearest of its
+  three; the ground under it made level (what is lower filled with what it is made of); if
+  the spot will not take it (a tree in it, anything built, water, ground more than two rows
+  from flat, the shrine) the next column further up the sand is tried, three more at most,
+  and failing those it is tried again the next time he is put down.
+- The ambient objects (piles, shells, sea oats, what a blade cuts; not trees, palms or pots)
+  taken up whole where it goes, a column either side of it and between him and it, on each
+  column's own ground.
+- Neither he nor his fire is ever put on the waygate's shrine: his spot on the shore passes
+  over any place where he or the fire would be on it.
+
+### 6. The rest of what changed
+
+- `Subworld.cs`: what may be done in a place, each saying what every place did before unless
+  the place says otherwise: `Untouched`, `KeepsTile`, `Spawns`, `ClockRuns`, `IsSea`,
+  `SurfaceLine`, `RockLine`.
+- `SubworldRules.cs`: the rules where a place keeps it all, and tile by tile what it keeps
+  of its own (`KeptAt`); a waygate never broken anywhere; no meteor; the clock and the
+  spawning left to a place that runs them.
+- `SubworldKeeper.cs`: a place's surface and rock lines its own. `SubworldFlags.cs`: the
+  clock carried. `SubworldPassage.cs`: through a waygate, its sounds, standing in it on the
+  other side. `SubworldScene.cs`: the sea left to the game.
+- `/subworld gate` (where this world's waygate is, or this place's, and how far), `/subworld
+  gate raise` (the shrine put down now, where a world has none), `/subworld ungate` (the
+  waygate under the cursor taken up; the beach's forgotten, its shrine left; another raised
+  at the next load).
+- The hjson: `Subworlds.Waygate` (`Question`, `Yes`, `No`, `Uncarried`),
+  `Tiles.Waygate.MapEntry`, `Biomes.VastOceanBiome`.
+- Pictures, mine (PlaceholderTextures.md): `Waygate.png` (the cradle; the top frames empty),
+  `WaygateLight.png` (a round falloff), `WaygateRay.png` (a ray); the two light ones stored
+  premultiplied, as the game blends, which tModLoader does not do for a mod's pictures
+  (`ImageIO.ToRaw`, `RawImgReader`).
+
+### 7. Checks
+
+- Compiled against tModLoader 1.4.4: 0 errors, the 10 warnings there were.
+- A rig: the mod's own compiled code on the game's own `WorldGen`, 1.4.4, in a world made
+  there, framed as the game frames a loaded world.
+- Rig, the Vast Ocean laid out for three seeds: 447 rows of water at the deepest, dunes 24
+  high; `oceanDepths` true over all of it that can be seen; the platform's 792 tiles all as
+  laid out and dry; the waygate's four cells free over marble; the spawn on solid ground
+  with air over it; the water full under the surface row and half in it; every block framed;
+  every object holding when the game frames it again. On the floor (seed 1234567, 42, 999):
+  drifts 16, 18, 14; coral 50, 54, 39; shells 54, 50, 57; seaweed 54, 53, 58 stands (346,
+  381, 435 tiles); small piles 58, 32, 40 and two wide 25, 24, 21; large piles 11, 18, 12;
+  nothing that would not go.
+- Rig, the shrine on a beach made there, both ends, two seeds: put down 70 to 73 columns
+  from the water's edge, in the middle of the sand; level ground, the dais and the waygate's
+  cells; the columns lower toward the sea, the right way round on both sides; nothing grown
+  left on it. Pugream's spot off it; his fire a Campfire, six columns clear between him and
+  it; a shell and a pile put in the way, and a shell on the spot, all taken up; not on the
+  shrine; every object holding when framed again.
+- Found by the rig and fixed before delivery: seaweed is grown from the top of its stand
+  (`GrowCheckSeaweed`), and not within 50 tiles of a world's edge or on Shell Pile
+  (`WorldGen.CanUnderwaterPlantGrowHere`); a large pile is put down about its middle column,
+  so it goes on this column and the next two, none lain on yet; the game's roll for a
+  shell's kind is private (`WorldGen.RollRandomSeaShellStyle`), so its odds are copied;
+  `LargePiles2` draws a style past 34 from its second row (`TileDrawing.GetTileDrawData`),
+  which is where its marble and gold are; a great skull on red rock from its first row was
+  left out.
+- Read in the 1.4.4 assembly besides: `WorldGen.Place1x1` (a shell's kind is the picture's
+  row, its look one of three at random), `WorldGen.Place3x2`, `WorldGen.PlaceSmallPile`,
+  `Tile.SmoothSlope`, `WorldGen.SeaOatWaterCheck`, `Main.DrawBackgroundBlackFill` and the
+  batch it is drawn in, `ScreenEffectInitializer.Load`, `ModBiome`'s bestiary pictures (none
+  of its own: the game's stand in).
+- Previews, drawn with the game's own pictures (the light only roughly the game's): the
+  shrine by day and by night, the platform by day and by night, and the floor, in Claude
+  outputs.
+- Not in the game.
+
+### 8. Your edit to `VultureStaff.cs`
+
+Found at the comparison with your folder: 18 damage in place of 12, and the drop from
+Vultures on, one time in 40. Taken into my copy and compiled with it; RELEASE_TODO,
+PAD_Item_Plan and the checklist changed to say so (the checklist now counts it before the
+Wall, in the first days: 17 weapons, 4 of them summons). The comment over `VultureStaffDrop`
+still says one in 25 and "left off".
+
+The checklist also has the Vast Ocean now: a new place, in every world (its first days, and
+its line for one place of the mod's own in every world size, ticked).
+
+### 9. Proposals for the Vast Ocean, not made
+
+What could be added, asked for ("What do you think should be added more to this biome?"):
+
+- A drowned ruin far out on the floor, the hall the marble and gold came from: the same
+  builders' stone, a sealed chamber, water chests, an inscription or two.
+- Wrecks on the floor with the sea's chests in them (the game's water chest loot), and a
+  wreck's own boss chest.
+- Something of its own in the deep: the shadow in the backdrop made real, a great fish or
+  eel that rises under the platform at night, Elden Ring's way, seen before it is fought.
+- Fishing of its own: catches only the deep gives, a crate, and the Angler's quest fish from
+  it.
+- Light in the dark: glowing coral and kelp under 300 rows, so the floor is found by its own
+  light.
+- Currents and weather: a drift that pulls in places, a fog over the water at dawn, storms
+  with lightning on the sea.
+- More waygates: one in the deep leading on, and one each in other places, a way between
+  them all.
+- A place to rest on the platform, a fire like a Site of Grace, where the player comes back.
+
+### 10. Left open (RELEASE_TODO)
+
+The readings of the waygate, the shrine, the Vast Ocean and the fire; what is mine in each;
+the three pictures; the horizon against the backdrop, unseen; the waygate by day; single
+player only; your Vulture Staff edit; tests in Last.
+
+### 11. Files
+
+| File | |
+|---|---|
+| `Content/Tiles/Waygate.cs` + `.png`, `WaygateRadiance.cs`, `WaygateLight.png`, `WaygateRay.png` | the waygate, its light |
+| `Content/Subworlds/WaygatePrompt.cs` | its question |
+| `Content/Structures/BeachWaygate.cs` | the shrine on the beach |
+| `Content/Subworlds/VastOcean.cs`, `VastOceanBuild.cs`, `VastOceanSea.cs` | the Vast Ocean |
+| `Content/Biomes/VastOceanBiome.cs`, `VastOceanSky.cs` | its biome and look |
+| `Content/Subworlds/Subworld.cs`, `SubworldRules.cs`, `SubworldKeeper.cs`, `SubworldFlags.cs`, `SubworldPassage.cs`, `SubworldScene.cs` | places that may be worked, the sea, the clock, waygates |
+| `Content/NPCs/Pugream/PugreamPresence.cs` | his fire |
+| `SubworldCommand.cs` | `gate`, `gate raise`, `ungate` |
+| `Localization/en-US_Mods.PisAndDag.hjson` | the question, the refusal, the map's name, the biome's |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md`, `PlaceholderTextures.md`, `PAD_Item_Plan.md`, `PAD_Prehardmode_Checklist.md` | notes |
+| `Claude outputs/vast_ocean_*_1679.png`, `waygate_*_1679.png` | previews and the two legends |
+
+## 16.80 Session 7: a crash making a world, and no shrine on Huh's beach
+
+Asked, with a picture of tModLoader's crash window ("Collection was modified; enumeration
+operation may not execute", in `UIList` drawing under `Main.DrawMenu`):
+
+> for some reason i tried the same setting again and its normal
+
+and then, with three pictures of the beach of the world made the second time:
+
+> plenty of room here and no shrine
+
+### 1. The crash
+
+`client.log` of that session: 2 seconds into making a Grand world ("EE2211"), the exception
+above, thrown while drawing a child of an item in a `UIList`. It is WorldGen Previewer's
+(v0.8, from the workshop, unpacked and read): it puts its own screen in place of the game's
+while a world is made, with a list of the passes in it, and marks each pass done from the
+thread that makes the world (`UIPassItem.Complete`, which takes the item's close button off
+it) while the game may be drawing that same item. When the two meet, the game stops; made
+again, they did not meet. Nothing of PisAndDag's touches that screen. If it comes again, the
+world can be made with WorldGen Previewer off.
+
+### 2. No shrine on Huh's beach
+
+`client.log` for the world made the second time ("Huh", Grand, seed 1648945454): "Waygate:
+no beach on either side of this world has room for its shrine." when it was made, and again
+when it was loaded.
+
+Replayed on Huh's own tiles (the saved world read into the rig, and the compiled
+`BeachWaygate` run on it, as it was and as it is now): the walk in from the water (x 12113)
+stopped fifteen columns in, at a patch of shell (x 12093 to 12098: `ShellPile`, which the
+game lays in its beaches and does not count as sand). Fifteen columns is less than the
+shrine's twenty, so the right beach was no beach to it, and the left is Grace's, with no
+sea. The beach is in truth 179 columns of dry sand (x 11935 to 12113), with cacti all along
+it. The rig's beaches had no shell on top, which is why it was not seen there.
+
+Fixed in `Content/Structures/BeachWaygate.cs`:
+
+- The walk goes over shell as over sand (`Beach`: sand of any kind, or `ShellPile`).
+- Cacti are among what the shrine takes up whole before it is built, as palms and sea oats
+  are (`Grown`; `Uproot` follows a cactus as far as it does a tree). Without that, the
+  middle of this beach is refused for the one cactus in its span.
+
+Checked on Huh's tiles: the fixed search puts the shrine in the middle of the beach, its
+waygate at x 12024 and 12025, its ground on row 543, 89 columns in from the water; built
+there as a load of the world builds it: the ground level and whole, the dais, the columns
+lower toward the sea, nothing else over it, the cactus in its span taken up whole, and no
+piece of cactus or palm left hanging (12 of 12). The rig's four made beaches still pass (13
+of 13 each). Compiled: 0 errors, the 10 warnings as before. Previews in Claude outputs:
+`huh_shrine_day_1680.png`, `huh_shrine_night_1680.png`, `huh_beach_day_1680.png` (the palms'
+crowns are not drawn in them).
+
+Huh gets its shrine the next time it is loaded after the mod is built again: it was never
+put down there, so the world looks for its place again (`PostWorldLoad`). Where it lands
+then depends on the beach as it is by then; as it was saved, x 12024.
+
+### 3. Files
+
+| File | |
+|---|---|
+| `Content/Structures/BeachWaygate.cs` | the walk over shell; cacti taken up |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md` | notes |
+| `Claude outputs/huh_*_1680.png` | previews |
+
+## 16.81 Session 7: the Vast Ocean drains; eighteen times as wide, four times as deep
+
+Asked, with pictures of the map and of the platform (the sea's surface far under the deck, a
+dark hollow over the floor):
+
+> why is liquid aint filled? when it settles it looks funny
+
+> is something draining it?
+
+> cuz hell would drain water right?
+
+> ok Make it 12x wider and 4x deeper than now, that means it is 12x deeper than deepest part of the normal world beach .
+
+> fix the drain
+
+> i mean 18x wider bruh
+
+### 1. The drain
+
+The game dries water under its line for the Underworld: each time it moves a cell of water
+lower than `Main.UnderworldLayer` (maxTilesY less 200) it takes 2 of the cell's 255 away
+(`Liquid.Update`, 1.4.4, read in the IL: "y > UnderworldLayer", water only). The Vast Ocean
+was 740 high, so the line was row 540, and the lowest 130 or so rows of the sea were under
+it: they dried, the water over them sank to fill them, and that dried too. That is the
+hollow over the floor and the surface falling. `SubworldScene` already turned off the
+Underworld's music, light and backdrop in a subworld, but not this.
+
+Fixed in `SubworldScene.cs`: `Liquid.Update` is edited (`IL_Liquid.Update`, put on in every
+place, servers too) so the line it reads is passed through `UnderworldLine`, which in a
+subworld answers a row under every row there is. Checked in the rig with MonoMod's own
+`ILHook` on the game's method, as tModLoader puts it on: a closed basin of water under the
+line in a world 600 high lost 581,866 of 622,045 in 600 updates of the game's water, as the
+game does; the same basin in a subworld kept it exactly as the same basin over the line does
+(both 65 up, the game's own rounding as water moves).
+
+### 2. Eighteen times as wide, four times as deep
+
+`VastOcean`: 13662 columns (18 times 759) by 2081 rows; the deepest water 1788 rows (four
+times 447, twelve times the 149 the game can dig); 73 rows of ground under the deepest floor
+as before; the rock line now worked out from the height (`2 * (High - 80) - SurfaceLineRow`,
+3712, which was 1030 before by the same sum), so the game's line for the sea is forty rows
+over the bottom as before. `Layout` is 2: the next trip makes a new file
+(`VastOcean.2.wld`), full; the drained one (`VastOcean.wld`, `.twld` and the `.bak`s, in
+`Worlds\PisAndDag_Subworlds\<world id>`) is left where it is, to be deleted by hand.
+`VastOceanBuild`: the drifts of shell as many to a stretch of floor as before (14 to 19 to
+every 759 columns).
+
+759 was the widest a place could be with all of it the sea by the game's own count. Past
+that the game would call only 380 columns at each end the sea, so these are answered for the
+whole width in a place that is the sea (`Subworld.IsSea`):
+
+- `ExtraLargeOcean`: its two answers for `WorldGen.beachDistance` and `oceanDistance`
+  (already put into `oceanDepths`, `NPC.SpawnNPC` and the rest) are the place's width there.
+  That carries the beach the player is on, the sea's backdrop, the game's sea creatures on
+  the floor, the floor's sand not counted for the desert, the coral torch's luck.
+- `SubworldSea` (new): the sea's catch and the Truffle Worm (380 in
+  `Projectile.FishingCheck_RollItemDrop` and `Projectile.FishingCheck`), Duke Fishron's
+  temper (400 columns, 6400 pixels, in `NPC.AI_069_DukeFishron`), and the Pirate Map
+  (`Conditions.PirateMap.CanDrop`).
+
+`SubworldKeeper.Make` would not make a place wider or higher than the game's grid of tiles
+as it stood (8401 by 2401 after a Large world); the grid is grown to fit any world as it is
+cleared (`ExtraLargeWorld`), so the most is now the grid's own limit (ushort, less 1000).
+
+### 3. Checked
+
+- Compiled: 0 errors, the 10 warnings as before.
+- The rig, on the game's own code with MonoMod's `ILHook` (a new `hooks` run, 8 of 8): all
+  six edits find what they look for as many times as 1.4.4 has it; `WorldGen.oceanDepths`
+  true in every column of the Vast Ocean from its surface to its deepest water, not under
+  the game's line for the sea, and in a world as wide only near its ends; the Pirate Map
+  drops over the middle in the Vast Ocean and not in a world as wide; the drying above.
+- The place made in the rig with three seeds (11 of 11 each): 1788 rows at the deepest,
+  dunes 24, the game's line for the sea under every row seen, the platform, the waygate's
+  place, the spawn, the water full under its half row, every block framed, every object
+  holding when the game frames it again. That last one failed at first: four small piles of
+  1,801 came apart on shell. The game keeps its drifts of sand (styles 54 to 59 and 73 to
+  76) only on sand, hardened sand or sandstone (`WorldGen.CheckPile`); the floor's sand
+  drifts are now kept off shell. It was there in the first sea as well, too rare to show at
+  a twelfth of the floor.
+- Generating it in the rig takes about 8 seconds.
+
+### 4. Files
+
+| File | |
+|---|---|
+| `Content/Subworlds/SubworldScene.cs` | the drying turned off |
+| `Content/Subworlds/SubworldSea.cs` | new: fishing, Duke Fishron's temper and the Pirate Map across the width |
+| `ExtraLargeOcean.cs` | the sea's reach the whole width in a place that is the sea |
+| `Content/Subworlds/SubworldKeeper.cs` | a place as big as the grid can grow |
+| `Content/Subworlds/VastOcean.cs`, `VastOceanBuild.cs` | the size, the lines, layout 2, the drifts, sand drifts off shell |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md` | notes |
+
+## 16.82 Session 7: the Vast Ocean's depths, in twelve sections
+
+Asked (first without the moonlight, then again with it):
+
+> divide the depth into 12 section, after section 2, any lightsource spread is limited and is decreased by half, after section 4 any lightsource only light itslef and not surrounding it (lightsticks and hooks and projectiles), it is pitch dark and after section 6 put on some shader that makes it very hard to see, sound is also distorted and the music is distorted too like how it is realistic to a dive. After section 7 its pure quiet and pitch black, and below this nothing spawns (I will put my own creatures here). Draw so that from section 1- section4, water brightness is gradiently lowered to dark navy and from section 5-6 its to black. section 1-3 have rays of sunshines and moonlights(1/3 of the length) piericng the water.animating the whole thing. Surface water also have some waves sometimes(just animation)
+> Make it overall pretty and after section 6, it is Thalassophobia.
+
+> below section 6 to section 10 is a new biome: Forevernight zone. (no NPC spawn), from section 10-12, it is new biome: Abyssal Trench. After section 7, every block you place will shakes and break within 1.3 seconds.
+
+### 1. Readings
+
+- Twelve sections of 149 rows (1788 / 12), counted down from the water's surface row (220):
+  the Nth is rows 220 + 149 (N - 1) to 220 + 149 N - 1. The floor (its lowest top 2008, the
+  dunes up to 24 over it) is in the 12th.
+- "after section N" read as from section N + 1: the light halved from the 3rd (row 518), a
+  light's own cell only from the 5th (816), the murk and the dive's sound from the 7th
+  (1114), silence from the 8th (1263), and so the breaking ("After section 7") from the 8th.
+- Nothing spawns from the 7th down ("below this nothing spawns", and the Forevernight Zone's
+  "(no NPC spawn)"), invasions too.
+- The Forevernight Zone ("below section 6 to section 10") and the Abyssal Trench ("from
+  section 10-12") would share the 10th: read as the Zone the 7th to the 9th, the Trench the
+  10th to the 12th.
+- "every block you place": every tile a player puts down there (blocks, platforms, torches,
+  furniture), broken as if mined, so its item comes back. Walls are not blocks and are left;
+  what the place was made with is not touched.
+- The sun's rays through the 1st to the 3rd (447 rows), the moon's "1/3 of the length" (149,
+  the 1st).
+- "any lightsource ... (lightsticks and hooks and projectiles)": every light, whatever gives
+  it. The rules are on how light spreads through the water, not on the things.
+
+### 2. Built
+
+**The light (`VastOceanLight`, new).** The game spreads light from cell to cell, a little
+less with each cell by what the cell is: air, solid, water or honey (`LightMap.BlurLine`).
+What each cell is it is told as the tiles are looked at (`TileLightScanner.ExportTo`), and
+how much less each lets through just before the light is spread
+(`LightingEngine.UpdateLightDecay`); both are detoured. From row 518 down water is told as
+honey, and honey let through as water twice over (with the water's own flicker, 0.99 a cell
+on average, folded in): a light reaches half as far. From row 816 down water is told as
+solid, and solid lets nothing through: a light lights its own cell and none other. On the
+game's Color and White lighting only; Retro and Trippy are another engine.
+
+**The look (`VastOceanSky`).** Found first: the sea drawn behind since §16.79 was never seen
+under the water. The game draws its water twice (`LiquidRenderer.DrawNormalLiquids`, read in
+the IL): once behind everything, whole (opacity 1, and the water's picture is all but solid
+in its body), and once over everything, the tiles and the players too, at 0.6
+(`DEFAULT_OPACITY`, read from the assembly: 0.6 for water, 0.95, 0.95, 0.75); each as the
+cell is lit, so unlit water is black. The sea was drawn in the game's black fill, under the
+first of them, so under the surface only the game's own water showed, blue where the sun
+reached and black under that: none of the sea's colours, shafts or snow. Now it is drawn
+right after the first (the overlays' drawing for `RenderLayers.BackgroundWater`, detoured;
+`Main.DoDraw` calls it right after the water behind everything), and drawn two and a half
+times as bright as it is to be seen, for the second takes six tenths of it away. A channel
+past 102 of 255 cannot be seen through it, so the colours are kept under that.
+
+- The water: ten stops by rows under the surface. Bright at the top, where the game's own
+  water lit by the sun shows through (covered 0.45 at the surface, 0.8 at 12 rows, wholly
+  from 24); a blue darkening section by section; dark navy (5, 14, 42) at the end of the
+  4th; black at the end of the 6th. By night dimmer down to the 5th; the dark under it the
+  same at any hour. (By night it used to grow lighter again past 260 rows.)
+- The rays: the sun's 7, reaching through the first three sections (82 to 100 hundredths of
+  447 rows each), the moon's 5 a third as long, as bright as the moon is full; each
+  breathing, flickering and swaying, leaning with the hour. The ray's picture falls to a
+  third of its light at half its length and to nothing at its tip, which left nothing of a
+  ray to see past the 2nd section: its lower half (an even fall to a third) is laid along 85
+  hundredths of a ray and its upper half along the rest, so a third holds to near the end.
+  Each is put in its place where the middle of what is on the screen of it is, so that
+  leaning they still cross the screen deep down (a leaning ray's deep end went off the
+  screen at dawn and dusk). Brighter to an eye deep down, twice by the end of the 3rd.
+- The snow and the far shadows as before; the glowing specks from the 2nd to the 6th; in the
+  7th a few last specks, faint through the murk, and something vast passing that puts them
+  out (an eye-shaped void three screens long, every 41 seconds, 7 times in 10); under the
+  7th nothing.
+- The waves: every 12 seconds a swell along the surface for 4 (one in four goes by flat),
+  crests 14 tiles apart running 90 pixels a second, put into the game's own water as its
+  ripples (`WaterShaderData.QueueRipple`); none where the game's waves are turned off.
+- Two more of the game's shader passes: `PisAndDag:VastMurk` (FilterMiniTower, near black,
+  to 0.82 from the 7th) and `PisAndDag:VastSilt` (FilterBlizzardForeground in the colours of
+  silt, 0.32, drifting). VastDepth deeper with depth (0.2 at the surface, 0.56 by the end of
+  the 4th, 0.74 by the end of the 6th, less in the murk); the waver near twice as hard in
+  the murk.
+
+Found second: the game blacks out, over its surface line, full water that no light reaches
+at all (`Main.DrawBlack`, read in the IL: no wall, its brightness exactly 0, rows to
+`worldSurface`), and that is drawn after the sea. By day the sun's light gives out about 46
+rows down, so a black band would have lain across the 1st section from about row 266 to the
+line at 290 (from about 250 by night). `VastOceanLight` gives the water between the surface
+and the line the faintest light (0.002, 0.006, 0.012: about two of the game's least steps of
+brightness at its 1.2, far under the 0.0185 it lets spread), so none of it is ever quite
+unlit.
+
+**The sound (`VastOceanSound`, new).** In the 7th: every sound 0.4 of an octave lower, at
+0.6, muffled by FNA's own low-pass filter on its voice (cutoff 0.05, about 350 Hz;
+`SoundEffectInstance.INTERNAL_applyLowPassFilter`, FAudio's filter on the voice, which every
+voice FNA makes is made to take, read in FNA's IL), set after the game's own update of it
+each tick (`ActiveSound.Update`, which sets the loudness and pitch every tick; off the
+game's thread it hands the update to it, so the dive is set there only, not twice). The
+music at 0.45, swelling and sinking by 0.15 (`LegacyAudioSystem.UpdateCommonTrack`), and a
+track played from a file (a mod's, a resource pack's) also 0.45 of an octave lower and
+muffled. The ambient loops at half (`UpdateAmbientCueState`). From the 8th: no sound starts
+(`SoundPlayer.Play`; every way the game plays a sound goes through it, read in the IL), what
+was playing goes silent, no ambient, and no music (`VastOcean.Music` is `NoMusic` there).
+Back up, all as the game has it.
+
+**The spawns (`VastOceanSea`).** From the 7th down the pool is emptied for everything,
+invasions too, and the sea's own spawner puts nothing there.
+
+**The biomes (`VastOceanDepths`, new).** `ForevernightZoneBiome` (rows 1114 to 1560) and
+`AbyssalTrenchBiome` (1561 down), both `BiomeHigh`, inside the Vast Ocean's; their names in
+the hjson. No bestiary pictures of their own yet.
+
+**The pressure (`VastOceanPressure`, new).** A tile a player puts down from row 1263 down
+(`GlobalTile.PlaceInWorld`) is noted; it sheds grit, more as it goes; a whole block is drawn
+shaking (0.5 to 3 pixels, the rest as the game draws them); at 78 ticks (1.3 seconds) it is
+broken as if mined (`WorldGen.KillTile`, sent on in multiplayer as a mined tile is), its
+item dropped.
+
+### 3. Checked
+
+- Compiled: 0 errors, the 10 warnings as before.
+- The rig, `depths`, 12 of 12, on the game's own `LightingEngine` with both detours put on
+  as tModLoader puts them: a light in the water reaches 42 cells in the 1st and the 2nd, as
+  in a world; 22 of 42 and 22 of 43 in the 3rd and the 4th; not a cell past its own from the
+  5th, its own lit (1.00); in the air over the sea as the game's; the water between the
+  surface and the line given its faint light where nothing else lights it (2 of 255), unlit
+  under the line and in a world; the spawns emptied from the 7th's first row, an invasion's
+  too, the game's sea just over it; a block put down in the 8th half through its shaking at
+  39 ticks and broken at 78, its item dropped, one in the 7th standing; FNA's filter and the
+  music track's voice where the sound looks for them.
+- Previews, each frame put together as the game layers it (the sky, the game's water behind,
+  the sea, the tiles, the game's water over at 0.6, all lit by a port of the game's spread
+  of light; the screen shaders guessed at): `depth_chart_1682.png`, the column of water row
+  by row by day and by night with the sections and what each does; `depth_frames_1682.png`,
+  the surface by day and by night and the 1st, 2nd, 3rd, 5th and 7th sections.
+- Read in the IL, not run: the order of drawing in `Main.DoDraw`, the two passes of water
+  and their opacities, the black-out, every sound through `SoundPlayer.Play`.
+
+### 4. Not checked here
+
+All that is seen and heard: the colours on a screen with the game's shaders over them
+(FilterMiniTower's sums are not read; the previews guess them), the ripples, the sounds, the
+music. The game's own music is played through XACT (FAudio's own, not FNA's voices), which
+takes no pitch or filter from here: in the dive it only goes quieter and swells. And the
+depth meter calls the last 204 rows of any world the Underworld (`Main.DrawInfoAccs`): here
+that is from row 1877, in the 12th section; left as the game has it.
+
+### 5. Files
+
+| File | |
+|---|---|
+| `Content/Subworlds/VastOcean.cs` | the sections and their rows; no music from the 8th |
+| `Content/Subworlds/VastOceanSea.cs` | nothing spawns from the 7th |
+| `Content/Biomes/VastOceanLight.cs` | new: light halved, then its own cell only; the faint light over the line |
+| `Content/Biomes/VastOceanSky.cs` | the sea drawn where it is seen; its colours, rays, waves, murk and silt, the 7th |
+| `Content/Biomes/VastOceanSound.cs` | new: the dive's sound and music, then silence |
+| `Content/Biomes/VastOceanDepths.cs` | new: the Forevernight Zone and the Abyssal Trench |
+| `Content/Biomes/VastOceanPressure.cs` | new: what is put down from the 8th breaks |
+| `Content/Biomes/VastOceanBiome.cs` | notes |
+| `Localization/en-US_Mods.PisAndDag.hjson` | the two biomes' names |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md` | notes |
+| `Claude outputs/depth_chart_1682.png`, `depth_frames_1682.png` | previews |
+
+## 16.83 Session 7: the trip through the waygate, the rays, the roof
+
+Asked, in this order:
+
+> its taking a real ass long time to traverse the gateway bruh
+
+> can you also make the rays directional to the sun? and actually realisitc? thinner rays would work better and shinnings too. little sparkles and the rays disappear and reappear like reali life snorkeling. There is also seaguls spawning too.
+
+> and raise the roof by double so we can have some head space for a boss fight
+
+> optimize it
+
+> but not at the expense of the beauty
+
+### 1. Readings
+
+- "raise the roof by double": the sky over the water, 179 rows from the surface to the top
+  that can be seen, made 358 (the surface row from 220 to 399). The water and all under it
+  are as they were, counted from the surface: the sections, the light, the sound, the
+  spawns, the biomes and the floor all go down with it.
+- "optimize it" and "but not at the expense of the beauty": the trip made short (the wait
+  was the game settling the sea's water, part 2), and nothing taken from the look. Besides,
+  the light in front is drawn in a call to the graphics card for each of its two pictures,
+  not one for every change from one to the other: the same picture.
+- "seaguls spawning": the gulls the sea's own spawner put on the water (one time in ten at
+  the surface, as the game's sea has them) no longer come. The game's flocks far off in the
+  sky behind (its ambient sky, `SkyEntityType.Seagulls`: pictures, not creatures) are left.
+- "directional to the sun": slanting down from where the game's sun (or moon) is in its sky,
+  bent by the water.
+
+### 2. The trip
+
+Found in `client.log`, the trip at 13:06: Huh saved in 6.1 s (3.8 of it "Saving modded world
+data"), the Vast Ocean made and saved in 4 s, loaded in 1.5 s, and then "Settling liquids"
+from 13:06:34.857 until the game was closed at 13:14:09, seven and a half minutes on and not
+done.
+
+Read in the IL, then timed in the rig on the game's own code: every time a world is loaded,
+the game settles its water all at once before play (`WorldFile.LoadWorld`:
+`Liquid.QuickWater(2, -1, -1)`, then `WorldGen.WaterCheck` and the liquid loop). For each
+cell of water `Liquid.SettleWaterAt` looks along its row, through the water, to the next
+solid tile, so a row of open water takes as long as its width times its width. In a world's
+own seas that is nothing; across the Vast Ocean's 13662 columns it is a second a row (0.997
+s for row 1000, 1.060 s for row 1900), about 40 minutes for its 2255 rows of water, on every
+trip in. `Liquid.StartPanic` does the same again, a row at a time, when too much water moves
+at once.
+
+Built: `Subworld.StillWater` (new; no by default), yes for the Vast Ocean, whose water is
+laid still when it is made. `SubworldSceneSystem` detours `Liquid.QuickWater` to do nothing
+in such a place (on a server too); the rest of the settling runs as the game has it. In the
+rig: the rest of the settling 0.4 s, no water moving after it, all 24,263,863 cells of water
+there; anywhere else the game's own (0.962 s for row 1000 again). The water moves cell by
+cell as it does anywhere.
+
+What is left is the game's own, a few seconds each way: going in, Huh saved (6 s) and the
+Vast Ocean loaded (2 s; the first time made and saved first, 4 s more); coming back, the
+Vast Ocean saved (3 s) and Huh loaded (4 s, as at 13:05).
+
+### 3. The roof
+
+`VastOcean.Surface` is `Margin + 358` (399), the world 2260 rows high (2081 before), its
+layout 3: the first trip makes `VastOcean.3.wld`, and the files of layouts 1 and 2 are no
+longer read (`VastOcean.wld`, `VastOcean.twld` and their `.bak`s, `VastOcean.2.wld`,
+`VastOcean.2.twld`). All else is counted from the surface and moves with it; the depth meter
+reads as before, its surface line moving too.
+
+A player weighs the same at any height in a subworld (`SubworldRules`), so all of the sky
+can be flown in. The game turns its sky to space toward a world's top
+(`Main.UpdateAtmosphereTransparencyToSkyColor`, read in the IL): by the row the middle of
+the screen is on, from 65 and ten times the square of the width over 4200 (here 170.8), back
+to the sky over a fifth of the surface line's row (93.8). Over row 171 the sky is black, its
+stars out by day; from row 265 down it is the game's sky. So: 134 rows of open sky over the
+water, 94 going to space, and the top 130 space. Before, with the surface at 220 and the
+surface line at 290, space began 47 rows over the deck and the sky over the deck was a fifth
+dark (0.79).
+
+### 4. The light in the water (`VastOceanSky`)
+
+Moved in front: drawn at the game's layer for that (`RenderLayers.ForegroundWater`, right
+after its water over everything), so the light is between the eye and all else, not behind
+the game's water at four tenths.
+
+- The rays: thin shafts slanting down the way the light comes in. The game's sun goes from
+  the left of its sky at dawn to the right at dusk (its moon the same by night), and the
+  water bends the light toward straight down (Snell, 1 to 1.333: straight down at noon, 48.6
+  degrees off with the sun on the horizon); seen side on, the shafts draw together a little
+  toward the light (11 degrees at 960 pixels out from the middle of the screen). The sun's
+  26 at most, the moon's 12, each lit for a moment (1.6 to 4.4 seconds, quickly up and
+  slowly down, one turn in four dark), shimmering, then lit somewhere else; brighter in
+  patches that drift, two slow waves of the swell across each other (0.3 to 1.3 times); a
+  soft glow about each thin one (3.5 times as wide, at 0.18); brightest over their first 40
+  to 90 rows (0.6 more); 9 to 39 pixels wide, nearly one in five broad and soft; up to three
+  sparkles coming and going in each; none under the platform. The sun's through the first
+  three sections, golden as it is low; the moon's a third as long; two and a half times as
+  bright to an eye at the end of the 3rd.
+- Glints along the surface where the waves catch the light: cells of 18 pixels, each lit a
+  moment at a time, a fifth of them at any moment by day, fewer and pale by night; none on
+  the platform.
+- A sparkle: a point of light and four thin spikes fading from it.
+- The water's colour in strips of 3 pixels, not 6, so it shades evenly by the surface.
+- In front, all that is drawn adds its light, so the order makes no difference: it is drawn
+  by picture (`SpriteSortMode.Texture`), a call to the graphics card for each of its two
+  pictures instead of one for every change (two for each sparkle).
+
+### 5. The gulls
+
+`VastOceanSpawns`: the surface's gulls are gone; its turtles, dolphins and flying fish are
+as before.
+
+### 6. Checked
+
+- Compiled: 0 errors, the 10 warnings as before.
+- The rig on the new layout: `ocean` 11 of 11 (three seeds: the surface at 399, the floor's
+  lowest top at 2187, the spawn (6825, 397) on the deck); `hooks` 8 of 8; `depths` 12 of 12
+  (the sections from 399; a light reaches 42 cells in the 1st and the 2nd, 22 in the 3rd and
+  the 4th, none past its own from the 5th; the spawns and the pressure as before; the faint
+  light over the line); `settle` 2 of 2 (the game's quick settling about a second a row
+  across the open sea, some 40 minutes in all; passed over in the Vast Ocean, the rest 0.4 s
+  and every cell of water still there; the game's own anywhere else).
+- Previews, layered as in §16.82 with the light now in front: `depth_frames_1683.png` (the
+  surface by day, toward evening and at night, open sea just under the surface at one to
+  one, and the sections), `depth_chart_1683.png` (the column of water row by row),
+  `snorkel_1683.gif` (six seconds under the surface by day, at half size).
+
+### 7. Not checked here
+
+The look on a screen (the previews port the drawing and guess the game's shaders), and the
+new length of a trip in the game. The game's gulls far off in the sky are left: said in the
+reply, to go too if asked.
+
+### 8. Files
+
+| File | |
+|---|---|
+| `Content/Subworlds/Subworld.cs` | `StillWater` |
+| `Content/Subworlds/SubworldScene.cs` | the game's quick settling not run where the water is laid still |
+| `Content/Subworlds/VastOcean.cs` | twice the sky; layout 3; its water laid still; notes |
+| `Content/Subworlds/VastOceanSea.cs` | no gulls |
+| `Content/Biomes/VastOceanSky.cs` | the rays, their sparkles and the glints, in front; strips of 3 |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md` | notes |
+| `Claude outputs/depth_chart_1683.png`, `depth_frames_1683.png`, `snorkel_1683.gif` | previews |
+
+## 16.84 Session 7: a slime mount up through water; dolphins in pods, sharks in packs
+
+Asked, in this order (and, between them, a question: "Discussion: Should I add depth
+pressure like calamity? Id really like to focus on this subworld", answered in the reply,
+nothing built for it):
+
+> slimy saddle raise speed is exponential and keep that potential until he pops out of the water
+
+> applies for all water
+
+> same with gelatinous pillion
+
+> dolphins are spawn in groups of 3-5
+
+> sharks spawns in group of 1-3 in section 2-3
+
+### 1. Readings
+
+- The slime mounts: the Slimy Saddle's and the Gelatinous Pillion's, the two the game counts
+  as slime mounts (`Mount.IsConsideredASlimeMount`: types 3 and 50). "raise speed is
+  exponential": the speed it comes up through water at grows by a share of itself each tick;
+  "keep that potential until he pops out of the water": no limit like the game's on the way
+  up, and what it has at the surface carried out of it. "applies for all water": water in
+  any world, the Vast Ocean or not; honey, lava and shimmer left as the game has them.
+- "dolphins are spawn in groups of 3-5": in the Vast Ocean, where the mod puts its dolphins
+  down (its spawner); the game's own seas keep the game's single dolphins.
+- "sharks spawns in group of 1-3 in section 2-3": sharks come in the 2nd and 3rd sections
+  only, one to three at a time; none in the 1st or from the 4th down, where they came
+  before.
+
+### 2. The slime mounts (`SlimeRise`, new)
+
+Read in the IL (`Player.Update`, 1.4.4): on a slime mount in any liquid the game sets
+`wetSlime` to 30, takes a tenth off a fall faster than 2, and floats it up half a pixel a
+tick more each tick, never faster than 4 a tick. In water it moves a player half as far as
+their speed (`Player.WaterCollision`), so the game's slime comes up at 2 pixels a tick, 7.5
+rows a second, at most.
+
+Built: a `ModPlayer` whose `PreUpdateMovement` (after the game's float, gravity and jump,
+before anything moves) takes the game's speed up and, once it is going up, makes it the last
+tick's speed times 2 to the twentieth root: twice as fast every 20 ticks, from the game's 4
+to 32 in a second and some 26 rows of water, and 32 the rest of the way. On the tick it
+comes out, what it had it keeps, less the tick's gravity, and a jump under way is ended (a
+jump sets a player's speed to a jump's every tick it lasts, `Player.JumpMovement`, and it
+would come out at that).
+
+Why 32: `Collision.TileCollision` looks for blocks no further than a row over a player's
+head, and in water a player moves half their speed, so at 32 a player goes up a row a tick
+and never past one unseen; faster, a block could be passed through. Out of the water the
+game moves a player in steps of 16 at the most (`Player.DryCollision`), so the speed it
+carries out is safe however great.
+
+What it comes out with, the game's own rules after: from 27 rows of water or more, 32 a
+tick. The game moves a slime mount twice over up and down in the air (its hop,
+`SlimeDontHyperJump`) unless it left water in the last 30 ticks with jump not held: so, by
+the game's gravity (0.4), some 113 rows up with jump not held, some 162 with it held. Down
+again onto ground that is a long fall (the slime mounts take half of a fall's harm); into
+water, nothing.
+
+### 3. Dolphins and sharks (`VastOceanSpawns`)
+
+- At the surface, one time in ten: a sea turtle, or a pod of three to five dolphins
+  together, at least three columns apart, each where the surface is open (none under the
+  platform) and off the screen; a pod with no room for three is not put down. The surface's
+  things are now checked off the screen at their own rows too (the row found for them was
+  deeper; a turtle or flying fish could come on the screen).
+- Sharks: in the 2nd and 3rd sections, one spawn in six, before anything else, and with it
+  none, one or two more within 8 columns and 4 rows, in those sections and off the screen.
+  Not in the 1st (one in eight in the sunlit water before, one in six in the twilight) nor
+  from the 4th down (one in fourteen in the dark before).
+
+### 4. Checked
+
+- Compiled: 0 errors, the 10 warnings as before.
+- The rig, `slime`, 6 of 6: `SlimeRise` on a game `Player`, ticked as `Player.Update` ticks
+  a slime mount in water (gravity, the game's float, the hook, the move, the hook): 32 a
+  tick at tick 74 from still, 26.9 rows up; never past 32; out of the water with a jump
+  under way, 31.8 kept and the jump ended, the tick after left alone; the Gelatinous Pillion
+  the same; in honey and on another mount the game's 4.
+- The rig, `spawns`, 6 of 6 on two seeds: the spawner's own `TrySpawn` 6000 times each with
+  a player over the water, in the 1st, 2nd, 3rd and 5th sections, on the game's
+  `NPC.NewNPC`: sharks only in rows 548 to 845 (the 2nd and 3rd), in 1s, 2s and 3s (641, 634
+  and 643 of each on the second seed), near each other; dolphins only in pods of 3, 4 and 5,
+  three columns apart, at the surface, none under a deck; turtles single; nothing inside the
+  game's safe box. `depths` 12 of 12 and `hooks` 8 of 8 as before.
+
+### 5. Not checked here
+
+The rise in the game itself (the rig ticks the hook as the game's IL reads, not the game's
+`Player.Update`), and how it feels.
+
+### 6. Files
+
+| File | |
+|---|---|
+| `Content/PADplayer/SlimeRise.cs` | new: a slime mount up through water |
+| `Content/Subworlds/VastOceanSea.cs` | dolphins in pods, sharks in packs in the 2nd and 3rd sections |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md` | notes |
+
+## 16.85 Session 7: the Vast Ocean heard; bubbles, storms, the night; rays under the light; half as deep again; the M.U.P.R.A.L
+
+Asked, in this order (the first an answer to the seven things suggested in the reply to
+"What should i add to increase the ambiance and is there anything in the lore about the vast
+ocean?": 1, 3, 4 and 5 taken, the rest not answered):
+
+> 1, added a 5 min long surf sample and 4 min long wind, please dissect it and retune it and play randomly a piece from that for the ambiance with variations, diff distances, Yes duke's long, low roar can be good. Added whale hums too, theres a 10 min long piece do the same. 3, nice add this 4, Yes you can make it animate better. 5, excellent
+
+> also anything below the sun or moon shines more rays than the rest is sparse
+
+> Also make the ocean 1.5x as deep, keep the 12 sections tho
+
+> how many tile is the width of this world?
+
+> Add an accessory item: M.U.P.R.A.L (Mechanic's Ultra Pressure Resistence Anchored Lantern) 16 Use: Anchored on the shoulder mode 1:shines a bit of radial light with radius of 6.1 in air and 3.7 in water, dim and affected by tiles,( tiles in front will hinder scan rays), mode2: radial dims to radius of 1.2 and concentrate into a flash light that shines to the cursor, max distance of 13 tiles in water and 23 tiles in air. the color is a beige. flash light angle is 20 degrees Use light physics to make it realistic. Whatever shown For now its the only actual light source in the vast ocean. (remember to dim it the more it goes out) Make it pretty
+
+Asked back, two questions, answered: what the "16" after its name was ("Mechanic sells it
+for 20 gold"), and how it switches between its two lights ("Both": a key, and a right click
+on it).
+
+### 1. Readings
+
+- The recordings: `Content/Sounds/Ambiance/SurfSample.ogg` (5.5 minutes), `WindSample.ogg`
+  (4.1 minutes), `Hums/HumsOfWhales.ogg` (10.3 minutes, a run of several recordings) and the
+  five short calls beside it (`Hums/Whale1.ogg` to `Whale5.ogg`). "dissect": cut into pieces
+  where the sound is quietest between one wave, gust or song and the next, each piece a
+  whole. "retune": cleaned and levelled, and each played at a pitch of its own; nothing
+  changed in key. "play randomly a piece ... with variations, diff distances": a piece at a
+  time, at random, not one of the last few, each at its own pitch and from a place of its
+  own, near, further or far.
+- "duke's long, low roar": the game's own roar of Duke Fishron, an octave down, three over
+  each other as one long roar, now and then from far down in the sea.
+- "3, nice add this": bubbles, from players, from creatures and in columns from the dark.
+  "4, Yes you can make it animate better": the sea in a storm: the swells, rain on the
+  water, whitecaps and spray, lightning through the water. "5, excellent": the glowing wake
+  by night and the moon's path on the water.
+- "anything below the sun or moon shines more rays than the rest is sparse": the shafts in
+  the water gathered under where the sun or the moon is in the sky, few elsewhere; the
+  glints on the surface the same.
+- "1.5x as deep, keep the 12 sections": half as deep again is 2682 rows, twelve sections of
+  223.5; a section is whole rows, so twelve of 224, 2688, six rows past half again.
+- "how many tile is the width": answered in the reply, 13662 tiles, unchanged.
+- The lantern. "16": asked; the Mechanic sells it, for 20 gold. "Resistence" is spelled
+  "Resistance" in the game's text. "Anchored on the shoulder": an accessory, worn, its lamp
+  drawn on the wearer's front shoulder. Mode 1, the glow; mode 2, the beam, with the glow
+  about the lamp down to 1.2 tiles. "dim and affected by tiles,( tiles in front will hinder
+  scan rays)": the light goes out from the lamp in straight lines and stops at the first
+  solid block, which it lights; behind that block is its shadow. "Use light physics":
+  falling off with distance as light spreads, taken away along its way through air and
+  water, water taking the red first. "the only actual light source in the vast ocean": its
+  light is the one that lights anything in the depths where the game's lights light only
+  their own tile (§16.82). "dim it the more it goes out": dimmer the further it has gone, to
+  the least the eye can see at the end of its reach, and fading out over the last of it.
+
+### 2. The pieces (`Content/Sounds/Ambiance/Pieces`, new)
+
+Cut, cleaned and levelled in a scratch script (not in the mod), each written mono (the game
+pans a sound by where it is) as Ogg Vorbis, and decoded again to be sure no sample comes
+back over -1 dBFS: tModLoader turns a decoded sample into 16 bits by a bare cast
+(`OggReader.Convert`, read in the IL: `(short)(sample * 32767)`), so one past full scale
+would click.
+
+- `Surf1` to `Surf32`, 6.6 to 13.3 seconds (24 kHz): cut at the troughs between waves, 6 to
+  14 seconds apiece; the rumble under 35 Hz taken off and the hiss over 5 kHz 3 dB down;
+  each marked calm, middling or rough by which third of the pieces' loudness it was in,
+  before levelling; levelled, peaks held under -3 dBFS, faded in over a third of a second
+  and out over one.
+- `Wind1` to `Wind13`, 13.6 to 18.2 seconds (24 kHz): cut between gusts, 12 to 22 seconds
+  apiece; under 30 Hz off; soft or strong by the middle of their loudness; faded 1.2 and 2
+  seconds.
+- `Hum1` to `Hum18`, 8.1 to 14.3 seconds (22.05 kHz): the long recording halved in rate, 25
+  Hz to 3.5 kHz kept; split where one recording gives way to the next (a step of 5 dB), then
+  between songs, 8 to 18 seconds apiece; of those, the 24 with the most song in them (tone
+  between 80 Hz and 2 kHz over the sea's bed, few clicks), less 6 that were only the bed
+  when looked at one by one; faded 1 and 2 seconds.
+- `Hum19` to `Hum23`, 3.1 to 7.8 seconds: the five short calls, trimmed to the call and
+  cleaned as the songs; marked calls.
+
+68 files, 3.85 MB; decoded, 34.3 MB. Each surf and wind played as loud again as half the
+difference it had in the recording before levelling (the calm surf stays calmer than the
+rough); the whales all alike. The analysis and the cuts: `dissection_1685.png`, in the
+Claude outputs folder.
+
+### 3. The ambience (`VastOceanAmbience`, new; each player's own machine)
+
+In the Vast Ocean only, at the game's Ambient volume, heard as the game hears any sound from
+where it is (`ActiveSound.Update`, read in the IL: quieter the further, to nothing at 2500
+pixels; panned by the distance to the side over 960), paused with the game, its loudness and
+its muffling set each tick in the sound's own callback. Each piece played at random among
+those of its kind the moment asks for, never one of the last six surfs, three winds or six
+whales if another is loaded.
+
+- The surf: two at once, three when the sea is rough; the next begun as one goes into the
+  last quarter of its length, so they run into each other. Each from a point on the surface
+  to one side, fixed there as the player moves: 200 to 650 pixels off (a third of them), 800
+  to 1400 (two fifths), or 1600 to 2300 (the rest); the further, the duller (FAudio's
+  low-pass on the sound's voice, as `VastOceanSound` uses it). Pitch from 0.08 of an octave
+  down to 0.06 up. Rougher pieces the rougher the weather. Heard to 160 rows over the water
+  (fading from 12) and 120 under it (fading from 2), and under the water muffled at once,
+  more so to 12 rows down. A piece left 2600 pixels behind is let go and another begun
+  nearer.
+- The wind: one at once, two in a strong wind; from where the wind comes, 250 to 700 pixels
+  off and over the ear, going by on the way it blows over the length of the piece; stronger
+  pieces, louder and higher (0.12 of an octave more in the strongest) the harder it blows;
+  from the waterline up, louder the higher. Where the game's own wind is heard (over its
+  surface line and half a screen, from 20 mph, `Main.UpdateAudio`) this one gives way a
+  third.
+- The whales: under the water only, from six rows down: every 14 to 40 seconds (the first 6
+  to 15 seconds after coming) a song, or one time in four a call; more than half at the edge
+  of hearing (1500 to 2300 pixels), a third nearer, one in ten near; from either side, from
+  a little over level to well below, never over 10 rows under the surface; lower the deeper
+  the listener (to 0.3 of an octave down by the end of the 6th section); one time in three
+  another answers from the other side 2.5 to 7 seconds after.
+- The Duke: every two and a half to six minutes (the first one to three minutes after
+  coming), while no Duke Fishron is about, from 300 to 900 pixels to one side and 1300 to
+  1800 below: the game's roar of his (`SoundID.Zombie20`, 1.22 seconds) an octave down,
+  again 0.7 seconds later 0.9 of an octave down at three quarters, and 1.5 seconds later an
+  octave down at half, each swelling in over a third of a second, muffled hard: one long
+  roar rolling out of the dark. In the water, and faintly over it.
+- In the 7th section all of it is muffled with every other sound by `VastOceanSound` (the
+  dive), and from the 8th it is silent, as there.
+
+The 68 pieces are asked for in the background on the first coming into the Vast Ocean and
+each played only once it is in; they stay in memory (34.3 MB) until the mod is unloaded. A
+piece not there (moved, renamed) is never played, and nothing breaks.
+
+### 4. Bubbles and the wake (`VastOceanMotes`, new; each player's own machine)
+
+- A player under the water breathes out every 2.6 to 4.3 seconds, four to nine bubbles from
+  about the mouth, a little forward and up; none for one with Gills or a merfolk's form.
+  Swimming faster than 3 pixels a tick, a bubble now and then from about them. (The game's
+  own bubble now and then, `Player.CheckDrowning`, is still there besides.)
+- A creature in the water, near the screen: a bubble now and then, more the faster it goes,
+  bigger from a bigger creature.
+- From the dark: every 10 to 28 seconds, while the bottom of the screen is half a section or
+  more under the surface and over the 8th section, a column rising from under the screen for
+  3 to 8 seconds, six to twelve bubbles a second, at most three columns at once.
+- Each rises faster the bigger it is (1.1 to 2.8 pixels a tick), wobbling, and bursts over
+  six ticks where it meets the water's top or the underside of a solid block; the two bigger
+  kinds leave a ring in the game's water as they burst at the surface. At most 400.
+- The game's own pictures (its breath bubble, Dust 34, and its bubbles, Gore 411 and 412),
+  in the sea's own light at that depth or what other light is on them, whichever is
+  brighter: they come out of the black as they rise into the blue.
+- The wake: where the water is dark (the light on it under about a third), from the first
+  row under the surface to the end of the 6th section, a player or a creature moving faster
+  than a pixel a tick leaves small lights, blue to green, flickering, drifting back from it
+  and going out over 0.8 to 1.8 seconds; more the faster. By night near the surface and in
+  the dark of the deep at any hour; not where there is light enough to drown it out. At most
+  700.
+
+### 5. The sea in a storm (`VastOceanSky`)
+
+How rough the sea is, 0 to 1, by the wind the most and by the rain (`Rough`; the surf hears
+it so too).
+
+- The swells: from one in 12 seconds in a calm to one in 5 at the roughest (one set in four
+  goes by flat in a calm, none at the roughest), more than twice as high, the crests closer
+  (14 tiles apart to 9), running faster (90 to 170 pixels a second), with the wind once it
+  is rough.
+- Rain on the water: up to six rings a tick in the game's water where drops land on the
+  surface on the screen, as heavy as the rain; none on the platform.
+- Whitecaps: here and there along the surface a crest breaks white for a moment and goes
+  (cells of 40 pixels, each at its own pace of 1.4 to 3.6 seconds), more of them and bigger
+  the rougher; from the biggest, five drops of spray thrown up and downwind, falling back.
+  White by day however dark the storm, grey by night by the moon.
+- Lightning: as the game flashes its sky (`Main.lightning`) the sea is lit pale with it, the
+  most just under the surface, to nothing by the end of the 2nd section. The flash is taken
+  out of the light the sea's rays are worked out from (the game whitens its sky by the
+  flash, `Main.SetBackColor`), so a flash does not light the sun's rays at night.
+
+### 6. The night (`VastOceanSky`)
+
+- The moon's path: under the moon, a soft band of its light lying on the surface,
+  shimmering, and the glints gathered along it, falling away over an eighth of the screen's
+  width either side; the rest of the sea all but dark. By day the same under the sun,
+  fainter as a band, over a fifth.
+- The moon's light is now the moon's only (`Moonlight`): by night, as full as the moon is,
+  through the clouds, coming on over the first twentieth of the night and going over its
+  last. Before, a dark day of rain passed for night and lit the moon's rays and glints.
+- The glowing wake: §4.
+
+### 7. Rays and glints under the light (`VastOceanSky`)
+
+Where the sun or the moon is across the screen is worked out as the game places it
+(`Main.DrawSunAndMoon`: its middle a picture's width off the left as it rises, a picture's
+width off the right as it sets, between by the hour), brought from the sky, which is not
+zoomed, into the zoomed view. Each shaft is lit as often as it is near under it, and as
+brightly: all of them under it, falling away over about a quarter of the screen's width to
+one in seven far off, fading in or out as the screen moves rather than blinking. The sun's
+shafts at once 60 at the most (26 before), the moon's 28 (12): under the light some twice as
+many as before, far to the side a third as many. The glints on the surface likewise.
+Previews: `Rays_1685.png` (before and now), `NightStorm_1685.png`.
+
+### 8. Half as deep again (`VastOcean`, `VastOceanSea`)
+
+`VastOcean.Deepest` 2688 (1788), twelve sections of 224 rows (149); the world 13662 by 3160
+rows (2260), 43.2 million tiles, past a Grand world's 37.8 million; the game's grid grows to
+13801 by 3301 to hold it (`ExtraLargeWorld`). The sky over the water as it was (358 rows).
+
+- Sections from the surface row (399): the 3rd (the light halved) from 847, the 5th (a
+  light's own tile only) 1295, the 7th (the murk, no spawns) 1743, the 8th (quiet, blocks
+  crumble) 1967, the 10th (the Abyssal Trench) 2415; the sand at the deepest at 3087. All
+  else counted in sections moves with them: the water's colours past the first 60 rows, the
+  far shadows, the snow and the specks, the rays (the sun's through three sections, the
+  moon's through one).
+- The creatures by depth (`VastOceanSea`) kept as shares of a section: the sunlit water four
+  fifths of one (179 rows, 120 before), the twilight to fifteen eighths (420, 280). Sharks
+  in the 2nd and 3rd sections: rows 623 to 1070.
+- Its layout is 4: the first trip after this makes `VastOcean.4.wld`. `VastOcean.3.wld` and
+  `VastOcean.3.twld`, and the files of layouts 1 and 2, are no longer read: delete them by
+  hand.
+- The game calls the last 204 rows the Underworld on the depth meter: from row 2956, in the
+  12th section. Its own line for drying water (row 2960) is over the floor, so the edit of
+  §16.81 is still needed, and is there.
+
+### 9. The M.U.P.R.A.L (`Mupral`, `MupralLight`, new)
+
+- The item: an accessory, Orange, sold by the Mechanic for 20 gold (its value; her mood
+  moves it as it moves all her prices). Its tooltip says what it does and, last before the
+  line in quotes, which light it gives now and how to switch it. Pictures mine, stand-ins
+  (PlaceholderTextures.md).
+- Switching: the key "Switch the M.U.P.R.A.L's light" in Controls, L to begin with (no key
+  of the game's is L: read in `PlayerInput.Reset`), or a right click on it in the accessory
+  slot it is worn in (the game would pick it up: `ItemSlot.RightClick`, hooked for that slot
+  only) or on another in the inventory while one is worn. While none is worn, a right click
+  on it in the inventory puts it on, as the game does for anything worn (`SwapEquip`). A
+  click is heard. The light it gives is the player's, kept with the player.
+- The light, worked out ray by ray from the lamp's glass a quarter tile at a time: the glow
+  96 rays all about; the beam 41 across its 20 degrees, brightest in the middle, and 32 all
+  about for the glow left at 1.2 tiles. Along each, three things dim it: spreading (as the
+  square of the distance, seen by its square root, so what is seen falls as the distance:
+  from 2 tiles out for the glow, from 6 for the beam, its reflector gathering it), the way
+  it goes (each step uses up a share of its reach, the air's or the water's, and takes the
+  light away exponentially, so that at the end of its reach in air it is the least that can
+  be seen, 0.06, and over the last 15 hundredths of its reach it fades out), and the water
+  (the further through water, the less red and a little less green). It stops at the first
+  solid block, unactuated, not a platform, and lights that tile: behind it, shadow. A tile
+  is as bright as the brightest ray through it. Beige (255, 227, 184).
+- As light: laid into the game's light after the game has spread its own
+  (`On_LightingEngine.ProcessBlur`, the working map, before it is shown; its private
+  `_workingLightMap` and `_workingProcessedArea` read by reflection), added to what is
+  there. So it lights blocks, walls, water, creatures and players as any light does, but is
+  not spread again, and in the Vast Ocean's depths, where the game's lights light only their
+  own tile (`VastOceanLight`), it is the one light that lights anything. Under the game's
+  Retro and Trippy lighting, or if those fields are not there, it is handed to the game as
+  lights are (`Lighting.AddLight`) and spread as they are.
+- As seen, in front of the water (`RenderLayers.ForegroundWater`): the glass, a bright point
+  with a soft beige glow; the beam's light scattered back by the water along each of 25 of
+  its rays as far as the ray goes, a fifth as much in air, so blocks cast shadows down it;
+  motes in the water glinting in it; in the glow underwater, a faint haze about the lamp.
+- On the shoulder (`MupralLayer`): a clamp and strap on the front shoulder, rising and
+  falling with the body in a stride, and the lamp's head on it turned to the beam's aim, or
+  the way its wearer faces; over the body and the arm in front; in the light where it is.
+  Hidden when its slot's picture is hidden; the light is not.
+- In multiplayer: which light, and where the beam points, from each player's own machine to
+  the server and on to the others, when it is switched and, while the beam is on, when it
+  has turned two degrees, at most every third tick (`PADPacket.Lantern`); the others' beams
+  turn to it smoothly. Told as it is to a player joining.
+- Measured in the rig (`lamp`, 10 of 10, on the game's tiles): the glow at 1, 3 and 5 tiles
+  in air 0.61, 0.29, 0.13, its last tile 6.1 out; in water at 1, 2 and 3 tiles 0.56, 0.42,
+  0.19, to 3.7; the beam in air at 5, 10, 15, 20 and 22 tiles 0.70, 0.33, 0.17, 0.09, 0.03,
+  to 23; in water at 5, 10 and 12 tiles 0.46, 0.16, 0.09, to 13; past 10 tiles every lit
+  tile within 10 degrees of the aim; the glow left about the lamp with the beam 1.2 tiles;
+  from 5 tiles of air down into water, lit to 14.5 tiles more (each its share, 15.2 in all);
+  red over blue at 3 tiles of water 1.24, at 12 0.83; a wall's face lit, nothing behind it,
+  for the beam and for the glow.
+
+### 10. Checked
+
+- Compiled: 0 errors, the 10 warnings as before.
+- The rig on layout 4: `ocean` 11 of 11 (the deepest water 2688 rows, the surface row 399 to
+  the sand at 3087; dunes 24; the game's line for its sea at 3120, under the lowest row
+  seen; the Underworld's line, 2960, over the floor; the platform, the waygate and the spawn
+  as laid out; every block framed); `depths` 12 of 12 (the sections from 399 in 224s; a
+  light 42 cells in the 1st and 2nd, 22 in the 3rd and 4th, its own only from the 5th;
+  nothing spawns in the 7th; the 8th crumbles in 1.3 s); `spawns` 6 of 6 (sharks in rows 623
+  to 1050 of the 623 to 1070 asked, in ones, twos and threes; dolphins in pods of three to
+  five); `hooks` 8 of 8; `settle` 2 of 2 (the game's quick settling passed over in the Vast
+  Ocean, and all 36,559,663 cells of its water still there after the rest); `lamp` 10 of 10.
+- The piece tables in the code against the pieces (lengths, marks, loudness): the same.
+- An offline mix of the ambience by its own rules on a set course (160 seconds: the deck in
+  a calm, a storm coming on, a dive, 115 to 235 rows down with the whales and the Duke):
+  `VastOceanAmbience_1685.ogg` in the Claude outputs folder, and what is heard when,
+  `VastOceanAmbience_1685.png`. The game's music and its own rain, wind and gulls are not in
+  it.
+- Previews, in the rig's light per tile (the game smooths it): `Rays_1685.png`,
+  `NightStorm_1685.png`, `Lantern_1685.png` (the beam with a pillar's shadow, the glow, the
+  night swim with its wake and a breath of bubbles, the floor), `MupralArt_1685.png`.
+
+### 11. Not checked here
+
+All of it in the game itself: how it sounds against the music and the game's own sounds, how
+loud the far voices are on real speakers, the ripples (the rain's rings, the bubbles' and
+the swells', put into the game's water, not drawn in the previews), and how it all feels. In
+the 7th section and under, the murk (`PisAndDag:VastMurk`) darkens the whole screen, the
+lantern's light with it: there it is a small pool of light in the dark, as the preview of
+the floor shows. The pieces are 34.3 MB in memory once heard. The recordings themselves
+(about 9.9 MB) are packed into the mod as everything in its folder is, unless `build.txt`
+leaves them out.
+
+### 12. Files
+
+| File | |
+|---|---|
+| `Content/Biomes/VastOceanAmbience.cs` | new: the surf, the wind, the whales and the Duke |
+| `Content/Sounds/Ambiance/Pieces/*.ogg` | new: 68 pieces, Surf1 to Surf32, Wind1 to Wind13, Hum1 to Hum23 |
+| `Content/Biomes/VastOceanMotes.cs` | new: bubbles and the glowing wake |
+| `Content/Biomes/VastOceanSky.cs` | the storm's sea, the moon's path, rays and glints gathered under the light, the moon's light the moon's only |
+| `Content/Subworlds/VastOcean.cs` | half as deep again, layout 4 |
+| `Content/Subworlds/VastOceanSea.cs` | the creatures' depths as shares of a section |
+| `Content/Items/Accessories/Mupral.cs`, `Mupral.png` | new: the M.U.P.R.A.L, its shop, its slot, its player |
+| `Content/Items/Accessories/MupralLight.cs`, `MupralWorn.png` | new: its light, as light and as seen, and the lamp on the shoulder |
+| `PADKeybinds.cs`, `PisAndDag.cs` | the lantern's key; its packet |
+| `Localization/en-US_Mods.PisAndDag.hjson` | the lantern's name, tooltip and key |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md`, `PAD_Item_Plan.md`, `PlaceholderTextures.md` | notes |
+
+## 16.86 Session 7: the load that failed; the lantern by block and in the depths; the sea's colour and its light; the line at the waterline; a fault in the herbs
+
+Asked, in this order (the first with a picture of tModLoader's error at loading the mod; the
+second with `Lantern_1685.png`; the fourth with a picture of sunlight in gold shafts down
+into a green sea; the eighth with a picture of the platform at the surface; the ninth with a
+picture of an error in the chat; the tenth with a picture of the 12th section, all but
+black):
+
+> wth?
+
+> also it should shine by block like this, im more fond of whatever is in the path of light is lit
+
+> more natural
+
+> Can you also make the water more light gradient around the rays? use better color too, maybe even throw in a shader or effect for surface
+
+> make it mesmerizingly beautiful
+
+> Change the water color to a more natural, pristine blue almost green like. some thing royal and luxurious
+
+> you can change its properties however you like as long as its looks good
+
+> why are there blue lines here
+
+> also fault
+
+> murpal needs to be able to shine at this depth bruh
+
+> continue
+
+> murpal needs to be able to shine at every depth bruh
+
+What came after these (the sea's floor, its mountains, caves, pillars and trench; the
+lighthouse island) is the next session's (§16.87, the floor; §16.88, the island).
+
+### 1. Readings
+
+- "wth?": `System.Exception: Multiple extensions for asset Claude
+  outputs\VastOceanAmbience_1685, (.rawimg, .ogg)`. tModLoader packs every file in the mod's
+  folder that it has a reader for (`TModContentSource`,
+  `AssetReaderCollection.TryGetReader`: `.png` packed as `.rawimg`, `.xnb`, `.rawimg`,
+  `.fxc`, `.wav`, `.mp3`, `.ogg`) and will not load a mod with two of one name and different
+  kinds (`ContentSource.SetAssetNames`). §16.85 put `VastOceanAmbience_1685.ogg` and
+  `VastOceanAmbience_1685.png` side by side in `Claude outputs`. The `.png` is to be deleted
+  by hand (there is no deleting from here); the picture is there again as
+  `AmbienceTimeline_1685.png`. From now on no two files in `Claude outputs` share a name.
+- "shine by block ... whatever is in the path of light is lit", "more natural": no beam
+  drawn on the water and no haze about the lamp; what its light reaches is lit tile by tile
+  as the game lights tiles, with its shadows; the motes in the water glitter where its light
+  falls.
+- "more light gradient around the rays": a fan of light about the rays, opening down from
+  under the sun, brightest near the surface and along its middle. "use better color too",
+  after the picture: gold near the surface, the sea's own colour further out. "a shader or
+  effect for surface": an effect, drawn: the light the waves gather under the surface, a net
+  of moving lines (caustics). No shader of the mod's own: the game's blending only.
+- "Change the water color to a more natural, pristine blue almost green like. some thing
+  royal and luxurious": a clear blue going green at the surface (turquoise), going bluer and
+  deeper, cerulean, sapphire, a royal blue by the 3rd section; still a dark navy at the end
+  of the 4th and black at the end of the 6th (§16.82). "royal and luxurious": the gold of
+  the light on the deep blue.
+- "you can change its properties however you like": the game's water over everything is
+  drawn clearer in the Vast Ocean, at 45 hundredths for six tenths: what is under the water
+  is seen more clearly, and the sea behind can be drawn brighter (more than half of it is
+  seen, not four tenths).
+- "why are there blue lines here", the picture: by the platform's rows (its deck's slab top
+  at the picture's row 185, the surface row 217 to 232), the water's visible top was at row
+  233, and over it, at the middle of the surface row (225), a thin cyan line with the foam,
+  the spray and the glints on it, a copy of what was on the water 8 rows lower, with sky
+  between. Read as that line (the piers' dark and the rays are the other blue lines in the
+  picture: the piers stand in the platform's shadow, the rays are being made gold now). What
+  makes a copy of what is drawn on the water is the game's water distortion
+  (`WaterDistortion`, `WaterShaderData`): it shifts the picture by the waves put into it,
+  and the swells (§16.82, rougher in storms since §16.85) only ever pushed it up
+  (`QueueRipple`, read in the IL: a ripple is a colour `(0.5, 0.5 + strength / 2, 0)` times
+  its strength, drawn into a buffer the game keeps and spreads, `StepLiquids`). The
+  likeliest reading; the distortion's own pixel code cannot be read here.
+- "also fault": `client.log`, 18:37:49: `System.ArgumentOutOfRangeException: minValue must
+  be less than maxValue` in `UnifiedRandom.Next(int, int)`, from `WorldGen.PlantAlch`, from
+  `WorldGen.UpdateWorld_Inner`, in the Vast Ocean. In the IL, one time in forty the game's
+  herb planting picks its row from halfway between the rock line and the bottom down to
+  twenty over the bottom, `Next((int)(Main.rockLayer + Main.maxTilesY) / 2, Main.maxTilesY -
+  20)`. The Vast Ocean's rock line is past the bottom on purpose (row 5691 of 3160, so that
+  the game's line for the sea, halfway between the two and forty more, is forty rows over
+  the bottom: §16.81): `Next(4425, 3140)`, which throws. A place with the lines every place
+  has unless it says otherwise (`Subworld.RockLine`, 28 rows over the bottom) throws the
+  same: `Next(H - 14, H - 20)`. Every other use of the rock line the game makes as it runs
+  was read for the same (`rockscan`, 98 random draws within 14 instructions of it): all in
+  the making of a world but these two and `WorldGen.SmashAltar` (an altar, which the Vast
+  Ocean has none of); the rest of the game's reads of it as it runs are comparisons.
+- "murpal needs to be able to shine at this depth bruh": the picture, brightened twelve
+  times, shows its beam lit, a short streak by the player, at about a twelfth of its
+  brightness: in the 12th section the murk (`PisAndDag:VastMurk`, at 82 hundredths), the
+  silt and the depths' tint darken the whole screen, the lamp's light with it (§16.85 said
+  as much: RELEASE_TODO, "The M.U.P.R.A.L in the murk"). And under the sea drawn over the
+  game's water (§16.82) the water its light lights is not seen. "at every depth": in every
+  section.
+
+### 2. The crash at loading (`Claude outputs`)
+
+Nothing in the code. `VastOceanAmbience_1685.png` is to be deleted from `Claude outputs` by
+hand; `AmbienceTimeline_1685.png` is the same picture. The `.ogg` beside it is a sound
+tModLoader packs (1.7 MB), and so is anything there it has a reader for: the folder is in
+RELEASE_TODO's list of what `build.txt` should leave out.
+
+### 3. The sea's colour (`VastOceanSky`)
+
+- The water behind, row by row as it is to be seen, and how much of the game's water behind
+  it it hides: (22, 134, 100) 0.85 at the surface, (20, 124, 112) 0.95 at 6 rows, (18, 116,
+  118) at 12, (14, 102, 128) at 24, (10, 84, 132) at 60, (8, 64, 128) at the end of the 1st
+  section, (6, 44, 112) the 2nd, (5, 28, 90) the 3rd, (4, 14, 56) the 4th (navy), (2, 5, 20)
+  the 5th, black the 6th; all of it hidden from 12 rows down. The game's water lit by the
+  sun still shows through at the top, so that the surface is a bright turquoise, (40, 160,
+  197) in the preview, going to (14, 102, 136) 24 rows down.
+- The game's water over everything at 45 hundredths while the Vast Ocean is the place
+  (`SeaWater`, `ClearWater`): `LiquidRenderer.DEFAULT_OPACITY` is a public array the game
+  reads each time it draws its water over everything (read in the IL of `DrawNormalLiquids`:
+  the lit corner colours times it, for that draw only; its water behind everything is drawn
+  whole), set when the place is entered and put back as it was when it is left and when the
+  mod is unloaded. The sea behind is drawn as much brighter as that leaves (`ThroughWater`,
+  1 / 0.55); the brightest seen is 55 hundredths of white, a channel of 140.
+- The depths' tint (`PisAndDag:VastDepth`) from a clear blue-green near the surface (0.06,
+  0.46, 0.56) to a royal blue by the end of the 4th (0.07, 0.22, 0.60), at an eighth at the
+  surface.
+- The sea green laid over the top 40 rows by multiplying (`DrawGrade`, the first pass of
+  this session) is gone with the green: the water's colour is the sea's own.
+
+### 4. The light in the water (`VastOceanSky`)
+
+- The fan (`DrawLightFan`, `VastOceanFan.png`, made by formula): three over each other from
+  the surface under the light, down the way it goes. The first a gold (255, 186, 92), a
+  third of a section long and half the screen wide at its end, hiding near all the sea's
+  colour where it is brightest (95 hundredths of its strength), so it is seen gold over the
+  blue; the second a paler gold (250, 214, 140), longer and wider, hiding under half; the
+  third the sea's clear blue (40, 170, 205), longest, widest and faintest, only added.
+  Deeper gold as the sun is low; the moon's silver. At the surface over the light, a glare
+  and a hot heart. Breathing as the swell over it gathers more light or less; none under the
+  platform.
+- The caustics (`DrawCaustics`, `VastOceanCaustics.png`, made by formula: 16 frames of a net
+  of light through a moving surface, a loop, seamless side to side): a band 40 pixels deep
+  under the surface, 7 frames a second, each faded into the next, drifting with the wind;
+  gold under the sun, a pale clear blue (150, 228, 245) away from it, silver under the moon.
+- The sun's shafts gold, (255, 196, 104), deeper as the sun is low (255, 170, 80); each laid
+  over the water as a veil (hiding up to 65 hundredths of the sea's colour behind it,
+  `SunCover`), so that it is seen gold and not only paler; the soft glow about each and the
+  extra near the surface still only added. Fanning out from over the light (`RayFan`, 1600
+  pixels over the surface). The moon's as they were.
+- Motes in the light (`DrawSunMotes`): in each cell of 30 pixels, three in four, a speck
+  drifting and sinking, lit as the fan's second layer is where it is (`FanAt`, the same
+  formula as the picture), glimmering, now and then flashing; gold near the surface, a pale
+  clear blue (160, 225, 245) further down.
+- Drawn in the order given (`SpriteSortMode.Deferred`): a veil is not the same in either
+  order, the fan first, the rays over it (§16.83 drew picture by picture, all of it added).
+
+### 5. The line at the waterline (`VastOceanSky.Waves`, `RainOnTheWater`)
+
+Each swell's crest now has a trough halfway to the next, as deep as the crest is high (the
+same ripple pushed down), so that what the swells put into the game's water comes to nothing
+over a set; and the swells are lower: (0.25 + 0.3 h) times (1 + 0.9 x roughness) at their
+height (they were (0.35 + 0.4 h) times (1 + 1.3 x roughness)), no more than 1 (the game
+takes no more). The rain's rings push the water up or down at random.
+
+### 6. The M.U.P.R.A.L at every depth (`MupralLight`, `VastOceanSky`)
+
+- By block (the first pass of this session): no beam drawn and no haze; the motes in the
+  water lit as its light is where each is (`DrawMotes`): one in each cell of 24 pixels about
+  the lamp, within its 20 degrees as far as each of 25 rays across the beam goes before a
+  block stops it, or all about as far as each of 48 rays goes for the glow; none in a
+  block's shadow; beige, cooler through more water.
+- The water in its light (`DrawLitWater`, new): in the Vast Ocean the sea is drawn over the
+  game's own water behind everything, which hid the light the game's water would show; so
+  over the sea, at the layer of the water behind, the water in each tile its light reaches
+  is lit as its light is there: each corner of a tile the mean of the four tiles about it,
+  as the game lights its own water smoothly (drawn with the game's tile batch,
+  `Main.tileBatch`, four colours to a tile: `VertexColors`, whose four-colour maker takes
+  them top left, top right, bottom right, bottom left, read in the IL, so they are set by
+  name). Only where there is water, only as high as the water in a tile part filled, not on
+  solid blocks, nothing in a block's shadow nor past its reach. The colour of clear sea
+  water lit, (0.40, 0.52, 0.56) times the light's own, which the water has already made
+  bluer the further it has come: warm white by the lamp, blue at the end of the beam. 51 by
+  51 tiles at most a lamp.
+- The dark gives way (`VastOceanSky.Visuals`, `MupralLight.LitOnScreen`): while any lit
+  lamp's light can be on the screen (its glass within the beam's reach in air, 23 tiles, of
+  it), the murk is cut to 15 hundredths of itself, the silt to a quarter and the depths'
+  tint, as deep as navy, to half; eased in over a third of a second and out over most of one
+  (as eyes take to a light, and to the dark). What its light does not reach is as dark as
+  before: nothing there is lit. The reaches asked for (§16.85) are as they were.
+
+### 7. The herbs (`SubworldScene`)
+
+`WorldGen.PlantAlch` is not run in a subworld whose rock line leaves no room under it
+(`(int)(Main.rockLayer + Main.maxTilesY) / 2 > Main.maxTilesY - 20`, the game's own
+reckoning): a detour, on a server too (`NoHerbsWithoutRoom`). A place with room under its
+rock line has its herbs planted as the game plants them; a world is not touched.
+
+### 8. Checked
+
+- Compiled against tModLoader 2026.8.3.0: 0 errors, the 10 warnings there were (build68).
+- The rig: `hooks` 9 of 9, one new: the game's herb planting with the rock line past the
+  bottom threw 99 times in 4000 bare, 85 in a world with the detour on (left as the game has
+  it), none through the detour in such a place and none in a place with room; `lamp` 10 of
+  10.
+- Previews (`p1686.py`, the C# ported line for line; the game's water lit per tile, which
+  the game smooths; the screen shaders approximated as before): `VastOceanWater_1686.png`
+  (the old and the new at noon, morning, evening, 110 rows down, from the deck, night,
+  storm, and down the sections) and `MupralDeep_1686.png` (the 12th section with no lamp,
+  the glow and the beam on the floor; the 5th with the beam on a rock).
+
+### 9. Not checked here
+
+All of it in the game: the screen shaders' own code is not readable here (FilterMiniTower is
+reckoned as before), so the depths' colours are as near as that; whether the line at the
+waterline is gone (if it is still there, it is something other than the swells); the clearer
+water on what is under it; the lit water's cost (at most 2601 four-coloured tiles a lamp a
+frame). In multiplayer every lamp's water is lit on every machine, and the dark gives way
+for any lamp whose light can be on the screen.
+
+### 10. Files
+
+| File | |
+|---|---|
+| `Content/Biomes/VastOceanSky.cs` | the sea's colours and the clearer water; the fan, the caustics, the gold shafts and the motes; swells and rain rings that come to nothing; the dark giving way to the lamp |
+| `Content/Biomes/VastOceanFan.png`, `VastOceanCaustics.png` | new, made by formula |
+| `Content/Items/Accessories/MupralLight.cs` | by block, the motes in its light, the water in its light |
+| `Content/Subworlds/SubworldScene.cs` | no herb planting where there is no room under the rock line |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md`, `PAD_Item_Plan.md`, `PlaceholderTextures.md` | notes |
+
+## 16.87 Session 7: the Vast Ocean's floor (its sediment, hills, mountains and caves, trench, pillars and rocks, vents and seeps, lava, bones and odd things) and the life on it
+
+Asked (the first with links to pictures):
+
+> Maybe deepen the sendiment too, add ocasional rocks and ice pillars, pointy and curl in clusters. 1000- 1300 tiles to the left is an island floating in the sea, around 300 tile wide, having a large light house on the rock like this. With little details of course, paint and ambience elements
+> I like the jagged rocks
+
+> Take especially long time for this structure.
+
+> there should also be mountains and hills in the sendiments and abnormalties and a deep trench hole with caverns
+
+> mountains can rise from section 12-11 to section 10 or 9
+
+> with clear path cave ways
+
+> 2nd pic from reddit looks beautiful
+
+> continue
+
+> even smaller rocks boulders too
+
+> can use mud as floor too
+
+> and clay too
+
+> geyser field too with its equivelent ground, actually do research and improve the ocean floor i aint no marinegeologist
+
+> skeletal remains are good additions
+
+> and obsidians flow too ig? DO YOUR RESEARCH!!!!
+
+> hows the process? I see you doing two things at once? care sending pics?
+
+> You know you can also create ambiance tiles for extra ambiances, like smoke/gas emitting things and Coral reefs and sponges and other tiles that is needed. You can run for the rest of the night til morning
+
+> Just make it look beautiful, and ofc everything is engulfed in shadow but thats fine, we are adding an accessory that lets you see the dark.
+
+> be sure to also create particles for those ambience tiles too
+
+> update preview images ok?
+
+and, asked about the island, chose "Floats" and "Red & white, rooms". The island and its
+lighthouse ("1000- 1300 tiles to the left", "Take especially long time for this structure",
+"2nd pic from reddit") are the next section's (§16.88); this one is the floor and its life.
+
+### 1. Readings
+
+- "Maybe deepen the sendiment too": the ground under the dunes' lowest was 73 rows (sand,
+  hardened sand, sandstone); it is now 520 (`VastOcean.Sediment`: the trench's 430 and 90
+  under its foot), sediment in beds over basalt. The world is 3607 rows high (it was 3160).
+- "ocasional rocks and ice pillars, pointy and curl in clusters": clusters of spires on the
+  open floor, ice and rock by turns, each spire narrowing to a point and bending as it goes
+  up, the outer ones of a cluster most, now and then over into a hook; and lone rocks half
+  buried here and there. No ice forms on a real deep floor (the water there is a degree or
+  two over freezing and the ice of the sea floats); the only ice of the deep is gas hydrate,
+  at the seeps (laid there too, white). The ice pillars are laid as asked.
+- "mountains and hills in the sendiments": hills of sediment over the dunes, and five ranges
+  of seamounts, volcanoes that never reached the surface, standing up out of it;
+  "abnormalties": things not of the sea as it is known, laid with the rest and named as such
+  (gardens of glowing moss, geodes, standing stones, sinkholes, a skeleton bigger than any
+  whale); "a deep trench hole with caverns": a trench cut 430 rows under the dunes' lowest,
+  caverns running off its walls.
+- "mountains can rise from section 12-11 to section 10 or 9": each range's foot on the
+  sediment, which is in the 12th section or, on a hill, the 11th; its summit brought to a
+  row in the 9th or 10th, the tallest in the 9th.
+- "with clear path cave ways": every way cut through a range or off the trench open at both
+  ends, wide enough to swim through, nothing solid put in it after; checked by swimming each
+  end to end.
+- "even smaller rocks boulders too": pebbles and small boulders all over, alone and in
+  little groups.
+- "can use mud as floor too", "and clay too": under the depth at which shells dissolve (the
+  carbonate compensation depth, half way down the 11th section), red clay in some stretches
+  and brown mud in others, as the deep sea's pelagic clay and its muds are; over it, on the
+  mountains' shoulders and tops, pale sand, the ooze of shells.
+- "geyser field too with its equivelent ground": there are no geysers under the sea (under
+  the deep's pressure water stays liquid far past where it boils in air, and a black
+  smoker's pours out at 350 degrees and more); the sea's own are its hydrothermal vents.
+  Laid: black smokers, chimneys of metal sulfide on a mound of their own fallen pieces,
+  black smoke from their mouths, the ground round them stained with iron and white with mats
+  of bacteria; a field of white chimneys of carbonate on green mantle rock, as at Lost City;
+  vents on the floor of the tallest summit's crater; and at the cold seeps, where gas comes
+  up through the mud, carbonate, hydrate, mats, mud volcanoes and pockmarks. "actually do
+  research and improve the ocean floor": read from what is known (§2), each thing made of
+  the game's nearest tile.
+- "skeletal remains are good additions": three whale falls, the bones crowded with what
+  lives on them; one skeleton of something far bigger, in long coils; two sea reptiles
+  turned to fossil, lying half out of the sediment; and fossil here and there in the beds
+  under it.
+- "and obsidians flow too ig? DO YOUR RESEARCH!!!!": read, and said as it is: lava under the
+  sea is nearly all basalt, chilled at once by the water into pillows with a skin of glass
+  round each and broken glass between them (hyaloclastite), or run out in sheets with a
+  glassy crust when it came faster. True obsidian is lava rich in silica, which reaches the
+  floor of the sea rarely: Havre, in 2012, let out fifteen lavas and domes of it from
+  fourteen vents 880 to 1280 metres down. So the obsidian is laid as the glass it is in
+  basalt (the pillows' skins, the sheets' crusts) and as one silicic dome, banded with it
+  and spined with it, with an obsidian flow run from its side.
+- "care sending pics?": `SeaFloorWork_1687.png`, sent then, the floor as it stood; "update
+  preview images ok?": `SeaLifeCatalog_1687.png` and `SeaLifeInPlace_1687.png`, and the
+  floor again with its life, `SeaFloor_1687.png` (`Claude outputs`).
+- "ambiance tiles for extra ambiances, like smoke/gas emitting things and Coral reefs and
+  sponges and other tiles that is needed": fifteen tiles of the mod's own (`SeaLife`), each
+  a living thing of the deep or a vent's mouth, put down as the place is made where its kind
+  lives; none can be got as an item (nothing drops when one is broken); scenery.
+- "Just make it look beautiful, and ofc everything is engulfed in shadow": no light added
+  but where the deep has its own: the black smokers' mouths a dull red, and the octocorals
+  (sea pens, bubblegum and bamboo coral) glowing blue-green where they are brushed against,
+  as the octocorals of the deep do; everything else as dark as the depth makes it, seen by a
+  lamp. The pictures are drawn as lit, for the lamp.
+- "be sure to also create particles for those ambience tiles too": five particles of the
+  mod's own and the sea's own bubbles: black smoke from the black smokers, the shimmer of
+  the white ones' water, bubbles of gas from the seeps' cracks, flecks of bacteria off the
+  tube worms, a stream of specks from the cup sponges, plankton drifting about the corals
+  and sponges (one in a dozen blinking blue), motes of light off the octocorals where
+  touched; each lit by the light where it is, so seen only where light falls, but for the
+  glow and the blink, which are light of their own.
+
+### 2. Read for it
+
+- [Pelagic sediment](https://en.wikipedia.org/wiki/Pelagic_sediment): the deep floor's red
+  clay, "bright red to chocolate brown", where the shells have dissolved; calcareous ooze
+  over the compensation depth.
+- [Seamounts](https://www.ebsco.com/research-starters/earth-and-atmospheric-sciences/seamounts):
+  seamounts as volcanoes that do not reach sea level; guyots, flat on top, nearly all once
+  islands, cut down by the waves and sunk.
+- [Inferno](https://interactiveoceans.washington.edu/file/Inferno): a black smoker four
+  metres tall in the ASHES field at the summit of Axial Seamount (the crater on the tallest
+  summit with its vents).
+- [Loki's Castle](https://en.wikipedia.org/wiki/Loki%27s_Castle): five black smokers on "a
+  vast mound of sulfide minerals", 2352 metres down. [Endeavour Hydrothermal
+  Vents](https://en.wikipedia.org/wiki/Endeavour_Hydrothermal_Vents): chimneys of iron
+  sulfide 20 metres and more, water at 350 to 402 degrees, tube worms about them.
+- [Lost
+  City](https://oceanexplorer.noaa.gov/explorations/05lostcity/background/chem/chem.html):
+  tall white chimneys of carbonate with delicate pinnacles, over mantle rock the sea has
+  reached and turned (serpentinization), pouring clear warm water, no black smoke.
+- [Cold seep](https://en.wikipedia.org/wiki/Cold_seep) and [seafloor methane seep
+  environments](https://www.usgs.gov/centers/whcmsc/science/immerss-seafloor-methane-seep-environments):
+  mats of white bacteria (Beggiatoa) and orange ones, carbonate rock made where the methane
+  meets the sea, gas hydrate, mussel beds, bushes of tube worms (Lamellibrachia), mud
+  volcanoes and pockmarks.
+- [A primer on polymetallic nodule
+  fields](https://dsmobserver.com/2019/12/a-primer-on-polymetallic-nodule-fields/): nodules
+  of manganese and iron, with cobalt, nickel and copper, growing over millions of years
+  about a shark's tooth, a shell or a bone, lying loose on the sediment.
+- [Pillow lavas](https://geologybase.com/pillow-lavas/) and [lava
+  flows](https://www.whoi.edu/know-your-ocean/ocean-topics/how-the-ocean-works/seafloor-below/volcanoes/lava-flows):
+  pillows with rinds of glass from the quenching, hyaloclastite (broken glass) round many of
+  them; pillows, lobate flows and sheet flows by how fast the lava came and how steep the
+  floor is, sheets at the fastest.
+- [The Eruption of Submarine Rhyolite Lavas and Domes in the Deep Ocean, Havre
+  2012](https://www.frontiersin.org/articles/10.3389/feart.2018.00147/full) (Ikegami and
+  others, 2018): silicic domes and lavas under the sea, the obsidian question.
+- [Whale
+  falls](https://ocean.si.edu/ocean-life/marine-mammals/life-after-whale-whale-falls): the
+  scavengers for up to two years, worms and molluscs for about two, then bacteria in the
+  bones for decades, mussels and snails on them.
+- [Deep-sea
+  corals](https://oceanexplorer.noaa.gov/gallery/livingocean/livingocean_coral.html): the
+  cold-water corals of seamounts (Lophelia's reefs, bubblegum, bamboo and black coral).
+- [Riftia](https://en.wikipedia.org/wiki/Riftia): white tubes, a red plume (its blood's
+  hemoglobin), in clusters about the vents.
+- [Venus' flower basket](https://en.wikipedia.org/wiki/Venus%27_flower_basket): a glass
+  sponge standing in the mud on threads of glass.
+- [Umbellula](https://en.wikipedia.org/wiki/Umbellula): a sea pen, a cluster of polyps on a
+  long stalk over the abyssal plains.
+- [JC257: xenophyo-what](https://www.noc.ac.uk/blogs/jc257-xenophyo-what): xenophyophores,
+  single cells up to 25 centimetres that build their bodies from the shells of the dead in
+  the sediment, on the abyssal plains' nodule fields and in the sediment.
+- [Glowing corals](https://www.mbari.org/glowing-corals/) (MBARI): every deep coral and sea
+  pen tried made its own light when touched; bubblegum coral and the bamboo corals blue (one
+  in waves along its stem), the sea pens blue or green.
+
+### 3. The ground (`VastOceanFloor`, new; `VastOcean`)
+
+- The world 13662 by 3607: the sky (399 rows to the surface), the water to the dunes' lowest
+  (2688), and 520 rows of ground under that (`Sediment`, the trench's 430 and 90). The
+  game's grid of tiles grows to 13801 by 3751 for it (ExtraLargeWorld, as before).
+- Hills of sediment over the dunes: 16 to 23 tried, each 30 to 170 rows high and 2.2 to 4
+  times as wide either side as it is high, rounding off where they run together so that the
+  sediment's top is in the 12th or 11th section; none in the trench's mouth; a rim either
+  side of it.
+- The sediment, by depth: over the compensation depth (`Ccd`, half way down the 11th
+  section, its line wavering a few rows), sand, then hardened sand from 6 rows down and
+  sandstone from 28; under it, red clay or mud by stretch (a few hundred to a thousand
+  columns each, tongues of each running slanting into the other, no straight seam), beds of
+  the other through it for 28 rows, then mudstone with thin beds of sandstone; fossil here
+  and there from 10 rows down; basalt under it from 150 rows down (the game's granite, with
+  stone through it in patches), and round the trench.
+- Every face of the new ground worn to the game's slopes; sand, silt and shell with nothing
+  under them made firm or taken away before the water is poured in; the water poured into
+  every open cell, the caves and the trench with the rest.
+
+### 4. The ranges and their caves
+
+- Five ranges, at about 0.11, 0.29, 0.45, 0.60 and 0.86 of the width, none within 1100
+  columns of the trench: each a main peak with two or three lesser ones, 10 to 19 crags
+  along its ridges, its root going down through the sediment twice as deep as it stands over
+  it. Each brought up or down as a whole until its summit is at its row: the tallest 8.3 to
+  8.55 sections down (in the 9th), the others 8.6 to 9.7 (the 9th or the 10th). In seed
+  1234567 the summits are rows 2397, 2456, 2305, 2409 and 2438, 606 to 762 rows over the
+  sediment.
+- The tallest has a crater at its summit (16 to 21 rows deep, 37 to 51 across, its floor
+  ash, its rim all round at the summit's row) with a small field of smokers on its floor;
+  one other is a guyot, its top cut flat at its row, pale ooze and coral mounds on it.
+- Through each, "clear path cave ways": a tunnel low through it from side to side (at a
+  quarter of its height), a cavern in its heart (at 0.42), a tunnel higher up (0.6) from a
+  side into the cavern, a way down from the cavern to the low tunnel, a shaft from near the
+  summit (0.8) on the other side steeply down into the cavern, and two to four grottos from
+  its sides; each way 2.8 to 3.4 tiles in radius, its ends out in the water ten columns past
+  the face; one cavern in two a garden of the glowing mosses.
+
+### 5. The trench
+
+About 0.69 of the width (some 2600 columns right of the platform), 200 to 230 columns across
+at its mouth between two rims, down to 430 rows under the dunes' lowest (row 3517, 47 rows
+over the lowest row seen), its middle wandering as it goes, narrowing to a third, each wall
+jagged on its own; a bowl at its foot, silted 4 to 7 deep; 4 to 7 ledges standing out from
+each wall; caverns off its walls at five depths either side (four in five of them), 90 to
+240 long, each with a chamber or two (one in three mossed), some joined to the one under
+them. The game's line for the Underworld (row 3407) is in it, 110 rows over its foot: water
+there does not dry (§16.81's edit).
+
+### 6. The vents and the seeps
+
+- Black smokers (`HydrothermalField`, `Chimney`): on the side of a range that has neither
+  the crater nor the flat top, a mound of sulfide 9 to 15 high and 69 to 99 across (the
+  game's lead, iron, copper and silver ores, for pyrite, chalcopyrite and sphalerite), 5 to
+  8 chimneys on it, the first in the middle the tallest (26 to 41) and live, the rest two in
+  three live: three wide at their foot, two, then one, leaning, flanges standing out; a live
+  one's mouth lava moss (it glows), the dead red with iron; white mats over a third of the
+  mound; the sediment 18 columns round it stained with iron (copper ore); tube worms (the
+  game's coral) and mussels (its shells) about it. The crater's field the same, smaller,
+  none of it over the rim.
+- White chimneys (`LostCity`): on a range's side, a terrace some 65 columns long of mantle
+  rock (granite painted deep green), 7 to 11 slender chimneys of marble on it, the first 42
+  to 55 tall, the rest 10 to 35, thick at their feet and narrowing, flanges out from them,
+  each split at its top into two or three pinnacles; broken pieces lying about.
+- Two cold seeps (`ColdSeep`): mats of white and orange bacteria (paint), a pavement of
+  carbonate slabs (marble) in the mud's top, two to four small mounds of it, two to four low
+  mounds of gas hydrate (ice painted white) bulging from the mud, mud still over one side of
+  each; mussel beds and seep worms; a pockmark beside.
+- Three mud volcanoes (`MudVolcano`): cones of silt 8 to 16 high, a crater at the top with
+  white mats about it, tongues of the mud at the foot. Three fields of pockmarks (three to
+  seven pits each, 5 to 14 across either side, 3 to 8 deep; a mat or a crust of carbonate on
+  the floor of two in three, which still let out gas).
+- Four nodule fields on the red clay (`NoduleField`): 140 to 300 columns across, a nodule
+  (lead ore, one in seven iron) on three columns in ten, now and then two together.
+
+### 7. The volcanic rock
+
+- Three piles of pillow lava at the ranges' feet (`PillowField`): 8 to 16 pillows dropped
+  one at a time, each rolling off the pile while the ground beside it is lower and coming to
+  rest, so that they heap into a low mound; each its own skin of obsidian; ash (broken
+  glass) in the gaps.
+- Up to two tongues of lava down the ranges' sides (`LavaFlow`): 50 to 109 long, a sheet 2
+  to 4 rows thick with a crust of obsidian and ropy folds, stopping where the ground rises,
+  pillows at its toe.
+- One silicic dome (`SilicicDome`) at a range's foot: 37 to 59 across, 14 to 22 high, pale
+  stone banded with obsidian, 6 to 10 spines of obsidian on its top, a breccia of obsidian,
+  stone and ash round its foot, an obsidian flow 40 to 74 long run from its side down the
+  range's (stone under a crust of obsidian).
+
+### 8. The pillars, the rocks and the boulders
+
+Sixteen clusters of spires, ice and rock by turns (eight of each), three to nine spires
+each: the first in the middle and the tallest, 50 to 75 tiles (ice 15 in 100 taller), the
+rest shorter the farther out, all curling away from the middle, one in four over into a
+hook; on the open floor or at a range's foot (no more than 150 rows up its side), none in
+the trench nor among the odd things. Lone rocks half buried, one tried every 60 columns (48
+to 66 laid in the seeds tried). Pebbles and boulders, one tried every 14 columns, one in six
+a little group of three to six: a pebble, a boulder of two or three, now and then one of
+four or five; stone mostly, granite one in four (303 to 449 laid).
+
+### 9. The remains and the odd things
+
+- Three whale falls (`WhaleFall`): 70 to 100 columns, the skull on the floor, its jaw out in
+  front, the spine raised 9 to 12 rows over the floor on ribs arching down to it (one every
+  four columns, room to swim in among them), the tail buried; white mats, bone worms (coral)
+  on the spine, clams and mussels round it.
+- One skeleton far bigger than any whale (`Serpent`): 150 to 209 columns of spine in coils
+  over the floor and into it, spines on its back, ribs over its front half, a long skull
+  with its jaw fallen open and teeth in both jaws; mud drifted over it in places.
+- Two sea reptiles turned to fossil (`FossilBed`): 36 to 53 long, half out of the sediment,
+  a long-snouted skull, four paddles, the tail bent down, desert fossil about it.
+- Coral mounds (coralstone) on the ranges' sand and on the guyot: up to six of each.
+- The odd things: six gardens of the glowing mosses (three to six outcrops each, faces of
+  krypton, xenon, argon, neon or helium moss), three geodes (granite shells 8 to 13 in
+  radius broken open along the top, lined with one gem, loose gems on the floor), two rows
+  of standing stones (five to seven, 13 to 21 tall, a pair with a lintel, one fallen), three
+  sinkholes (30 to 80 deep, opening into a hollow).
+- In the caves, the trench's caverns and the sinkholes' hollows, the game's stalactites and
+  stalagmites (`WorldGen.PlaceTight`).
+
+### 10. What lies on it (`VastOceanBuild`)
+
+The game's piles (stones, bones and skulls, wreckage, the fallen hall's marble and gold) on
+the sediment, the rock and the trench's silt, where the ground is level and even with its
+neighbours and nothing stands; shells and starfish on the sediment only, starfish only under
+the compensation depth (an empty shell dissolves there); drifts of shell only in sand.
+Nothing on moss, ice, bone, ash, glass, ore, carbonate, coral, a gem or painted ground (the
+mats and the green rock show). No seaweed (the floor is far under the last of the sun) and
+none of the beach's coral (the deep has its own).
+
+### 11. The life (`SeaLife`, `SeaLifeTiles`, `SeaLifeEffects`, `SeaLifeParticles`, new)
+
+- Fifteen tiles, each standing on whole solid ground as wide as it is, put down by the
+  game's own hand (`WorldGen.PlaceObject`) once the water is in; allowed in water, killed by
+  lava; nothing drops; a name on the map. Giant tube worms (Riftia: white tubes, red plumes;
+  three pictures, 3x4); seep tube worms (Lamellibrachia, tan bushes; two, 3x4); cold-water
+  coral (Lophelia: white, orange, pink; three, 3x3); bubblegum coral (Paragorgia: pink, red;
+  two, 4x4); bamboo coral (white joints, dark nodes; two, 2x5); black coral (a dark skeleton
+  under orange or white polyps; three, 3x4); glass sponges (three, 1x3); cup sponges
+  (yellow; two, 2x2); sea pens (two Umbellula, a feather pen; 1x4); sea lilies (yellow, red;
+  two, 2x4); anemones (pink, white, a tube anemone; three, 2x2); xenophyophores (three,
+  2x2); a black smoker's mouth, a white smoker's mouth (four frames each, 1x1, a frame every
+  7 ticks); a seep's crack (two, 1x1). Pictures mine, drawn by code (PlaceholderTextures).
+- Where each goes (`PlantLife`): on each live black smoker's mouth its tile, on each white
+  chimney's top its own; giant tube worms about each smoker field (3 to 5); at each seep 2
+  to 4 cracks, 1 to 3 bushes of seep worms and up to 2 anemones; in each mud volcano's
+  crater 1 or 2 cracks, in each pockmark still letting gas out one; on each coral mound and
+  over the guyot's top a reef (cold-water coral most, bubblegum and black coral, sea lilies,
+  sponges, anemones, now and then bamboo); on the ranges' sides wherever a ledge is level, a
+  try every four columns or so (the octocorals more); over the plains, a try every 8 to 20
+  columns, four in five, sea pens and xenophyophores most on the clay and mud, sponges more
+  on the sand over the compensation depth (an anemone on the clay or the mud is the tube
+  anemone); more xenophyophores on the nodule fields; sparse in the trench (sea pens,
+  xenophyophores, anemones, glass sponges). Each only where the ground is whole and level
+  under all of it and nothing is in its way, a worn tile made whole first. 312 to 356 a
+  world in the seeds tried.
+- The light: the black smoker's mouth (0.32, 0.09, 0.02), breathing a little; the sea pens,
+  bubblegum and bamboo coral blue-green, (0.08, 0.42, 0.62) times how near the player is
+  (all of it within a tile and a half, none past six), a wave running along them; the sea
+  pens a little at rest (0.22).
+- What each gives off (`SeaLifeEffects`, each player's own machine, the Vast Ocean only,
+  from those on or near the screen, looked for every third of a second): black smoke from a
+  black smoker's mouth, 28 puffs in a hundred ticks, each rising, spreading and growing for
+  2.5 to 4.3 seconds, now and then a white fleck; the shimmer of clear water from a white
+  smoker's, a streak rising fast; from a seep's crack, a few bubbles at a time
+  (VastOceanMotes, rising and bursting as the sea's others); flecks drifting up off the tube
+  worms; a thin stream of specks from a cup sponge's mouth; plankton drifting by the corals,
+  sponges, sea lilies and anemones, one in twelve blinking blue (light of its own, added);
+  motes of blue-green off the octocorals where touched (light of its own, added), now and
+  then untouched. Each but the glow and the blink drawn in the light where it is.
+
+### 12. Checked
+
+- Compiled against tModLoader 2026.8.3.0: 0 errors, the 10 warnings there were (build94).
+- The rig, the place laid by the mod's own code in the game's own engine, seeds 1234567, 42,
+  777, 2026, 1, 99 and 31337: 36 of 36 each. Among them: every thing the floor put down
+  passed the game's own test for it (its anchor on whole solid ground, its room) and was
+  still whole at the end; some of each of six kinds put down; the dunes' lowest 2688 rows
+  down, 24 high; the world 3607 rows; the sediment's highest in the 11th section; each
+  summit in the 9th or 10th, the tallest in the 9th, no ground over the row it was brought
+  to; the trench open to its bowl, its foot over the lowest row seen; every cave way swum
+  end to end by a player two wide and three tall (47 of 47 in each seed); no sand, silt or
+  shell left with nothing under it; the platform, the waygate and the spawn as before; every
+  block framed, every object holding when the game frames it again. Laid in 3.0 to 3.6
+  seconds.
+- Previews from the rig's dumps with the game's textures: `SeaFloor_1687.png` (the whole
+  width from the 8th section down, the tallest range cut open, the trench, and close up the
+  crater, a smoker field, the white chimneys, a seep, the guyot's reef, the dome);
+  `SeaLifeCatalog_1687.png` (every picture); `SeaLifeInPlace_1687.png` (each where it was
+  put down).
+
+### 13. Not checked here
+
+All of it in the game: the place made on the first trip (a larger file than before: the
+ground is no longer one sand), the life put down by `WorldGen.PlaceObject` (the rig put down
+a stand-in by the same test), the tiles' frames, their light and animation, the particles
+and their cost (the screen looked at every third of a second), and how it all looks in the
+dark with the M.U.P.R.A.L.
+
+### 14. Files
+
+| File | |
+|---|---|
+| `Content/Subworlds/VastOceanFloor.cs` | new: the floor |
+| `Content/Subworlds/VastOcean.cs` | the ground under the dunes 520 rows, the world 3607 high, layout 5, the life's planter handed in, its notes |
+| `Content/Subworlds/VastOceanBuild.cs` | the floor laid first; what lies on it by ground; no seaweed or beach coral |
+| `Content/Tiles/SeaFloor/SeaLife.cs`, `SeaLifeTiles.cs`, `SeaLifeEffects.cs` | new: the fifteen tiles and what they give off |
+| `Content/Tiles/SeaFloor/*.png` | new: fifteen sheets, mine, drawn by code |
+| `Content/Particles/SeaLifeParticles.cs`, `VentSmoke.png`, `SeaFloc.png`, `SeaPlankton.png`, `SeaGlow.png`, `VentShimmer.png` | new: the five particles |
+| `Content/Biomes/VastOceanMotes.cs` | the seeps' bubbles |
+| `Localization/en-US_Mods.PisAndDag.hjson` | the fifteen names on the map |
+| `Claude outputs/SeaFloor_1687.png` | the preview |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md`, `PlaceholderTextures.md` | notes |
+
+## 16.88 Session 7: the lighthouse island; the light fan turned the wrong way, the waves, the trench's navy; the light on the surface; the lighthouse built again after a picture
+
+Asked, the first four carried over from §16.87 (the first with links to pictures), and the
+island's two choices made then, "Floats" and "Red & white, rooms":
+
+> 1000- 1300 tiles to the left is an island floating in the sea, around 300 tile wide, having a large light house on the rock like this. With little details of course, paint and ambience elements
+
+> I like the jagged rocks
+
+> Take especially long time for this structure.
+
+> 2nd pic from reddit looks beautiful
+
+then (the seventh with a picture of the surface at night in rain; the eleventh with a
+picture of a brick tower; the fourteenth with a picture of the sea stack and the arch):
+
+> why is this gradiant golden thing side way bruh
+
+> sometimes the water have seizures and dont die down completely ... either make it always active or once in a while
+
+> i prefer once in a while
+
+> in the abysall trench can the water be a bit more navy?
+
+> nvm its actually good
+
+> wait it can be a bit more navy, its too pristine now
+
+> does the surface has a bit shine? can you make feather more accumulated at the surface?
+
+> maybe by half height?
+
+> preview of lighthouse?
+
+> theres shines on the surface u can clearly see a seperation of gray and purple dark
+
+> use bricks colored white wall inside is ok, make it elevated like this with pillar statues and other statues like this, with marble and other tiles painted white or cream. create the stair case like that. windows like that too, pretty sure they use a different wall and tile of glass
+
+> https://www.reddit.com/r/Terraria/comments/m6ykt3/how_does_it_look/ method^
+
+> I suggest taking your time to reseaerch terraria builds to give its rich, no wasted space vibe. and paint mixing and hammering.
+
+> I like the island shape with a little under water cave, make sure the stone pillar here is walled and leave a space to squeeze through
+
+### 1. Readings
+
+- "1000- 1300 tiles to the left is an island floating in the sea, around 300 tile wide": its
+  rock from 1312 columns west of the middle of the place (the deck's) to 982, 331 wide, and
+  a sea stack off its west end on a ledge reaching to 1330; it floats (chosen), its
+  underside hanging into the water in spikes, two chains from it to anchors on the floor
+  some 2500 rows down. "having a large light house on the rock like this": the lighthouse on
+  a plateau 30 rows over the sea, its vane 90 rows over that. "With little details of
+  course, paint and ambience elements": the rock painted as the sea leaves rock (§3); the
+  lens turning and its beams over the sea at night (§6); the fisherman's chimney smoking,
+  kelp, palms, a reef (§4).
+- "I like the jagged rocks": a headland of crags with teeth along their ridges and six
+  pinnacles leaning out of them, between the arch and the plateau.
+- "2nd pic from reddit looks beautiful": a lighthouse drawn in section, every floor fitted
+  out, a stair up the middle, the gallery and the lantern on top; kept through the rebuild.
+  "Red & white, rooms" (chosen): bands of red and white, every storey a room or two with a
+  purpose.
+- "why is this gradiant golden thing side way bruh": the fan of light under the sun
+  (`VastOceanSky.DrawLightFan`) was drawn turned with the light, so when the sun was low its
+  broad top tipped up out of the water on one side, a wedge of gold over the sea. Now it is
+  sheared, not turned: a row of its picture at a time, each shifted the way the light leans
+  by as far as it is under the surface, its top along the surface at any hour
+  (`LightFanFix_1688.png`, morning and noon, before and after).
+- "sometimes the water have seizures and dont die down completely ... either make it always
+  active or once in a while", "i prefer once in a while": the swell was pushed into the
+  game's water every twelfth of a second for four seconds in every twelve, and stood in
+  humps that never quite settled. Now a set of waves once in a while: in calm weather about
+  once a minute (every 55 seconds), one set in four going by flat; the rougher the weather,
+  the oftener, every 15 seconds at the roughest, none flat. Three to five crests along one
+  stretch of the surface on the screen (as asked with them: "maybe wave js at one
+  sections"), the highest in the middle, 14 tiles apart (9 at the roughest), a trough
+  halfway between each two; given to the water twice, a quarter of a second apart and a
+  quarter of the way on the second time (which sets them running one way, with the wind in
+  rough weather), then left to the game's water to carry off and let die down, as it does
+  the rings round a splash.
+- "in the abysall trench can the water be a bit more navy?", "nvm its actually good", "wait
+  it can be a bit more navy, its too pristine now": the water's colour at the end of the 6th
+  section is no longer black but (2, 5, 22), and from the Abyssal Trench's top (3, 8, 34), a
+  little more navy, never quite black; the murk's tint bluer, (0.02, 0.05, 0.13) for (0.02,
+  0.05, 0.09).
+- "does the surface has a bit shine? can you make feather more accumulated at the surface?",
+  "maybe by half height?", "theres shines on the surface u can clearly see a seperation of
+  gray and purple dark": read with the picture as the light lying on the surface (the
+  glints, the moon's path, the whitecaps, grey by night) drawn on the line of the water,
+  partly over it, where the game's waves do not carry anything: the game's water shader
+  (FilterWaterDistortion, read in its ScreenShader, §2) moves a pixel up or down with a wave
+  only where that pixel, or the one its colour is taken from, is water. Over a trough the
+  part over the line stayed where the water had been, with the dark purple of the sky under
+  it, while the water and the rest went down. Now all of it is drawn in the water's top
+  pixels, its middle 3.5 pixels under the line, so the waves carry it up on a crest and down
+  in a trough; the glints flatter (their spikes up and down at four tenths) so that little
+  of one is over the water; and nothing of the sea's colour, its haze, its net of light or
+  the storm's flash is drawn over the line at all (`VastOceanSky.Sunk`, `WaterTop`). "maybe
+  by half height?" read with the answer after it as how far down the light should sit; the
+  waves are as high as they were (halving them is open if that was what was meant).
+  `VastOceanShine_1688.png`: the two, before and after, as the shader would show them (drawn
+  by its rule, not seen in the game).
+- "preview of lighthouse?": four previews of the tower as it then stood (nine storeys over a
+  cellar). They were wrong in one thing: they drew its red bands, white stucco painted red,
+  as red; the game draws them grey (§2: the game's paint, read in its TileShader). The
+  previews since paint as the game does.
+- "use bricks colored white wall inside is ok": the skin of brick (red brick for the red
+  bands, pearlstone brick painted white for the white), and inside, the back walls of brick
+  whitewashed (pearlstone brick wall painted white) in great stepped patches against bare
+  red brick, as the picture has them. "make it elevated like this with pillar statues and
+  other statues like this, with marble and other tiles painted white or cream": raised on a
+  plinth eight rows high, a colonnade in its face, pillar statues and the statues of the old
+  marble halls (Medusa's and a hoplite's) on pedestals of marble, all painted white. "create
+  the stair case like that": a stair turning up a shaft of dark boards through the middle, a
+  flight one way and a flight back in every storey, up through a hatch in each floor.
+  "windows like that too, pretty sure they use a different wall and tile of glass": glass
+  blocks in front of an iron fence wall painted brown, the sky through its lattice, in a
+  frame of white slab: glass in front of a wall of another kind.
+- "https://www.reddit.com/r/Terraria/comments/m6ykt3/how_does_it_look/ method^": the page
+  could not be read here (the site is closed to the tools this session has; not tried
+  another way). Built from the picture and from §2.
+- "taking your time to reseaerch terraria builds to give its rich, no wasted space vibe. and
+  paint mixing and hammering": read (§2) and built so: one brick to a band, its colour
+  varied by paint (a few red bricks burnt dark, a few gone brown; the white uneven, some
+  left their own pale colour, some grey); courses, quoins, sills and hoods of white slab
+  standing proud, hammered at their ends; posts and braces in the rooms; every room fitted
+  out for a purpose, things on the tables, the dresser and the shelves, pictures, banners, a
+  chandelier, nothing left bare. Then the lights: the boreal set's own light cyan in the
+  game (§2), so brass ones (§5).
+- "I like the island shape with a little under water cave, make sure the stone pillar here
+  is walled and leave a space to squeeze through": read with the picture as the sea stack,
+  the shelf at its foot and the arch's west leg walled behind with their own stone (stone
+  behind stone, granite behind granite, painted as the rock in front), so that no sky shows
+  through where a face is hammered; and a passage three high cut through the leg from the
+  shelf into the arch, so that one can squeeze through from the stack to the arch and the
+  cave behind it. The island's shape and the cave kept as they were. If "walled" meant more
+  (the gap between the stack and the leg filled), say so.
+
+### 2. Read for it
+
+- [Paint](https://terraria.wiki.gg/wiki/Paint): regular paint re-tints, which it gives as
+  the likely reason a grey block such as grey brick cannot be coloured by it; white, grey
+  and brown work as deep paints already. The game's own: its TileShader
+  (Content\TileShader.xnb, taken apart here: the effect's passes and their sums), paint by
+  paint: red keeps a pixel's brightest channel for red and its dimmest for green and blue,
+  so a grey pixel stays grey; deep red the same with green and blue at four tenths; white
+  lifts (0.7 of the brightest and 0.3 of the dimmest, times two less their mean); grey is
+  the mean; brown the brightest times (1, 0.7, 0.49); black 0.15 of the brightest and the
+  dimmest added. So a colour paint on grey stucco is grey, and a red band must be red brick.
+- The game's water shader, FilterWaterDistortion (Content\ScreenShader.xnb, taken apart the
+  same way): a pixel moved up or down by as much as about ten pixels with a wave, only where
+  it or the pixel its colour comes from is water; rising water drawn darker, falling water
+  lighter.
+- The game's light: `TileLightScanner.ApplyTileLight`, read in the IL. Every boreal light
+  (candle, candelabra, chandelier, lamp, lantern) gives (0, 0.9, 1), cyan; the Gold
+  Chandelier (1, 0.95, 0.8); the Brass Lantern (0.9, 0.75, 0.6); the Carriage Lantern (0.65,
+  0.5, 0.2); the Golden Lamp (1, 0.97, 0.85); the Candle (1, 0.95, 0.65); a lamppost (1, 1,
+  1). `Main.wallLight`: glass and the fences let the sun through (the windows' iron lattice
+  among them); `Main.tileBlockLight` is not set for glass blocks.
+- [How to build a realistic
+  house](https://www.thegamer.com/terraria-how-to-build-realistic-house/): beams in the
+  background, a contrasting wall for trim, walls behind glass painted, hammered shapes,
+  clutter for a lived-in look.
+- [15 building
+  tricks](https://steamcommunity.com/app/105600/discussions/0/1679189548071109763) (Steam):
+  a palette kept to (grey brick, boreal floors, red brick), shape rather than a box, a stair
+  rather than platforms in the air, varied furniture, rooms by purpose, chandeliers and
+  candles, pictures.
+- [Building tips](https://7d2d.net/terraria-building-tips/): materials mixed for pattern and
+  texture, the whole lit, the details.
+- [Guide:Building](https://terraria.wiki.gg/wiki/Guide%3ABuilding): tools, not looks;
+  nothing taken from it.
+
+### 3. The island (`LighthouseIsland`, `LighthouseShore`, new; `VastOceanIsland`, new)
+
+Laid once the sea is poured and before anything is put on the floor (`VastOceanBuild.Lay`),
+on a random of its own from the world's seed (the same island for the same world), on a plan
+canvas: x from the island's west end, y from the sea's surface row. Every cell it clears is
+left dry, then the sea is let back into every open cell under the surface it can reach from
+round the island; what it cannot reach (the skiff's inside, a pool in the rock) is left as
+made.
+
+- The rock: its top along a profile (the arch's legs, the crags, the plateau, the stair, the
+  beach, the shelf under the water), its underside along another, deepest under the
+  lighthouse (106 rows under the surface); grey stone with slanting bands of dark granite,
+  the underside dark. The crags with teeth along their ridges and six pinnacles; the sea
+  stack, a spire 36 high on a ledge off the west end.
+- Cut into it: the arch the sea runs through, the cave behind it under the crags with a
+  ledge at its back (a chest someone left there, and bones), two pools on the shelf at the
+  stack's foot, and the passage through the arch's west leg (§1).
+- Earth and grass over the plateau and the saddle west of it; pale sand over the beach and
+  the shelf, firm sand under it so none falls.
+- Every face worn to the game's slopes as the game wears a face (`Tile.SmoothSlope`, read in
+  the IL), but what is kept square for something to stand on; loose crumbs not joined to the
+  rock taken away (`IsleTidy`).
+- Painted as the sea leaves rock: a band of black at the waterline, barnacles grey and white
+  over and under it, green weed below; yellow and orange lichen on the crags, moss on the
+  shaded faces, the cave's faces green.
+- Under it, spikes of rock hanging into the water every few columns, longer where it is
+  deepest; vines from the overhangs over the water, weed under it.
+- The chains: from an iron plate in the rock at plan columns 70 and 176, straight down to a
+  great anchor of rusted iron lying on the floor at the foot of each (2421 and 2479 links).
+
+### 4. What stands on it
+
+- West of the plinth: a tree at the plateau's west end, on ground made level two either side
+  (the game grows a tree only with five columns open over its foot); the flagstaff with the
+  red flag; to the east, past the oil house, a lamp at the head of the stair.
+- The stair down the east side, a step a column of hammered slab, a fence of palings behind
+  it, a lamp at its foot on the sand.
+- The beach: palms grown as the game grows them, sea oats, shells.
+- The fisherman's house: one room of palm boards on stilts over the water's edge, its roof
+  blue shingle, its chimney smoking (the game's chimney in its smoking state); a porch with
+  steps up from the sand, steps down to the pier; his bed, his sea chest, a crate, a chair
+  at the fire, a keg, a picture of the sea; things to sit on and no table.
+- The pier on posts out over the reef: bollards, two lamps, a crate, a keg, a barrel of his
+  stores. The skiff tied at its end, blue, a crate in her; the sloop riding at anchor
+  beyond, red under a white strake, black at the waterline, a white cabin with her chest and
+  a lantern, one mast with the mainsail and jib set, her anchor chain down to the shelf.
+- Under the water on the shelf: low mounds of coralstone, kelp (the game's seaweed, grown),
+  coral, shells, starfish, and now and then an anemone or a cup sponge (the sea's own,
+  §16.87).
+
+### 5. The lighthouse (`LighthouseTower`, built again)
+
+The first build (nine storeys of stucco over a cellar, red stucco bands) was taken down and
+built again after the picture (§1):
+
+- The plinth: eight rows over the plateau, 37 wide, a footing of grey brick into the
+  plateau; a base course of white slab, a colonnade the height of a room, its back
+  whitewashed brick, strips of bare slab every fifth column from the middle out, and between
+  them on pedestals of white marble four pillar statues, Medusa's and a hoplite's, painted
+  white, each looking in toward the middle; a brass lantern hung under the frieze either
+  side of each statue and of the middle strip; a frieze of white brick and the deck of white
+  slab over it, three tiles wide either side of the tower's foot; a stair down each end, a
+  tread a row, hammered, a band of marble two deep under the treads and white brick under
+  that.
+- Five storeys of twelve rows, 31 wide at the foot, 29 from the third storey and 27 for the
+  watch room: red bands (the ground floor, the third, the watch room) of red brick, one
+  brick in twelve burnt dark (deep red paint) and one in twenty gone brown; white bands of
+  pearlstone brick painted white, one in ten left pale and one in twenty grey. A course of
+  white slab at every floor, a tile proud, chamfered under at its ends; white quoins two
+  wide at the corners of the red bands under the watch room, two blocks of three rows a
+  storey with a row of brick between.
+- Inside each storey: the back walls whitewashed brick and red brick in great stepped
+  patches, which side higher and how high, room by room; posts of boreal at the ends of each
+  room and either side of the shaft, a brace up to the beams in each corner; boreal boards
+  for floors.
+- The shaft, between its posts, dark boards (planked wall); in it the stair, of pale boards
+  (wood platforms) to be seen against them: in each storey a flight up toward the east, a
+  landing, a flight back up to the floor over it, its last tread laid in that floor, the
+  floor open there over three boards of hatch. In the watch room only the first flight; from
+  it a rung and a hatch in the deck up to the gallery.
+- A door at each end of the ground floor out onto the deck, a hood of white slab over each,
+  a lamp on the deck beside each.
+- Windows: one in the back of every room (ten), three wide and five high, glass blocks over
+  an iron lattice painted brown in a frame of white slab; in the white bands and the watch
+  room one through the skin either side (six), two wide, with a sill and a hood of white
+  slab standing proud.
+- The rooms, from the ground up: the hall (the clock, a lamp, the dresser with a candle and
+  a mug, a keg) and the store (kegs, the barrel of stores, a crate); the kitchen (the pot,
+  the sink, the table with a bowl and a mug, a pot of flowers, a shelf of bottles and a
+  book) and the dining room (the table with the cake and a platter, the chest, two lamps);
+  the keeper's room and his assistant's (beds, a clock, a chest, a chair); the library
+  (books, the table with a candle, a book and a bottle, the ship in a bottle on a shelf) and
+  the study (books, the piano with a candle and a book); the watch room (a sea chest and a
+  settle each side, a chair at each window). In each a gold chandelier hung by the shaft, a
+  banner under the beams where there is room (green on the red bands, red on the white), a
+  picture over the tall things. A storey with something to sit on has no table and one with
+  a table nothing to sit on (the game counts bookcases, pianos and dressers as tables), and
+  each storey has a light and a way in, so none passes for a house.
+- The lights: brass and iron, not boreal (§2): gold chandeliers, brass lanterns either side
+  of the stair (one in the watch room), golden lamps, plain candles; in the oil house
+  carriage lanterns of black iron.
+- The gallery: an iron deck painted black round the lantern on brackets, a railing of
+  wrought iron; the lantern: glass all round over an iron foot, a bar of iron across, an
+  iron door out either side, the ring over it; in it the lens (§6) on its pedestal, a flue
+  from the lamp to the roof; the dome of copper painted red, its foot black, a black ball
+  and the vane on top.
+- The oil house east of the plinth: 22 wide, of the white band's brick, a door at each end,
+  a window in its back wall, a roof of red shingle over a loft; the heavy work bench, kegs,
+  a barrel and a crate, a chest and crates in the loft, cobwebs in its ends.
+
+### 6. The lens and the beam (`LighthouseLens`, `LighthouseBeam`, new)
+
+- The lens: a tile of the mod's own, 3 by 4, glass rings in a brass frame round the lamp,
+  two bull's-eyes, eight frames to the half turn following the beam's turn; lit (1.25, 1.05,
+  0.75) on every tile; cannot be mined or blown up, drops nothing; on the map, Lighthouse
+  Lens. Put there by the place as it is made.
+- The beam (`LighthouseBeam`, a ModSystem drawing after the tiles): two beams opposite each
+  other turning round the lens once in twelve seconds; seen from the side each sweeps out to
+  one side and draws back in; as one comes round toward whoever is looking the lens flares,
+  a flash every six seconds; lit from half an hour before dusk to half an hour after dawn,
+  fading over that half hour, a small glow about the lamp all the while. Only in the Vast
+  Ocean, only if the lens is where the place put it, only when near enough the screen.
+
+### 7. The place (`VastOcean`, `VastOceanBuild`, `VastOceanSky`)
+
+- `VastOcean`: layout 6 (the island); the lens's type handed to the build. The first trip
+  makes `VastOcean.6.wld`; `VastOcean.5.wld` and its `.twld` are no longer read
+  (RELEASE_TODO, Known rough edges).
+- `VastOceanBuild.Lay`: the island laid after the sea is poured, before the floor is
+  furnished, so nothing of the floor's lies where its chains come down.
+- `VastOceanSky`: the fan sheared (§1), the sets of waves (§1), the trench's navy (§1), the
+  light on the surface in the water (§1).
+
+### 8. Checked
+
+- Compiled against tModLoader 2026.8.3.0: 0 errors, the 10 warnings there were (build105).
+- The rig, the island laid by the mod's own code in the game's own engine, seeds 1234567,
+  42, 2026 and 777: 14 of 14 each. In each, every one of 160 objects went where it was
+  meant; no room passes for a house on a second pass (0); palms grew (26 tiles), the tree
+  grew (10), kelp grew (20); the chimney smokes; the anemones and cup sponges passed the
+  game's own test (6); every door has a lintel and a sill (9); 11 chests, none empty; both
+  chains whole to their anchors, iron at both ends; the sea in every open cell it reaches,
+  no cell wet that should be dry; no sand with nothing under it; every object holds when the
+  game frames it again.
+- Previews from the rig's dump with the game's pictures, its paint as its TileShader paints,
+  its light colours as `ApplyTileLight` gives them, its black behind what is too dark to see
+  (`Main.DrawBlack`): `LighthouseIslandDay_1688.png`, `LighthouseIslandNight_1688.png`,
+  `LighthouseTowerDay_1688.png`, `LighthouseTowerNight_1688.png`,
+  `LighthousePlinth_1688.png`, `LighthouseWestEnd_1688.png`; `VastOceanShine_1688.png`;
+  `LightFanFix_1688.png`.
+
+### 9. Not checked here
+
+All of it in the game: the island made on the first trip, the lens's frames and light, the
+beam and its flash, the chimney's smoke, the palms and kelp as the game grows them in the
+real place, the housing test (the rig runs the game's own rules, not its NPCs), the chests'
+loot; the sets of waves, the fan at a low sun, the trench's colour, the light on the surface
+riding real waves.
+
+### 10. Files
+
+| File | |
+|---|---|
+| `Content/Structures/Grace/LighthouseIsland.cs` | new: the island, its rock, the west end |
+| `Content/Structures/Grace/LighthouseTower.cs` | new: the lighthouse, the oil house, the yards, the stair |
+| `Content/Structures/Grace/LighthouseShore.cs` | new: the hut, the pier, the boats, the reef, the chains, the green |
+| `Content/Subworlds/VastOceanIsland.cs` | new: the island laid in the place |
+| `Content/Tiles/Lighthouse/LighthouseLens.cs`, `LighthouseLens.png` | new: the lens |
+| `Content/Tiles/Lighthouse/LighthouseBeam.cs`, `LighthouseBeam.png` | new: its beams |
+| `Content/Subworlds/VastOcean.cs` | layout 6, the lens handed in, its notes |
+| `Content/Subworlds/VastOceanBuild.cs` | the island laid |
+| `Content/Biomes/VastOceanSky.cs` | the fan, the waves, the navy, the light on the surface |
+| `Localization/en-US_Mods.PisAndDag.hjson` | the lens on the map |
+| `Claude outputs/*_1688.png` | the previews |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md`, `PlaceholderTextures.md` | notes |
+
+## 16.89 Session 7: the M.U.P.R.A.L's beam made 30 degrees, 15 tiles in air and 11 in water; its light laid by fine rays, to the pixel
+
+Asked, after the previews of the floor and its life (§16.88):
+
+> maybe lets change the viewing beam distance to 15 tiles normal and 11 tiles under water, make the rays super fine and dont light it block by block, any thing passed by the ray is lit up, the solid blocks will be lit up too but only the part within the path of the ray. Change beam angle to 30 degrees
+
+### 1. Read as
+
+1. "viewing beam distance": the beam's reach, 15 tiles through air and 11 through water (it
+   was 23 and 13). The glow (6.1, 3.7) and the little glow left with the beam (1.2) as they
+   were.
+2. "beam angle to 30 degrees": 30 degrees across, 15 either side of the aim (it was 20).
+3. "super fine": the light leaves the lamp in rays an eighth of a degree apart across the
+   beam (241), a degree apart all about for the little glow (360), half a degree apart for
+   the glow (720); each followed through the world exactly, tile by tile, where it goes into
+   and out of each tile and into and out of the water in each (it was 41, 32 and 96 rays
+   stepped a quarter of a tile at a time).
+4. "dont light it block by block, any thing passed by the ray is lit up": what the rays pass
+   is lit, and to the pixel: the edges of the beam and of every shadow are where the rays
+   are, not where the tiles are; inside, the light falls off as the rays lay it, smoothly,
+   not a step a tile.
+5. "the solid blocks will be lit up too but only the part within the path of the ray": a ray
+   goes into the first solid block it meets and lights the part of it in its path, dimming
+   evenly to nothing a tile deep along its way, and no further, so behind it is shadow; the
+   part of a block the beam's edge or a shadow's edge cuts off stays dark. A half block or a
+   slope is gone into only where the ray crosses its solid part. (Stopping the ray where it
+   comes out of the first block instead left a saw's teeth along a floor lit from the side:
+   each block's lower corner was in the shadow of the block before it.)
+6. Mine: the beam's share across it the bell it had, made half as wide again for the wider
+   beam (6.75 degrees over a floor of 0.45), so its edge is clean at a little under half of
+   its middle and nothing past it.
+
+### 2. Why the game cannot do it by itself, and what is done
+
+The game has one light a tile. It spreads it over the tile as it draws: its walls and its
+water smoothly from corner to corner (`Lighting.GetCornerColors`, each corner the mean of
+the four tiles about it, times the game's brightness, 1.2), its blocks in nine pieces each
+the mean of the tile and the one beside it that way (`DrawSingleTile_SlicedBlock`,
+`GetColor9Slice`; four pieces when dim), and what stands on the blocks with the tile's own
+light alone (`Lighting.GetColor`). And it draws its blocks, what stands on them, its walls,
+its water over everything and behind everything, and the backdrop under the ground into
+pictures of its own (`Main.RenderTiles`, `RenderTiles2`, `RenderWalls`, `RenderWater`,
+`RenderBackground`), each made again once in four frames (`Main.renderCount`), its light map
+made again once in four too (`LightingEngine.ProcessArea`: the light is spread and shown in
+one frame of four). No light the game holds can stop in the middle of a tile.
+
+So the light goes to the game twice (`MupralLight`):
+
+- As light, after the game has spread its own and before it shows them, as before, but each
+  tile at least as bright as the rays can make any of it before the game looks again: along
+  coarser rays (half a degree across the beam and a degree past each edge; three degrees and
+  one all about), past where the light ends (a fifth further, the little glow to twice its
+  reach) and not faded, from where the lamp will be and where the beam will point three and
+  six ticks on (from how fast it is going and turning), and then a tile more each way, a
+  twentieth brighter. What is given is kept with the map it was given to. It lights the
+  creatures, players and things in the tiles as the game's own lights do, and the map.
+- As seen, to the pixel: every frame, before anything is drawn (`Main.OnPreDraw`, as
+  `HoneyGlint` does), every lit lamp's fine rays near the screen are laid out, and a picture
+  is made, a pixel to a pixel of the world about the lamps, of how much of the game's light
+  each pixel is to keep: out of the rays, the light the game has there besides the lamps'
+  over all it has there; in them, that and the light the rays lay there, over all it has.
+  Laid over each of the game's pictures of the world while the game makes it, each pixel of
+  the game's kept in that proportion (a blend that multiplies). Then the game draws its
+  pictures as ever, and the lamps' light in them is only where the rays go.
+
+The picture is made for light spread smoothly from corner to corner, as the game spreads it
+on its walls and water; its blocks' nine pieces are near enough the same where the light
+changes as smoothly as the lamps' does. What stands on the blocks the game lights with one
+light a tile, so for that picture each tile is put right by how much the smooth light at
+each of its corners differs from that one light (drawn at half, blended twice over). The
+rays are laid as thin quads between each ray and the next, a few pixels at a time from the
+lamp out, the brighter kept where they overlap; next rays that all go just as far are laid
+as one while that is a few pixels wide at its end.
+
+### 3. The game's own, read for this
+
+- FNA clears a target of the game's kind (`RenderTargetUsage.DiscardContents`) every time it
+  is set to be drawn into (`GraphicsDevice.SetRenderTargets`), the screen among them: the
+  game's pictures cannot be drawn into after they are made, only while they are. Each is
+  drawn into last by a call that can be hooked: the blocks' and what stands on them by
+  `Main.DrawTileEntities` (into the pictures, with both batches ended), the walls by
+  `Main.DrawWalls` (both batches open), the backdrop by `Main.DrawBackground` and the water
+  behind by `Main.DrawWaters(true)` (both open), the water over everything by
+  `Main.DrawWaters(false)` (the sprites' batch open); each laid over there, the batches
+  ended and begun again as the game began them.
+- `Main.OnPreDraw` comes before the camera is moved for the frame and before the game makes
+  its pictures; nothing is on the screen yet. The picture is anchored to the world, so the
+  camera's moving after makes no difference.
+- `TileBatch` lays quads turned any way (its `Draw` with a turn), four colours spread
+  between the corners; its `Begin` sets the blend by a sprite batch begun and ended with
+  nothing in it (`SpriteBatch.End` sets the state whether or not anything was drawn).
+- The game's pictures are drawn from the screen's corner less its margin
+  (`Main.offScreenRange`), the screen's place taken in whole pixels.
+- Under the game's two old lightings (Retro, Trippy) it draws straight to the screen and
+  makes no pictures (`Main.drawToScreen`); there the lamps' light is handed to the game as
+  its lights are, tile by tile, as before.
+
+### 4. The Vast Ocean
+
+The sea drawn behind everything (`VastOceanSky`) hides the light the game's water there
+would show, so the water the rays pass is lit on the sea as before, but now from the fine
+rays, to the pixel, as a picture made in the same frame and added (`DrawLitWater`); nothing
+over what is not water, and only as high as the water in a tile part filled. The game's
+water over everything keeps the lamps' light only where the rays go, as everything does. The
+motes in the water glitter as bright as the rays are where each is.
+
+### 5. Checked
+
+- Compiled against tModLoader 2026.8.3.0: 0 errors, the 10 warnings there were (build109).
+- The rays, the light given to the map and the pictures emulated in Python from the same
+  code, over the 16.88 rig's dumps of the reef: the beam's edges and the shadows where the
+  rays are; the reef top and the sea pen lit only inside the beam; a floor lit from the side
+  a clean band, a tile deep at most, no teeth; no tile's step anywhere in the beam
+  (`LampFineRays_1689.png`, `LampFineRaysClose_1689.png`, beside the 16.88 look).
+
+### 6. Not checked here
+
+All of it in the game: the pictures laid over the game's as it makes them, how it looks
+moving and turning, how much it costs a frame, more than one lamp, the old lightings.
+
+### 7. Files
+
+| File | |
+|---|---|
+| `Content/Items/Accessories/MupralLight.cs` | the rays, the light given to the map, the pictures |
+| `Content/Items/Accessories/Mupral.cs` | its notes: 30 degrees, 15 and 11 tiles, the request |
+| `Content/Biomes/VastOceanSky.cs` | a comment where the lit water is drawn |
+| `Localization/en-US_Mods.PisAndDag.hjson` | the tooltip: 30 degrees, 15 tiles in air, 11 in water |
+| `Claude outputs/LampFineRays_1689.png`, `LampFineRaysClose_1689.png` | the previews |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md` | notes |
+
+## 16.90 Session 7: the Depth Meter reads from the sea's surface in the Vast Ocean
+
+Asked, after two questions answered in words (section 4):
+
+> should we add bioluminescent creatures? small jelly fishes, fishes and soft shell critters. Coral dont glow under there rite? A special draw that overrides the absolute darkness, dim but noticable, and shifting brightness too.
+>
+> Also should we do like some diluted water there with particles in water.
+>
+> Change depth meter so its 0 in the surface. How is the depth caculated?
+
+### 1. Read as
+
+1. "Change depth meter so its 0 in the surface": in the Vast Ocean, the surface being the
+   sea's (anywhere else the game's meter as it was). Nought at the top of the water's
+   surface row, the row its twelve sections are counted from, so each section is 448 feet;
+   the water's top is half way down that row, a foot under nought.
+2. Mine: the word after the feet. Under the water, the part of the sea the player is in, as
+   the game names its layers on land: the Vast Ocean to the end of the 6th section, then the
+   Forevernight Zone, then the Abyssal Trench, by the player's middle as the two biomes go
+   (VastOceanDepths). Over the water, the game's own words for over its surface line
+   (Surface, Space).
+3. The bioluminescent creatures and the water with particles in it: asked as questions,
+   answered (section 4), nothing built.
+
+### 2. How the game reckons depth
+
+Read in the IL of `Main.DrawInfoAccs` (tModLoader 2026.8.3.0):
+
+- The number: `(int)((position.Y + height) * 2 / 16 - Main.worldSurface * 2)`, at the feet,
+  two feet to a tile, in whole feet toward nought, from the game's surface line. Shown
+  without its sign: "Level" at nought, else "{n}'".
+- The word, the first that holds: the Underworld when the player's top is in the lowest 204
+  rows of the world; the Caverns when it is more than 616 pixels under the rock line;
+  Underground when the number is over nought; else Surface, or Space when the player's
+  middle is over the row `65 + 10 * (maxTilesX / 4200)^2 + worldSurface / 5`.
+- Then tModLoader lets every `GlobalInfoDisplay` change the text, the game's displays as
+  well as the mods' (`InfoDisplayLoader.ModifyDisplayParameters`).
+- The wiki page the user linked agrees: two feet to a tile, at the feet, nought where the
+  Surface meets the Underground ("Level").
+
+In the Vast Ocean the game's surface line is 70 rows under the water
+(`VastOcean.SurfaceLineRow`, where the game's fishing and Duke Fishron need it), so the
+meter read 140 feet up at the surface row, Underground from 140 feet under the water, and
+the Underworld for the lowest rows of the trench.
+
+### 3. Done
+
+`VastOceanDepthMeter`, a `GlobalInfoDisplay`: in the Vast Ocean only, the Depth Meter's text
+reckoned the game's way from the top of the surface row in place of the game's surface line,
+and the word as read (1, 2). Nothing of the game's lines is moved: fishing, Duke Fishron,
+the sky and the sea's spawning go by them as before.
+
+| Feet on | Before | After |
+|---|---|---|
+| the deck | 144' Surface | 4' Surface |
+| the water's top | 139' Surface | 1' Vast Ocean |
+| the top of the 5th section (pitch dark) | 1652' Underground | 1792' Vast Ocean |
+| the top of the 8th (silence) | 2996' Underground | 3136' Forevernight Zone |
+| the floor at its lowest | 5236' Underground | 5376' Abyssal Trench |
+| the foot of the trench | 6096' Underworld | 6236' Abyssal Trench |
+
+Each section begins at a multiple of 448 feet: the 7th at 2688, the 10th at 4032. The word
+changes where the biome does, by the player's middle, a tile and a half after the number at
+the feet passes the line.
+
+### 4. Talked over, nothing built
+
+- Pressure like Calamity's Abyss ("should i add the pressure crushing thing like calamity's
+  would that be plagierism"): answered not plagiarism, being an idea (Subnautica and
+  Barotrauma have it too); what would be is Calamity's code, names, text, art, or its system
+  copied whole. Theirs, read in the 1.4.4 source the user keeps (`AbyssEffects` in
+  `CalamityPlayerMiscEffects.cs`): defense lost with depth (up to 120), breath spent faster
+  the deeper, life lost at no breath the faster the deeper, a damage over time (Crush
+  Depth), and gear against each. Noted: the Vast Ocean has its own pressure already (what is
+  put down from the 8th section breaks, `VastOceanPressure`), and the M.U.P.R.A.L is named
+  for pressure resistance and resists none.
+- "Should it be by tiers? or like a smooth increment of a buff? linearly increase?":
+  proposed both: gear rates a depth in whole sections (none to the 6th, the M.U.P.R.A.L
+  through the Forevernight Zone, later gear the Abyssal Trench, as examples); past the
+  rating a single debuff growing steadily (linearly) with how far past, a warning at first
+  and deadly about a section on, its name and tooltip telling how hard it presses
+  (`ModBuff.ModifyBuffText`, in tModLoader), a squeeze on the screen and creaking with it.
+  Waiting on the user.
+- Bioluminescent creatures: proposed yes, few, blue to blue-green (the colour that goes
+  furthest in sea water), only their lights seen in the dark and the rest when the lamp is
+  on them, a slow breathing of the light and a flash when startled, each kind its own way (a
+  jelly flashing when grabbed, a fish's rows of lights, a shrimp spitting a glowing cloud as
+  it flees). Noted for it: nothing spawns from the 7th section, by the user's own word ("I
+  will put my own creatures here"); the game's cave jellyfish and angler fish already live
+  in the dark of the 5th and 6th; their sprites are the user's to draw. Waiting on the user.
+- "Coral dont glow under there rite?": the reef corals of the shallows do not make light;
+  the deep ones mostly do, the octocorals (sea pens, bamboo and bubblegum coral), when
+  touched (MBARI, all the deep corals and sea pens it tested). The Vast Ocean's floor
+  already has them doing it (`SeaLifeEffects`: blue-green motes where touched, now and then
+  untouched).
+- Water with particles: there already, the sea's snow through the first four sections,
+  flecks glowing blue and green from the 2nd to the 6th, the silt drifting from the 7th, and
+  the motes the M.U.P.R.A.L's rays fall on at any depth; under the 7th nothing else, by
+  design ("after section 6, it is Thalassophobia"). Proposed only, if wanted: thicker,
+  slower silt in the lamp's light under the 7th. Waiting on the user.
+
+### 5. Checked
+
+- Compiled against tModLoader 2026.8.3.0: 0 errors, the 10 warnings there were (build110).
+- The readings in the table worked out in Python by the game's reckoning and the new one.
+
+### 6. Not checked here
+
+In the game.
+
+### 7. Files
+
+| File | |
+|---|---|
+| `Content/Subworlds/VastOceanDepthMeter.cs` | new: the Depth Meter in the Vast Ocean |
+| `Localization/en-US_Mods.PisAndDag.hjson` | its three words (`Subworlds.DepthMeter`) |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md` | notes |
+
+## 16.91 Session 7: the water's weight; the Gills Potion in the depths; Water! Resuscitate Me!; the trench heard; the deep sea black; the lantern's beam to the cursor; the sun's and moon's shafts along the light and stopped by ground; a creature at the sea's edge
+
+Asked:
+
+> Create depth pressure system: start at section 6 lose 10HP a sec; up to section 10 where you lose 140Hp a sec without adequate gear. 11 lose 200HP a sec. and 12 just crush you. Change gills potion: potion time is shortened with respect to depth so its full effect only lasts 30 sec in section 6(math lerp) Create incantation: Water! Resuscitate Me! Allow you to breathe under water for 5 mins basically gills potion. Allows you to go to section 8 without being crushed. Gotten from fishing crates early game. Change the ambience for trench so its a eerie; long version of the whale sounds. And some clicking too so its like rocks clashing under the mantle
+>
+> put much effort into the depth pressure system
+
+Then, with pictures, as it was being made:
+
+> you can still kinda see too clearly withh murpal thingi want it to be full darkness and just light up the visible parts
+>
+> also some errors
+>
+> also rays shining thru tiles is kinda gay, dont shine thru thick chunk like these, most can shine thru is 3 tiles ( like the beams)
+>
+> i dont like the sillhouette concenpt, maybe make the ray even go further so you can see better?
+>
+> but please make it dark
+>
+> i need it to reach where my mouse is
+>
+> should reach and see better, but other still need to sit in shadow
+>
+> this ray physics too out of place, i need to be directional to the moon/sun
+>
+> with a spread on the surface
+>
+> little variation is fine but this too much
+
+And, for later (section 6): "these beams can go all the way down and up, connecting
+everythig", "or js use walls for those parts"; "also you didnt put walls for the caves";
+"need more of these dripstone ambience objects in caves"; "also more sophisticated cave
+system please."; and an eel.
+
+### 1. Read as
+
+1. The water's weight: in the Vast Ocean, by the player's middle as the depths go
+   (`VastOcean.RowOf`), life lost every second from the top of the 6th section, 10 there,
+   rising evenly row by row to 140 at the top of the 10th, and on to 200 at the top of the
+   11th; 200 through the 11th; in the 12th, death at once. "Without adequate gear": what a
+   player has on can hold it off down to a section (`VastOceanWeight.HoldTo`); with nothing,
+   down to the end of the 5th.
+2. "put much effort": warned before it begins, told while it lasts, seen and heard (section
+   2), and the death told as the sea's.
+3. The Gills Potion: the game's Gills buff from the potion (14400 ticks, four minutes, read
+   in `Item.SetDefaults`) worn down faster with depth, so that a whole potion lasts four
+   minutes at the surface, less evenly with depth ("math lerp": its length lerped by how far
+   it is from the surface to the top of the 6th), thirty seconds at the top of the 6th and
+   under.
+4. Water! Resuscitate Me!: an incantation (so cast through a seal, as all of them are) that
+   gives a buff of its own for five minutes, breathing as the Gills Potion does
+   (`Player.gills`) at any depth, its time not worn down by depth, and the water's weight
+   held off down to the end of the 8th. "From fishing crates early game": the Wooden, Iron,
+   Golden and Ocean Crates, and their hard mode kinds.
+5. The trench's sounds: under the silence of the 8th section down, and more as the Abyssal
+   Trench is near, long low songs made from the whale sounds already in the sea, and knocks,
+   clacks and grinding from below.
+6. "full darkness and just light up the visible parts", "i dont like the sillhouette
+   concenpt", "please make it dark": the sea drawn behind everything was dark navy at the
+   end of the 4th, near black by the 6th, and navy again in the trench; with a lamp lit the
+   murk is held back, and the unlit rock stood black against that navy. Now black from 48
+   rows under the end of the 4th all the way down, the trench too: unlit things cannot be
+   told from the water; only what a light falls on is seen.
+7. "make the ray even go further", "reach where my mouse is", "see better, but other still
+   need to sit in shadow": the M.U.P.R.A.L's beam reaching past the cursor, staying brighter
+   along the way; its breadth and everything out of it as before.
+8. "some errors": the game's "Index was outside the bounds of the array". `client.log` has
+   it in `Collision.StepUp`, from `NPC.AI_007_TownEntities`, in the Vast Ocean: a creature
+   with the townspeople's walk (the sea turtle has it) at the very edge of the sea.
+9. The shafts: "dont shine thru thick chunk": stopped by solid ground more than three tiles
+   thick, through anything three or less. "directional to the moon/sun", "a spread on the
+   surface", "little variation": every shaft down the way the light comes in from the sun or
+   the moon, bent by the water, within a degree; rooted all along the surface, most under
+   the light. They had fanned out from a point over the light: across a wide screen one at
+   its edge leaned some forty degrees further out than the light (the long thin line across
+   the picture).
+
+### 2. Done: the water's weight
+
+`Content/Biomes/VastOceanWeight.cs`, new:
+
+| | Life a second | Feet (Depth Meter) |
+|---|---|---|
+| over the 6th | none | to 2240 |
+| top of the 6th | 10 | 2240 |
+| middle of the 6th | 26 | 2464 |
+| top of the 7th | 42.5 | 2688 |
+| top of the 8th | 75 | 3136 |
+| top of the 9th | 107.5 | 3584 |
+| top of the 10th | 140 | 4032 |
+| middle of the 10th | 170 | 4256 |
+| top of the 11th, and through it | 200 | 4480 |
+| the 12th | crushed | 4928 |
+
+- Taken as the game takes life to a poison (`Player.lifeRegen`, half points a second, in
+  `UpdateBadLifeRegen`): none of the player's own life coming back while it lasts, the
+  game's red numbers rising off them.
+- Held off by what is on (`VastOceanWeight.HoldTo(player, section)`, from a buff's `Update`
+  or an accessory's `UpdateAccessory`; the deepest said this tick counts): with nothing,
+  safe to the end of the 5th; under Resuscitated, to the end of the 8th. Past what is held,
+  all of the table, as if nothing were held. Ready for gear.
+- Warned, the last 40 rows (80 feet) over where it begins for them: "The water grows heavy"
+  over them, once each way down (again only after coming back up past the warning and 20
+  rows more); the dark coming in at the screen's corners; a slow, soft heart; the Depth
+  Meter amber, more so the nearer.
+- While it takes life: The Water's Weight among their debuffs ("Losing 140 life a second");
+  the dark closing in from the corners the more it takes, deep blue going to a dark red,
+  pressing in a little with every beat; the heart faster and louder, 62 to 150 beats a
+  minute; the Depth Meter red.
+- Dying of it: the game's death, told as the sea's ("{name} was pressed flat by the sea."
+  and two more); crushed in the 12th: a deep crunch, the screen shaken, "{name} was crushed
+  where the sea is deepest." or "{name} reached the bottom all at once."
+- The heart and the crunch are sounds of the deep (`Content/Sounds/Deep`), heard through the
+  silence from the 8th down (`VastOceanSound`: whatever plays from that folder is not
+  stopped or muffled).
+- None of it under Journey's godmode, nor for a ghost or the dead.
+
+`Content/Buffs/WatersWeight.cs` (the debuff, shown, not saved, the Nurse cannot take it) and
+`Content/Subworlds/VastOceanDepthMeter.cs` (its colour).
+
+### 3. Done: the Gills Potion, the incantation, the trench
+
+**The Gills Potion** (`Content/Biomes/VastOceanGills.cs`, new): on the player's own machine,
+straight after the game counts the buff down each tick, more ticks taken off it, kept to the
+fraction:
+
+| | A whole potion lasts | Worn down |
+|---|---|---|
+| over the water, the top of the 1st | 4 minutes | as anywhere |
+| top of the 2nd | 198 s | 1.2 times as fast |
+| top of the 3rd | 156 s | 1.5 |
+| top of the 4th | 114 s | 2.1 |
+| top of the 5th | 72 s | 3.3 |
+| top of the 6th and under | 30 s | 8 |
+
+Its tooltip says so (from 2240 feet down, eight times as fast); the buff's, while it is worn
+down faster, how many times.
+
+**Water! Resuscitate Me!** (`Content/Items/Mage/Incantation/WaterResuscitateMe.cs`,
+`Content/Buffs/Resuscitated.cs`, `Content/Projectiles/Magic/ResuscitateCall.cs`, new):
+Abjuration, Water (a new element: `#0e3a52` outlined in `#3fb8d6`), 30 mana, use time 30,
+Blue. Resuscitated for five minutes: breathing water, and the water's weight held off to the
+end of the 8th (3584 feet), its time the same at any depth. Not cast again while more than
+30 seconds of it are left (so holding the button does not pour mana into it); cast inside
+that, back to five minutes. The moment: bubbles drawn in to the caster from about and below,
+a burble and a splash, a flash of pale sea light and a ring of spray. In crates: one in 20
+Wooden (and Pearlwood), one in 10 Iron (and Mythril), one in 5 Golden (and Titanium), one in
+4 Ocean (and Seaside).
+
+**The trench heard** (`VastOceanAmbience`, `Content/Sounds/Deep/Trench`): from the 8th
+section down, coming in from 6 rows over the Abyssal Trench's top to 30 rows under it:
+- the long songs: eleven, 36 to 45 seconds each, made from the whale sounds already in the
+  sea (`Hum`), slowed, stretched to twice their length, a voice an octave under, the bed
+  thinned and a long reverberation; one every 28 to 70 seconds, far under the ear (50 to 140
+  tiles), never the last four again;
+- the rocks: ten knocks, clacks, a grinding and a crack, 3.6 to 8.2 seconds, one every 2.5
+  to 10 seconds, 30 to 100 tiles under the ear, one time in four a second one close after;
+- both muffled by the water at any depth, both through the silence (they are sounds of the
+  deep).
+
+### 4. Done: the dark, the beam, the edge
+
+**The deep sea black** (`VastOceanSky.Water`): the dark navy at the end of the 4th to black
+48 rows under it, black all the way down, the Abyssal Trench too (its navy, an earlier
+request, gone with it). What a bubble catches there is the water's colour, so nothing
+either.
+
+**The beam to the cursor** (`MupralLight.SpotOf`, `MupralPlayer.Reach`): the beam's light
+goes a quarter past the cursor through water (never short of the 11 tiles it had, never past
+100), as much further through air as before (15 to 11, never past 100); its spreading begins
+as much further out, so it is the same beam drawn longer; reaching half again as far as it
+did or more, it keeps more of its light to its end (0.15 of full left at the end through
+air, not 0.06). Worked out in Python from the code:
+
+| Cursor (tiles) | Beam ends, water | 5 tiles out | Half way | At the cursor |
+|---|---|---|---|---|
+| 5 (or nearer) | 11 | 0.37 | 0.70 | 0.37 |
+| 11 | 13.8 | 0.59 | 0.54 | 0.21 |
+| 20 | 25 | 0.91 | 0.63 | 0.28 |
+| 45 | 56 | 1.08 | 0.63 | 0.28 |
+| 80 | 100 | 1.12 | 0.57 | 0.23 |
+| 100 or further | 100 | 1.12 | 0.45 | none |
+
+Its breadth is the same 30 degrees and nothing out of it is lit more than before. The
+cursor's distance is told to the other players with the aim (the `Lantern` packet carries
+it; sent again when it has changed a tile and a half), and eased to there. So that the
+longer beam costs little more: the light given to the game's map is gone over only where it
+falls; pieces of a ray are laid longer the further out (a fiftieth of the distance, at least
+8 pixels), and next rays that go as far laid as one up to a hundredth of the distance across
+(at least 4 pixels); the motes it lights looked for only on the screen and in the beam.
+
+**The edge** (`Content/Subworlds/SubworldEdges.cs`, new): in a subworld, a creature within
+20 tiles of the edge (where the game lets no player go and shows nothing) does not move, so
+nothing reads past the edge (`Collision.StepUp` reads the tile ahead before asking whether
+it is in the world), and the server (or the one player's game) takes it away. A boss or a
+townsperson is put back inside instead.
+
+### 5. Done: the shafts
+
+`VastOceanSky`:
+- Every shaft goes down the way the light comes in (`Slant`, the sun's or moon's way bent by
+  the water), a degree either way at most, wavering half a degree; rooted along the surface,
+  each fixed in the water for its moment, spread over a stretch as wide as the screen and
+  the light's slant across a screen's height (as many over a screen's width as before), most
+  under the sun or the moon as before. The fan of light about them was already laid along
+  the light.
+- The light stopped (`LightStops`): for each column of the surface, how deep the light
+  coming in there goes before ground too thick for it: the first tile that is solid with
+  four or more solid tiles through it both across and up and down (`Thick`); anything three
+  tiles thick or less, across or up and down (a post, a deck, a ledge), it goes through; a
+  wooden beam is not solid at all. And none comes into the water where something standing
+  out of it is in the light's way, looked for 48 tiles back toward the light (an island's
+  shadow on the water). Reckoned along the light tile by tile, kept, reckoned again when the
+  light has turned a little or every two and a half seconds (the ground may change), and
+  deeper as more is seen.
+- The shafts end where the light stops; the fan is cut along the line of the light, piece by
+  piece, never over the shadow; the light under the surface, the motes and the glints are
+  not drawn where it does not reach.
+
+Emulated in Python on the island's dump (`RaysStopped_1691.png`): morning, noon and
+afternoon; the island's rock stops it, the pier's deck and posts let it through, the island
+shades the water away from the sun.
+
+### 6. Not done yet, and why
+
+- "these beams can go all the way down and up, connecting everythig", "or js use walls for
+  those parts": asked which posts (where they do not reach); waiting on the user.
+- The caves' walls and dripstones, "more sophisticated cave system", and the eel: next, on
+  their own, as the eels are to live in crevices the new caves are to have; the Vast Ocean
+  is made again for it (`VastOcean.7.wld`).
+
+### 7. Checked
+
+- Compiled against tModLoader 2026.8.3.0: 0 errors, the 10 warnings there were (build111).
+- The life lost and the potion's length by depth, and the beam's light, worked out in Python
+  from the code (the tables above). The Gills Potion's 14400 ticks read in
+  `Item.SetDefaults`.
+- The light stopped, emulated on the island's dump.
+
+### 8. Not checked here
+
+In the game: anything moving, the sounds as heard, the cost a frame of the beam at its
+longest and of the shafts' light reckoned deep down.
+
+### 9. Files
+
+| File | |
+|---|---|
+| `Content/Biomes/VastOceanWeight.cs` | new: the water's weight |
+| `Content/Biomes/VastOceanGills.cs` | new: the Gills Potion in the depths |
+| `Content/Buffs/WatersWeight.cs`, `.png` | new: its debuff |
+| `Content/Buffs/Resuscitated.cs`, `.png` | new: the incantation's buff |
+| `Content/Items/Mage/Incantation/WaterResuscitateMe.cs`, `.png` | new: the incantation |
+| `Content/Projectiles/Magic/ResuscitateCall.cs` | new: its moment |
+| `Content/Items/Mage/MagicColours.cs` | the Water element's colours |
+| `Content/Biomes/VastOceanSound.cs` | sounds of the deep heard through the silence |
+| `Content/Biomes/VastOceanAmbience.cs` | the trench's songs and rocks |
+| `Content/Sounds/Deep/Heartbeat.ogg`, `Crushed.ogg`, `Deep/Trench/Song1` to `11`, `Rock1` to `10` | new |
+| `Content/Subworlds/VastOcean.cs` | notes |
+| `Content/Subworlds/VastOceanDepthMeter.cs` | amber and red |
+| `Content/Biomes/VastOceanSky.cs` | black deep, the shafts, the light stopped |
+| `Content/Items/Accessories/MupralLight.cs`, `Mupral.cs` | the beam to the cursor |
+| `Content/Subworlds/SubworldEdges.cs` | new: nothing at the edge |
+| `Localization/en-US_Mods.PisAndDag.hjson` | the new text |
+| `PlaceholderTextures.md`, `PAD_Item_Plan.md` | the new pictures, the incantation |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md` | notes |
+
+## 16.92 Session 7: the water's weight on creatures; nobody moves into a subworld; the ranges' caves, walled, with dripstone; the Crevice Eel
+
+Asked:
+
+> also can we disable npcs moving in cuz this hobo tryna find a stay at our prestigious light house
+>
+> Crushing depth also applies to NPCS too (except they are immune to it) also cannot summon any npc in sub worlds
+
+And, from before (section 16.91, part 6):
+
+> also more sophisticated cave system please.
+>
+> also you didnt put walls for the caves
+>
+> need more of these dripstone ambience objects in caves
+>
+> Create a worm ai, Eel enemy, (no gravity, dont go thru tiles) living in these caverns, if player goes deep they jump out and slither thru the caves to you. research eels habits
+
+The pressure request was sent again as well; it was already in (section 16.91), the pictures
+it came with from the build before it.
+
+### 1. Read as
+
+1. The water's weight on creatures: every creature in the Vast Ocean feels it as a player
+   does, by its middle; "except they are immune to it" read as: except those that are
+   immune, and the immune are bosses (and what counts as one), townsfolk (and what acts as
+   one), the target dummy, the game's creatures that are really attacks
+   (`NPCID.Sets.ProjectileNPC`), what cannot be hurt, a worm's body (its life is the
+   head's), and creatures of the deep (the eel). Each is safe as deep as it lives: the 5th
+   section, as a player with nothing on; the 6th for the creatures the sea puts down to the
+   end of the 6th (the caves' jellyfish, the angler fish, the squid).
+2. "disable npcs moving in": in every subworld nobody moves in, whatever its clock, and
+   whoever is there already is sent away. The "hobo": the round of the game's that moves
+   townsfolk in also puts the old man at the dungeon's door while Skeletron is not beaten
+   (the subworld copies that flag from the world it was entered from), so most likely him;
+   or the Guide. Either way gone.
+3. "also cannot summon any npc in sub worlds": not done. It reads as a request (no boss
+   summoned in a subworld) or as a report (a summon failed there). The Vast Ocean was made
+   for the Truffle Worm and Duke Fishron (section 16.81), so summoning is left as it was
+   until it is said which.
+4. "more sophisticated cave system": a network of hollows and ways in each range in place of
+   the few fixed tunnels and one cavern; walls behind them; more of the game's dripstone,
+   and dripstone of the rock as well.
+5. The eel: a worm of separate pieces as the game's worms are, its head kept out of the rock
+   by the game's collision, its body lying along the way the head came so that it never goes
+   into the rock either; living in crevices off the new caves; striking out of them at
+   whoever comes near, and hunting whoever has gone deep in the caves, the whole way through
+   them. Its habits from what is known of morays and congers (part 4).
+
+### 2. Done: the water's weight on creatures; nobody moving in
+
+`Content/Biomes/VastOceanWeight.cs`, `VastOceanWeightNPC` (new) and `IDeepNative` (new):
+- the same life a second as a player loses at that row (`LifePerSecond`), from where it
+  begins for the creature; taken as the game takes life to a poison (`NPC.lifeRegen`), in
+  pieces of about a quarter of a second's worth, each shown rising off it (not a number for
+  every point), the last of it killing it as a poison does, where the world is decided;
+- in the 12th, crushed at once (`NPC.StrikeInstantKill`), with the crunch;
+- pressed, it darkens toward red, a little at first, more at the worst;
+- safe to: the 5th for anything else; the 6th for the cave jellyfish, the angler fish and
+  the squid; its own for a creature of the deep (`IDeepNative.SafeTo`; the eel: never).
+
+| Creature | Safe to the end of | Top of the 6th | Top of the 7th | Top of the 10th | The 12th |
+|---|---|---|---|---|---|
+| a shark, a dolphin, a sea turtle, a pink jellyfish, anything not named | the 5th | 10 a second | 42.5 | 140 | crushed |
+| a blue or green jellyfish, an angler fish, a squid | the 6th | none | 42.5 | 140 | crushed |
+| the Crevice Eel; a boss; a townsperson; the dummy | never pressed | | | | |
+
+`Content/Subworlds/SubworldRules.cs`: in every subworld, the game's round of who may move in
+(`Main.UpdateTime_SpawnTownNPCs`: the next townsperson wanted, a town pet or slime come to
+stay, the old man at the dungeon's door, a house found for the homeless) is not run (a
+detour); the townsperson the last world left wanting is forgotten before the world's tiles
+are looked over for a room to give them (`WorldGen.prioritizedTownNPCType`, which
+`WorldGen.TrySpawningTownNPC` reads; cleared in `PreUpdateWorld`, which tModLoader runs just
+before); the travelling merchant does not come (`WorldGen.SpawnTravelNPC`, a detour).
+`SubworldTownsfolk` (new): anyone of the town in a subworld (`townNPC`, or
+`NPCID.Sets.ActsLikeTownNPC`: the skeleton merchant) is sent away by whoever runs the place:
+gone, nothing dropped, nothing told.
+
+### 3. Done: the caves
+
+`Content/Subworlds/VastOceanFloor.Caves.cs` (new; `VastOceanFloor` is now partial):
+- How deep in the rock every cell of a range is (the fewest steps, eight ways, to the water)
+  is worked out first.
+- The great cavern where the rock is deepest, nearest the range's middle: up to 52 cells
+  either side of its middle and 29 over and under it (its ragged edge a little more), its
+  floor flatter than its roof, one in two a garden of the glowing mosses.
+- More hollows where the rock is 15 or more deep, none nearer each other than 40 cells, nor
+  in the cavern's reach: one for every 7000 cells of such rock, 14 to 48 a range; each of a
+  kind rolled by the room it has (halls, domes, galleries, grottos, pockets; one in ten no
+  hollow, the ways meeting), as big as that room allows: five cells of rock left to the
+  water, twelve to the next hollow's middle. One hall, dome or grotto in four a garden of
+  the mosses.
+- The ways: the shortest tree through all the hollows (those coming nearer the water than 7
+  taken only if there is no other), and three in ten of the other pairs among each hollow's
+  three nearest (loops); each bending once or twice, narrow one time in five, wide one in
+  seven.
+- Mouths: three to five, at least one each side of the range: from the hollows nearest the
+  water, down the steepest way through the depths, so out through the nearest face.
+- Dead ends off half the hollows, as far as the rock is eight deep, 14 to 40 cells; a pocket
+  at the end where there is room.
+- Walls: everything cut out of rock while caves are cut has the wall of that rock behind it:
+  basalt's grey-blue cobbles (Cave4) with patches of darker ones (Cave8; the granite's own
+  wall is near black and read as none), stone's rocks, the red clay's reddish earth (Cave6),
+  the mud's, mudstone's darker earth (Cave7), hardened sand's, sandstone's, silt's grey
+  earth (Cave3), obsidian's, ice's, marble's; and each rock cell beside them the same wall
+  behind it, so the slopes show wall. The trench's caverns and the sinkholes are walled too
+  (a sinkhole from the ground down), the geodes with their gem's wall. The open sea has
+  none.
+- Dripstone of the rock in every hollow but the smallest: hanging points up to three tenths
+  of the way down, standing ones up to a fifth, and in the caverns and halls pairs all but
+  meeting, five or six rows between; each put in only if every column about it is left five
+  rows open and every two side by side four rows together.
+- The game's own dripstone (`WorldGen.PlaceTight`): under 45 in 100 of the cells under a
+  ceiling and on 18 in 100 of those on a floor (it was 1 in 9 and 1 in 27); none in a
+  crevice.
+- The crevices (part 4).
+- `VastOcean.Layout` 7: the Vast Ocean is made again (`VastOcean.7.wld`). The old one
+  (`Worlds/PisAndDag_Subworlds/[the world's id]/VastOcean.6.wld` and `.twld`) is not used
+  again; nothing deletes it.
+
+Seed 1234567: 5 caverns, 65 halls, 31 domes, 27 galleries, 61 grottos, 108 pockets (the dead
+ends', the trench's chambers and the sinkholes' among them), 8 junctions; in each range 31
+to 48 hollows, 30 to 47 ways in the tree and 11 to 19 loops, 5 mouths, 11 to 30 dead ends;
+293,137 cells walled and 72,869 beside them; 118 points hanging, 63 standing, 7 pairs; 7,917
+of the game's dripstone; 176 crevices. The tallest range's caves: `CaveNetwork_1692.png`;
+its great cavern: `GreatCavern_1692.png`.
+
+Found by the preview on another seed and put right: the floor's living things were put on
+the first ground from the surface down, which in the island's columns is its underside (a
+sea pen 14 rows under the surface); now never over the 8th section.
+
+### 4. Done: the Crevice Eel
+
+What is known (sources below): morays and congers live in holes and crevices of the rock
+(congers in wrecks too, to 500 m, deeper to spawn), resting there by day; the mouth opens
+and shuts the while, which is how they breathe, pushing water out through small gill
+openings; they see poorly and hunt by smell, at night; their teeth are jagged, and a second
+pair of jaws in the throat pulls prey down. Mine, from that: it strikes from its crevice and
+goes back into it tail first; it smells blood from farther; its bite leaves the bitten
+bleeding; and in the caves, where it is always night, it hunts whenever someone is there.
+
+`Content/NPCs/Deep/CreviceEelHead.cs`, `CreviceEelBody.cs`, `CreviceEelLairs.cs` (new):
+- A head and twelve pieces, the last a tail, each something to hit, the head's life theirs.
+  The head keeps the way it came, a point every 4 pixels (400 tiles of it); the pieces lie
+  along it, the first 20 pixels behind the head's middle, then one every 14; where the way
+  gives out, straight on. No gravity; the head stopped by the rock (the game's collision),
+  the body only where the head has been. The head draws the whole eel, the tail first, its
+  eyes a little lit in the dark.
+- Lurks in its crevice, its head at the mouth, its body in the rock, the mouth working
+  (shut, opening, open, closing, over two seconds).
+- Strikes at a player within 7 tiles of its head that it sees (nothing solid on the line
+  between: the game's own test finds a crevice's walls in the way of any line out of it):
+  out at 9 pixels a tick, at most 8 tiles out or 18 ticks, and back into its crevice tail
+  first at 4.5 a tick, the way it came; not again for three quarters of a second.
+- Hunts a player gone deep (in the Vast Ocean, from the 8th section down, with four or more
+  rows of rock within forty over them) within 60 tiles of it by the way through the caves,
+  90 if they are bleeding: out and through the caves at 5 pixels a tick, the whole body
+  waving, by a chart of the steps to them from every cell within 96 tiles where its head has
+  room (two by two tiles open), worked out again every half second or when they have moved
+  four tiles. Within 10 tiles and seen: a lunge, 10.5 pixels a tick straight at where they
+  will be, up to 22 ticks; half a second to recover.
+- Hit while lurking or going home: strikes at whoever hit it if they are within 12 tiles of
+  a lurking one, else hunts them.
+- Gives up when the player is out of the caves for 4 seconds, farther than 100 tiles by the
+  way through them for 3, or after 40 seconds still more than 30 off: goes home through the
+  caves, into its crevice head first, and fades out. One without a crevice swims away from
+  everyone and is gone once out of their sight. Nobody within 160 tiles for 5 seconds: gone.
+- Its bite: Bleeding, 5 to 10 seconds. 2400 life, 16 armour, 85 from the head and 55 from
+  the body, 50 silver: provisional, for the depth it lives at, where nothing yet holds the
+  water's weight off (part 6).
+- Of the deep: the water's weight is nothing to it. Its sounds (`Content/Sounds/Deep/Eel`:
+  Snap, Rush, Hit, Death; made by code, under 3.5 kHz as through deep water) are sounds of
+  the deep, heard through the silence.
+- Put in its crevices (`CreviceEelSpawns`): for each player in the Vast Ocean from the 8th
+  section down, every 8 to 20 seconds, if fewer than two eels are within 150 tiles, one is
+  put lurking in a crevice no eel has, within 110 tiles and out of their sight. The crevices
+  are found from the tiles as they are (`EelLairs.At`: two rows of rock six across behind a
+  straight burrow two cells across, two cells of rock either side of it, 10 to 26 cells
+  long, open at its mouth), once for every 40 by 40 tiles, and looked at again before one is
+  used (the ground can be dug).
+- Crevices cut (`VastOceanFloor.Crevices`): off half the hollows, one (two off a hall or a
+  gallery, three off a cavern), tried eight times: from near the hollow's middle out to its
+  wall one of four ways, 14 to 20 cells straight into the rock, only where all of it is rock
+  with two cells of rock about it, and the space before its mouth wider than it.
+- Bestiary: the whole eel in its picture, the ocean and the caverns; "It waits in a crack in
+  the rock with only its head out, its mouth opening and shutting as if it were counting.
+  Bleed anywhere in the caves and it comes the whole way, every turn of them, and never once
+  looks lost."
+- Its pictures are mine, drawn by code (`CreviceEel_1692.png`; PlaceholderTextures.md).
+
+Sources:
+- RoundGlass Sustain, "Moray Eels: Top Predators with an Arsenal of Defences":
+  https://roundglasssustain.com/photo-stories/moray-eels
+- The Marine Life Information Network (MarLIN), the conger eel:
+  https://marlin.ac.uk/species/detail/2126
+- R. S. Mehta and P. C. Wainwright (2007), "Raptorial jaws in the throat help moray eels
+  swallow large prey", Nature 449: 79 to 82:
+  https://fishlab.ucdavis.edu/wp-content/uploads/sites/397/2020/05/Mehta-Wainwright-2007b.pdf
+
+### 5. Not done yet, and why
+
+- Summoning in subworlds: waiting on which was meant (part 1).
+- "these beams can go all the way down and up, connecting everythig", "or js use walls for
+  those parts": still waiting on which posts.
+- The eel drops nothing but its coins: what it should drop is yours to say.
+- Nothing yet holds the water's weight off under the 8th, and the caves are in the 9th to
+  the 12th: no one can stay in them long. The eel's numbers wait on that gear.
+
+### 6. Checked
+
+- Compiled against tModLoader 2026.8.3.0: 0 errors, the 10 warnings there were (build112).
+- Read in the game's code: `NPC.UpdateNPC_BuffApplyDOTs` (how a creature's `lifeRegen` is
+  taken, in pieces of `damage`, to the head of a worm, a poison's death on the server);
+  `NPC.StrikeInstantKill`; `Main.UpdateTime_SpawnTownNPCs` (the old man at the dungeon's
+  door when Skeletron lives; who may come); `WorldGen.TrySpawningTownNPC` (it reads
+  `prioritizedTownNPCType`; 101 bytes, so not detoured); `SystemLoader.PreUpdateWorld` just
+  before `WorldGen.UpdateWorld_Inner`; the order of `NPCLoader.ResetEffects`, the poison's
+  life and `AI` in `NPC.UpdateNPC_Inner`; `NPCID.Sets.ActsLikeTownNPC` (the skeleton
+  merchant) and `ProjectileNPC`; the bestiary's own picture (`UnlockableNPCEntryIcon`:
+  `ModContent.Request` of `CustomTexturePath`); the hooks in TerrariaHooks; every wall's
+  number.
+- The preview (`GenRig`), seeds 1234567, 4242 and 98765, all checks passed: every way swum
+  end to end by a player two by three; every hollow reached swimming from the open sea; no
+  wall in the open sea; a wall behind every hollow's middle; the eel's finder finding every
+  crevice cut and nothing else; the eel itself (its own code, run on the laid ocean with the
+  game's `TileCollision` and nothing else): striking out of its crevice at a player four
+  tiles out and back into it tail first, 12 of 12; hunting through the caves and reaching a
+  player 25 to 55 tiles off and within its reach, 12 of 12 (targets out of its reach left
+  alone); going home into its crevice and gone, 6 of 6; no piece of it more than half a tile
+  into a whole block (the deepest 2.4 to 6.1 pixels, against slopes, which that collision
+  alone does not know).
+
+### 7. Not checked here
+
+In the game: the eel moving under the game's own collision and the water's, how it looks lit
+by the lantern, its sounds as heard; the creatures pressed; the detours firing on the server
+and in a single player's game; two players.
+
+### 8. Files
+
+| File | |
+|---|---|
+| `Content/Biomes/VastOceanWeight.cs` | the water's weight on creatures |
+| `Content/Subworlds/SubworldRules.cs` | nobody moves in |
+| `Content/Subworlds/VastOceanFloor.cs`, `VastOceanFloor.Caves.cs` (new) | the caves, walls, dripstone, crevices |
+| `Content/Subworlds/VastOcean.cs` | layout 7 |
+| `Content/Subworlds/VastOceanSea.cs` | notes |
+| `Content/NPCs/Deep/CreviceEelHead.cs`, `CreviceEelBody.cs`, `CreviceEelLairs.cs`, `.png` (new) | the eel |
+| `Content/Sounds/Deep/Eel/Snap.ogg`, `Rush.ogg`, `Hit.ogg`, `Death.ogg` (new) | its sounds |
+| `Localization/en-US_Mods.PisAndDag.hjson` | its name and bestiary text |
+| `PlaceholderTextures.md`, `PADWorkFlow_1.md`, `RELEASE_TODO.md` | notes |
+
+## 16.93 Session 7: implosion under the 8th; the H.E.A.T.R and a top speed calculator; its field; the M.U.P.R.A.L's beam 50 in water; the Hole Dweller drawn again; the rock under the lighthouse
+
+Asked:
+
+> I want you to make anythinig below section 8 implode, except if they had the right gear. Create an endgame accessory gear: HEATR (Hyper Engineered Abyssal Trench Roamer) which basically allows you to breathe underwater and not get crushed at such depth section 12, 20 defense but at the expense that you are slowed down by 15% (even jump speed). your top speed. Create a void for top speed calculator. to do this. What should i add to this to make it feel end game? no crafting recipe yet. include the MUPRAL functions with upgraded version(radial for 30 tiles and same beam with 45 degree angle continuously so no swittch). (Create a force field Over the player like that one rick and morty thing where it goes over the body, make it have a hexagon texture going up tho so its futuristic) Remake the light beam mupral to be max 50 in water. (it is like that every where the ray wont reduce if i bring my mouse in) (like image is enough) btw the tile under the lighthouse still tweaking. ( no light mods btw)
+
+Then, as it was being made: of the eel, "rename it: Hole Dwellers", "make the eel kinda
+bigger too", "kinda ugly", "maybe learn harder? especially the NPCs?", "And dont explicitly
+use their color pallette, use something adjacent to it tho.", "Take your time", and to judge
+art zoomed out as well as in; a standing rule for every texture: "Hard stuck rule of texture
+creating: all of it is 2x2 pixel so a pixel is 4 normal pixels. also use less drawing use
+more shading. like how calamity do it", "only when creating it for Bestiary can you use
+mixed 1x1 pixels"; of the field, with the Rover Drive's shield from Calamity for its look,
+"instead of moving blocks its all hexagon moving up", "no i want it built with effect not
+with pixel", "but make it like: thin outline faded inwards, which is a larger size of the
+silhouette(distance from outline to nearest pixel is 2, effect is hexagon flown upwarrds",
+"faint tho", "all of this is faint.", "Choose a red/crimson fades into pink color please,
+also why are you still using pixel? I want effects smooth", "maybe not most of ur effects
+are pixelated anyways"; of the eel again, "remember to resize his ingame hitbox to make it
+smooth lol", "bruh rotate it by the neck bruh"; and "do tthese adapt if i wear a hat which
+texture is a abit special say a tall hat or a face mask that has a pointy nose /chainsaw?"
+
+### 1. Read as
+
+1. The implosion: from the top of the 9th section down, whatever is there without gear
+   holding the water's weight off that deep dies at once, imploded, players and creatures
+   alike; the life taken in the 6th to the 8th stays as it was. The 140 and 200 a second of
+   the 10th and 11th (section 16.91) are left only as where the slope of the life taken is
+   aimed: nobody without the gear for that depth is alive there to feel them.
+2. The H.E.A.T.R: an accessory, worn: breathing underwater; the water's weight held off all
+   twelve sections; 20 defense; 15% off the top speed and the jump speed ("your top speed":
+   how fast the top speed is reached is left alone); no recipe yet.
+3. "a void for top speed calculator": something the mod can call to slow a player by a
+   share, which multiplies with any other, and that says what the top speed is, before and
+   after; shown in miles an hour as the Stopwatch counts them, in the item's tooltip.
+4. "include the MUPRAL functions with upgraded version": the M.U.P.R.A.L's lamp in the
+   H.E.A.T.R, both its lights at once and no switching: its glow all about to 30 tiles
+   (through water; through air as much further as the glow always went, 6.1 to 3.7: 49.5),
+   and its beam 45 degrees across, as far as the M.U.P.R.A.L's.
+5. The field: over its wearer, in the end as the user drew it in words: a thin outline 2
+   pixels out from their silhouette, crimson fading inward to pink, hexagons rising in it,
+   all faint, smooth (worked out to the game's pixel, not the mod's 2x2, as the game's own
+   effects are); a tall hat or a long-nosed mask outlined with the rest.
+6. "max 50 in water ... it is like that every where": the beam as it was drawn out to 50
+   tiles for a far cursor, now wherever the cursor is; through air as much further as it
+   always was (15 to 11): 68.
+7. "the tile under the lighthouse still tweaking. ( no light mods btw)": the island's rock
+   under the lighthouse going black and blue a tile at a time; not a light mod (part 7).
+8. The Hole Dweller: the Crevice Eel renamed (its files keep the first name), drawn again
+   from the start, bigger; its hitboxes fitted to the new pictures; its head turning about
+   its neck.
+
+### 2. Done: the implosion
+
+`Content/Biomes/VastOceanWeight.cs`:
+- From the top of the 9th (`ImplodeFrom`), in a section deeper than what is worn holds
+  against, a player or a creature dies at once (`Player.KillMe`; `NPC.StrikeInstantKill` for
+  a creature, on the machine the world is decided on). Holds: nothing, the end of the 5th;
+  Water! Resuscitate Me!, the 8th; the H.E.A.T.R, all twelve (`Deepest`). So with nothing
+  on, life is taken from the 6th (10 a second at its top, some 107 at the foot of the 8th)
+  and the 9th implodes; with the incantation nothing is taken and the 9th implodes; with the
+  H.E.A.T.R nothing anywhere.
+- Coming down to it, over its last 80 rows (`BrinkRows`, 160 feet on the Depth Meter): "Any
+  deeper and the sea closes in" over the player, once each way down; the dark at the
+  screen's corners closing all the way in and going red; the heart at its fastest by the
+  line; the Depth Meter flashing three times a second between a hot red and white, harder
+  the nearer.
+- Imploded: the sea closing on the spot from all round (`VastOceanImplosion`: the game's
+  sapphire and diamond motes rushing in over 16 ticks from six tiles out, slow and then
+  fast, a flash where they meet, bubbles going up, a little light), the crunch, and for the
+  player the screen shaken (14, for 24 ticks); seen and heard on every machine that has
+  them, as the death is. Creatures the same, sized to them.
+- The death's three lines (DeathText.Crushed1 to 3): "{0} went a fathom too deep.", "{0}
+  caved in like an empty tin.", "{0} was made very small by the sea." (mine).
+
+On the Depth Meter, the 9th's top is at 3584 feet; the warning from 3424.
+
+### 3. Done: the H.E.A.T.R and the top speed calculator
+
+`Content/Items/Accessories/HEATR.cs` (new): `HEATR`, `HEATRPlayer`.
+- Worn: 20 defense; breathing underwater (`Player.gills`, as the Gills Potion gives it,
+  though not its buff, so the depths do not wear it down); in a world For the Worthy, where
+  the game's gills drown their wearer in air (`Player.CheckDrowning`, read in the IL),
+  breath kept full instead, every tick after the game has taken any; the water's weight held
+  off to the floor and the trench (`VastOceanWeight.HoldTo`, all twelve); the lamp (part 4);
+  the field (part 5); 15% off the top speed and the jump speed.
+- Worn as vanity it does nothing and shows nothing; its slot's picture hidden, the lamp and
+  the field are not drawn (its light still shines, as the M.U.P.R.A.L's does).
+- Red rarity, as the game's last things are; sells for 25 gold (mine). No recipe, by
+  request.
+- Tooltip: what it does, and over its last line the wearer's top speed with it and without
+  it, in miles an hour: worn, "Your top speed: 26 mph, 31 mph without it"; not worn, "Your
+  top speed with it: 26 mph, 31 mph now" (Hermes Boots, on foot). Flavour: 'The lamp was the
+  easy part.'
+- Its picture: `HEATR.png`, 38 by 38 (19 by 19 at 2x2), 21 colours: a navy steel dome with a
+  cyan glass port and its glint, a brass rim, the Mechanic's red band, the lamp on its side
+  with a beige lens, an antenna with a red tip, a steel collar on brass bolts; outlined
+  dark, lighter on the lit side (`HEATR_icon_1693.png`).
+
+`Content/PADplayer/TopSpeed.cs` (new): `TopSpeed`, `TopSpeedPlayer`. The calculator:
+- `TopSpeed.Slow(player, share)`: slower by that share this tick; called every tick it
+  should be, from what slows (an accessory's UpdateAccessory, a buff's Update); two multiply
+  (15% and 10% leave 76.5%); nothing kept from one tick to the next, so taking the thing off
+  ends it.
+- Put on where the game has settled each speed and before it uses it (`Player.Update`,
+  1.4.4, read in the IL): the top speeds on foot and on boots (`maxRunSpeed`, `accRunSpeed`;
+  a mount's, which the game puts in the same two just before), in `PostUpdateRunSpeeds`; the
+  jump speed (`Player.jumpSpeed`, one number the game sets afresh for each player as they
+  are updated, by `Player.UpdateJumpHeight`, and reads for every jump after it: off the
+  ground, a rope, a hook, a double jump) cut as it is set (a detour). How fast the top speed
+  is reached, and how long a jump can be held, are left alone.
+- `TopSpeed.Of(player)`: the top speed now in pixels a tick; `TopSpeed.Mph(speed)`: in miles
+  an hour as the Stopwatch counts (216000 over 42240 to a pixel a tick, rounded:
+  `Main.DrawInfoAccs`); `TopSpeedPlayer.Before` and `After`, as of the last tick.
+
+| Top speed | Without | With the H.E.A.T.R |
+|---|---|---|
+| on foot | 15 mph | 13 mph |
+| Hermes Boots | 31 mph | 26 mph |
+| Lightning Boots (6.8) | 35 mph | 30 mph |
+
+(In water the game halves its speeds and the Stopwatch its count; the share is the same.)
+
+### 4. Done: the lamps
+
+`Content/Items/Accessories/MupralLight.cs`, `Mupral.cs`:
+- The M.U.P.R.A.L's beam: 50 tiles through water and 68 through air wherever the cursor is
+  (it had stretched to the cursor and a quarter past it, up to 100): the beam as it was
+  drawn out to 50 for a far cursor, its spreading beginning 27 tiles out, keeping 0.15 of
+  its light to its end. How far the beam reaches is no longer sent to the other machines
+  (`PADPacket.Lantern` carries which light and where it points). Its tooltip says so.
+- The H.E.A.T.R's lamp (`MupralKit.Suit`): both lights at once and no switching (the key and
+  the right click do nothing while it is the lamp lit; worn with a M.U.P.R.A.L, it is the
+  one that shines): the glow all about, 30 tiles through water and 49.5 through air, drawn
+  out as the beam is (its spreading from 16 tiles, 0.15 kept to its end), its fine rays a
+  quarter of a degree apart (1440; a ray every 3.5 pixels at its end), 540 for the game's
+  map; and the beam, 45 degrees across (361 fine rays). On the shoulder as the M.U.P.R.A.L's
+  (`MupralLayer`). The motes glitter in all of it.
+- The M.U.P.R.A.L's picture drawn again by the new rules (part 6): 32 by 32 at 2x2, 19
+  colours (it was 30 by 26, one pixel to a pixel); `Item.width` and `height` 32.
+
+### 5. Done: the H.E.A.T.R's field
+
+`Content/Items/Accessories/HEATRField.cs`, `HEATRShell.cs` (new). Tried, and shown in the
+chat, before this: a field hugging the body, a bubble of pixels, a smooth bubble, the
+outline in other colours. As it is (`HEATR_crimson_preview_1693.gif`,
+`HEATR_crimson_stills_1693.png`):
+- The silhouette: what the game has drawn of the body so far each time the wearer is drawn.
+  The game gathers everything it draws for a player in a list, layer by layer, in a fixed
+  order, then turns and draws it all (`PlayerDrawSet.DrawDataCache`, read in the IL): a mark
+  before the body's first layer, marks either side of what is not the body (a mount, the
+  item held, wings, balloons, a rope's pulley; drawn only when that layer is, as the game
+  draws a layer's children), and the field's own layer after the arm over the item and the
+  gloves, before what is held over the arm: everything between is the body, its skin,
+  clothes, armour, the accessories worn on it, the lamp, whatever their shape. Each piece
+  mapped back onto its texture pixel by pixel as the game's SpriteBatch (FNA) puts it there,
+  turned, scaled and flipped (checked against its forward mapping in a harness); a texture's
+  alpha read once and kept.
+- The picture: 72 by 88 pixels about the body's frame (16 out each side and above and below:
+  room for what reaches out of the frame by up to 16 pixels, a tall hat, a long nose on a
+  mask); worked out afresh each time, a pixel to the game's pixel, smooth: exact distances
+  to the body both ways (a Euclidean distance transform, the lower envelope of parabolas),
+  not the body's steps, so the outline runs round about the body and fades at its edge.
+- A thin outline 2 pixels out from the nearest pixel of the body, about a pixel thick,
+  crimson (224, 26, 66); its light fading in from it over the gap and onto the body, turning
+  pink as it fades (255, 117, 184; to about a third in 2.5 pixels); hexagons in it, 9 pixels
+  across, rising 8 pixels a second, between the two colours, plainer near the outline and
+  fainter over the body, breathing a little; a gap the outline closes in (between an arm and
+  the side) filled, so no ring there.
+- All faint: light added (the outline 0.62 of its colour, the fade 0.32, the hexagons 0.30)
+  and what is behind dimmed a little (0.24, 0.12, 0.04). Its light its own, not the world's:
+  as faint in the dark as in the day.
+- Not drawn for an afterimage, a head on the map, a player the game hides, or with its
+  slot's picture hidden; faded as the body is (invisibility, the blinking after a hit).
+
+### 6. Done: the Hole Dweller, and a way of drawing
+
+A study first, by request ("kinda ugly", "maybe learn harder? especially the NPCs?"): all
+9205 of Calamity's pictures (the public 1.4.4 source, the same files as the user's copy)
+measured for how they are built (grid, palettes and ramps, outlines, light, clusters, glow
+masks, worms), then every sea creature and worm of Calamity's and the game's looked at one
+by one at game size and zoomed, with value and cluster maps. Reference only: numbers about
+how the art is built; no pixels, palettes, designs or names taken. What came of it, the
+rules the mod's pictures follow now:
+- every pixel of art a 2x2 block from the corner, both sides even, alpha 0 or 255 (95.5% of
+  Calamity's pictures are so); 1x1 pixels only where the bestiary draws at run time;
+- about 10 to 17 colours; ramps of 4 to 8 steps, darks drifting toward violet and lights
+  toward yellow, chroma highest three quarters up; outlines dark and tinted, not black,
+  broken toward the light, heavier on the shadow side;
+- one light from above: a lit top, a mid flank, a shadowed underside, a thin reflected strip
+  over the bottom outline; clusters along the form, never noise; no straight bands across;
+- judged at game size first; for a creature two to four signature shapes, two or three value
+  masses, one accent colour (at most about 5% of the pixels, laid out as a pattern, cut out
+  as its glow mask);
+- our own ramps, adjacent in feel to what the user points at, never sampled from it.
+
+`Content/NPCs/Deep/CreviceEelHead.cs`, `CreviceEelBody.cs`, their pictures:
+- Named the Hole Dweller in the game (`CreviceEelHead`, `CreviceEelBody` keep their names).
+- Drawn again by hand in 2x2 pixels, in the look of the gulper eel the user pointed at: its
+  values blocked out from a 3D model of the head, then clusters laid row by row, the eye a
+  point in a dark socket under a brow, teeth graded and alternating, the mouth dark red to
+  the throat, a gill crease, a line of small yellow lights along its flank. The head 72 by
+  52 a frame (shut, half open, gaping; `CreviceEelHead.png` 72 by 156, 21 colours), the body
+  32 by 36 a piece (two pieces of body and the tail; `CreviceEelBody.png` 32 by 108, 13
+  colours), the eyes' and the lights' glow pictures (`CreviceEelHeadGlow.png`,
+  `CreviceEelBodyGlow.png`, new), drawn over it at 0.55 in the dark as in the light
+  (`HoleDweller_redraw_1693.png`).
+- Bigger: nine pieces after the head, 20 pixels apart, the first 34 behind the head's
+  middle; 210 pixels from the head's middle to the tail's tip, within the shortest crevice.
+  The head's middle at its jaws, so that what bites is the mouth.
+- Its hitboxes fitted to the pictures (`HoleDweller_hitbox_1693.png`): the head 40 square
+  about its jaws (it was 24), each piece of body 28, the tail 20, each overlapping the next,
+  so no blow or bite passes through anywhere along it. The rock still keeps out only the
+  head's middle 24 square (`On_NPC.GetTileCollisionParameters`, a detour, for its head
+  only), so it takes the ways it always took: burrows two cells across, and the caves.
+- Its head turns about its neck (`HoleDweller_neck_1693.png`): drawn facing from where its
+  neck lies on its trail (48 pixels back) to its jaws, so the jaws go ahead and the neck
+  stays on the way the body goes.
+- The bestiary: the eel drawn from its own pictures, swimming along a wave, 180 pixels long;
+  `CreviceEelBestiary.png` is no longer used (delete it by hand).
+
+Retro Diffusion (its MCP server on the user's computer, connected in this session): concepts
+only, for the Hole Dweller and the H.E.A.T.R, 18 cents a picture, each redrawn on the mod's
+grid in the mod's own colours; none of them is in the mod. $1.26 spent; $9.24 left.
+
+### 7. Done: the rock under the lighthouse
+
+Found by reading what the game draws and when (IL), and emulating it on the island's dump
+(`LighthouseUnderside_1693.png`, `LighthouseUndersideMoving_1693.gif`):
+- The game does not draw a block that no light reaches at all (`TileDrawing.DrawSingleTile`:
+  its light (0, 0, 0)), nor such a wall (`WallDrawing.DrawWalls`, but in a world's bottom
+  rows). What shows there is what is behind: under the surface line the black the game fills
+  the world with behind everything; over it the black it lays behind what is too dark to see
+  (`Main.DrawBlack`, over its surface line only, and in the bottom rows; drawn after the
+  water behind everything and before the walls).
+- In the Vast Ocean the sea is drawn over that fill (`VastOceanSky`), so under the surface
+  line (70 rows under the water's top) an unlit block was not drawn and the sea showed
+  through it, brighter than the water about it (a block has no water drawn over it). The
+  island's rock hangs to 106 rows under the water's top under the lighthouse, its spikes up
+  to 28 more: under the surface line it showed as blue; where any light grazed it (a lamp's,
+  a glowing creature's, the water's own light giving out along it, which the game wavers
+  from cell to cell each time it spreads it), it was drawn, dark, and so black; light coming
+  and going, the rock went black and blue a tile at a time. The user's two pictures are
+  that: the bright blue shapes under the island are its rock.
+- Now (`VastOceanLight.Blacken`, a detour of `Main.DrawBlack`): in the Vast Ocean the game
+  lays its black over every row of the screen, as it does over its surface line and for its
+  camera's pictures; what it blacks is its own choice, cell by cell, as ever. Unlit rock is
+  black wherever it is; a cave's unlit walls too; open water it never blacks under its
+  surface line, so the sea shows there as before. Under the game's two old lightings when it
+  draws straight to the screen (Retro and Trippy, every frame), left as it was: there it
+  would black the open sea as well.
+- An earlier try, in this session and not delivered, told the game the day was dark while it
+  blacked (so it blacked only the unlit); it changed nothing to be seen and is gone.
+
+### 8. Suggested, not built
+
+What could make the H.E.A.T.R feel endgame (the user asked): given in the reply, none built
+until said.
+
+### 9. Not done yet, and why
+
+- The H.E.A.T.R's recipe: none yet, by request.
+- Summoning in subworlds (section 16.92), the pier's posts (section 16.91), the Hole
+  Dweller's drops: still waiting.
+- Whether the item held should have the field's outline too (asked, no answer yet): it is
+  left out.
+- Whether the mod should work alongside light mods (Lights and Shadows): not tried.
+- Readings to confirm: the acceleration not slowed; the lamp and the field not shown from a
+  vanity slot; the lamp's 49.5 tiles of glow in air; in a world For the Worthy, breath kept
+  full rather than the game's gills.
+
+### 10. Checked
+
+- Compiled against tModLoader 2026.8.3.0: 0 errors, the 10 warnings there were (build124).
+- Read in the game's code: `Player.Update`'s order (`UpdateEquips`, `PostUpdateEquips`,
+  `UpdateJumpHeight`, the mount's speeds, `PostUpdateRunSpeeds`, `HorizontalMovement`,
+  `JumpMovement`, `CheckDrowning`), everything that writes `Player.jumpSpeed`,
+  `Player.CheckDrowning` (gills turned in a world For the Worthy), the Stopwatch's count
+  (`Main.DrawInfoAccs`); the player's draw layers (`ProjectileOverArm` always shown; a
+  layer's children; `DrawPlayer_TransformDrawData`); FNA's SpriteBatch mapping;
+  `NPC.GetTileCollisionParameters` (its arguments `out`); `Main.DrawBlack`,
+  `Main.RenderBlack` (from `Main.RenderTiles`), `Main.DoDraw` and `DoDraw_WallsAndBlacks`
+  (the order of the water behind, the overlays' layers, the black, the walls),
+  `TileDrawing.DrawSingleTile`, `WallDrawing.DrawWalls`, `LiquidRenderer.DrawNormalLiquids`,
+  `TileLightScanner.GetTileMask` and `ApplySurfaceLight`, `LightMap.Blur` and `BlurLine`,
+  `LightingEngine.UpdateLightDecay`, `Lighting.GetColor` and `Brightness`,
+  `WallID.Sets.Transparent` (88 to 92, 241).
+- The Hole Dweller's rig (`GenRig`, the mod's own code on the laid ocean, the head moved by
+  the game's `TileCollision` and its core), seeds 4242 and 98765, 9 checks of 9 each: every
+  crevice found (109 of 109 on 4242); striking out of its crevice and back tail first, 12 of
+  12; hunting through the caves and reaching the player, 12 of 12; going home and gone, 6 of
+  6; no piece more than half a tile into rock (the deepest 6.1 pixels, against slopes the
+  rig does not know); its hitboxes meeting all along it every tick of strikes and hunts
+  (4428 and 4182 ticks, the widest gap 0 pixels).
+- The field: worked out by its own code in a harness over a player put together from the
+  game's own pictures, its walk's frames and upside down (`HEATR_crimson_stills_1693.png`);
+  `Cover`'s mapping checked against FNA's SpriteBatch for turned and flipped pieces.
+- The rock under the lighthouse: the game's lighting and drawing emulated from the IL on the
+  island's dump: before, the rock under the surface line the sea's blue and black where a
+  light grazes it, as in the user's pictures; after, black; between two frames of a light
+  swimming under it, 6399 pixels changing before and 767 after (the light itself)
+  (`LighthouseUnderside_1693.png`).
+
+### 11. Not checked here
+
+In the game: everything above. The implosion seen and heard; the H.E.A.T.R worn (its speeds
+measured with a Stopwatch, its tooltip's numbers, its breath in a world For the Worthy), its
+lamp's cost a frame (1440 fine rays and 540 for the map), its field's cost a frame (two
+distance transforms of 72 by 88 and a picture sent to the card, for each player who shows
+it), the field over the game's hats, masks and capes and in multiplayer; the Hole Dweller's
+new hitboxes and neck in the game's own collision and water; the black over the whole screen
+in the Vast Ocean, its cost a frame (the game's own test over every cell of the screen, once
+in four frames), and how it looks with a lamp.
+
+### 12. Files
+
+| File | |
+|---|---|
+| `Content/Biomes/VastOceanWeight.cs` | the implosion |
+| `Content/Subworlds/VastOceanDepthMeter.cs` | the meter flashing at the brink |
+| `Content/Subworlds/VastOcean.cs` | notes |
+| `Content/Items/Accessories/HEATR.cs`, `HEATR.png`, `HEATRField.cs`, `HEATRShell.cs` (new) | the H.E.A.T.R, its field |
+| `Content/PADplayer/TopSpeed.cs` (new) | the top speed calculator |
+| `Content/Items/Accessories/Mupral.cs`, `MupralLight.cs`, `Mupral.png` | the beam at 50; the H.E.A.T.R's lamp; the picture |
+| `Content/NPCs/Deep/CreviceEelHead.cs`, `CreviceEelBody.cs`, `CreviceEelHead.png`, `CreviceEelHeadGlow.png`, `CreviceEelBody.png`, `CreviceEelBodyGlow.png` (new) | the Hole Dweller |
+| `Content/Biomes/VastOceanLight.cs` | the black under the surface line |
+| `Localization/en-US_Mods.PisAndDag.hjson` | the H.E.A.T.R, the beam's line, the deaths, the brink, the name |
+| `PlaceholderTextures.md`, `PAD_Item_Plan.md`, `PADWorkFlow_1.md`, `RELEASE_TODO.md` | notes |
+
+To delete by hand: `Content/NPCs/Deep/CreviceEelBestiary.png`.
+
+Sources:
+- CalamityModPublic, branch 1.4.4 (reference only):
+  https://github.com/CalamityTeam/CalamityModPublic
+- Raymond Schlitter (Slynyrd), "Pixelblog 6: Light and Shadow":
+  https://www.slynyrd.com/blog/2018/6/15/pixelblog-6-light-and-shadow
+- Lospec, "Pixel Art Outlines, Part 2: Using Color":
+  https://lospec.com/articles/pixel-art-outlines-part-2-using-color
+- Pixnote, "Shading and Lighting": https://pixnote.net/en/learn/shading
+- "Pixel tutorial: shading curves", itch.io:
+  https://itch.io/t/2172486/pixel-tutorial-shading-curves
+- Cassette Beasts wiki, "Monster Making Guide Part 1":
+  https://wiki.cassettebeasts.com/wiki/Modding:Monster_Making_Guide_Part_1
+- Retro Diffusion, API examples: https://github.com/Retro-Diffusion/api-examples
+- Retro Diffusion's MCP server:
+  https://mcpservers.org/servers/retro-diffusion/retro-diffusion-mcp
+- PixelOE (KohakuBlueleaf): https://www.sourcepulse.org/projects/2338779
+- Alucard (evilsocket), a sprite model:
+  https://huggingface.co/evilsocket/alucard/blob/main/README.md
+
+## 16.94 Session 7: the H.E.A.T.R's lamp and field made light to run; its glow two thirds as far
+
+Asked:
+
+> HEATR makes everything super laggy, maybe its the fine light system. Please optimize it HEATR and MUPRAL
+
+Then, with a picture of a sea cave at 12 frames a second: "12 fps bruh usually its 60. fix
+this", "maybe radial is halfed", "radial radius still need be 2/3 tho"; and, of the depths,
+"what section cover what zone?"
+
+### 1. Read as
+
+1. The lamp's light as it looks now, with far less work a frame; the H.E.A.T.R's field the
+   same.
+2. "radial radius still need be 2/3": the H.E.A.T.R's glow all about two thirds as far as it
+   was, 20 tiles through water (30 before) and 33 through air (49.5), the glow's own ratio;
+   the beam left at 45 degrees, 50 and 68. Told back as read before it was done.
+3. The sections and zones: answered in the chat from the code (section 3 below), nothing
+   changed.
+
+### 2. Where the time went
+
+Measured on the mod's own compiled code, headless, in a bench of mine outside the mod folder
+(a world of 600 by 400 with four scenes: a round sea cave of 44 tiles like the one in the
+picture, open water, on the ground in air, over the water's surface), the game's tile batch
+fed but not drawn, the medians over 60 frames after 120, the lamp moving. The H.E.A.T.R's
+lamp took 38 to 54 ms a frame, and another 4 to 8 every fourth frame for the game's map (the
+machine is shared: the same run differs by a fifth from one time to the next). In one run in
+the cave, of 60 ms: the corners of some 68,000 pieces of light (each ray's light found by
+walking its tile by tile pieces from the glass, and the beam's light looked up for every
+corner of the glow and the glow's for every corner of the beam), 25 ms; the same pieces
+coloured for the picture of what each pixel keeps, and drawn as turned rectangles through
+the game's batch, 24, and again for the sea's water lit, 9; the tracing of the 1801 rays
+1.3. The M.U.P.R.A.L's beam 3 to 5 ms, its glow up to 2.5.
+
+### 3. The sections and zones (answered, nothing changed)
+
+Twelve sections of 224 tiles, 448 feet each on the Depth Meter, from nought at the water.
+Sections 1 to 6: the Vast Ocean (sun rays through 1 to 3, the moon's through the 1st; a
+light's spread halved from the 3rd; navy by the end of the 4th; pitch dark, lights lighting
+only themselves, from the 5th, the deepest safe with nothing on; the water's weight from the
+6th; black by its end). Sections 7 to 9 (2688 to 4032 feet): the Forevernight Zone (murk,
+muffled sound, nothing spawns from the 7th; silence and things put down breaking from the
+8th, the deepest safe under Water! Resuscitate Me!; implosion without the gear from the
+9th). Sections 10 to 12 (4032 feet to the floor at 5376, and the trench's 430 tiles under
+it, still the 12th): the Abyssal Trench (whale songs and far rocks from the 10th). The
+H.E.A.T.R safe through all twelve.
+
+### 4. The light, the same for less (`MupralLight.cs`)
+
+1. A ray's way kept as where it changes (into or out of water, into solid), not tile by
+   tile: some 55,000 nodes a frame for the cave down to 4,000; its light reckoned from the
+   node's start just as from each tile's piece before (the pieces follow on from one
+   another). A full tile of water is all water: before, reckoning where the top of the water
+   is in a full tile left slivers of dry a ten-thousandth of a pixel thick between tiles,
+   which counted as the ray changing; now none.
+2. Every other ray traced, and one between two that go alike (from the glass through the
+   same, into no solid, to the same end within three quarters of a pixel) goes as they do;
+   else it is traced as well. Nothing solid fits between two rays that close without
+   touching one of them (they are under five pixels apart where they go furthest; a half
+   block is eight across at its thinnest, a slope eleven).
+3. The pieces: next rays that go alike are lit alike, and are laid as one, up to 12 pixels
+   across at the far end of each piece and 8 degrees (the beam's 16 rays, its light changing
+   across it); where they stop going alike they are laid in halves, and so on down to two
+   next rays, laid as before (past the end of the shorter, the longer's light). Where they
+   do not all go alike but are lit as near alike as can be told apart (each one's reach used
+   within a fifth of a hundredth of what lies between the outer two's, and its water within
+   a twentieth of a tile), they are still laid as one: rays crossing the water's surface at
+   different lengths. Rays no wider apart than a pixel where the furthest ends are laid as
+   two next rays; rays ending, into no solid, on a straight line from one outer end to the
+   other end in one last piece. The pieces' rings are the same as before (8 pixels, then a
+   fiftieth of the distance; 4 for the little glow).
+4. Each corner made once and shared by the pieces either side; the pieces three-cornered and
+   drawn straight into the pictures (the game's own tile batch begun first, so the pictures'
+   states and its sprites' effect are set as before, then
+   `GraphicsDevice.DrawUserIndexedPrimitives`, checked in FNA's code: it applies the state,
+   binds its own buffer of the corners and marks the game's for binding again), in runs of
+   no more than 32,000 corners, a corner made in a run before copied into the next. So the
+   rays' light ends where they end: no rectangle laid over its neighbours and no crack
+   between two (the old pictures had both: single dark pixels inside the light, and light a
+   third of a pixel past an edge).
+5. The beam's light no longer looked up at every corner of the glow, nor the glow's at every
+   corner of the beam: each is laid with its own light, and where they cross the brighter is
+   kept as the pictures are drawn (the blending keeps the brighter of each colour, and how
+   much a pixel keeps grows with the light, so the result is the same but between corners).
+   Another player's lamp is still added at each corner.
+6. Each light's falling off reckoned once and looked up: its spreading every pixel out, what
+   is left as its reach is used up every 1/4096 of it, and the red and green the water takes
+   every 1/64 of a tile; read between steps along a straight line. Against the old light,
+   sampled every 4 pixels over each scene (27,000 to 88,000 points lit), at most 5
+   millionths apart.
+7. The corners coloured for the pictures on as many cores as the game spreads its own light
+   over (ReLogic's FastParallel, as the game's light uses it), each corner on its own; the
+   same pictures to the byte with 8 parts as with one.
+8. The tiles about the lamp drawn the same way: each corner of the tiles' picture of what is
+   kept reckoned once and shared by the four tiles about it; the tiles put right for what
+   stands on blocks, four corners each as before; the sea's dry tiles blacked out a row of
+   alike tiles at a time.
+9. The game's map (every fourth frame): its looks a few ticks ahead traced again only if the
+   lamp is going (a tenth of a pixel or more between them) or turning; the H.E.A.T.R's glow
+   given to it along rays a degree apart (360, two thirds of a degree before), every tile
+   within its reach still crossed (the glow now ends at 40 tiles as given to the map, where
+   a degree is 0.69 of a tile; before, two thirds of a degree at 59 tiles, 0.69 too).
+10. The radial, by request: `SuitGlowWater` 20 (air 33 as the glow's 6.1 to 3.7); its
+    spreading begins as much further out as before (two tiles at 3.7). Measured from the
+    light itself: 19.8 tiles in open water, 32.6 in air, where it was 29.7 and 49.0.
+
+### 5. The field (`HEATRField.cs`, `HEATRShell.cs`)
+
+1. Each wearer's body as last drawn kept (each piece's texture, part, place from the
+   picture's corner, turn, origin, scale and mirroring): drawn just so again, it is not
+   mapped onto the picture again.
+2. The field's shape kept with it (which pixels it lights, the outline's and the fade's
+   light and dim in each, how strongly the hexagons show there): while the body covers the
+   same pixels, only the hexagons, rising, are worked out each time it is drawn.
+3. Its shape worked out over the body's box and five pixels about it, not the whole picture:
+   everything further is too far from the body to be lit, and joined to the picture's edge.
+   The distance transforms are exact within the box (the body is all in it, and what is not
+   body is at its edge); the flood that fills a gap the outline closes in starts from the
+   box's edge, which is joined to the picture's.
+4. The same pictures to the byte, old against new, over 40 drawings with the body changing
+   and the time going on.
+
+### 6. Checked
+
+1. Compiled against tML 2026.8.3.0's assemblies: 0 errors, the 10 known warnings (out137).
+2. The pictures, old against new, rasterized on the CPU from what each build hands the card
+   (the old one's rectangles from the game's tile batch, the new one's pieces), with the
+   same game light: for the H.E.A.T.R (the new build put back to the old 30 tiles, to
+   compare like with like) in the four scenes, the mean difference in the lamp's light 0.15
+   to 0.46 of a step of colour; 99.9 in a hundred pixels within 1 to 14 steps; the rest
+   single pixels on edges: the beam's edge a pixel in or out at its steps, the rim of the
+   floor's blocks where rays graze them, the apex of the beam at the glass, and the old
+   pictures' cracks (single dark pixels in the light) gone. The beam and the glow of the
+   M.U.P.R.A.L the same. The light itself (the lamp's light as the motes see it), every 4
+   pixels over each scene: at most 5 millionths apart.
+3. The frame, the medians over 60 frames after 120, moving (this sandbox: two cores, so the
+   corners' colours on one):
+
+| | before | now |
+|---|---|---|
+| H.E.A.T.R, the sea cave | 47.8 ms | 3.3 ms |
+| H.E.A.T.R, open water | 48.8 | 2.5 |
+| H.E.A.T.R, on the ground in air | 38.4 | 3.4 |
+| H.E.A.T.R, over the water's surface | 54.4 | 4.2 |
+| M.U.P.R.A.L beam, cave / air | 2.7 / 5.3 | 0.9 / 1.1 |
+| M.U.P.R.A.L glow, cave / air | 0.7 / 2.5 | 0.4 / 0.5 |
+| The game's map, every fourth frame | 3.9 to 8.1 | 0.7 to 1.4 |
+| The field, each drawing | 0.6 to 0.8 | 0.1 (the body as it was), 0.4 to 0.5 (changed) |
+
+What it is in the game is for the game to show. Reckoned from the picture: 12 frames a
+second is 83 ms a frame where 60 is 17, so some 65 ms of it the lamp's; as much less again
+as here, some 4 to 6 ms now, with what the game does besides.
+
+### 7. Not done
+
+The tracing (about 0.7 ms) and the laying out (about 0.7 to 1.2) are still done on one core;
+both could be split over cores. The pictures still made every frame, though each of the
+game's pictures of the world takes them only once in four frames (each in a different one,
+so one is taken every frame).
+
+### 8. Files
+
+| File | |
+|---|---|
+| `Content/Items/Accessories/MupralLight.cs` | the light for less; the radial at two thirds |
+| `Content/Items/Accessories/HEATRField.cs`, `HEATRShell.cs` | the field's shape and the body kept |
+| `Content/Items/Accessories/HEATR.cs` | notes |
+| `Localization/en-US_Mods.PisAndDag.hjson` | the H.E.A.T.R's tooltip: 20 tiles in water, 33 in air |
+| `PAD_Item_Plan.md`, `PADWorkFlow_1.md`, `RELEASE_TODO.md` | notes |
+
+Sources: none outside the game's and FNA's own code (tModLoader.dll, FNA.dll, ReLogic.dll of
+tML 2026.8.3.0).

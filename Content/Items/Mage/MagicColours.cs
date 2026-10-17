@@ -45,6 +45,8 @@ namespace PisAndDag.Content.Items.Mage
             // can only take one colour.
             ["Conquest"] = (new Color(0x7a, 0x3a, 0x24), new Color(0xc8, 0xa5, 0x5b)),
             ["Draconic"] = (new Color(0xb0, 0xa1, 0x58), new Color(0xdb, 0x18, 0x4c)),
+            // The sea's: a deep teal, in the pale of light through water.
+            ["Water"] = (new Color(0x0e, 0x3a, 0x52), new Color(0x3f, 0xb8, 0xd6)),
         };
 
         /// <summary>

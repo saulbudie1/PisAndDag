@@ -29,7 +29,7 @@
 | Wooden Crossbow | Ranged | built; never run in game (below) |
 | Mycellaneous | Ranged | built; never run in game (below) |
 | Worminator | Summoner | built; never run in game (below) |
-| Vulture Staff | Summoner | built; never run in game; nothing gives it yet (below) |
+| Vulture Staff | Summoner | built; never run in game (below) |
 
 ---
 
@@ -768,22 +768,23 @@ cursor); with a worm out, one segment more goes in before its tail.
 
 A summoner's weapon, by request (PADWorkFlow §16.78): vultures that sit on your shoulders in
 two towers when there is nothing to fight, and circle and dive on the weakest enemy near you
-when there is. One minion slot each. Nothing gives it yet: one source is written out and left
-off. Its pictures are the game's Vulture's, copied as they are for you to change; its buff's is
-a stand-in (PlaceholderTextures.md).
+when there is. One minion slot each. It comes from Vultures, one time in 40 (your edit, seen in
+PADWorkFlow §16.79). Its pictures are the game's Vulture's, copied as they are for you to
+change; its buff's is a stand-in (PlaceholderTextures.md).
 
 ### Files
 
 | File | Class | Does |
 |---|---|---|
-| `Content/Items/Summoner/VultureStaff.cs` + `.png` (38 by 38, the Vulture perched) | `VultureStaff` | The item; the source, left off |
+| `Content/Items/Summoner/VultureStaff.cs` + `.png` (38 by 38, the Vulture perched) | `VultureStaff`, `VultureStaffDrop` | The item; its drop from Vultures |
 | `Content/Projectiles/Summoner/VultureMinion.cs` + `.png` (78 by 360, the game's Vulture) | `VultureMinion`, `VultureFrenzy` | The vulture: where it sits, what it does, its drawing; the frenzy |
 | `Content/Buffs/VultureStaffBuff.cs` + `.png` (32 by 32, a stand-in) | `VultureStaffBuff` | Up while any are out; cancelled, they go |
 
 ### The item
 
-12 summon damage, knockback 3; the rest as the Worminator's. Blue, sells for 1 gold. The vulture
-comes out at the cursor and flies to its shoulder. Source left off: the Vulture, one time in 25.
+18 summon damage (yours since §16.79; 12 was mine), knockback 3; the rest as the Worminator's.
+Blue, sells for 1 gold. The vulture comes out at the cursor and flies to its shoulder. From the
+Vulture, one time in 40 (yours).
 
 ### The vultures
 
@@ -793,7 +794,7 @@ comes out at the cursor and flies to its shoulder. Source left off: the Vulture,
 | Alive | they face your way, hop across when you turn, flap to keep their balance when you jump or land, stretch their wings now and then; the higher ones lean back as you run |
 | Goes for | of the enemies within 640 of you and in your sight, the one with the least share of its life left (kept while it has no more than a twentieth more than that); the one you mark, within 1,000, first |
 | Hunting | off the shoulders with a beat of wings, 18 ticks apart; one circle over it for all of them (220 by 77, 150 above it, a turn every 3 seconds); each dives after 48 ticks of circling, with a screech, 1.1 faster a tick to 15, for 40 ticks at most, a streak behind it; a hit or a miss: 18 ticks climbing, then the circle again |
-| Hits | 12 by touch, summon damage, 25% more on an enemy under half its life; the same enemy again after 20 ticks; only while hunting |
+| Hits | 18 by touch, summon damage, 25% more on an enemy under half its life; the same enemy again after 20 ticks; only while hunting |
 | Frenzy | a kill by any of them: for 3 seconds they circle half as long between dives, the streaks red |
 | With none | they fly home and sit |
 | Far | more than 2,000 from you: back on the shoulder at once (the Baby Finch's) |
@@ -803,9 +804,9 @@ comes out at the cursor and flies to its shoulder. Source left off: the Vulture,
 
 - Never run in the game, never tried with a second player. Its hunting was run in a flat
   scene (§16.78).
-- No source yet. The pictures are the game's own, as asked; the buff's is a stand-in; the
-  perch is set for the game's Vulture, whose size is large on a player.
-- All its numbers are mine: RELEASE_TODO.
+- The pictures are the game's own, as asked; the buff's is a stand-in; the perch is set for
+  the game's Vulture, whose size is large on a player.
+- Its numbers are mine but the damage and the drop, which are yours: RELEASE_TODO.
 
 ## The game's own items
 
@@ -1083,8 +1084,9 @@ The only seal comes after Skeletron, so no incantation can be cast before him.
 | Chlorophyte, Arm Me | `Incantation/ChlorophyteArmMe` | Incantation | Transmutation | Flora and Fauna | 0 | 30 | 30 | Lime | Witch Doctor's shop, after Plantera |
 | Rage! Sweet Fire | `Incantation/RageSweetFire` | Incantation | Enchantment | Flame | 0 | 40 | 30 | Pink | Altar: Lava Bucket, 15 Soul of Fright, 50 Living Fire Block, Book |
 | Betsy's Flames | `Incantation/BetsysFlames` | Incantation | Transmutation | Draconic | 84, to each thing in the breath every 5 ticks | 30, then 30/s after 1 s | 20 | Yellow | Betsy, 1 in 20 (classic); her bag, 1 in 20 |
+| Water! Resuscitate Me! | `Incantation/WaterResuscitateMe` | Incantation | Abjuration | Water | 0 | 30 | 30 | Blue | Fishing crates: Wooden 1 in 20, Iron 1 in 10, Golden 1 in 5, Ocean 1 in 4, and their hard mode kinds the same |
 
-All under `Content/Items/Mage/`. Nine casts against ten slots: §4.2 wants twenty to thirty.
+All under `Content/Items/Mage/`. Ten casts against ten slots: §4.2 wants twenty to thirty.
 
 ### Element colours (`MagicColours`)
 
@@ -1096,6 +1098,7 @@ All under `Content/Items/Mage/`. Nine casts against ten slots: §4.2 wants twent
 | Flora and Fauna | `#0f3311` | `#1d9f49` |
 | Conquest | `#7a3a24` | ramp, bottom to top: `#bdab51` → `#c8a55b` → `#dbd88f` |
 | Draconic | `#b0a158` | `#db184c` |
+| Water | `#0e3a52` | `#3fb8d6` |
 
 Kind words: Spell `#38462b` on `#da7210`; Incantation `#d65a51` on `#5d7ba2`.
 
@@ -1427,6 +1430,106 @@ in 4 from Skeletron. Its pictures are stand-ins (PlaceholderTextures.md).
 - Never worn in the game, never tried with a second player.
 - The pictures are stand-ins; the bone shows less over light clothes. What the ribs take, and
   what was mine: RELEASE_TODO.
+
+## M.U.P.R.A.L
+
+By request (PADWorkFlow §16.85): *"Add an accessory item: M.U.P.R.A.L (Mechanic's Ultra Pressure
+Resistence Anchored Lantern) 16 Use: Anchored on the shoulder mode 1:shines a bit of radial
+light with radius of 6.1 in air and 3.7 in water, dim and affected by tiles,( tiles in front
+will hinder scan rays), mode2: radial dims to radius of 1.2 and concentrate into a flash light
+that shines to the cursor, max distance of 13 tiles in water and 23 tiles in air. the color is a
+beige. flash light angle is 20 degrees Use light physics to make it realistic. Whatever shown
+For now its the only actual light source in the vast ocean. (remember to dim it the more it goes
+out) Make it pretty"*; the 16, asked: *"Mechanic sells it for 20 gold"*; its two lights
+switched, asked: *"Both"*, a key and a right click. The Mechanic's Ultra Pressure Resistance
+Anchored Lantern ("Resistence" spelled so in the game). Its beam since: 30 degrees, 15 tiles
+through air and 11 through water (§16.89), out to the cursor (§16.91), and now *"max 50 in
+water. (it is like that every where the ray wont reduce if i bring my mouse in)"* (§16.93). Its
+item picture drawn again in 2x2 pixels (§16.93); the one on the shoulder a stand-in
+(PlaceholderTextures.md).
+
+### Files
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Accessories/Mupral.cs` + `Mupral.png` (32 by 32) | `Mupral`, `MupralShop`, `MupralSlot`, `MupralPlayer` | The item; the Mechanic's shop; a right click on it in its slot; the light it gives and where it points, saved and told to the others |
+| `Content/Items/Accessories/MupralLight.cs` + `MupralWorn.png` (12 by 24: the head and the clamp, 12 by 12 each) | `MupralLight`, `MupralLayer` | The light, as light and as seen; the lamp on the shoulder |
+| `PADKeybinds.cs` | `PADKeybinds.Lantern` | The key, L to begin with |
+| `PisAndDag.cs` | `PADPacket.Lantern` | Which light, and where it points, to the other machines |
+
+### What it does
+
+| What | How |
+|---|---|
+| Glow (the first) | a dim light all about the lamp, 6.1 tiles through air and 3.7 through water; 0.7 of full light at the lamp |
+| Beam (the second) | 30 degrees across, from the lamp toward the cursor, 50 tiles through water and 68 through air wherever the cursor is; 1.2 at the lamp, brightest in its middle, its spreading from 27 tiles out, 0.15 of it left at its end; with it the glow about the lamp only 1.2 tiles |
+| How it goes | in straight rays from the lamp's glass, each stopped by the first solid block, which it lights: behind that block, shadow; platforms and actuated blocks let it by; dimmer the further, as light spreads and as air and water take it, to the least that can be seen at the end of its reach, and out; bluer the further through water |
+| As light | laid into the game's light after the game spreads its own: it lights blocks, walls, water, creatures and players; in the Vast Ocean's depths, where the game's lights light only their own tile, it is the one light. Under Retro and Trippy lighting, handed to the game as its lights are |
+| Seen | the glass bright in a beige glow; no beam drawn and no haze (PADWorkFlow §16.86: *"it should shine by block like this, im more fond of whatever is in the path of light is lit"*, *"more natural"*): what its light reaches is lit tile by tile, shadows behind blocks; in water, the motes glittering where it falls; in the Vast Ocean, where the sea is drawn over the game's water, the water in its light lit too, warm by the lamp and bluer to its end |
+| In the depths | while a lit lamp's light can be on the screen, the Vast Ocean's murk, silt and depths' tint give way (PADWorkFlow §16.86: *"murpal needs to be able to shine at this depth bruh"*, *"at every depth"*): eased in over a third of a second, out over most of one; what its light does not reach as dark as ever |
+| On the shoulder | a clamp and strap on the front shoulder, rising and falling with the body, the lamp turning to the beam's aim or the way its wearer faces; hidden with its slot's picture (the light is not) |
+| Switch | the key (Controls: "Switch the M.U.P.R.A.L's light", L to begin with), or a right click on it in its slot, or on another in the inventory while one is worn; a click; kept with the player. Not worn, a right click on it puts it on |
+| Worth | Orange; sold by the Mechanic for 20 gold, before her mood moves the price |
+| Tooltip | what it does, six lines; which light it gives now and how to switch; *'Rated for depths nobody has come back from to rate.'* |
+| Multiplayer | which light, and where the beam points, from each player's machine to the others (`PADPacket.Lantern`), the others' lamps turning to it smoothly |
+
+### Open
+
+- Never worn in the game, never tried with a second player.
+- Since §16.86 it shows through the murk of the 7th section and under, not yet seen in the game.
+- The H.E.A.T.R carries the same lamp, both lights at once (below).
+- The lamp on the shoulder is a stand-in. What was mine: RELEASE_TODO.
+
+## H.E.A.T.R
+
+By request (PADWorkFlow §16.93): *"Create an endgame accessory gear: HEATR (Hyper Engineered
+Abyssal Trench Roamer) which basically allows you to breathe underwater and not get crushed at
+such depth section 12, 20 defense but at the expense that you are slowed down by 15% (even jump
+speed). your top speed. Create a void for top speed calculator. to do this. What should i add to
+this to make it feel end game? no crafting recipe yet. include the MUPRAL functions with
+upgraded version(radial for 30 tiles and same beam with 45 degree angle continuously so no
+swittch). (Create a force field Over the player like that one rick and morty thing where it
+goes over the body, make it have a hexagon texture going up tho so its futuristic)"*; its field
+since: *"thin outline faded inwards, which is a larger size of the silhouette(distance from
+outline to nearest pixel is 2, effect is hexagon flown upwarrds"*, *"all of this is faint."*,
+*"Choose a red/crimson fades into pink color please"*.
+
+### Files
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Accessories/HEATR.cs` + `HEATR.png` (38 by 38) | `HEATR`, `HEATRPlayer` | The item; worn, breath kept in a world For the Worthy |
+| `Content/Items/Accessories/HEATRShell.cs` | `HEATRShell`, `HEATRMarkBody`, `HEATRMark` and its ten | The field drawn over its wearer, from what is drawn of the body |
+| `Content/Items/Accessories/HEATRField.cs` | `HEATRField` | The field's picture, worked out |
+| `Content/PADplayer/TopSpeed.cs` | `TopSpeed`, `TopSpeedPlayer` | The top speed calculator: slowing a player by a share, and saying how fast they are |
+| `Content/Items/Accessories/MupralLight.cs`, `Mupral.cs` | `MupralKit.Suit` | Its lamp |
+
+### What it does
+
+| What | How |
+|---|---|
+| Breath | breathes underwater (`Player.gills`, not the Gills Potion's buff, so the depths do not wear it down); in a world For the Worthy, where the game's gills drown in air, breath kept full instead |
+| The water's weight | held off to the floor and the trench: nothing taken, nothing implodes |
+| Defense | 20 |
+| The cost | 15% off the top speed (on foot, on boots, on a mount) and the jump speed (`TopSpeed.Slow`); how fast the top speed is reached, and how long a jump is held, left alone |
+| Its lamp | the M.U.P.R.A.L's, both lights at once, no switching: the glow all about, 20 tiles through water and 33 through air (two thirds of the 30 first asked for, §16.94), and the beam 45 degrees across, 50 through water and 68 through air; worn with a M.U.P.R.A.L, its lamp is the one lit |
+| Its field | over its wearer: a thin crimson outline 2 pixels out from their silhouette, fading inward to pink, hexagons rising in it, all faint and smooth; what is worn on the body outlined with it (a tall hat, a mask), not the item held, wings, balloons or a mount |
+| Hidden | its slot's picture hidden: no lamp or field drawn (the light still shines); as vanity: nothing |
+| Worth | Red; sells for 25 gold (mine); no recipe yet, by request |
+| Tooltip | what it does, six lines; the wearer's top speed with it and without, in miles an hour as the Stopwatch counts; *'The lamp was the easy part.'* |
+
+### The top speed calculator
+
+`TopSpeed.Slow(player, share)` each tick it should slow (two multiply: 15% and 10% leave
+76.5%); `TopSpeed.Of(player)` the top speed now, pixels a tick; `TopSpeed.Mph(speed)` in miles
+an hour as the Stopwatch counts; `TopSpeedPlayer.Before` and `After`, as of the last tick. On
+foot 15 mph to 13; Hermes Boots 31 to 26; Lightning Boots 35 to 30.
+
+### Open
+
+- No recipe yet. Never worn in the game, never tried with a second player.
+- Whether the item held should be outlined too: asked.
+- What could make it feel endgame: suggested, none built (PADWorkFlow §16.93).
 
 ---
 

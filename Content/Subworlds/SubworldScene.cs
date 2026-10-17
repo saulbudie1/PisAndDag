@@ -1,4 +1,7 @@
+using System;
+using log4net;
 using Microsoft.Xna.Framework;
+using MonoMod.Cil;
 using Terraria;
 using Terraria.GameContent.Achievements;
 using Terraria.Graphics.Light;
@@ -23,26 +26,38 @@ namespace PisAndDag.Content.Subworlds
     ///   - the heat haze the game puts over the Underworld is taken off again each tick, and
     ///     the player is not counted as down there or on a beach, where tModLoader lets a
     ///     scene do that (SpecialVisuals, the last thing in Player.UpdateBiomes);
-    ///   - and four things with no hook are stopped by detour (<see cref="SubworldSceneSystem"/>).
+    ///   - and six things with no hook are stopped by detour or edit (<see cref="SubworldSceneSystem"/>).
+    ///
+    /// A place that is the sea (Subworld.IsSea: the Vast Ocean) is left to the game on all
+    /// three counts it has for the sea: the player on a beach where the game says so, the
+    /// sea's backdrop where the game chooses it (this scene has no say on the backdrop
+    /// there), and the sea's own picture behind the full screen map.
     /// </summary>
     public class SubworldScene : ModSceneEffect
     {
         /// <summary>The game's own name for the Underworld's haze (Player.UpdateBiomes).</summary>
         private const string Haze = "HeatDistortion";
 
+        /// <summary>The game's own pictures behind the full screen map: open sky, and the sea (Main.DrawMapFullscreenBackground: MapBGs 0 and 10).</summary>
+        private const string SkyMap = "Terraria/Images/MapBG1";
+        private const string SeaMap = "Terraria/Images/MapBG11";
+
+        private static bool Sea => Subworld.Current?.IsSea == true;
+
         public override SceneEffectPriority Priority => SceneEffectPriority.Environment;
 
         /// <summary>The place's music, or its silence (Subworld.NoMusic). -1 is "no say", for a world.</summary>
         public override int Music => Subworld.Current?.Music ?? -1;
 
-        public override ModSurfaceBackgroundStyle SurfaceBackgroundStyle => ModContent.GetInstance<SubworldSky>();
+        /// <summary>None at all, or, in a place that is the sea, no say: the game draws the sea's.</summary>
+        public override ModSurfaceBackgroundStyle SurfaceBackgroundStyle => Sea ? null : ModContent.GetInstance<SubworldSky>();
 
         /// <summary>
-        /// Behind the full screen map: the game's own picture of open sky, in the sky's colour.
-        /// The game would put the Underworld's there (Main.DrawMapFullscreenBackground: it
-        /// counts rows up from the floor for that as well).
+        /// Behind the full screen map: the game's own picture of open sky, in the sky's colour,
+        /// or of the sea in a place that is the sea. The game would put the Underworld's there
+        /// (Main.DrawMapFullscreenBackground: it counts rows up from the floor for that as well).
         /// </summary>
-        public override string MapBackground => "Terraria/Images/MapBG1";
+        public override string MapBackground => Sea ? SeaMap : SkyMap;
 
         public override bool IsSceneEffectActive(Player player) => Subworld.Active;
 
@@ -53,7 +68,9 @@ namespace PisAndDag.Content.Subworlds
 
             player.ManageSpecialBiomeVisuals(Haze, false, player.Center);
             player.ZoneUnderworldHeight = false;
-            player.ZoneBeach = false;
+
+            if (!Sea)
+                player.ZoneBeach = false;
         }
     }
 
@@ -98,11 +115,29 @@ namespace PisAndDag.Content.Subworlds
     ///     any place lower than that;
     ///   - the Underworld's red light on every open tile under the surface line
     ///     (TileLightScanner.ApplyHellLight);
+    ///   - the Underworld's drying of water: each time the game moves a cell of water under
+    ///     its line for the Underworld (Main.UnderworldLayer, maxTilesY less 200) it takes 2
+    ///     of the cell's 255 away (Liquid.Update), so a sea that goes down past that line
+    ///     runs out through its floor, the water over it sinking to fill what dried, and a
+    ///     dark hollow is left at the bottom and the surface falls. This one is not a
+    ///     detour but an edit, the line told past the bottom of the world;
     ///   - and three achievements given for where a player is: at the bottom of the world,
     ///     at the top of it, in the Underworld (AchievementsHelper.HandleSpecialEvent). A
     ///     place a few hundred rows high is under the game's line for the Underworld over
     ///     most of its height or all of it, and its top and bottom rows are the game's top
     ///     and bottom of the world.
+    ///
+    /// And one thing the game does with its water that is no good in a wide sea: its quick
+    /// settling (Liquid.QuickWater), not run in a place whose water is laid still
+    /// (<see cref="Subworld.StillWater"/>). For each cell of water it looks along the row,
+    /// through the water, to the next solid tile; across the Vast Ocean's open water that is
+    /// most of 13662 columns for each of some 24 million cells, and the game does it every
+    /// time the place is loaded ("Settling liquids", many minutes), and again whenever too
+    /// much water moves at once.
+    ///
+    /// And one thing that reckons from the rock line: the game's planting of herbs
+    /// (WorldGen.PlantAlch, from its update of the world), not done in a place whose rock
+    /// line leaves no room under it (<see cref="NoHerbsWithoutRoom"/>).
     /// </summary>
     public class SubworldSceneSystem : ModSystem
     {
@@ -111,9 +146,18 @@ namespace PisAndDag.Content.Subworlds
         private const int IntoOrbit = 11;
         private const int GettingHot = 14;
 
+        private static ILog log;
+
         public override void Load()
         {
+            log = Mod.Logger;
+
             On_AchievementsHelper.HandleSpecialEvent += NotForBeingHere;
+
+            // Water moves on a server as well, and the world is updated there.
+            IL_Liquid.Update += NoUnderworldDrying;
+            On_Liquid.QuickWater += NoQuickWater;
+            On_WorldGen.PlantAlch += NoHerbsWithoutRoom;
 
             if (Main.dedServ)
                 return;
@@ -122,6 +166,34 @@ namespace PisAndDag.Content.Subworlds
             On_Main.DrawUnderworldBackgroudLayer += NoUnderworldLayer;
             On_Main.DrawBackground += NoCaveBehind;
             On_TileLightScanner.ApplyHellLight += NoUnderworldLight;
+        }
+
+        /// <summary>The game's quick settling of water, in a place whose water is laid still: none.</summary>
+        private static void NoQuickWater(On_Liquid.orig_QuickWater orig, int verbose, int minY, int maxY)
+        {
+            if (Subworld.Current?.StillWater == true)
+                return;
+
+            orig(verbose, minY, maxY);
+        }
+
+        /// <summary>
+        /// The game's planting of herbs, now and then from its update of the world: one time in
+        /// forty it looks for a place for one from halfway between the rock line and the bottom
+        /// of the world down to twenty rows over the bottom (1.4.4: "genRand.Next((int)(Main.rockLayer
+        /// + Main.maxTilesY) / 2, Main.maxTilesY - 20)"). Where the rock line is within forty rows
+        /// of the bottom, or past it, there is no such span, and the game throws ("minValue must
+        /// be less than maxValue"): in the Vast Ocean, whose rock line is past the bottom
+        /// (VastOcean.RockLineRow), and in a place with the lines every place has unless it says
+        /// otherwise (Subworld.RockLine, 28 rows over the bottom). Not done in such a place: none
+        /// of them has ground for herbs.
+        /// </summary>
+        private static void NoHerbsWithoutRoom(On_WorldGen.orig_PlantAlch orig)
+        {
+            if (Subworld.Active && (int)(Main.rockLayer + Main.maxTilesY) / 2 > Main.maxTilesY - 20)
+                return;
+
+            orig();
         }
 
         private static void NoUnderworldBehind(On_Main.orig_DrawUnderworldBackground orig, Main self, bool flat)
@@ -155,5 +227,30 @@ namespace PisAndDag.Content.Subworlds
 
             orig(player, eventID);
         }
+
+        public override void Unload() => log = null;
+
+        /// <summary>
+        /// Liquid.Update asks for the Underworld's line once, to dry the water under it
+        /// (1.4.4: "y &gt; Main.UnderworldLayer", water only, 2 a time): the answer is passed
+        /// through <see cref="UnderworldLine"/> on its way.
+        /// </summary>
+        private static void NoUnderworldDrying(ILContext il)
+        {
+            ILCursor cursor = new ILCursor(il);
+            int found = 0;
+
+            while (cursor.TryGotoNext(MoveType.After, i => i.MatchCall(typeof(Main), "get_" + nameof(Main.UnderworldLayer))))
+            {
+                cursor.EmitDelegate<Func<int, int>>(UnderworldLine);
+                found++;
+            }
+
+            if (found != 1)
+                log?.Warn($"Subworlds: the Underworld's line was asked for {found} times in Liquid.Update, not once as in 1.4.4. Water near a place's floor may dry up there.");
+        }
+
+        /// <summary>The Underworld's line, as the game's water is told it: in a subworld, under every row there is.</summary>
+        private static int UnderworldLine(int line) => Subworld.Active ? int.MaxValue : line;
     }
 }

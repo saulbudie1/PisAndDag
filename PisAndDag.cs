@@ -53,6 +53,12 @@ namespace PisAndDag
         /// other clients. See BoneCasingPlayer.
         /// </summary>
         BoneCasing,
+
+        /// <summary>
+        /// A player's M.U.P.R.A.L: which light it gives, and where its beam points. Client to
+        /// server from that player, server to the other clients. See MupralPlayer.
+        /// </summary>
+        Lantern,
     }
 
     // Please read https://github.com/tModLoader/tModLoader/wiki/Basic-tModLoader-Modding-Guide#mod-skeleton-contents for more information about the various files in a mod.
@@ -121,6 +127,10 @@ namespace PisAndDag
 
                 case PADPacket.BoneCasing:
                     Content.Items.Accessories.BoneCasingPlayer.HandlePacket(reader, whoAmI);
+                    break;
+
+                case PADPacket.Lantern:
+                    Content.Items.Accessories.MupralPlayer.HandlePacket(reader, whoAmI);
                     break;
 
                 default:
