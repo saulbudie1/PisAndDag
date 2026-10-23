@@ -41,14 +41,17 @@ namespace PisAndDag.Content.Subworlds
     /// mounds on it.
     ///
     /// THE CAVES, "clear path cave ways", and since by request ("also more sophisticated cave
-    /// system please.") a network in each range (VastOceanFloor.Caves): a great cavern at its
-    /// root and fourteen to forty-eight more hollows where the rock is thickest, of five kinds
-    /// (halls, domes, galleries, grottos, pockets), joined by ways that wander a little,
-    /// narrow, middling or wide, with loops among them and dead ends off them; three to five
+    /// system please.") a network in each range (VastOceanFloor.Caves), and since ("Make cavern
+    /// even deeper and more maze like") a maze, going down into the range's root: a great
+    /// cavern where the rock is deepest and sixteen to sixty-four more hollows where it is
+    /// thickest, of five kinds (halls, domes, galleries, grottos, pockets), and knots between
+    /// them where only ways meet, joined by ways that wind back and forth, narrow, middling or
+    /// wide, with loops all through them and dead ends off them, some forking; four to six
     /// mouths on the water, at least one on either side; dripstone in the hollows; the eels'
-    /// crevices off them. The trench's caverns and the sinkholes' hollows as before. Every
-    /// hollow and way has a wall behind it, by request ("also you didnt put walls for the
-    /// caves"), of the rock it was cut from. Every way is wide enough to swim through.
+    /// crevices off them, and in the big rooms their dens and rocks left floating. The trench's
+    /// caverns and the sinkholes' hollows as before. Every hollow and way has a wall behind it,
+    /// by request ("also you didnt put walls for the caves"), of the rock it was cut from. Every
+    /// way is wide enough to swim through.
     ///
     /// THE TRENCH, two thousand five hundred columns or so right of the platform: a cut down
     /// through the floor, two hundred columns and more across at its mouth between two rims,
@@ -243,6 +246,14 @@ namespace PisAndDag.Content.Subworlds
             Hollows.Clear();
             Lairs.Clear();
             walled.Clear();
+            tunnels.Clear();
+            rooms.Clear();
+            DenRooms.Clear();
+            DenLairs.Clear();
+            Drips.Clear();
+            FloatingRocks.Clear();
+            RoomWays.Clear();
+            denned.Clear();
             walling = NoWalls;
 
             var rand = new UnifiedRandom(worldSeed ^ 0x0F100F);
@@ -257,10 +268,12 @@ namespace PisAndDag.Content.Subworlds
             Trench(rand);
             RangeCaves(new UnifiedRandom(worldSeed ^ 0x0CA7E5));
             Dripstones(new UnifiedRandom(worldSeed ^ 0x0D819));
+            Dens(new UnifiedRandom(worldSeed ^ 0x0DE45));
             Crevices(new UnifiedRandom(worldSeed ^ 0x0EE15));
             FinishWalls();
             Smooth();
             Settle();
+            Floaters();
 
             int[] tops = Tops();
 
@@ -791,6 +804,7 @@ namespace PisAndDag.Content.Subworlds
             }
 
             path = even;
+            tunnels.Add(even);
 
             for (int i = 0; i + 1 < path.Count; i++)
             {
@@ -808,6 +822,9 @@ namespace PisAndDag.Content.Subworlds
                 }
             }
         }
+
+        /// <summary>Every tunnel cut, its points as cut through (<see cref="Tunnel"/>), for where the ways come into the rooms (VastOceanFloor.Caves, the dens).</summary>
+        private static readonly List<List<Vector2>> tunnels = new List<List<Vector2>>();
 
         private static void Chamber(float cx, float cy, float rx, float ry)
         {
@@ -2888,7 +2905,8 @@ namespace PisAndDag.Content.Subworlds
 
             // The dripstone the game hangs and stands, by request ("need more of these dripstone
             // ambience objects in caves"): under nearly half of every ceiling, on nearly a fifth
-            // of every floor; none in an eel's crevice, which is kept clear for it.
+            // of every floor; none in an eel's crevice, which is kept clear for it, nor on or under
+            // a floating rock, which floats.
             var crevice = new HashSet<int>();
 
             foreach (var (lx, ly, dx, dy, length) in Lairs)
@@ -2900,6 +2918,12 @@ namespace PisAndDag.Content.Subworlds
                     for (int j = -1; j <= 2; j++)
                         crevice.Add((ly + dy * k + py * j) * VastOcean.Wide + lx + dx * k + px * j);
                 }
+            }
+
+            foreach (var (fx, fy, _) in FloatingRocks)
+            {
+                crevice.Add((fy - 1) * VastOcean.Wide + fx);
+                crevice.Add((fy + 1) * VastOcean.Wide + fx);
             }
 
             for (int x = Left; x < Right; x++)

@@ -510,6 +510,14 @@ namespace PisAndDag.Content.PADplayer
                 Player.empressBrooch = false;
             }
 
+            // The Empress's favour, while it lasts: flight without end at the speed of solar wings,
+            // earned or not, whatever is worn (Buffs.FavorOfAnEmpress). Not subject to the trim below.
+            else if (Player.HasBuff(ModContent.BuffType<Buffs.FavorOfAnEmpress>()))
+            {
+                Buffs.FavorOfAnEmpress.Fly(Player);
+                return;
+            }
+
             if (!AllowedWings || Player.wingTimeMax <= 0)
                 return;
 

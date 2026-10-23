@@ -10,8 +10,9 @@ namespace PisAndDag.Content.UI
     /// The camera side of one arrival. The plate itself — the look, the name rising,
     /// the flight, the settle — is shared by every boss (see BossIntro's beats) and is
     /// not here to change; a profile only says how the camera gets to the boss, what
-    /// it does while there, and how it gets home. The universal arrival does NOT hide
-    /// the interface; a boss's own cutscene may.
+    /// it does while there, and how it gets home. (One exception, Brisk: a name-only
+    /// plate with its read cut short, for a scene that ends on its name.) The universal
+    /// arrival does NOT hide the interface; a boss's own cutscene may.
     ///
     ///     PAN      camera leaves the player for the boss, zoom creeping in
     ///     [plate]  LOOK · RISE · READ · FLY · SETTLE — shared: 3s plain, 7s with a line
@@ -40,6 +41,16 @@ namespace PisAndDag.Content.UI
         /// name. For a boss whose own cutscene has earned the time (the King's rite).
         /// </summary>
         public bool FullPlate;
+
+        /// <summary>
+        /// For a name-only run whose own scene has held the shot long enough and ends on
+        /// its name (the Empress: "waiting too long between the scream and the nameplate,
+        /// also cinematic should end as boss name plate roll in"). The READ is cut to
+        /// BossIntro.BriskRead, and the shot is let go as the name starts down to the bar:
+        /// the bars go, the zoom eases back over the flight, and the run is over on the
+        /// touchdown. The rise and the flight are the plate's own. No effect on Play.
+        /// </summary>
+        public bool Brisk;
 
         /// <summary>The universal arrival: 1.5s out, the plate, 1s home.</summary>
         public static BossIntroProfile Default => new();
@@ -100,6 +111,9 @@ namespace PisAndDag.Content.UI
         /// <summary>The plate this boss gets, decided when the arrival starts from whether it has a line.</summary>
         public static int PlateTicks(bool hasTitle) => hasTitle ? TitlePlateTicks : PlainPlateTicks;
 
+        /// <summary>A brisk plate's READ (BossIntroProfile.Brisk): a breath, enough to see the line whole before it goes.</summary>
+        public const int BriskRead = 30;
+
         /// <summary>
         /// The whole arrival under a profile, spawn to camera home. Pure — reads no
         /// state — so the server can use it too (BossArrivalWait holds a boss still
@@ -149,11 +163,33 @@ namespace PisAndDag.Content.UI
         /// </summary>
         private static bool nameOnly;
 
+        /// <summary>This run is a brisk one (BossIntroProfile.Brisk, name-only): the shot let go as the name goes down.</summary>
+        private static bool brisk;
+
         /// <summary>The player's own zoom, borrowed for the shot and given back.</summary>
         private static float savedZoom = 1f;
         private static bool holdingZoom;
 
         public static bool Running => npcIndex >= 0;
+
+        /// <summary>
+        /// The boss whose name was last put up (by Play or PlayNameOnly), kept after its plate is down: so the
+        /// plate is never put up a second time for a boss that named itself before its bar was first seen
+        /// (BossPlate's wait for a name: a boss's own arrival can hide the interface past its own plate's end).
+        /// Forgotten when that fight is over.
+        /// </summary>
+        private static int namedIndex = -1;
+        private static int namedType = -1;
+
+        /// <summary>Has this boss had its name put up already, this fight?</summary>
+        public static bool Named(NPC npc) => npc != null && namedIndex == npc.whoAmI && namedType == npc.type;
+
+        /// <summary>Its fight is over: the next boss in its place is a new one, to be named again.</summary>
+        public static void ForgetNamed()
+        {
+            namedIndex = -1;
+            namedType = -1;
+        }
 
         /// <summary>True while the player's own zoom is being borrowed.</summary>
         internal static bool HoldingZoom => holdingZoom;
@@ -169,10 +205,15 @@ namespace PisAndDag.Content.UI
             return !string.IsNullOrWhiteSpace(title);
         }
 
-        /// <summary>Lays the run out: the profile's pan and return around the plate this boss gets.</summary>
+        /// <summary>
+        /// Lays the run out: the profile's pan and return around the plate this boss gets.
+        /// Called with nameOnly already set for the run (a brisk plate is a name-only one's).
+        /// </summary>
         private static void Layout(BossIntroProfile p)
         {
             bool titled = HasTitle() || p.FullPlate;
+
+            brisk = nameOnly && p.Brisk;
 
             int look = titled ? TitleLook : PlainLook;
             riseTicks = titled ? TitleRise : PlainRise;
@@ -180,13 +221,20 @@ namespace PisAndDag.Content.UI
             flyTicks = titled ? TitleFly : PlainFly;
             int settle = titled ? TitleSettle : PlainSettle;
 
+            // Brisk: a breath to read it, and over when it lands (the zoom has come back over the flight).
+            if (brisk)
+            {
+                read = Math.Min(read, BriskRead);
+                settle = 0;
+            }
+
             panEnd = p.PanTicks;
             holdEnd = panEnd + look;
             riseEnd = holdEnd + riseTicks;
             readEnd = riseEnd + read;
             flyEnd = readEnd + flyTicks;
             settleEnd = flyEnd + settle;
-            total = settleEnd + p.ReturnTicks;
+            total = settleEnd + (brisk ? 0 : p.ReturnTicks);
         }
 
         /// <summary>
@@ -205,6 +253,8 @@ namespace PisAndDag.Content.UI
             profile = with ?? BossIntroProfile.Default;
             npcIndex = index;
             npcType = Main.npc[index].type;
+            namedIndex = index;
+            namedType = npcType;
             frame = 0;
             nameOnly = false;
             Layout(profile);
@@ -225,7 +275,8 @@ namespace PisAndDag.Content.UI
         /// and the touchdown shake still fire if the profile has them. The zoom is the
         /// one thing borrowed: in over the rise, held through the settle, released over
         /// ReturnTicks — so the run outlives the landing by settle + return, and
-        /// Running says so.
+        /// Running says so. A Brisk profile reads for BriskRead and lets the zoom go
+        /// over the flight instead: that run is over on the landing.
         /// </summary>
         public static void PlayNameOnly(int index, BossIntroProfile with = null)
         {
@@ -238,6 +289,8 @@ namespace PisAndDag.Content.UI
             profile = with ?? BossIntroProfile.Default;
             npcIndex = index;
             npcType = Main.npc[index].type;
+            namedIndex = index;
+            namedType = npcType;
             nameOnly = true;
             Layout(profile);
 
@@ -262,6 +315,7 @@ namespace PisAndDag.Content.UI
             npcType = -1;
             frame = 0;
             nameOnly = false;
+            brisk = false;
             profile = null;
 
             ReleaseZoom();
@@ -271,8 +325,10 @@ namespace PisAndDag.Content.UI
         {
             npcIndex = -1;
             npcType = -1;
+            ForgetNamed();
             frame = 0;
             nameOnly = false;
+            brisk = false;
             profile = null;
             ReleaseZoom();
         }
@@ -321,7 +377,9 @@ namespace PisAndDag.Content.UI
             frame++;
 
             // Every arrival is a shot, universal or the boss's own: the screen narrows for it.
-            Combat.Cinematic.Frame();
+            // A brisk one lets go of the shot as the name starts down to the bar.
+            if (!brisk || frame <= readEnd)
+                Combat.Cinematic.Frame();
 
             BossIntroProfile p = profile;
 
@@ -330,14 +388,17 @@ namespace PisAndDag.Content.UI
                 Touchdown(player, p);
 
             // Name-only runs have no shot to manage, only the zoom: in over the rise,
-            // held to the end of the settle, let go over the return. The name itself is
-            // the bar's again from the landing (NamePlacement).
+            // held to the end of the settle, let go over the return (a brisk one: held
+            // through the read, let go over the flight). The name itself is the bar's
+            // again from the landing (NamePlacement).
             if (nameOnly)
             {
                 float t;
 
                 if (frame <= riseEnd)
                     t = Ease((frame - holdEnd) / (float)Math.Max(riseTicks, 1));
+                else if (brisk)
+                    t = 1f - Ease((frame - readEnd) / (float)Math.Max(flyTicks, 1));
                 else if (frame <= settleEnd)
                     t = 1f;
                 else

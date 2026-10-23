@@ -325,6 +325,54 @@ Lines on the table:
 - Does he fire for the player once, ever? If he does, the Court learns of it — the same shape as the first Quietus and the Orb alerting the Sky.
 - Is he a boss in the bar sense at all? He is currently `boss = true` with a head icon and no way to hurt him, which is either a bug or the joke.
 
+## 8.12 The dragon
+
+Asked for in session: "What do we think about a freshly post moon lord dragon/manifestation that had a rifle like head? to replace white death". Then the man kept (8.1 to 8.11 stand) and the dragon made his, after the Moon Lord, in these words:
+
+> The dragon is him making a pact with god of birth and ascending him onto dragon hood
+
+> Before and he is felled as a dragon. Dragon are outside mortal realms so Mors doesnt affect him or any other dragons like Betsy.
+
+> They do not die by age and can only be felled. Gets stronger with time.
+
+> 2 yes not a full rifle, his skull shapes like one, he combust inside his mouth and dispell a giant chunk of fiery + whatever he gnawed on
+
+> Lore: he comes to her since he gave up, knowing the court killed his wife. He asks Goddess of Birth for a recreation of his wife. But Birth Takes another fascination. Him.
+
+### Decided
+
+- **What dragons are.** Outside the mortal realm: Mors does not reach them, him or any other (Betsy is one). They do not die of age; they can only be felled. They grow stronger with time.
+- **How he becomes one.** He gives up, believing the Court has killed his wife, and goes to Birth to ask her to make his wife again. Birth is taken with something else: him. No pact and no terms: §VII, she makes what fascinates her and takes no responsibility for what she has made.
+- **When.** After the Moon Lord, before Mors remembers (§XXXII.3). He is felled as a dragon.
+- **His skull is shaped like a rifle.** Not a rifle on a dragon. He sets off a burning inside his mouth and fires a great chunk of fire and of whatever he has been gnawing on.
+
+### Agreed in discussion
+
+- **She is not dead.** Under the amnesty nothing ends (8.6). The Court taking her apart is what he calls killing her, and she is still in the jars. He gives up on the one thing that could still be done; that is the cruelty of it, and the jars are still there for the player (8.7 stands).
+- **Felling a dragon is the one death of this era that holds.** Dragons are outside Mors, so the amnesty does not keep them either. That is the fight's weight, and it makes the killing of Armageddon (§IX) a real killing.
+- **Made just after the Moon Lord, he is as weak as he will ever be,** and that is the reason to fell him then. Nothing in this world is in its prime (§I).
+- **The Cupbearer (§XIX) already shows a creature becoming a dragon:** three hundred years into it and stopped. He is the second, and the quick one.
+- **The man stays:** the first meeting, Held, the casings, the letters. The dragon lands as a loss because the player knew the man.
+
+### Proposed in discussion, not decided
+
+- **He fights as a sniper.** He keeps his distance and moves to new positions; a glint before each shot; the report after the hit; casings falling from his jaw. The way to win is to close the distance, the one thing the man never could.
+- **The shot is telegraphed by what he does with his mouth:** he bites, chews, his throat glows. What comes out is what he bit: rock comes out a burning boulder that breaks into shrapnel.
+- **He keeps the name White Death.** A pale dragon fits it; it is also a real sniper's.
+
+### Guardrails
+
+- **Not Chainsaw Man.** No pact or contract with terms, and no weapon for a head. The gun is in his anatomy (the skull shaped like a barrel, the bore in his throat, the casings) and is read from his outline and his sound.
+- **No first gun as an object (§XXI).** He is not the first gun.
+
+### Open
+
+- Betsy is fought before the Moon Lord and is presumably older than he is, yet dragons grow stronger with time. Either Birth's making gives him his strength at once, or Betsy is young, or far from her own realm (Etheria).
+- Does the player learn that she was still in the jars when he gave up, and from whom?
+- What Birth does with him once he is made: leaves him at once (§VII), or keeps him until he disappoints her?
+- Does anything of the man show in the fight (three shots, Held)? Does he know the player?
+- What he drops, and whether the casings are part of it.
+
 ---
 
 # 9. The Clanmaster — plan

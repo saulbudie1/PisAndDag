@@ -53,6 +53,22 @@ namespace PisAndDag.Content.Graphics
         }
 
         /// <summary>
+        /// As <see cref="Pair(Vector2, Vector2, Color, Color, float)"/>, each point at its own place across the
+        /// texture (v) rather than on its edges: a band that takes one row of a texture all the way across (as a
+        /// texture's brightest row, for a band of its vertex colours alone).
+        /// </summary>
+        public static void Pair(Vector2 first, Vector2 second, Color firstColour, Color secondColour, float u, float firstV, float secondV)
+        {
+            if (count + 2 > vertices.Length)
+                Array.Resize(ref vertices, vertices.Length * 2);
+
+            Vector2 screen = Main.screenPosition;
+
+            vertices[count++] = new VertexPositionColorTexture(new Vector3(first - screen, 0f), firstColour, new Vector2(u, firstV));
+            vertices[count++] = new VertexPositionColorTexture(new Vector3(second - screen, 0f), secondColour, new Vector2(u, secondV));
+        }
+
+        /// <summary>
         /// Draws the band laid down since <see cref="Begin"/>. Needs at least two pairs, and no
         /// sprite batch open. Leaves the device's blend, depth, rasteriser and first sampler
         /// changed; the next sprite batch to Begin sets them back.

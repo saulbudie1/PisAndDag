@@ -64,6 +64,10 @@ namespace PisAndDag.Content.UI
         /// big enemy. It keeps the bar and the name at rest; it gets no arrival at all.
         /// </summary>
         public bool Plain;
+
+        /// <summary>The colour the name is drawn in, in flight and at rest, and the title's; null for the plate's own.</summary>
+        public Color? NameColour;
+        public Color? TitleColour;
     }
 
 
@@ -422,6 +426,19 @@ namespace PisAndDag.Content.UI
             Entry(npcType).BarWithName = true;
         }
 
+        /// <summary>
+        /// The colours this type's name and title are drawn in, where they are not the plate's own:
+        /// a boss whose name is asked to be seen in a colour of its own (the Empress, Elin, in her pink
+        /// and her blue). Either may be left null.
+        /// </summary>
+        public static void Colours(int npcType, Color? name = null, Color? title = null)
+        {
+            BossPlateEntry entry = Entry(npcType);
+
+            if (name != null) entry.NameColour = name;
+            if (title != null) entry.TitleColour = title;
+        }
+
         /// <summary>This type keeps moving through its arrival; BossArrivalWait leaves it alone.</summary>
         public static void NoWait(int npcType)
         {
@@ -479,6 +496,8 @@ namespace PisAndDag.Content.UI
                 Plain = plain,
                 NameByHand = reg?.NameByHand ?? false,
                 BarWithName = reg?.BarWithName ?? false,
+                NameColour = reg?.NameColour,
+                TitleColour = reg?.TitleColour,
             };
         }
 
@@ -606,7 +625,8 @@ namespace PisAndDag.Content.UI
                     return;
 
                 // Over. The stash goes too, so nothing that lands in the freed slot can
-                // be taken for a late report about this fight.
+                // be taken for a late report about this fight; and its name is forgotten.
+                BossIntro.ForgetNamed();
                 fightIndex = -1;
                 fightType = -1;
                 stashIndex = -1;
@@ -683,7 +703,9 @@ namespace PisAndDag.Content.UI
             if (!nameFlightPending)
                 return;
 
-            if (BossIntro.Running)
+            // Its name up now, or put up already (its own arrival named it while the interface was hidden,
+            // and its bar was first seen after): nothing owed.
+            if (BossIntro.Running || BossIntro.Named(npc))
             {
                 nameFlightPending = false;
                 return;
@@ -961,7 +983,7 @@ namespace PisAndDag.Content.UI
             float anchorX = centred ? 0.5f : 0f;
 
             Utils.DrawBorderStringBig(spriteBatch, entry.Name, pos,
-                NameColour * alpha, NameScale * scale, anchorX, 0f);
+                (entry.NameColour ?? NameColour) * alpha, NameScale * scale, anchorX, 0f);
 
             // The title exists only in flight: under the name, moving with it, and gone
             // when the name touches the bar. It is never drawn at rest.
@@ -977,7 +999,7 @@ namespace PisAndDag.Content.UI
 
             Utils.DrawBorderString(spriteBatch, title,
                 new Vector2(pos.X, pos.Y + nameH + TitleBelowName * scale),
-                TitleColour * titleAlpha, TitleScale * scale, anchorX, 0f);
+                (entry.TitleColour ?? TitleColour) * titleAlpha, TitleScale * scale, anchorX, 0f);
         }
     }
 

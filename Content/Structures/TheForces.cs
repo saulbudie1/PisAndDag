@@ -1,9 +1,12 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.ID;
+using Terraria.GameContent.Generation;
 using Terraria.IO;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
@@ -170,11 +173,18 @@ namespace PisAndDag.Content.Structures
         ///
         /// Still nothing above NeverAbove: the thing does not come up. The beach over it
         /// stays clean and the player goes on walking across it.
+        ///
+        /// Run off the game's thread (BallSpread): it never stops the game. The tiles it
+        /// turns are framed once each when it is done, with their neighbours, rather than
+        /// every tile of every blob as it went (blobs overlap step to step, so that was
+        /// each tile framed dozens of times over: the ten seconds and more it used to hold
+        /// the game still for, in a Grand world, when the Wall died).
         /// </summary>
         public static void GrowArms(int cx, int cy)
         {
             ushort stone = Layout.BallStone;
             ushort wall = Layout.BallWall;
+            Grown grown = new Grown(cx, cy, Radius + (int)(ArmLongest * Again) + 20);
 
             for (int i = 0; i < ArmCount * 2; i++)
             {
@@ -202,11 +212,84 @@ namespace PisAndDag.Content.Structures
                     float thickness = MathHelper.Lerp(ArmRoot * Again, Again, step / (float)length)
                                     + (WorldGen.genRand.NextBool(6) ? 2f : 0f);
 
-                    Blob((int)x, (int)y, thickness, stone, wall, frame: true);
+                    Blob((int)x, (int)y, thickness, stone, wall, grown);
                 }
             }
 
-            GenLog.Log?.Info($"The Ball spread at {cx}, {cy}: {ArmCount * 2} arms at {Again:0.0}x the first ones.");
+            int framed = grown.Frame();
+
+            GenLog.Log?.Info($"The Ball spread at {cx}, {cy}: {ArmCount * 2} arms at {Again:0.0}x the first ones, {grown.Count} tiles turned, {framed} framed.");
+        }
+
+        /// <summary>
+        /// The tiles the hardmode growth turns, kept in a box about the Ball (as far as an arm
+        /// can reach), so that each is framed once afterwards with its neighbours.
+        /// </summary>
+        private sealed class Grown
+        {
+            private readonly int left;
+            private readonly int top;
+            private readonly int width;
+            private readonly int height;
+            private readonly BitArray turned;
+
+            public int Count { get; private set; }
+
+            public Grown(int cx, int cy, int reach)
+            {
+                left = Math.Max(1, cx - reach);
+                top = Math.Max(1, cy - reach);
+                width = Math.Max(1, Math.Min(Main.maxTilesX - 2, cx + reach) - left + 1);
+                height = Math.Max(1, Math.Min(Main.maxTilesY - 2, cy + reach) - top + 1);
+                turned = new BitArray(width * height);
+            }
+
+            private bool Holds(int x, int y) => x >= left && x < left + width && y >= top && y < top + height;
+
+            public void Mark(int x, int y)
+            {
+                if (!Holds(x, y))
+                    return;
+
+                int at = (x - left) * height + (y - top);
+
+                if (!turned[at])
+                {
+                    turned[at] = true;
+                    Count++;
+                }
+            }
+
+            private bool Turned(int x, int y) => Holds(x, y) && turned[(x - left) * height + (y - top)];
+
+            /// <summary>
+            /// Every turned tile framed afresh (its look chosen again), and every tile next to
+            /// one framed to meet it: what SquareTileFrame did for each, once each. The count.
+            /// </summary>
+            public int Frame()
+            {
+                int framed = 0;
+
+                for (int x = left; x < left + width; x++)
+                {
+                    for (int y = top; y < top + height; y++)
+                    {
+                        bool self = Turned(x, y);
+                        bool beside = self
+                            || Turned(x - 1, y - 1) || Turned(x - 1, y) || Turned(x - 1, y + 1)
+                            || Turned(x, y - 1) || Turned(x, y + 1)
+                            || Turned(x + 1, y - 1) || Turned(x + 1, y) || Turned(x + 1, y + 1);
+
+                        if (!beside)
+                            continue;
+
+                        WorldGen.TileFrame(x, y, resetFrame: self);
+                        framed++;
+                    }
+                }
+
+                return framed;
+            }
         }
 
         protected override void ApplyPass(GenerationProgress progress, GameConfiguration config)
@@ -309,7 +392,8 @@ namespace PisAndDag.Content.Structures
             }
         }
 
-        private static void Blob(int cx, int cy, float radius, ushort stone, ushort wall, bool frame = false)
+        /// <summary>A round patch of rock and its walls turned to the Ball's. Growing at hardmode, the tiles turned are kept, to be framed after.</summary>
+        private static void Blob(int cx, int cy, float radius, ushort stone, ushort wall, Grown grown = null)
         {
             int r = Math.Max(1, (int)Math.Ceiling(radius));
 
@@ -325,15 +409,18 @@ namespace PisAndDag.Content.Structures
                     if (!t.HasTile && t.WallType == 0)
                         continue;           // leave open air open; the arms grip rock, they do not fill caves
 
-                    if (t.HasTile && Rock(t.TileType))
+                    if (t.HasTile && Rock(t.TileType) && t.TileType != stone)
+                    {
                         t.TileType = stone;
+
+                        // During generation the framing pass tidies up afterwards. Growing at
+                        // hardmode does not get one, so the tiles turned are framed when it is done.
+                        grown?.Mark(x, y);
+                    }
+
+                    // A wall's look does not change with its kind (walls meet any wall), so walls need no framing.
                     if (t.WallType != 0 && NaturalWall(t.WallType))
                         t.WallType = wall;
-
-                    // During generation the framing pass tidies up afterwards. Growing at
-                    // hardmode does not get one, so it tidies up after itself.
-                    if (frame)
-                        WorldGen.SquareTileFrame(x, y, true);
                 }
             }
         }
@@ -1085,7 +1172,10 @@ namespace PisAndDag.Content.Structures
             if (!WorldGen.InWorld(x, y, 40) || y >= Main.UnderworldLayer - 20)
                 return false;
 
-            bool nearDungeonColumn = Math.Abs(x - GenVars.dungeonLocation) < DungeonKeepOut + 220;
+            // Where the Dungeon is: the generator's plan while the world is made; once it is made,
+            // the world's own record of it (the plan is not kept: at hardmode it would read 0).
+            int dungeon = WorldGen.generatingWorld ? GenVars.dungeonLocation : Main.dungeonX;
+            bool nearDungeonColumn = Math.Abs(x - dungeon) < DungeonKeepOut + 220;
             bool atDungeonDepth = y < Main.rockLayer + 900;
 
             return !(nearDungeonColumn && atDungeonDepth);
@@ -1321,6 +1411,13 @@ namespace PisAndDag.Content.Structures
     /// game has no idea it is there. What it does instead is keep hold: the arms grow,
     /// further and in greater number, sideways and downward through the rock, and never
     /// up. The beach above it stays clean all game and the player goes on walking over it.
+    ///
+    /// It grows as the V is thrown: in the game's own hardmode work, which runs off the
+    /// game's thread while everybody plays on (WorldGen.StartHardmode queues it), as one
+    /// more of its passes (BallState.ModifyHardmodeTasks), after the V, so where an arm
+    /// meets the V the arm holds. The game sends the changed world to every player when
+    /// that work is done. A world that was in hardmode before the Ball could spread (made
+    /// with an older build) gets it the next time a Wall dies, off the game's thread too.
     /// </summary>
     public class BallSpread : GlobalNPC
     {
@@ -1332,25 +1429,72 @@ namespace PisAndDag.Content.Structures
             if (npc.type != NPCID.WallofFlesh || Main.netMode == NetmodeID.MultiplayerClient)
                 return;
 
-            if (Spread || !ExtraLargeWorld.Active || TheBallPass.Centre == Point.Zero)
+            // The first Wall: hardmode starts as soon as this returns (NPC.DoDeathEvents), and
+            // the arms grow in its work (BallState.ModifyHardmodeTasks); or that work is going on
+            // now, and they grow in it.
+            if (!Main.hardMode || WorldGen.IsGeneratingHardMode || !Waiting)
                 return;
 
             Spread = true;
-            TheBallPass.GrowArms(TheBallPass.Centre.X, TheBallPass.Centre.Y);
-
-            if (Main.netMode == NetmodeID.Server)
+            ThreadPool.QueueUserWorkItem(_ =>
             {
-                // Far too many tiles for a tile square, so the sections are simply
-                // retired and the clients ask for them again.
-                Netplay.ResetSections();
-                NetMessage.SendData(MessageID.WorldData);
+                Grow();
+
+                // Far too many tiles for a tile square, so the sections are simply retired and
+                // the clients ask for them again (as the game does after its own hardmode work).
+                if (Main.netMode == NetmodeID.Server)
+                {
+                    Netplay.ResetSections();
+                    NetMessage.SendData(MessageID.WorldData);
+                }
+            });
+        }
+
+        /// <summary>A Grand world with the Ball in it, its arms not yet grown.</summary>
+        private static bool Waiting => !Spread && ExtraLargeWorld.Active && TheBallPass.Centre != Point.Zero;
+
+        /// <summary>
+        /// The arms grown, off the game's thread. Whatever goes wrong is written down and goes
+        /// no further: an exception off the game's thread would close the game.
+        /// </summary>
+        private static void Grow()
+        {
+            try
+            {
+                TheBallPass.GrowArms(TheBallPass.Centre.X, TheBallPass.Centre.Y);
             }
+            catch (Exception e)
+            {
+                GenLog.Log?.Warn("The Ball's spreading failed: " + e);
+            }
+        }
+
+        /// <summary>The Ball's pass in the game's hardmode work: grows its arms, once, if it is waiting to.</summary>
+        internal static void HardmodePass(GenerationProgress progress, GameConfiguration configuration)
+        {
+            if (!Waiting)
+                return;
+
+            Spread = true;
+            Grow();
         }
     }
 
-    /// <summary>Carries the Ball's position and its one hardmode flag through the world file.</summary>
+    /// <summary>Carries the Ball's position and its one hardmode flag through the world file, and puts its growing into the game's hardmode work.</summary>
     public class BallState : ModSystem
     {
+        /// <summary>The Ball's arms grow with the V: in the game's own hardmode work, off its thread, after the V.</summary>
+        public override void ModifyHardmodeTasks(List<GenPass> list)
+        {
+            PassLegacy pass = new PassLegacy("PisAndDag: The Ball Spreads", BallSpread.HardmodePass);
+            int evil = list.FindIndex(task => task.Name == "Hardmode Evil");
+
+            if (evil >= 0)
+                list.Insert(evil + 1, pass);
+            else
+                list.Add(pass);
+        }
+
         public override void ClearWorld()
         {
             BallSpread.Spread = false;

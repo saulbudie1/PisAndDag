@@ -30,6 +30,10 @@
 | Mycellaneous | Ranged | built; never run in game (below) |
 | Worminator | Summoner | built; never run in game (below) |
 | Vulture Staff | Summoner | built; never run in game (below) |
+| Mantrap | Ranged | built; never run in game (below) |
+| Signal Pistol | Ranged | built; never run in game (below) |
+| Defacer | Melee | built; never run in game (below) |
+| Parade Sabre | Melee | built; never run in game (below) |
 
 ---
 
@@ -808,6 +812,166 @@ Vulture, one time in 40 (yours).
   the game's Vulture, whose size is large on a player.
 - Its numbers are mine but the damage and the drop, which are yours: RELEASE_TODO.
 
+---
+
+## Mantrap
+
+A goblin pistol that throws iron jaws, by request (PADWorkFlow §16.98). The Goblin
+Artificers' first gun was "a trap you carry" (Lore Bible §XXI), and this one takes its
+wielder's foot as readily as anyone's. Its pictures are mine (PlaceholderTextures.md).
+
+### Files
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Ranged/Mantrap.cs` + `.png` (40 by 22) | `Mantrap` | The gun; its shot from the muzzle (`MuzzleOf`, which the Signal Pistol uses too) |
+| `Content/Projectiles/Ranged/MantrapJaws.cs` + `.png` (22 by 28: open over shut) | `MantrapJaws`, `MantrapRules` | The jaws: flying, lying open, holding, the owner's foot, letting go; what they shut on and what they hold |
+| `Content/Combat/MantrapHold.cs` | `MantrapNPC`, `MantrapSnare` | An enemy held (its own AI not run, nothing of its own moving it, still falling); a player with a foot in it |
+| `Content/NPCs/VanillaLoot.cs` | `VanillaLoot` | The drop |
+
+### The item
+
+| What | How |
+|---|---|
+| Damage | 22 ranged; knockback 3 |
+| Use | 30 ticks a shot; not again by holding the button; 10.5 a tick |
+| Magazine | 3 jaws, 80 ticks to set three more (PSItem) |
+| Sound | the ballista tower's shot, higher, and a knock; smoke and sparks off the muzzle; a small shake |
+| Worth | Green, sells for 1 gold |
+| Drop | the goblins of an army: the peon, the thief, the warrior, the sorcerer, the archer (not the scout), 1 in 50 each |
+
+### The jaws
+
+| What | How |
+|---|---|
+| Flying | open, turning over, falling after 6 ticks (0.22 a tick, to 12); a wall or a ceiling throws them back at 0.3; after 150 ticks they give up |
+| Shutting | on the first enemy hit: a clack, sparks and a flash. What the Meat Hook would drag (`MeatHookRules.Hauled`) is held where it stands for 60 ticks, jolting; anything bigger is bitten and the jaws drop off after 8 |
+| Lying open | landed on a floor; after 24 ticks a click and a glint; the first enemy (`MantrapRules.Shuts`: what the Meat Hook latches, never a critter) to touch them or the 4 pixels over them is shut on, for 1.5 times the damage and no push. Three at most for a player (a fourth shuts the oldest on nothing); 30 seconds and they rust shut |
+| The owner's foot | shut on it as on anyone: 6% of their life (8 at least), nothing dodges it, no push ("{0} stepped where they had set it."), and 40 ticks unable to walk, jump, drop, hook or mount. Standing on them when they set, the owner has to step off first |
+| Letting go | they drop, turning, and fade over 45 ticks |
+| Who decides | the owner (the hit, the landing, a foot in it), sent; every machine moves, draws and holds alike |
+
+### Open
+
+- Never run in the game, never tried with a second player.
+- The numbers are mine: RELEASE_TODO.
+
+---
+
+## Signal Pistol
+
+A brass flare pistol, by request (PADWorkFlow §16.98), in the lighthouse's watch room in the
+Vast Ocean. Its report is made to be seen (§XXI), and while its flare burns the light has gone
+where it was sent: its wielder's own sight is dimmed. Its pictures are mine.
+
+### Files
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Ranged/SignalPistol.cs` + `.png` (36 by 22) | `SignalPistol` | The pistol |
+| `Content/Projectiles/Ranged/SignalFlare.cs` + `.png` (8 by 8) | `SignalFlare` | The flare: flying, sinking, stuck, burning, its light and its lure |
+| `Content/Structures/Grace/LighthouseTower.cs`, `Content/Subworlds/VastOcean.cs` | | The watch room's east sea chest; the sea's layout 9 |
+
+### The item
+
+| What | How |
+|---|---|
+| Damage | 14 ranged; knockback 2 |
+| Use | 24 ticks; 9.5 a tick; one round, 150 ticks to load the next (PSItem) |
+| Sound | a hollow pop and a hiss; a red flash, smoke and sparks; a small shake |
+| Worth | Blue, sells for 80 silver |
+| Found | the first thing in the east sea chest of the lighthouse's watch room (Vast Ocean) |
+
+### The flare
+
+| What | How |
+|---|---|
+| Burns | 6 seconds (360 ticks) from the shot, sputtering out over the last 50 |
+| Free | in the air it arcs (0.13 a tick, to 10), sparks and pink smoke off it; in water it is slowed hard (0.92 a tick) and sinks at 0.45, bubbles and embers off it |
+| Stuck | the first enemy it hits takes the whole damage and has it stuck in it, burning for 60% every 30 ticks with no push; a tile it meets, it sticks to and burns there, hurting what touches it the same way; what it was stuck in dies or goes, it falls free |
+| Light | a wide circle of red; drawn with a red halo, wider in water |
+| Lure | what swims (wet, not town folk, not a boss or part of one) within 30 tiles is pulled toward it a little every 4 ticks, never past 7 a tick |
+| Its cost | while any flare of theirs burns, its owner has the game's Darkness |
+
+### Open
+
+- Never run in the game, never tried with a second player.
+- The Vast Ocean is made again on its next visit (layout 9).
+- The numbers are mine: RELEASE_TODO.
+
+---
+
+## Defacer
+
+A mason's bush hammer, its face cut into teeth for taking the skin off stone, by request
+(PADWorkFlow §16.98). The Low Court's mark is "chipped faces on angel statues, scratched-out
+names on shrines" (Lore Bible §XVII), and its followers "keep a drawer"; the hammer is found in
+one. Nothing says whose. Its pictures are mine.
+
+### Files
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Melee/Defacer.cs` + `.png` (48 by 48) | `Defacer` | The item: one blow at a time, taken up facing the cursor's side |
+| `Content/Projectiles/Melee/DefacerHoldout.cs` | `DefacerHoldout`, `DefacerPose`, `DefacerLayer` | The lift and the blow, the ground, the hits; how it is held; drawn in both hands |
+| `Content/Buffs/Defaced.cs` + `.png` (32 by 32) | `Defaced`, `DefacedNPC` | The debuff: the defense ignored, the name scratched |
+| `Content/Particles/StoneChip.cs` + `.png` (4 by 12) | `StoneChip` | Chips of stone that fall and bounce |
+| `Content/Structures/CourtDrawersPass.cs` | `CourtDrawersSystem`, `CourtDrawersPass` | The Drawers |
+
+### The item
+
+| What | How |
+|---|---|
+| Damage | 36 melee; knockback 7 |
+| Lifted | held down, up and back over 42 ticks (less with melee speed), both hands on the handle, grit off the teeth; its wielder runs at 70%; at the top a glint, a tick of stone, and it glows faintly, breathing |
+| The blow | let go, it comes down over 14 ticks (less with melee speed), the toothed face first, three shadows and a smear of grey behind it, and is brought back over 10 |
+| Hits | 55% to 220% of its damage by how far it was lifted; knockback 60% to 120%; the first thing hit holds it 3 ticks (5 lifted all the way) |
+| The ground | stops it from where it passes level: a crack of stone, chips and dust; lifted all the way the ground heaves (`GroundWave`); it stays 6 ticks |
+| Lifted all the way | what it hits is Defaced for 8 seconds: every hit on it from anything ignores 10 of its defense, grit falls off it, its name is scratched out (about two letters in three) |
+| Worth | Green, sells for 60 silver |
+| Found | the Drawers: a dresser of the cabin's own wood put beside the chest of up to six of the game's underground cabins (cobwebs and rubble cleared for it, never a pot; on the cabin's own floor), what anybody keeps in a drawer in it; the first keeps a Defacer, one in four of the rest another; with no room for a dresser anywhere, the Defacer goes into a cabin's chest (or any chest underground). Outside Grace's country. New worlds, and `/struct update` |
+
+### Open
+
+- Never run in the game, never tried with a second player. The Drawers run in the rig on Huh
+  (six dressers, the first with the Defacer).
+- The numbers are mine: RELEASE_TODO.
+
+---
+
+## Parade Sabre
+
+White and gold, made for the parade, by request (PADWorkFlow §16.98). "Grace's claim was
+favour and what beat it was a better trap" (Lore Bible §XIX): under the gold is a sword. Its
+pictures are mine.
+
+### Files
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Melee/ParadeSabre.cs`, `ParadeSabre.png` and `ParadeSabreBare.png` (48 by 48 each) | `ParadeSabreBase`, `ParadeSabre`, `ParadeSabreBare` | The gilt sabre and the plain one |
+| `Content/Projectiles/Melee/ParadeSabreArc.cs` | `ParadeSabreArc` | The arc of each swing |
+| `Content/Particles/GiltFlake.cs` + `.png` (4 by 12) | `GiltFlake` | Flakes of gold leaf |
+| `Content/Structures/Grace/GraceRooms.cs`, `GraceLoot.cs` | `StashArmoury` | The armoury's chest |
+
+### The item
+
+| What | How |
+|---|---|
+| Damage | 20 melee; knockback 4.5; 22 ticks a swing, swung again while held |
+| The gold | 120 hits on enemies' worth (`Gilt`, in its tooltip, kept with it and sent); each takes some off, flakes turning over as they fall, now and then a glint |
+| Bare | the last of the gold gone, at the end of that swing: a shower of leaf, a bell, and it is the **Plain Sabre** for good (its prefix kept): 28 damage, 20 ticks, knockback 5, steel sparks off its hits, Green, sells for 60 silver |
+| The arc | a ribbon of added light from the blade's forte to its point along the way the point has come, gold or cold steel, a bright thread along the point; each swing its own |
+| Worth | Blue, sells for 1 gold 50 silver |
+| Found | Grace (Grand worlds): a chest of military loot at the start of each armoury's row of stands; the first armoury chest keeps a Parade Sabre, one in four after it |
+
+### Open
+
+- Never run in the game, never tried with a second player. The armoury chest not previewed.
+- The numbers are mine: RELEASE_TODO.
+
+---
+
 ## The game's own items
 
 `Content/Items/VanillaBalance.cs`: the game's items with this mod's numbers, put on after the
@@ -1085,8 +1249,9 @@ The only seal comes after Skeletron, so no incantation can be cast before him.
 | Rage! Sweet Fire | `Incantation/RageSweetFire` | Incantation | Enchantment | Flame | 0 | 40 | 30 | Pink | Altar: Lava Bucket, 15 Soul of Fright, 50 Living Fire Block, Book |
 | Betsy's Flames | `Incantation/BetsysFlames` | Incantation | Transmutation | Draconic | 84, to each thing in the breath every 5 ticks | 30, then 30/s after 1 s | 20 | Yellow | Betsy, 1 in 20 (classic); her bag, 1 in 20 |
 | Water! Resuscitate Me! | `Incantation/WaterResuscitateMe` | Incantation | Abjuration | Water | 0 | 30 | 30 | Blue | Fishing crates: Wooden 1 in 20, Iron 1 in 10, Golden 1 in 5, Ocean 1 in 4, and their hard mode kinds the same |
+| Mycelium, Finish Them | `Incantation/MyceliumFinishThem` | Incantation | Conjuration | Fungal | 14, to each thing in the ring every 30 ticks | 24 | 40, then 10 reuse delay | Blue | The Fairy Ring's chest (a new world, `/struct update`); Spore Zombies, 1 in 25 |
 
-All under `Content/Items/Mage/`. Ten casts against ten slots: §4.2 wants twenty to thirty.
+All under `Content/Items/Mage/`. Eleven casts against ten slots: §4.2 wants twenty to thirty.
 
 ### Element colours (`MagicColours`)
 
@@ -1099,6 +1264,7 @@ All under `Content/Items/Mage/`. Ten casts against ten slots: §4.2 wants twenty
 | Conquest | `#7a3a24` | ramp, bottom to top: `#bdab51` → `#c8a55b` → `#dbd88f` |
 | Draconic | `#b0a158` | `#db184c` |
 | Water | `#0e3a52` | `#3fb8d6` |
+| Fungal | `#1b1554` | `#6fb6ff` |
 
 Kind words: Spell `#38462b` on `#da7210`; Incantation `#d65a51` on `#5d7ba2`.
 
@@ -1221,6 +1387,39 @@ hers.
   most every 3 ticks.
 - One-off sounds and bursts go through a `played` bitmask with a 6-tick window, as Aquatic
   Firearms' do. `FireAffinity` counts the breath as fire.
+
+### Mycelium, Finish Them
+
+A ring of glowing caps called up out of the ground, by request (PADWorkFlow §16.98). The fungal
+caves are "the only place where things finish" (Lore Bible §XXVIII): what dies in the ring goes
+into the ground and comes up as a cap. Its pictures are mine.
+
+- **The cast** (`MyceliumFinishThem`): the ground nearest the cursor, as the Court of Hands
+  finds it (`CourtOfHandsRite.FindGround`); none within reach, nothing happens and the 24 mana
+  comes back. One ring a player: another cast withers the last (`FairyRing.WitherAll`).
+- **The ring** (`FairyRing`): 10 seconds (600 ticks), withering over 36. Nine caps along the
+  ground 7 tiles either side of the middle, each on its own ground within 4 tiles up or down,
+  bursting up one after another from the middle out (16 ticks each, 3 apart, overshooting and
+  settling), the middle one the biggest; their places, kinds (`FairyRingCap.png`: a bell, a
+  dome, a parasol), sizes and breath rolled from the ground point, so every machine lays the
+  same. Threads of light under the ground between them and roots off each, a pulse running
+  outward; a faint glow over the ground; light at each cap; spores rising, puffs off the caps.
+- **The hurt**: everything in it, from the ground up 6 tiles, every 30 ticks for 14 magic
+  damage, no push, from the moment the caps are three quarters up.
+- **What dies in it** (`FairyRingDeaths`, decided by the server or the one machine alone): a cap
+  comes up under where it fell (`FairyRingFruit`, 6 to a player): up over 26 ticks, roots of
+  light spreading under it, bigger than the ring's; every 48 ticks it puffs a spore
+  (`FairyRingSpore`, a soft ball of blue light that turns after the nearest enemy, 5.5 a tick)
+  at the nearest enemy it can see within 12 tiles, squashing as it does; 12 seconds, and it
+  withers with its ring.
+- **What lies in it** (`FairyRingSoil`, each machine for itself): a piece of something dead
+  (a gore) come to rest on the floor in a standing ring is drawn behind the tiles and sinks a
+  third of a pixel a tick, darkening, spores rising, until it is under.
+- **Found**: the Fairy Ring (`FairyRingPass`): a mushroom chest on the floor of the glowing
+  mushroom caves, ringed by small glowing mushrooms, with the incantation, Glowing Mushrooms
+  and a few spares; one a world, outside Grace's country; new worlds and `/struct update`. And
+  the Spore Zombies (both kinds), 1 in 25 (`VanillaLoot`).
+- Never run in the game. The Fairy Ring run in the rig on Huh: found at once.
 
 ---
 

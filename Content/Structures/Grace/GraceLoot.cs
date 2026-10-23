@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Terraria.ID;
+using Terraria.ModLoader;
 
 namespace PisAndDag.Content.Structures.Grace
 {
@@ -199,6 +200,38 @@ namespace PisAndDag.Content.Structures.Grace
         {
             var (type, style) = ChestFor(kind, s);
             return c.PlaceChest(x, stand, type, style, Roll(kind));
+        }
+
+        /// <summary>The Parade Sabre (PADWorkFlow §16.98).</summary>
+        private static int ParadeSabreItem => ModContent.ItemType<global::PisAndDag.Content.Items.Melee.ParadeSabre>();
+
+        /// <summary>One in this many armoury chests after the first keeps a Parade Sabre too.</summary>
+        private const int ParadeSabreOdds = 4;
+
+        /// <summary>Whether a Parade Sabre has been laid in an armoury chest yet in this kingdom.</summary>
+        private bool paradeLaid;
+
+        /// <summary>
+        /// An armoury's chest, at the start of its row of stands: what the racks did not hold
+        /// (military loot), and the Parade Sabre on top: always in the first armoury chest the
+        /// kingdom lays, one in <see cref="ParadeSabreOdds"/> after it ("beautiful and worse than
+        /// what is outside the walls", as GraceHighWard has its armoury). False if it would not go,
+        /// and then the sabre waits for the next.
+        /// </summary>
+        private bool StashArmoury(int x, int stand, Suite s)
+        {
+            var (type, style) = ChestFor(Loot.Military, s);
+            var items = Roll(Loot.Military);
+            bool sabre = !paradeLaid || c.OneIn(ParadeSabreOdds);
+
+            if (sabre)
+                items.Insert(0, (ParadeSabreItem, 1));
+
+            if (!c.PlaceChest(x, stand, type, style, items))
+                return false;
+
+            paradeLaid |= sabre;
+            return true;
         }
 
         /// <summary>What a room of this theme kept in its chests.</summary>

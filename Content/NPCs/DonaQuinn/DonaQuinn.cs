@@ -44,8 +44,8 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
     ///
     /// Triunfo has sense about the ground (DonkeyNav): he jumps what he can, backs off for a
     /// run at a bank, leaps gaps, pulls up at cliffs and deep water, and swims. Now and then
-    /// she shouts something, over her head, not in a box (Bark). Triunfo shares her life:
-    /// hitting him hits her.
+    /// she shouts something: a line at the foot of the screen, underlined in her gold, gone by
+    /// itself (Taunt). Triunfo shares her life: hitting him hits her.
     ///
     /// PARRIED. The charge, the throw and Triunfo running them down can all be parried (Parry;
     /// the swing cannot: it wears the yellow star). Her lance or Triunfo met by a parry is
@@ -120,8 +120,13 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         /// <summary>How fast she talks: quick. She is excited.</summary>
         public const float Pace = 1.1f;
 
-        /// <summary>Above the middle of her body, where her barks sit.</summary>
-        private const float BarkAbove = 34f;
+        /// <summary>
+        /// Her voice (Taunt): the rule under her words gold in the middle, paler at the ends; heard this far off her,
+        /// about a screen and a half.
+        /// </summary>
+        private static readonly Color VoiceGold = new Color(255, 196, 92);
+        private static readonly Color VoiceGoldFar = new Color(255, 236, 170);
+        private const float VoiceReach = 2400f;
 
         // ============================================================
         // PHASES

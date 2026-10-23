@@ -8,7 +8,7 @@ using Terraria.ModLoader;
 namespace PisAndDag.Content.NPCs.Deep
 {
     /// <summary>
-    /// A piece of a Hole Dweller's body (<see cref="CreviceEelHead"/>), the last of them its tail:
+    /// A piece of a Crevice Eel's body (<see cref="CreviceEelHead"/>), the last of them its tail:
     /// something to be hit, its life the head's (NPC.realLife), put each tick where the head says
     /// it lies. ai[0] is the head's slot, ai[1] which piece (1 the first after the head), ai[2]
     /// the head's own number (CreviceEelHead.Id): without its head, it is gone. Drawn with the
@@ -68,7 +68,7 @@ namespace PisAndDag.Content.NPCs.Deep
                 return;
             }
 
-            int size = (int)NPC.ai[1] >= CreviceEelHead.Segments ? TailSize : HitSize;
+            int size = (int)NPC.ai[1] >= eel.Length ? TailSize : HitSize;
             NPC.width = size;
             NPC.height = size;
             NPC.Center = eel.Piece((int)NPC.ai[1], out float facing);
@@ -86,6 +86,14 @@ namespace PisAndDag.Content.NPCs.Deep
             for (int i = 0; i < 3; i++)
                 Dust.NewDust(NPC.position, NPC.width, NPC.height, DustID.Blood, hit.HitDirection * 1.5f, -1f);
         }
+
+        /// <summary>
+        /// No health bar of its own, by request ("all segment count as one so they dont all have
+        /// seperate health bar"): its life is the head's (NPC.realLife). A piece struck takes the
+        /// head's life as its own (NPC.StrikeNPC), and the game, giving one bar only to worms of its
+        /// own kinds, drew a bar over every piece that had been struck. The head's own bar is the eel's.
+        /// </summary>
+        public override bool? DrawHealthBar(byte hbPosition, ref float scale, ref Vector2 position) => false;
 
         /// <summary>Gone with its head, never by itself.</summary>
         public override bool CheckActive() => false;

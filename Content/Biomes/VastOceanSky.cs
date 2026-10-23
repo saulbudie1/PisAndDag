@@ -786,20 +786,25 @@ namespace PisAndDag.Content.Biomes
 
             // The light that can be seen comes in from where the light seen at the top of the water
             // does to where the light at the screen's foot does, and 450 pixels past either (the
-            // broadest shaft, and its glow). The shafts are spread along a stretch of the surface as
-            // wide as that can ever be, a screen's height of slant in it (the same whatever the
-            // depth, so that the screen going up or down moves none of them): each fixed in the
-            // water where it is lit, and put back the other side as the screen moves past it, out
-            // of sight. As many over a screen's width as ever, the stretch wider as the light leans.
+            // broadest shaft, and its glow). Each shaft has a stretch of the surface of its own, fixed
+            // in the water, as many of them to a screen's width and 900 pixels more as there are
+            // shafts. (They were spread along a stretch as wide as the screen and more, each put back
+            // the other side as the screen moved past it, out of sight; but that stretch was the wider
+            // the more the light leaned, and widened as the sun went over, and a shaft went as many
+            // times as far as the screen is stretches from the world's edge: some 90 pixels a second
+            // across the water at the island, standing still.)
             float seenTop = Math.Max(0f, -surfaceY);
             float seenFoot = Main.screenHeight - surfaceY;
             float from = Math.Min(seenTop * lean, seenFoot * lean) - 450f;
-            float span = Main.screenWidth + 900f + Main.screenHeight * Math.Abs(lean);
-            int shafts = (int)(count * span / (Main.screenWidth + 900f));
+            float to = Math.Max(seenTop * lean, seenFoot * lean) + Main.screenWidth + 450f;
+            float stretch = (Main.screenWidth + 900f) / count;
+            int firstStretch = (int)Math.Floor((Main.screenPosition.X + from - 18f) / stretch);
+            int lastStretch = (int)Math.Floor((Main.screenPosition.X + to + 18f) / stretch);
 
-            for (int i = 0; i < shafts; i++)
+            for (int i = firstStretch; i <= lastStretch; i++)
             {
-                // Each lights a shaft for a moment, then another somewhere else, at its own pace.
+                // Each lights a shaft for a moment somewhere along its stretch, then somewhere else
+                // along it, at its own pace.
                 float clock = t / (1.6f + 2.8f * Hash(i * 17 + salt)) + Hash(i * 23 + salt * 5);
                 int turn = (int)Math.Floor(clock);
                 float u = clock - turn;
@@ -811,10 +816,12 @@ namespace PisAndDag.Content.Biomes
                 if (h4 < 0.25f)
                     continue;
 
-                // Where it comes in: somewhere along the surface for its moment, fixed in the water,
+                // Where it comes in: somewhere along its stretch for its moment, fixed in the water,
                 // sliding a little as the waves go.
-                float worldX = h1 * span + 36f * (u - 0.5f) * (h2 < 0.5f ? -1f : 1f);
-                float x = from + ((worldX - Main.screenPosition.X - from) % span + span) % span;
+                float x = (i + h1) * stretch + 36f * (u - 0.5f) * (h2 < 0.5f ? -1f : 1f) - Main.screenPosition.X;
+
+                if (x < from || x > to)
+                    continue;
 
                 // Lit as often as it comes in near to under the light, and as brightly: all under
                 // it, few far off; a shaft at the edge of that fades in or out as the screen moves.
@@ -1205,37 +1212,31 @@ namespace PisAndDag.Content.Biomes
             Texture2D picture = fan.Value;
             Vector2 apex = new Vector2(under, surfaceY);
             float slant = Slant();
-            float lean = -(float)Math.Tan(slant);
             float low = SunLow();
             float t = Main.GlobalTimeWrappedHourly;
             float breathe = 0.88f + 0.12f * (float)(Math.Sin(t * 0.7f) * Math.Sin(t * 0.43f + 1.7f));
+
+            // Each layer as deep as it goes along the light, every row of its picture moved aside
+            // the way the light leans by as far as it is under the surface; only where the light
+            // reaches, cut exactly along it and across it (LayAlongLight); all three in one go.
+            BeginLaying();
+
+            // Where the light is stopped worked out once, as deep as the longest layer is seen.
+            Shape(Math.Min(FanLayers[^1].length * VastOcean.SectionRows * 16f * (float)Math.Cos(slant), Main.screenHeight - surfaceY));
 
             for (int i = 0; i < FanLayers.Length; i++)
             {
                 var (length, wide, dayColour, nightColour, share, cover) = FanLayers[i];
                 Color colour = byDay ? Color.Lerp(dayColour, new Color(255, 190, 104), i == 0 ? low : 0.5f * low) : nightColour;
                 Color veil = Veil(colour, share * strength * breathe, cover);
-
-                // As deep as it goes along the light, a row of its picture at a time, each shifted the
-                // way the light leans by as far as it is under the surface; only where the light
-                // reaches that deep.
                 float deep = length * VastOcean.SectionRows * 16f * (float)Math.Cos(slant);
-                Vector2 scale = new Vector2(wide * Main.screenWidth / picture.Width, deep / picture.Height);
+                float half = wide * Main.screenWidth * 0.5f;
 
-                for (int row = 0; row < picture.Height; row++)
-                {
-                    float y = row * scale.Y;
-
-                    if (surfaceY + y > Main.screenHeight)
-                        break;
-                    if (surfaceY + y + scale.Y < 0f)
-                        continue;
-
-                    float depth = y + scale.Y * 0.5f;
-
-                    LitRow(batch, picture, row, apex.X + lean * depth - picture.Width * scale.X * 0.5f, surfaceY + y, scale, depth, veil);
-                }
+                LayPicture(apex.X - half, apex.X + half, deep, veil);
+                LayAlongLight(apex.X - half, apex.X + half, surfaceY, 0f, deep, false, 0f);
             }
+
+            DrawLaid(batch, picture, SamplerState.LinearClamp);
 
             // Where it comes in: a glare along the surface under the light, and a hot heart in it.
             Texture2D dot = light.Value;
@@ -1247,60 +1248,739 @@ namespace PisAndDag.Content.Biomes
             batch.Draw(dot, apex, null, Lit(heart, 0.50f * strength), 0f, middle, new Vector2(200f / dot.Width, 26f / dot.Height), SpriteEffects.None, 0f);
         }
 
+        // ---- the light laid exactly along it -------------------------------------------------------
+
         /// <summary>
-        /// One row of a picture laid along the light (its left edge at <paramref name="left"/> and
-        /// its top at <paramref name="top"/>, screen pixels, at this scale, <paramref name="depth"/>
-        /// pixels under the surface): only where the light reaches that deep (<see cref="LightStops"/>),
-        /// in as many pieces as that takes, and only on the screen.
+        /// The pieces of light being laid, as corners and the triangles between them, drawn straight
+        /// into the picture with the game's own sprite effect as its batch leaves it
+        /// (<see cref="DrawLaid"/>): the fan's three layers, and the light the waves gather under the
+        /// surface. By request ("when moving these rays are super shaking and why is it so blocky?"):
+        /// they were laid a row of their pictures at a time, 4 to 20 pixels high, each row cut where
+        /// the light is stopped at the edge of the last whole pixel of the picture short of it (a
+        /// sprite's part of its picture is in whole pixels), and a pixel of the fan's picture is 7
+        /// to 24 of the screen's. Those pixels go with the picture, which is where the sun is on the
+        /// screen, and the shadows with the world: as the screen moved, every cut jumped from one
+        /// pixel's edge to the next, and its edge was steps. Laid now as pieces whose corners are
+        /// exactly where the light is stopped, the picture's place at each reckoned to the fraction
+        /// (<see cref="LayAlongLight"/>): a shadow's edge is a straight line along the light, and
+        /// moves with the world a pixel at a time as the screen does.
         /// </summary>
-        private static void LitRow(SpriteBatch batch, Texture2D picture, int row, float left, float top, Vector2 scale, float depth, Color colour)
+        private static VertexPositionColorTexture[] laidCorners;
+        private static short[] laidPieces;
+        private static int laidCount, laidPieceCount;
+
+        /// <summary>The most corners laid for one picture in a frame (the triangles' corners are counted in a short); past it, nothing more is laid.</summary>
+        private const int MostLaid = 32000;
+
+        /// <summary>
+        /// Where the picture being laid is at a point (along the surface, where the light there came
+        /// into the water, and how deep under it, the screen's pixels), as a fraction of it across,
+        /// <see cref="layU"/> + <see cref="layUAlong"/> along + <see cref="layUDeep"/> deep, and down,
+        /// <see cref="layV"/> + <see cref="layVDeep"/> deep; and where the surface is on the screen.
+        /// </summary>
+        private static float layU, layUAlong, layUDeep, layV, layVDeep, laySurface;
+
+        /// <summary>
+        /// The colour of what is being laid: <see cref="layColour"/> all over, or for the light under
+        /// the surface (<see cref="layShaded"/>) its colour and strength by how near to under the sun
+        /// or the moon each corner is (<see cref="CausticColour"/>).
+        /// </summary>
+        private static Color layColour, layWarm, layCool;
+        private static bool layShaded;
+        private static float layUnder, layStrength, layShare;
+
+        /// <summary>A frame's laying begun: nothing laid.</summary>
+        private static void BeginLaying()
         {
-            float from = Math.Max(left, 0f), to = Math.Min(left + picture.Width * scale.X, Main.screenWidth);
+            laidCorners ??= new VertexPositionColorTexture[MostLaid];
+            laidPieces ??= new short[MostLaid * 3];
+            laidCount = 0;
+            laidPieceCount = 0;
+        }
+
+        /// <summary>A picture to be laid from <paramref name="left"/> to <paramref name="right"/> along the surface, its top at the surface and its foot <paramref name="deep"/> under it, all of it in this colour.</summary>
+        private static void LayPicture(float left, float right, float deep, Color colour)
+        {
+            layU = -left / (right - left);
+            layUAlong = 1f / (right - left);
+            layUDeep = 0f;
+            layV = 0f;
+            layVDeep = 1f / deep;
+            layColour = colour;
+            layShaded = false;
+        }
+
+        /// <summary>
+        /// The picture set to be laid (<see cref="LayPicture"/>), from <paramref name="left"/> to
+        /// <paramref name="right"/> along the surface (screen pixels, where the light came into the
+        /// water) and from <paramref name="top"/> to <paramref name="foot"/> under it, every row of
+        /// it moved aside as far as the light leans at that depth (sheared, not turned): where it is
+        /// on the screen, and only where the light reaches, exactly (<see cref="Shape"/>), and not
+        /// under anything on the surface if <paramref name="platform"/>. In pieces along the foot of
+        /// the lit water (or pieces <paramref name="step"/> pixels along the surface, for a colour
+        /// that changes along it): each piece's sides along the light, its foot where the light is
+        /// stopped, a corner on a side where the next piece's foot meets it, so that the two meet
+        /// corner to corner, with no crack and no overlap between them.
+        /// </summary>
+        private static void LayAlongLight(float left, float right, float surfaceY, float top, float foot, bool platform, float step)
+        {
+            laySurface = surfaceY;
+
+            // What of it is on the screen: from its top or the screen's, to its foot or the screen's.
+            float d0 = Math.Max(top, -surfaceY);
+            float d1 = Math.Min(foot, Main.screenHeight - surfaceY);
+
+            if (d1 <= d0)
+                return;
+
+            // The light seen there came in between these along the surface: the screen's width, and
+            // as far aside as the light leans over the depths seen.
+            float from = Math.Max(left, Math.Min(d0 * lightLean, d1 * lightLean));
+            float to = Math.Min(right, Main.screenWidth + Math.Max(d0 * lightLean, d1 * lightLean));
 
             if (to <= from)
                 return;
 
-            // The light at this depth came in this far to the side of where it is.
-            float shift = Main.screenPosition.X + depth * lightLean;
-            int first = (int)Math.Floor((from + shift) / 16f), last = (int)Math.Floor((to + shift) / 16f);
-            float start = from;
-            bool open = false;
+            Shape(d1);
 
-            for (int column = first; column <= last + 1; column++)
+            // This picture's share of the foot: as far along as it goes, no deeper than it and the
+            // screen go, and at the surface under anything on it if so asked.
+            partCount = 0;
+
+            for (int k = 0; k < footCount; k++)
             {
-                bool lit = column <= last && depth < LightStops(column);
+                float a = Math.Max(from, footFrom[k]), b = Math.Min(to, footTo[k]);
 
-                if (lit && !open)
-                {
-                    start = Math.Max(from, column * 16f - shift);
-                    open = true;
-                }
-                else if (!lit && open)
-                {
-                    float end = Math.Min(to, column * 16f - shift);
+                if (b > a)
+                    AddPart(a, b, FootAt(k, a), FootAt(k, b), d1, platform);
+            }
 
-                    Piece(batch, picture, row, left, top, scale, start, end, start > from, end < to, colour);
-                    open = false;
+            for (int k = 0; k < partCount; k++)
+            {
+                float before = k > 0 && partTo[k - 1] == partFrom[k] ? partDeepTo[k - 1] : d0;
+                float after = k + 1 < partCount && partFrom[k + 1] == partTo[k] ? partDeepFrom[k + 1] : d0;
+
+                LayPart(partFrom[k], partTo[k], d0, partDeepFrom[k], partDeepTo[k], before, after, step);
+            }
+        }
+
+        /// <summary>How deep the light is stopped at this point along the surface, in this piece of its foot.</summary>
+        private static float FootAt(int k, float x) => Between(footFrom[k], footTo[k], footDeepFrom[k], footDeepTo[k], x);
+
+        /// <summary>The depth at <paramref name="x"/> on the straight line from (<paramref name="a"/>, <paramref name="da"/>) to (<paramref name="b"/>, <paramref name="db"/>); either end exactly at it.</summary>
+        private static float Between(float a, float b, float da, float db, float x)
+        {
+            if (x <= a || da == db)
+                return da;
+            if (x >= b)
+                return db;
+
+            return da + (db - da) * (x - a) / (b - a);
+        }
+
+        /// <summary>A stretch of a picture's foot from <paramref name="a"/> to <paramref name="b"/> (as deep as <paramref name="da"/> and <paramref name="db"/> at either end), no deeper than <paramref name="deepest"/>; under anything on the surface none of it, if <paramref name="platform"/>.</summary>
+        private static void AddPart(float a, float b, float da, float db, float deepest, bool platform)
+        {
+            // Where a slanting stretch passes the deepest, cut there: past it, the deepest.
+            if ((da > deepest) != (db > deepest) && da != db)
+            {
+                float x = a + (deepest - da) * (b - a) / (db - da);
+
+                if (x > a && x < b)
+                {
+                    AddPart(a, x, Math.Min(da, deepest), deepest, deepest, platform);
+                    AddPart(x, b, deepest, Math.Min(db, deepest), deepest, platform);
+                    return;
                 }
+            }
+
+            da = Math.Min(da, deepest);
+            db = Math.Min(db, deepest);
+
+            if (platform)
+            {
+                // Under each column with something on the surface, the light never comes in.
+                float screenX = Main.screenPosition.X;
+                int first = (int)Math.Floor((a + screenX) / 16f), last = (int)Math.Floor((b + screenX) / 16f);
+                float at = a;
+
+                for (int column = first; column <= last; column++)
+                {
+                    if (!WorldGen.InWorld(column, VastOcean.Surface) || !WorldGen.SolidTile(column, VastOcean.Surface))
+                        continue;
+
+                    float s = Math.Max(at, column * 16f - screenX), e = Math.Min(b, column * 16f + 16f - screenX);
+
+                    if (e <= s)
+                        continue;
+
+                    if (s > at)
+                        Append(at, s, Between(a, b, da, db, at), Between(a, b, da, db, s));
+
+                    Append(s, e, 0f, 0f);
+                    at = e;
+                }
+
+                if (at < b)
+                    Append(at, b, Between(a, b, da, db, at), db);
+
+                return;
+            }
+
+            Append(a, b, da, db);
+        }
+
+        /// <summary>A stretch added to this picture's foot, joined to the one before it if they meet level at one depth.</summary>
+        private static void Append(float a, float b, float da, float db)
+        {
+            if (b <= a)
+                return;
+
+            if (partCount > 0 && partTo[partCount - 1] == a && da == db && partDeepFrom[partCount - 1] == da && partDeepTo[partCount - 1] == da)
+            {
+                partTo[partCount - 1] = b;
+                return;
+            }
+
+            if (partCount == partFrom.Length)
+            {
+                Array.Resize(ref partFrom, partCount * 2);
+                Array.Resize(ref partTo, partCount * 2);
+                Array.Resize(ref partDeepFrom, partCount * 2);
+                Array.Resize(ref partDeepTo, partCount * 2);
+            }
+
+            partFrom[partCount] = a;
+            partTo[partCount] = b;
+            partDeepFrom[partCount] = da;
+            partDeepTo[partCount] = db;
+            partCount++;
+        }
+
+        /// <summary>A picture's own stretches of the foot of the lit water, in order along the surface (<see cref="LayAlongLight"/>).</summary>
+        private static float[] partFrom = new float[64], partTo = new float[64], partDeepFrom = new float[64], partDeepTo = new float[64];
+        private static int partCount;
+
+        /// <summary>
+        /// A stretch of the foot from <paramref name="xLeft"/> to <paramref name="xRight"/> along the
+        /// surface, the light reaching from <paramref name="top"/> down to <paramref name="footLeft"/>
+        /// and <paramref name="footRight"/> at either end: laid in one piece, or pieces
+        /// <paramref name="step"/> pixels along the surface each, on lines fixed in the world; the
+        /// first given a corner on its left side where the stretch before ends
+        /// (<paramref name="footBefore"/>), the last on its right where the one after does.
+        /// </summary>
+        private static void LayPart(float xLeft, float xRight, float top, float footLeft, float footRight, float footBefore, float footAfter, float step)
+        {
+            // None of it under the top; where it slants up past the top, from there.
+            if (footLeft <= top && footRight <= top)
+                return;
+
+            if (footLeft < top || footRight < top)
+            {
+                float x = xLeft + (top - footLeft) * (xRight - xLeft) / (footRight - footLeft);
+
+                if (footLeft < top)
+                {
+                    xLeft = x;
+                    footLeft = top;
+                    footBefore = top;
+                }
+                else
+                {
+                    xRight = x;
+                    footRight = top;
+                    footAfter = top;
+                }
+            }
+
+            float a = xLeft;
+
+            while (a < xRight)
+            {
+                float b = xRight;
+
+                if (step > 0f)
+                {
+                    float line = (float)(Math.Floor((a + Main.screenPosition.X) / step) + 1.0) * step - Main.screenPosition.X;
+
+                    if (line > a && line < xRight)
+                        b = line;
+                }
+
+                LayPiece(a, b, top, Between(xLeft, xRight, footLeft, footRight, a), Between(xLeft, xRight, footLeft, footRight, b),
+                    a == xLeft ? footBefore : top, b == xRight ? footAfter : top);
+                a = b;
             }
         }
 
         /// <summary>
-        /// The part of a row of a picture between two screen columns, each of its pixels where it
-        /// is in the whole row; at an end that meets a shadow (<paramref name="shadeBefore"/>,
-        /// <paramref name="shadeAfter"/>) ended at the edge of the last whole pixel short of it, so
-        /// that none of it lies over the shadow.
+        /// One piece, from <paramref name="xLeft"/> to <paramref name="xRight"/> along the surface,
+        /// from <paramref name="top"/> down to <paramref name="footLeft"/> at its left and
+        /// <paramref name="footRight"/> at its right: its corners round it (top left, top right, one on
+        /// its right side at <paramref name="rightAt"/> if that is between its top and foot there,
+        /// bottom right, bottom left, one on its left side at <paramref name="leftAt"/> likewise), a
+        /// triangle from a corner in its middle to each side, turned as the game's sprites are.
         /// </summary>
-        private static void Piece(SpriteBatch batch, Texture2D picture, int row, float left, float top, Vector2 scale, float from, float to, bool shadeBefore, bool shadeAfter, Color colour)
+        private static void LayPiece(float xLeft, float xRight, float top, float footLeft, float footRight, float leftAt, float rightAt)
         {
-            float a = (from - left) / scale.X, b = (to - left) / scale.X;
-            int u0 = Math.Max(0, shadeBefore ? (int)Math.Ceiling(a) : (int)Math.Floor(a));
-            int u1 = Math.Min(picture.Width, shadeAfter ? (int)Math.Floor(b) : (int)Math.Ceiling(b));
-
-            if (u1 <= u0)
+            if (laidCount + 7 > MostLaid || xRight <= xLeft)
                 return;
 
-            batch.Draw(picture, new Vector2(left + u0 * scale.X, top), new Rectangle(u0, row, u1 - u0, 1), colour, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
+            int middle = laidCount;
+
+            Corner((xLeft + xRight) * 0.5f, top + (footLeft + footRight - 2f * top) * 0.25f);
+
+            int first = laidCount;
+
+            Corner(xLeft, top);
+            Corner(xRight, top);
+
+            if (footRight > top)
+            {
+                if (rightAt > top && rightAt < footRight)
+                    Corner(xRight, rightAt);
+
+                Corner(xRight, footRight);
+            }
+
+            if (footLeft > top)
+            {
+                Corner(xLeft, footLeft);
+
+                if (leftAt > top && leftAt < footLeft)
+                    Corner(xLeft, leftAt);
+            }
+
+            int sides = laidCount - first;
+
+            for (int k = 0; k < sides; k++)
+            {
+                laidPieces[laidPieceCount++] = (short)middle;
+                laidPieces[laidPieceCount++] = (short)(first + k);
+                laidPieces[laidPieceCount++] = (short)(first + (k + 1) % sides);
+            }
+        }
+
+        // ---- where the light is stopped, exactly ----------------------------------------------------
+
+        /// <summary>
+        /// The foot of the lit water this frame (<see cref="Shape"/>), in pieces in order along the
+        /// surface and meeting end to end, each from <see cref="footFrom"/> to <see cref="footTo"/>
+        /// (screen pixels along the surface, where the light came in) and as deep at either end as
+        /// <see cref="footDeepFrom"/> and <see cref="footDeepTo"/>: level along the top of a tile the
+        /// light falls on, slanting along the side of one it runs into (the side toward the light,
+        /// upright on the screen); at the surface where something standing out of the water keeps
+        /// the light off; as deep as was asked where nothing stops it.
+        /// </summary>
+        private static float[] footFrom = new float[64], footTo = new float[64], footDeepFrom = new float[64], footDeepTo = new float[64];
+        private static int footCount;
+
+        /// <summary>The stretches of the surface whose light is not yet stopped as the foot is worked out, in order; and room to work the next in.</summary>
+        private static float[] openFrom = new float[32], openTo = new float[32], nextFrom = new float[32], nextTo = new float[32];
+        private static int openCount;
+
+        /// <summary>Which of a row's tiles are thick (<see cref="Thick"/>), as the row is looked at.</summary>
+        private static bool[] thickRow = new bool[256];
+
+        /// <summary>The frame the foot was worked out in, and how deep.</summary>
+        private static uint shapedFrame = uint.MaxValue;
+        private static float shapedDeep;
+
+        /// <summary>The pieces of the foot put in order along the surface.</summary>
+        private static int[] footOrder = new int[64];
+
+        /// <summary>
+        /// The foot of the lit water worked out, if it was not already this frame as deep: over the
+        /// stretch of the surface whose light can be seen on the screen, from as far over the water as
+        /// the light is looked back along (<see cref="AirReach"/>) down to <paramref name="deep"/>,
+        /// row by row of tiles. Over the water, a thick tile (<see cref="Thick"/>) in the light's way
+        /// as it comes down at its slant in the air keeps it off the water there altogether; in the
+        /// water, the light is stopped where it first meets one: on its top, or past its corner on its
+        /// side toward the light (each row's tops first, as they are higher than its sides). Exactly,
+        /// not a column of the surface at a time: by request ("why is it so blocky?"), the light falls
+        /// past a tile's corner beside it, and stops on its top, to the pixel.
+        /// </summary>
+        private static void Shape(float deep)
+        {
+            if (shapedFrame == lightFrame && deep <= shapedDeep)
+                return;
+
+            shapedFrame = lightFrame;
+            shapedDeep = deep;
+            footCount = 0;
+            openCount = 1;
+            openFrom[0] = Math.Min(0f, deep * lightLean) - 1f;
+            openTo[0] = Main.screenWidth + Math.Max(0f, deep * lightLean) + 1f;
+
+            float screenX = Main.screenPosition.X;
+            float line = (VastOcean.Surface + 0.5f) * 16f;
+
+            // Over the water, from the surface's row up as far as the light is looked back along.
+            float airLean = (float)Math.Tan(lightAir);
+            float highest = AirReach * 16f * (float)Math.Cos(lightAir);
+
+            for (int row = VastOcean.Surface; row >= 0 && openCount > 0; row--)
+            {
+                float low = Math.Max(0f, line - (row + 1) * 16f);
+                float high = line - row * 16f;
+
+                if (low > highest)
+                    break;
+
+                float near = Math.Min(low * airLean, high * airLean), far = Math.Max(low * airLean, high * airLean);
+                int firstTile = (int)Math.Floor((openFrom[0] + screenX + near) / 16f);
+                int lastTile = (int)Math.Floor((openTo[openCount - 1] + screenX + far) / 16f);
+
+                if (!MarkRow(row, firstTile, lastTile, near, far, screenX, true))
+                    continue;
+
+                for (int k = 0; k <= lastTile - firstTile && openCount > 0; k++)
+                {
+                    if (!thickRow[k])
+                        continue;
+
+                    int tile = firstTile + k;
+
+                    Close(tile * 16f - screenX - far, tile * 16f + 16f - screenX - near, 0f, 0f);
+                }
+            }
+
+            // In the water, row by row down.
+            float lean = lightLean;
+
+            for (int row = VastOcean.Surface + 1; row < Main.maxTilesY && openCount > 0; row++)
+            {
+                float top = row * 16f - line;
+
+                if (top >= deep)
+                    break;
+
+                float near = Math.Min(top * lean, (top + 16f) * lean), far = Math.Max(top * lean, (top + 16f) * lean);
+                int firstTile = (int)Math.Floor((openFrom[0] + screenX - far) / 16f);
+                int lastTile = (int)Math.Floor((openTo[openCount - 1] + screenX - near) / 16f);
+                int tiles = lastTile - firstTile + 1;
+
+                if (!MarkRow(row, firstTile, lastTile, near, far, screenX, false))
+                    continue;
+
+                // The tops, at the row's top: a tile's from where the light at that depth crosses its left edge to its right.
+                for (int k = 0; k < tiles && openCount > 0; k++)
+                {
+                    if (!thickRow[k])
+                        continue;
+
+                    float a = (firstTile + k) * 16f - screenX + top * lean;
+
+                    Close(a, a + 16f, top, top);
+                }
+
+                // The sides toward the light, down the row: what passed a tile's corner runs into its side.
+                if (lean != 0f)
+                {
+                    for (int k = 0; k < tiles && openCount > 0; k++)
+                    {
+                        if (!thickRow[k])
+                            continue;
+
+                        float a = (firstTile + k) * 16f - screenX + top * lean;
+
+                        if (lean > 0f)
+                            Close(a + 16f, a + 16f + 16f * lean, top, top + 16f);
+                        else
+                            Close(a + 16f * lean, a, top + 16f, top);
+                    }
+                }
+            }
+
+            // What is open still is not stopped as deep as was asked.
+            for (int k = 0; k < openCount; k++)
+                AddFoot(openFrom[k], openTo[k], deep, deep);
+
+            OrderFeet();
+        }
+
+        /// <summary>
+        /// Which of a row's tiles under the light still open are thick (<see cref="Thick"/>), into
+        /// <see cref="thickRow"/> (from <paramref name="firstTile"/>, as far as <paramref name="lastTile"/>);
+        /// whether any. The light still open at this row crosses it from <paramref name="near"/> to
+        /// <paramref name="far"/> pixels to the side of where it came in (as the row is in the air or
+        /// the water, to one side or the other).
+        /// </summary>
+        private static bool MarkRow(int row, int firstTile, int lastTile, float near, float far, float screenX, bool air)
+        {
+            int tiles = lastTile - firstTile + 1;
+
+            if (tiles <= 0)
+                return false;
+
+            if (tiles > thickRow.Length)
+                thickRow = new bool[Math.Max(tiles, thickRow.Length * 2)];
+
+            Array.Clear(thickRow, 0, tiles);
+
+            bool any = false;
+
+            for (int k = 0; k < openCount; k++)
+            {
+                int a = (int)Math.Floor((openFrom[k] + screenX + (air ? near : -far)) / 16f);
+                int b = (int)Math.Floor((openTo[k] + screenX + (air ? far : -near)) / 16f);
+
+                any |= MarkThick(row, Math.Max(a, firstTile), Math.Min(b, lastTile), firstTile);
+            }
+
+            return any;
+        }
+
+        /// <summary>
+        /// Which of a row's tiles from <paramref name="from"/> to <paramref name="to"/> are thick
+        /// (<see cref="Thick"/>), marked in <see cref="thickRow"/> from <paramref name="origin"/>; whether
+        /// any. Looked at one tile in <see cref="Stops"/>: a thick tile has that many solid across
+        /// through it, so every run of them has one of those in it; a run found is followed along,
+        /// and if it is that many across or more its tiles are looked at up and down. (Most rows the
+        /// light crosses are open water, and are passed over the faster.)
+        /// </summary>
+        private static bool MarkThick(int row, int from, int to, int origin)
+        {
+            if (to < from)
+                return false;
+
+            bool any = false;
+            int lowest = from - Stops, highest = to + Stops;
+            int followed = int.MinValue;
+            int start = from - (Stops - 1);
+            int over = ((start % Stops) + Stops) % Stops;
+
+            // From the first multiple of Stops at or past the start, every Stops tiles.
+            for (int x = over == 0 ? start : start + Stops - over; x <= to + Stops - 1; x += Stops)
+            {
+                if (x <= followed || !Solid(x, row))
+                    continue;
+
+                int a = x, b = x;
+
+                while (a - 1 >= lowest && Solid(a - 1, row))
+                    a--;
+                while (b + 1 <= highest && Solid(b + 1, row))
+                    b++;
+
+                followed = b;
+
+                if (b - a + 1 < Stops)
+                    continue;
+
+                // Across enough: thick if as many are solid up and down through it.
+                for (int t = Math.Max(a, from); t <= Math.Min(b, to); t++)
+                {
+                    int high = 1;
+
+                    for (int k = 1; k < Stops && Solid(t, row - k); k++)
+                        high++;
+                    for (int k = 1; high < Stops && Solid(t, row + k); k++)
+                        high++;
+
+                    if (high >= Stops)
+                    {
+                        thickRow[t - origin] = true;
+                        any = true;
+                    }
+                }
+            }
+
+            return any;
+        }
+
+        /// <summary>
+        /// The light still open between <paramref name="a"/> and <paramref name="b"/> along the
+        /// surface stopped, as deep as <paramref name="da"/> at a and <paramref name="db"/> at b and in
+        /// a straight line between: that is its foot there.
+        /// </summary>
+        private static void Close(float a, float b, float da, float db)
+        {
+            if (b <= a || b <= openFrom[0] || a >= openTo[openCount - 1])
+                return;
+
+            int next = 0;
+
+            for (int k = 0; k < openCount; k++)
+            {
+                float p = openFrom[k], q = openTo[k];
+                float s = Math.Max(p, a), e = Math.Min(q, b);
+
+                if (e <= s)
+                {
+                    Keep(ref next, p, q);
+                    continue;
+                }
+
+                AddFoot(s, e, Between(a, b, da, db, s), Between(a, b, da, db, e));
+
+                if (p < s)
+                    Keep(ref next, p, s);
+                if (e < q)
+                    Keep(ref next, e, q);
+            }
+
+            (openFrom, nextFrom) = (nextFrom, openFrom);
+            (openTo, nextTo) = (nextTo, openTo);
+            openCount = next;
+        }
+
+        /// <summary>A stretch kept open, into the list being made.</summary>
+        private static void Keep(ref int next, float p, float q)
+        {
+            if (next == nextFrom.Length)
+            {
+                Array.Resize(ref nextFrom, next * 2);
+                Array.Resize(ref nextTo, next * 2);
+                Array.Resize(ref openFrom, next * 2);
+                Array.Resize(ref openTo, next * 2);
+            }
+
+            nextFrom[next] = p;
+            nextTo[next] = q;
+            next++;
+        }
+
+        private static void AddFoot(float a, float b, float da, float db)
+        {
+            if (footCount == footFrom.Length)
+            {
+                Array.Resize(ref footFrom, footCount * 2);
+                Array.Resize(ref footTo, footCount * 2);
+                Array.Resize(ref footDeepFrom, footCount * 2);
+                Array.Resize(ref footDeepTo, footCount * 2);
+            }
+
+            footFrom[footCount] = a;
+            footTo[footCount] = b;
+            footDeepFrom[footCount] = da;
+            footDeepTo[footCount] = db;
+            footCount++;
+        }
+
+        /// <summary>The foot's pieces put in order along the surface, and those that meet level at one depth, or along one slant, made one.</summary>
+        private static void OrderFeet()
+        {
+            if (footOrder.Length < footCount)
+                footOrder = new int[footFrom.Length];
+
+            for (int k = 0; k < footCount; k++)
+                footOrder[k] = k;
+
+            // In order of where each begins (few, and mostly in order already).
+            for (int k = 1; k < footCount; k++)
+            {
+                int item = footOrder[k];
+                float key = footFrom[item];
+                int j = k - 1;
+
+                while (j >= 0 && footFrom[footOrder[j]] > key)
+                {
+                    footOrder[j + 1] = footOrder[j];
+                    j--;
+                }
+
+                footOrder[j + 1] = item;
+            }
+
+            // Into the lists for the open stretches (free again now), joined where they meet alike.
+            int count = 0;
+
+            for (int k = 0; k < footCount; k++)
+            {
+                int i = footOrder[k];
+                float a = footFrom[i], b = footTo[i], da = footDeepFrom[i], db = footDeepTo[i];
+
+                if (count > 0 && nextTo[count - 1] == a && openTo[count - 1] == da && Alike(nextFrom[count - 1], openFrom[count - 1], a, da, b, db))
+                {
+                    nextTo[count - 1] = b;
+                    openTo[count - 1] = db;
+                    continue;
+                }
+
+                if (count == nextFrom.Length)
+                {
+                    Array.Resize(ref nextFrom, count * 2);
+                    Array.Resize(ref nextTo, count * 2);
+                    Array.Resize(ref openFrom, count * 2);
+                    Array.Resize(ref openTo, count * 2);
+                }
+
+                nextFrom[count] = a;
+                openFrom[count] = da;
+                nextTo[count] = b;
+                openTo[count] = db;
+                count++;
+            }
+
+            for (int k = 0; k < count; k++)
+            {
+                footFrom[k] = nextFrom[k];
+                footDeepFrom[k] = openFrom[k];
+                footTo[k] = nextTo[k];
+                footDeepTo[k] = openTo[k];
+            }
+
+            footCount = count;
+            openCount = 0;
+        }
+
+        /// <summary>Whether a piece of the foot from (<paramref name="a0"/>, <paramref name="d0"/>) to (<paramref name="a1"/>, <paramref name="d1"/>) goes on in a straight line to (<paramref name="b"/>, <paramref name="db"/>): level at one depth, or along one slant.</summary>
+        private static bool Alike(float a0, float d0, float a1, float d1, float b, float db)
+        {
+            if (d0 == d1)
+                return db == d1;
+
+            float slope = (d1 - d0) / (a1 - a0);
+            float onward = (db - d1) / (b - a1);
+
+            return Math.Abs(onward - slope) <= 1e-4f * Math.Max(1f, Math.Abs(slope));
+        }
+
+        /// <summary>A corner at this point (along the surface, where the light there came into the water; deep under it): on the screen as far aside as the light leans there, the picture's place at it, its colour.</summary>
+        private static void Corner(float along, float deep)
+        {
+            float x = along - deep * lightLean;
+
+            laidCorners[laidCount++] = new VertexPositionColorTexture(
+                new Vector3(x, laySurface + deep, 0f),
+                layShaded ? CausticColour(x) : layColour,
+                new Vector2(layU + layUAlong * along + layUDeep * deep, layV + layVDeep * deep));
+        }
+
+        /// <summary>The light under the surface at this column of the screen: gold near to under the sun, a pale blue away from it, and stronger the nearer (<see cref="DrawCaustics"/>).</summary>
+        private static Color CausticColour(float x)
+        {
+            float beneath = Beneath(x, layUnder, Main.screenWidth * 0.24f);
+
+            return Lit(Color.Lerp(layCool, layWarm, beneath), layStrength * (0.18f + 0.82f * beneath) * layShare);
+        }
+
+        /// <summary>
+        /// What has been laid, drawn now over what the batch has drawn so far, with this picture
+        /// sampled so: the batch ended first (as it ends, its blending, sampling and the camera's
+        /// transform are set and its effect applied, SpriteBatch.PrepRenderState, whether or not it
+        /// had anything to draw), and begun again after as it was (<see cref="Layers"/>).
+        /// </summary>
+        private static void DrawLaid(SpriteBatch batch, Texture2D picture, SamplerState sampler)
+        {
+            if (laidPieceCount == 0)
+                return;
+
+            batch.End();
+
+            try
+            {
+                GraphicsDevice device = batch.GraphicsDevice;
+
+                device.Textures[0] = picture;
+                device.SamplerStates[0] = sampler;
+                device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, laidCorners, 0, laidCount, laidPieces, 0, laidPieceCount / 3);
+            }
+            finally
+            {
+                batch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.None, Main.Rasterizer, null, Main.Transform);
+            }
         }
 
         /// <summary>
@@ -1316,7 +1996,7 @@ namespace PisAndDag.Content.Biomes
         private static void DrawCaustics(SpriteBatch batch, float day)
         {
             const float Band = 40f;
-            const int Segment = 32;
+            const float Segment = 32f;
 
             if (caustics == null || !caustics.IsLoaded)
                 return;
@@ -1333,50 +2013,45 @@ namespace PisAndDag.Content.Biomes
                 return;
 
             Texture2D picture = caustics.Value;
-            int across = picture.Width;
             float t = Main.GlobalTimeWrappedHourly;
             float clock = t * CausticPace;
             int frame = (int)Math.Floor(clock) % CausticFrames;
             int next = (frame + 1) % CausticFrames;
             float blend = clock - (float)Math.Floor(clock);
-            float under = Overhead();
             float low = SunLow();
-            Color warm = byDay ? Color.Lerp(new Color(255, 236, 178), new Color(255, 200, 120), low) : new Color(200, 216, 255);
-            Color cool = byDay ? new Color(150, 228, 245) : new Color(120, 150, 210);
 
-            // The picture fixed in the water, drifting along it slowly the way the wind blows; from
-            // the water's first row down, none of it over the water (WaterTop).
+            // The picture fixed in the water, drifting along it slowly the way the wind blows, a
+            // pixel of it to a pixel of the screen across, its frame's height to the band's; from
+            // the water's first row down, none of it over the water (WaterTop). Only where the light
+            // comes into the water and as deep into the band as it goes, cut exactly along the light
+            // (LayAlongLight), in pieces a segment long, each corner as gold and as bright as it is
+            // near to under the sun (or the moon); this frame faded into the next.
             float drift = t * (6f + 10f * Rough()) * (Main.windSpeedCurrent < 0f ? -1f : 1f);
-            float left = Main.screenPosition.X + drift;
-            Vector2 scale = new Vector2(1f, Band / CausticHigh);
-            int top = WaterTop();
+            float bandTop = WaterTop() - surfaceY;
 
-            for (float x = (float)Math.Floor(left / Segment) * Segment; x < left + Main.screenWidth + Segment; x += Segment)
+            layShaded = true;
+            layUnder = Overhead();
+            layStrength = strength;
+            layWarm = byDay ? Color.Lerp(new Color(255, 236, 178), new Color(255, 200, 120), low) : new Color(200, 216, 255);
+            layCool = byDay ? new Color(150, 228, 245) : new Color(120, 150, 210);
+            float shift = (Main.screenPosition.X + drift) / picture.Width;
+
+            layU = shift - (float)Math.Floor(shift);
+            layUAlong = 1f / picture.Width;
+            layUDeep = -lightLean / picture.Width;
+            layVDeep = CausticHigh / Band / picture.Height;
+
+            BeginLaying();
+
+            for (int k = 0; k < 2; k++)
             {
-                float screenX = x - left;
-                float centre = screenX + Segment * 0.5f;
-                int column = (int)((centre + Main.screenPosition.X) / 16f);
-
-                if (WorldGen.InWorld(column, VastOcean.Surface) && WorldGen.SolidTile(column, VastOcean.Surface))
-                    continue;
-
-                // Nor where the light does not reach halfway down the band.
-                if (LightStops((int)Math.Floor((centre + Main.screenPosition.X + Band * 0.5f * lightLean) / 16f)) < Band * 0.5f)
-                    continue;
-
-                float beneath = Beneath(centre, under, Main.screenWidth * 0.24f);
-                float s = strength * (0.18f + 0.82f * beneath);
-
-                if (s < 0.01f)
-                    continue;
-
-                int u = ((int)x % across + across) % across;
-                Color colour = Color.Lerp(cool, warm, beneath);
-                Vector2 at = new Vector2(screenX, top);
-
-                batch.Draw(picture, at, new Rectangle(u, frame * CausticHigh, Segment, CausticHigh), Lit(colour, s * (1f - blend)), 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
-                batch.Draw(picture, at, new Rectangle(u, next * CausticHigh, Segment, CausticHigh), Lit(colour, s * blend), 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
+                layV = ((k == 0 ? frame : next) * CausticHigh - bandTop * CausticHigh / Band) / picture.Height;
+                layShare = k == 0 ? 1f - blend : blend;
+                LayAlongLight(float.NegativeInfinity, float.PositiveInfinity, surfaceY, bandTop, bandTop + Band, true, Segment);
             }
+
+            layShaded = false;
+            DrawLaid(batch, picture, SamplerState.LinearWrap);
         }
 
         /// <summary>
@@ -1486,20 +2161,31 @@ namespace PisAndDag.Content.Biomes
             return Math.Min(1f, (float)Math.Exp(-1.8f * u * u) * lengthwise / FanPeak);
         }
 
-        /// <summary>How much of the surface over this stretch of the screen (its middle, so wide) is open water, not under the platform: 0 to 1, by nine columns across it.</summary>
+        /// <summary>
+        /// How much of the surface over this stretch of the screen (its middle, so wide) is open
+        /// water, not under the platform or the island: 0 to 1, each column for as much of it as is
+        /// in the stretch, so that it changes smoothly as the screen moves (it was nine columns
+        /// across it, and the light about the rays went brighter and dimmer by ninths as each went
+        /// on or off the island).
+        /// </summary>
         private static float Open(float screenX, float wide)
         {
-            int open = 0;
+            if (wide <= 0f)
+                return 1f;
 
-            for (int k = 0; k < 9; k++)
+            float a = Main.screenPosition.X + screenX - wide * 0.5f;
+            float b = a + wide;
+            float open = 0f;
+
+            for (int column = (int)Math.Floor(a / 16f); column * 16f < b; column++)
             {
-                int column = (int)((Main.screenPosition.X + screenX + (k / 8f - 0.5f) * wide) / 16f);
+                float overlap = Math.Min(b, column * 16f + 16f) - Math.Max(a, column * 16f);
 
-                if (!WorldGen.InWorld(column, VastOcean.Surface) || !WorldGen.SolidTile(column, VastOcean.Surface))
-                    open++;
+                if (overlap > 0f && (!WorldGen.InWorld(column, VastOcean.Surface) || !WorldGen.SolidTile(column, VastOcean.Surface)))
+                    open += overlap;
             }
 
-            return open / 9f;
+            return MathHelper.Clamp(open / wide, 0f, 1f);
         }
 
         /// <summary>

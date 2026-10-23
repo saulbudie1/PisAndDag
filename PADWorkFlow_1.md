@@ -15,6 +15,9 @@
 > §14 = session 5, §15 = session 6.** Later wins. The newest open TODO is §15.8.
 > *[And §16 = session 7. Its open TODO is §16.11; the sections after it (§16.13 on) each end
 > with what they left open.]*
+> *[Session 7 ended at §16.98. **A fresh chat starts at §16.99**, the end-of-session-7
+> handoff: setup, rules, state, open items. Session 8 writes §17.]*
+> *[Session 8 correction: §16.100 sits after §16.99 and belongs to session 7; read it too. Session 8's entries start at §17.1.]*
 
 ---
 
@@ -20745,3 +20748,1772 @@ so one is taken every frame).
 
 Sources: none outside the game's and FNA's own code (tModLoader.dll, FNA.dll, ReLogic.dll of
 tML 2026.8.3.0).
+
+## 16.95 Session 7: the sea's light steady and cut clean; the Depth Meter's zones; the floor kept; the sniper's dragon
+
+Asked, with a picture of the sun's rays under the water by the fisherman's house:
+
+> when moving these rays are super shaking and why is it so blocky?
+
+Then, of the Depth Meter: "Section 2: Schooler Zone (text color for depth meter:#26e9f0) /
+section 3-4: Hummer's Sea #4d5abd / section 5 -6: Light Party #b853b1 / Foreverzone (i like
+your color) / Abyssal Trench Lerp down thru time: #291852 #210d3b #2d1733" (asked which
+colour for the Forevernight Zone: "The pressure red"), "remember to color everything" (with
+a picture of the whole line red), and "When its hurting from pressure it flashes red and
+normal text color". Of the floor: "Blocks on the sendiment cannot be broken" (asked whether
+a rule or a fault: "Make it a rule"). And of White Death, a talk ending in "Yes" to writing
+it into PAD_Lore_Planning section 8 (below, section 6).
+
+### 1. Read as
+
+1. The rays: whatever in the light under the water moves wrongly as the screen moves, and
+   whatever in it is in blocks, found and put right; its look otherwise as it was.
+2. The Depth Meter: the part of the sea named and the whole line coloured by section: the
+   1st the Vast Ocean in the game's white (no colour was given for it), the 2nd the Schooler
+   Zone, the 3rd and 4th Hummer's Sea, the 5th and 6th the Light Party, the 7th to the 9th
+   the Forevernight Zone in the pressure's red, the 10th down the Abyssal Trench going round
+   its three colours. While the water takes the player's life, the line flashing between red
+   and the game's white.
+3. The floor: from the 8th section down (the floor, its mountains, caves and trench all lie
+   under it), every block the place was made with cannot be broken; what lies on it that is
+   not a block (its life, shells, piles, dripstone, the island's chains), the walls, and
+   what a player puts down, as before.
+
+### 2. What was wrong with the rays
+
+Measured on the mod's own compiled code, headless, in a bench of mine outside the mod folder
+(SeaBench): the island's shore as in the picture (the house on its posts, its roof and
+chimney, the pier, a sand floor twelve rows down), 2:47 in the afternoon as in the picture,
+the screen 1920 by 1080; every sprite the sea's light draws recorded and rasterized on the
+CPU. The picture's staircase came out the same.
+
+1. **The light about the rays** (its fan, three layers) was laid a row of its picture at a
+   time, 4 to 20 pixels high, and each row cut where the light is stopped, at the edge of
+   the last whole pixel of the picture short of it: a sprite's part of its picture is in
+   whole pixels, and a pixel of the fan's picture is 7 to 24 of the screen's. So a shadow's
+   edge was steps. And the picture is where the sun is on the screen, the shadows where the
+   world is: as the screen moved, every cut jumped from one of the picture's pixels to the
+   next. Measured: moving 3 pixels a frame, the edge of the chimney's shadow went back and
+   forth over 13 to 33 pixels of the world, in jumps of up to 32.
+2. **The shafts** were each put somewhere along a stretch of the surface as wide as the
+   screen and more, and put back the other side as the screen went past them. But that
+   stretch was the wider the more the light leans, and widened as the sun went over; and a
+   shaft's place was its place in the stretch plus as many stretches as the screen is from
+   the world's edge (27 at the island, 33 at the platform). Measured, standing still: every
+   shaft going 1.26 pixels a frame to the side, 76 a second.
+3. **The light about the rays went brighter and dimmer by ninths** as the screen went: how
+   open the surface under the sun is was reckoned from nine columns, each open or not.
+
+### 3. The light, laid exactly (`VastOceanSky.cs`)
+
+1. The fan's three layers and the light the waves gather under the surface laid as pieces
+   whose corners are exactly where the light is stopped, the picture's place at each
+   reckoned to the fraction, and drawn straight into the picture with the game's own sprite
+   effect: the game's batch ended (as it ends, its blending, sampling, the camera's
+   transform and its effect are set, SpriteBatch.PrepRenderState, whether it had anything to
+   draw or not: FNA's own code, read), the pieces drawn
+   (`GraphicsDevice.DrawUserIndexedPrimitives`, as the lamp's are since 16.94), the batch
+   begun again as it was. Each piece's corners round it and a triangle from its middle to
+   each side, a corner on a side wherever the next piece's foot meets it: the pieces meet
+   corner to corner, with no crack between and none drawn twice.
+2. Where the light is stopped is worked out exactly, once a frame, over what of it can be
+   seen (the foot of the lit water): row by row of tiles from as far over the water as the
+   light is looked back along (48 tiles, as before) down to as deep as is seen. Over the
+   water a thick tile (four solid across and four up and down through it, as before) in the
+   light's way, at its slant in the air, keeps it off the water; in the water the light
+   stops on a thick tile's top, or past its corner on its side toward the light. So the
+   shadows are straight lines along the light, the light ends on the tops of the blocks, and
+   falls past their corners onto their sides.
+3. A row is looked at one tile in four (a thick tile has four solid across through it, so
+   every run of them has one of those in it), and only under the light still open: most rows
+   the light crosses are open water.
+4. The shafts: each has a stretch of the surface of its own, fixed in the water, as many to
+   a screen's width and 900 pixels more as there were (60 of the sun's, 28 of the moon's);
+   each comes in somewhere along its own for its moment, then somewhere else, sliding a
+   little with the waves as before.
+5. How open the surface under the sun is: each column for as much of it as is in the
+   stretch, so it changes as smoothly as the screen moves.
+
+### 4. Checked
+
+1. Compiled against tML 2026.8.3.0's assemblies: 0 errors, the 10 known warnings (out144).
+2. Moving 3 pixels a frame for 24 frames: the chimney's shadow's edge, on three rows of the
+   screen, stays where it is in the world, to a pixel (it moved one pixel once in the 24,
+   the sun's own going).
+3. Each layer of the fan and each frame of the light under the surface rasterized alone,
+   corners snapped to 1/256 of a pixel as a graphics card does: no pixel covered twice, no
+   pixel left out between two pieces.
+4. Against a trace of the light pixel by pixel (back up along it through the water and then
+   the air, a fiftieth of a pixel a step, against thick tiles): every second pixel of the
+   three layers, 42,927, 72,044 and 77,924 of them; none differ.
+5. The shafts, standing still: 0.16 pixels a frame (their sliding with the waves, either
+   way) where they went 1.26; lit, 18.0 a frame over two and a half minutes where it was
+   18.3.
+6. The cost here (two cores, shared): the fan and the light under the surface 0.15 to 0.32
+   ms a frame, at three depths; the old 0.37 ms, not counting the drawing of its 360 to 390
+   sprites.
+7. What a picture of it all shows: `rays_before_after_1695.gif` and `rays_still_1695.png`,
+   in Claude outputs.
+
+### 5. The Depth Meter (`VastOceanDepthMeter.cs`), the floor (`VastOcean.cs`, `VastOceanPressure.cs`)
+
+1. The parts of the sea by section, as asked, the whole line in the part's colour, in the
+   game's own pulse of its text as every line of it is. The trench's colours one to the next
+   every 2.5 seconds, eased, and round again. While the water takes life: flashing between
+   its red and white, one and a half times a second. Going amber before the weight begins,
+   and the flashing near implosion, kept as they were.
+2. The floor: the place keeps (VastOcean.KeepsTile, asked of whatever would break a tile:
+   SubworldRules) every solid block from the 8th section down that was not put down by hand.
+   What is put down there (it crumbles in 1.3 seconds) is noted on every machine as it is
+   put down, through the game's one place for that (WorldGen.PlaceTile, by detour), on the
+   server too as it is told of it: so it can crumble and be broken as before. Checked
+   headless: the floor's sand and obsidian kept, a row over the 8th not, coral and a
+   platform not, an obsidian block put down by hand not, nothing there and outside the world
+   not.
+3. The text: Schooler Zone, Hummer's Sea, Light Party.
+
+### 6. The sniper's dragon (`PAD_Lore_Planning.md` 8.12)
+
+Asked: "What do we think about a freshly post moon lord dragon/manifestation that had a
+rifle like head? to replace white death". Talked through: the man kept, the dragon his.
+Written into section 8 as 8.12, the user's words quoted: dragons outside the mortal realm
+and Mors, felled not dying of age, stronger with time; he gives up, believing the Court has
+killed his wife, and asks Birth to make her again, and Birth is taken with him instead;
+after the Moon Lord, before Mors remembers, felled as a dragon; his skull shaped like a
+rifle, a burning in his mouth firing a chunk of what he gnawed. Agreed in the talk: she is
+still in the jars (8.6), so he gives up on what could still be done; felling a dragon the
+one death of the era that holds; the Cupbearer already a dragon in the making; the man's
+first meeting kept. Proposed, not decided: a sniper's fight, the shot's telegraph, the name
+White Death. Guardrails: not Chainsaw Man (no pact with terms, no weapon for a head), no
+first gun as an object. Open: Betsy older yet weaker; who tells the player of the jars; what
+Birth does with him; the man in the fight; what he drops.
+
+### 7. Not done
+
+The shafts still end square across themselves where the floor stops them, so a few pixels of
+one lie over the top of the floor on one side. The Abyssal Trench's three colours are very
+dark, and the deep is black: the line is hard to read there, as asked; a pale edge on it is
+one line, if wanted.
+
+### 8. Files
+
+| File | |
+|---|---|
+| `Content/Biomes/VastOceanSky.cs` | the light about the rays and under the surface laid exactly; where the light stops worked out exactly; the shafts fixed in the water; the surface's openness smooth |
+| `Content/Subworlds/VastOceanDepthMeter.cs` | the parts of the sea and their colours; the flash while hurt |
+| `Content/Subworlds/VastOcean.cs`, `Content/Biomes/VastOceanPressure.cs` | the floor's blocks kept from the 8th section down; what is put down noted on every machine |
+| `Localization/en-US_Mods.PisAndDag.hjson` | Schooler Zone, Hummer's Sea, Light Party |
+| `PAD_Lore_Planning.md` | 8.12, the dragon |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md` | notes |
+
+Sources: none outside the game's and FNA's own code (tModLoader.dll, FNA.dll of tML
+2026.8.3.0).
+
+## 16.96 Session 7: the Crevice Eel a hunter, one life, its old name; the caves deeper and a maze; dens and rocks left floating in the big rooms
+
+Asked, with a picture of an eel with a health bar over every piece of it: "base Crevice eel
+is 9500, each segment is +1200 / Rename it to Crevice Eel and all segment count as one so
+they dont all have seperate health bar."; "1.5x spawn rate rn", then "1.3x*"; "and make
+their movement more creepy and predatorial. research eel hunting mechanic."; with a picture
+of a cave, "place random chunk of these in large rooms of caverns." (asked what "these"
+were: "eels and some single floating obsidian/ rock"; and whether 1.3x meant as often: "Yes,
+1.3x as often"); "Make cavern even deeper and more maze like"; "dont hinder entrences and
+exits tho". And from before, done in this session's second part and not delivered then:
+"they should have smart ai to find their way back inside", "their length is randomized, base
+now to base + 2 segment".
+
+### 1. Read as
+
+1. Its life: 9500 at its least length (nine pieces of body after the head), 1200 more for
+   each piece past it (one or two). As the game raises a creature's life for the world's
+   difficulty (Expert, Master), so these, in the same proportion.
+2. One life for the whole eel and one health bar, the head's: no bar over any piece of its
+   body.
+3. Its name shown in the game: Crevice Eel (it was the Hole Dweller); its code and files
+   kept their name throughout.
+4. Put in its crevices 1.3 times as often as before.
+5. How it moves and hunts drawn from what is known of how morays hunt (section 2): more of
+   an ambush hunter, slower and surer about it, and quicker when it goes.
+6. In the big rooms of the caves, here and there, chunks of eels (a den: crevices together
+   in the walls, filled together) and single blocks of obsidian or rock left floating in the
+   open water.
+7. The ranges' caves deeper (into the mountains' roots, under the sea floor about them) and
+   a maze: many more ways, crossing and looping, winding, branching, dead ends forking.
+8. Neither the dens nor the floating rocks near where a way comes into a room.
+9. Hunting done, it finds its way back into its crevice through the caves, or another free
+   one it can get to; and its length random, nine to eleven pieces.
+
+### 2. What is known of how morays hunt
+
+1. ScienceDaily (2007, of Mehta and Wainwright's paper in Nature): a moray's strike takes a
+   fraction of a second; then a second set of jaws in its throat, the pharyngeal jaws,
+   reaches forward into the mouth, seizes the prey and pulls it back down; it barely sucks
+   at all, which suits a hunter in narrow crevices.
+2. The University of Western Australia (2015): morays tie their bodies in knots, to tear
+   what they hold, to hold it, and with a fast running knot to work food loose.
+3. Wikipedia, the giant moray: mostly nocturnal; hunts more by smell than sight (its optic
+   tectum is small); rests in crevices by day; hunts through the reef, flushing prey; and
+   hunts in company with the roving coral grouper.
+4. La Galigo (divers' notes): the mouth always opening and shutting is how it breathes
+   (buccal pumping); an ambush hunter that lies with only its head out; night; smell over
+   sight; no pectoral fins, very supple.
+
+Mine, from these: the head watching out of the crevice, the mouth working the faster for it;
+the strike from the crevice quick, and what it bites seized and pulled back with it; hunting
+slow and sure through the caves by the way a head its size can take, stopping to taste the
+water, keeping to the rock; shaking what it has bitten; backing off tail first, as a moray
+backs into its hole; and in company, one waking the others, taking turns.
+
+### 3. The Crevice Eel (`CreviceEelHead.cs`, `CreviceEelBody.cs`, `CreviceEelSeized.cs`, `CreviceEelLairs.cs`)
+
+1. Its life: 9500 (`Life`), and 1200 (`LifeEachPiece`) for each piece past nine: its life
+   worked out once its length is known, as much more as those pieces ask, in the proportion
+   the game has already raised it for the world's difficulty (so 11,900 with eleven pieces;
+   in Expert twice that, 23,800; in Master three times). One life: its pieces' life the
+   head's (`NPC.realLife`, as before). One bar: a piece of its body draws none
+   (`ModNPC.DrawHealthBar` returning false: the game's own, `NPCLoader.DrawHealthBar` then
+   `Main.DrawInterface_14_EntityHealthBars`, read in the IL, draws nothing and moves on);
+   the head's bar is the eel's. The game drew a bar over each piece struck because a piece
+   struck takes the head's life as its own.
+2. Its name: `Crevice Eel` for the head and the body (the .hjson).
+3. Put in its crevices every 6.15 to 15.4 seconds for each player deep enough (369 to 923
+   ticks; 8 to 20 seconds before), as before only while fewer than two are within 150 tiles.
+4. Its length: none to two pieces past nine, rolled as it is put in its crevice and kept in
+   `NPC.ai[2]` (every machine knows it), shorter if the crevice is too short for its body
+   (`Fits`). Its life follows (1).
+5. The way home: by the shortest way a head its size can take (A*: `EelWays`, cell by cell,
+   the eight ways, never cutting a corner of rock), from wherever it is, found again every
+   two seconds, when it strays, or when it makes no headway; no way to its own, or stuck
+   three times running: the nearest free crevice it can get to and its body fits becomes its
+   own (`Adopt`); with none, away.
+6. LURKING, the head at the mouth, the mouth working as before. A player within 22 tiles
+   (`WatchTiles`) and in its sight from the mouth: its head slides out of the crevice, its
+   jaws 26 pixels past the mouth's middle (`PeekOut`), and turns after them, as far as 49
+   degrees (`LookMost`) and no further than leaves its head clear of the rock, slowly; its
+   breath quicker (a breath in 70 ticks, not 120). Nearer than 11 tiles (`ReadyTiles`):
+   drawn back into the crevice, its jaws 12 pixels inside (`DrawBack`), ready. The head is
+   eased from one place to the next, along the crevice first, or back over its middle line,
+   where the straight way would cut the rock about the mouth.
+7. COILING, then STRIKING: a player within 7 tiles and seen (as before): the head drawn back
+   into the crevice over 8 ticks (`CoilTicks`), the mouth shut and opening, then out at them
+   at 12.5 pixels a tick (9 before), up to 8 tiles (as before), over 14 ticks at the most
+   (18); and back tail first along the way it came (as before).
+8. SEIZED: what its head bites (only its head's bite) is held to its jaws for half a second
+   (`CreviceEelSeized`, 30 ticks), going where they go: dragged back with it as it goes back
+   into its crevice, let go two and a half tiles from the mouth (not pressed against the
+   rock about it), or shaken where it shakes them; torn free if more than 6 tiles from it,
+   if the rock stops them three ticks running, or if the eel is gone; let go, the pull's
+   speed mostly gone with it, so that nobody is flung on. Run on the bitten one's own
+   machine: the game asks the bite there and only there (`PlayerLoader.OnHurt`, for the
+   local player, in the IL), and that is where their moving is decided, each tick just
+   before they move (`ModPlayer.PreUpdateMovement`), their speed set to keep them at its
+   jaws, twice what it would be out of water, as the game moves a player in water half their
+   speed (`Player.WaterCollision`, in the IL). Its bite leaves them bleeding as before.
+9. WAITING before it HUNTS: a player worth hunting (gone deep and within 60 tiles by the way
+   through the caves, 90 if they bleed, as before), reckoned from its crevice's mouth
+   wherever its head is turned: it waits 1.5 to 5 seconds first (a third of a second to a
+   second if they bleed), watching if it can see them, then comes out.
+10. HUNTING: after them by the chart of the way through the caves (as before), of the ways
+    as short the one a tile off the rock where there is one (so that it keeps to the walls
+    where it can, and does not catch on them); stalking at 3.4 pixels a tick (`StalkSpeed`),
+    4.8 while more than forty steps off (`CruiseSpeed`; 5 before, always), the body in long
+    waves; every 150 ticks (`StalkBeat`) stopping 40 (`PauseTicks`) to taste the water, its
+    head turning a little either way, its mouth working twice as fast; seeing them within 18
+    tiles (`CloseTiles`), creeping at 2.2, without stopping.
+11. COILING, then LUNGING: within 10 tiles and seen (as before), its turn (12), and only
+    where the way to them is all but straight by the chart and clear for its head from where
+    it will be once coiled: drawn back along its own body over 12 ticks (1.4 pixels a tick),
+    then straight at where they will be at 13 pixels a tick (10.5 before) for 18 ticks at
+    the most (22), its mouth wide; if the way is no longer clear once coiled, on hunting,
+    nearer, a second at the least before it coils again.
+12. In COMPANY: one goes in at a time. Its turn comes when no other after the same player is
+    coiling to lunge, lunging or shaking them, and none hunting them is nearer them by a
+    tile and a half; its turn not come and seeing them near, it holds off, circling them at
+    13 tiles (`HoldOffTiles`), one way till the rock turns it back. And one that coils,
+    strikes or hunts wakes the others lurking within 48 tiles (`WakeTiles`), each coming out
+    after the same player a half to nearly two seconds on, if they are worth hunting from
+    where it is.
+13. Having bitten (its lunge ended on them): it shakes them, its head thrown from side to
+    side, 16 ticks (`ShakeTicks`); then, bitten or not, it backs off the way it came, tail
+    first, along its own body, at 2.8 pixels a tick for 30 ticks, still a moment, and comes
+    again.
+14. The body's waves: swimming, a wave runs down it from the second piece to the tail,
+    growing to 5 pixels at the tail (`WaveMost`), 140 pixels from crest to crest, the faster
+    the bigger; none in a crevice, none where the rock is close beside a piece, none at the
+    first piece (its hitbox and the head's only just meet there), each piece within 3 pixels
+    of the one before (so their hitboxes still meet).
+15. Its head never left in the rock: put straight onto its own way back (recoiling, coiling,
+    backing off), that way's points joined by straight lines can cut a corner, and the
+    game's own test lets a box already in a tile go on into it; so where its core is in rock
+    it is moved to the nearest place within 12 pixels where it is not.
+16. A den: a free crevice with others free within 40 tiles of its mouth is three times as
+    likely to be chosen, and brings the nearest of them with it, two to four eels in all
+    (`GroupTiles`, `LeastGroup`, `MostGroup`); and only crevices its least body fits are
+    used.
+17. What every machine knows of it: its mode, timer and prey as before, and what it coils
+    for, whether it bit, which way it circles (`SendExtraAI`). Waking and waiting are
+    decided where it is decided.
+
+### 4. The caves (`VastOceanFloor.Caves.cs`, `VastOceanFloor.cs`, `VastOcean.cs`)
+
+1. Deeper: each range's network from over its summit down to 225 rows under the sediment's
+   top (`LowestUnder`; 25 before), into the range's root, under the sea floor about it. The
+   great cavern, where the rock is deepest, now mostly deep in the root.
+2. More rooms: one for every 5000 cells of rock deep enough (7000), sixteen to sixty-four in
+   a range (fourteen to forty-eight), 38 cells apart at the least (40).
+3. The maze: KNOTS between them where only ways meet, a little wider there (one for every
+   2600 cells of such rock, twenty to a hundred and ten, 18 cells apart and 8 from a room's
+   edge); every room and knot joined by the shortest tree as before, and four in ten of each
+   one's four nearest besides (three in ten of the three nearest), so that there are loops
+   all through it; each way winding back and forth, a bend for every 22 cells or so (one to
+   five), each out to one side and the next to the other by up to a sixth of the way's
+   length (ten cells at most), less where the rock is thin; dead ends off three rooms in
+   five and a third of the knots (half the rooms before), one in three of them forking (from
+   part way along it, another 10 to 25 cells, turned 35 to 75 degrees); four to six mouths
+   on the water (three to five).
+4. DENS in the big rooms (every great cavern, and halls and domes whose half width times
+   half height is 300 or more): four great caverns in five and two in five of the others:
+   three to six crevices tried for in the walls, their mouths within 22 cells of the first
+   (`DenSpread`), five apart, eleven or more from where any way comes into a room
+   (`MouthClear`); two at the least to be a den. On six seeds, 25 to 35 dens a world, two to
+   five crevices each, three most often.
+5. FLOATING ROCKS: single blocks in a den's room (four to eight) and in three in five of the
+   other big rooms (two to five), half obsidian, else the room's own rock (stone where most
+   of its walls are stone, else basalt, the game's granite): nothing solid within four cells
+   of each (so none narrows a way), six apart, nine or more from where any way comes into a
+   room (`RockClear`), ten from any crevice's mouth (`StrikeClear`, where its eel strikes).
+   Put in last, once the faces are worn to slopes, so that each stays a whole block; the
+   game's small dripstone not hung under or stood on them. On six seeds, 230 to 340 a world,
+   half of them obsidian.
+6. Where a way comes into a room: where any way cut crosses the room's edge (its shape
+   before the raggedness, `Node.Out`), looked for along each way every half cell; every
+   room's such points kept clear of in every room (rooms may run into one another).
+7. The dripstone of the rock: none within 8 cells of where a way comes into a room (`Bars`).
+   Found on one seed: a point standing on a hall's floor at the mouth of a way out of it
+   left it two rows high where a player is three; the old test looks only at the run through
+   the room's middle row.
+8. Laid in this order: the networks, the dripstone, the dens and their crevices, the other
+   crevices (none with a floating rock within ten cells of its mouth), the walls, the faces
+   worn, what would fall made firm, the floating rocks.
+9. The Vast Ocean made anew: its layout 8 (`VastOcean.Layout`), its file `VastOcean.8.wld`.
+
+### 5. Checked
+
+1. Compiled against tML 2026.8.3.0's assemblies: 0 errors, the 10 known warnings (out165).
+2. The world laid in my rig (headless, the mod's own code on the game's own WorldGen,
+   outside the mod folder) on ten seeds: on nine, 43 checks of 43; on seed 5, a range's
+   summit stands 9 rows over the row it was brought to, as the generator before this
+   session's change does on that seed (from before; section 7). Every way swum end to end by
+   a player two wide and three tall, every hollow reached from the open sea (1251 to 1414 a
+   world), walls behind every cave and none in the open sea, every crevice found by the
+   eel's own finder; every floating rock a whole block of its kind with nothing solid within
+   four cells, and nine cells or more from where a way comes into a room.
+3. The eel's own code run in the rig on six seeds, 22 checks of 22 each: its life (9500,
+   10,700, 11,900 at x1; x2; x3); it strikes from its crevice at a player 4 tiles out and
+   goes back (12 of 12); a player gone deep within its reach is hunted and reached through
+   the caves (12 of 12) and, gone up, it goes home and is gone (6 of 6); nothing of it more
+   than half a tile into a whole block, its hitboxes meeting all along it every tick (some
+   7,400 ticks a seed); a player 15 tiles out in its sight: its head out and watching (16 of
+   16); off to one side: turned after them where the water lets it (10 to 15 of 15); 9 tiles
+   out: drawn back (15 or 16 of 16); bitten as it strikes 5 tiles out: pulled back toward
+   the crevice, never into the rock (10 of 10); every den's crevices found and fillable as a
+   group; three eels of a den, one striking: the others come out after the player (4 of 4
+   dens), some 100 lunges in 6000 ticks and never two going in at once.
+4. The rig moves the head as the game does (its core by `Collision.TileCollision`, then
+   `Collision.SlopeCollision`, as `NPC.Collision_MoveSlopesAndStairFall` does, read in the
+   IL), and the bitten player as the game does in water (`TileCollision`, half the move,
+   then `SlopeCollision`, as `Player.SlopingCollision` does).
+5. The cost here (two cores, shared): a chart of the way to a player 1.4 ms (each half
+   second, hunting or weighing a hunt); a tick lurking and watching 54 microseconds, hunting
+   75, those included.
+6. Pictures, in Claude outputs: `eel_den_1696.gif`, a den of three in a dome on seed
+   1234567, filmed in the rig (each other tick of the mod's own code, drawn with its own
+   pictures): the head out and watching, drawn back, the strike and the drag, the den
+   waking, the turns, the backing off; `eel_den_sheet_1696.png`, six moments of it;
+   `caves_range_1696.png`, one range's caves as a map.
+
+### 6. The film's player
+
+A stand-in, not the game's: swimming in a straight line to where it is sent, held when
+bitten, and drawn as a pale shape. The eels and the room are the mod's and the game's own.
+
+### 7. Not done
+
+1. Never run in the game; two players not tried. Its numbers are mine (the Provisional list
+   in RELEASE_TODO).
+2. Found in the rig, from before, left: on seed 5 a range's summit 9 rows over its row (some
+   spire or crag on its top); nothing of this session's.
+3. The rig's check that every hollow is reached flooded each range in a box about it, so the
+   trench's chambers inside a range's box but open only to the trench read as unreached
+   (seed 31); the rig now swims out from those to the open sea. A fault of the rig, not of
+   the world.
+
+### 8. Files
+
+| File | |
+|---|---|
+| `Content/NPCs/Deep/CreviceEelHead.cs` | its life and length; watching, coiling, the strike, waiting, stalking, the lunge, shaking, backing off, turns, waking; the body's waves; the way home |
+| `Content/NPCs/Deep/CreviceEelBody.cs` | no health bar of its own; its length the head's |
+| `Content/NPCs/Deep/CreviceEelSeized.cs` (new) | held and pulled by its bite |
+| `Content/NPCs/Deep/CreviceEelLairs.cs` | 1.3 times as often; dens filled together; the way home (`EelWays`); another crevice adopted |
+| `Content/Subworlds/VastOceanFloor.Caves.cs`, `VastOceanFloor.cs` | the networks deeper and a maze; dens; floating rocks; dripstone kept off the ways into the rooms |
+| `Content/Subworlds/VastOcean.cs` | layout 8 |
+| `Localization/en-US_Mods.PisAndDag.hjson` | Crevice Eel |
+| `PlaceholderTextures.md` | its pictures under its name again |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md` | notes |
+
+Sources: [ScienceDaily: moray eels' second
+jaws](https://www.sciencedaily.com/releases/2007/09/070905134523.htm); [UWA: moray eels tie
+themselves in knots over
+food](https://www.news.uwa.edu.au/201510098045/research/moray-eels-knots-over-food);
+[Wikipedia: Giant moray](https://en.wikipedia.org/wiki/Giant_moray); [La Galigo: diving with
+moray eels](https://www.lagaligoliveaboard.com/diving-with-moray-eels/); and the game's own
+code (tModLoader.dll of tML 2026.8.3.0).
+
+## 16.97 Session 7: gulls over the Vast Ocean, in patches, across the sea and round the lighthouse
+
+Asked: "for ambiance: need more seagulls to fly in patches prob patches of 5- 13 across the
+sea or at the light house".
+
+### 1. Read as
+
+1. More gulls in the Vast Ocean's sky, for the look and the sound of the place: flocks of
+   five to thirteen, flying as a loose patch.
+2. In two places: crossing the open sea, and wheeling round the lighthouse.
+3. For the looks only: drawn, not the game's gull creatures (nothing to hit or catch, no
+   room taken among the creatures); the gulls the sea's spawner put on the water stay out
+   (by request, since §16.83).
+4. In the game's own picture of a gull, used as the game runs (nothing copied into the mod
+   folder).
+5. When the game has its gulls: by day, not in the rain, not in an eclipse.
+
+### 2. What the game has (read in tModLoader.dll)
+
+1. Its flocks far off in the sky over a beach: `AmbientSky.SeagullsGroupSkyEntity`, five to
+   eight gulls drawn from `Images/Backgrounds/Ambience/Seagull` (28 by 270: nine pictures of
+   a wingbeat one under another, the gull facing right, two of the file's pixels to each of
+   its own; a picture every 4 ticks), going with the wind (`Main.WindForVisuals`), each
+   wandering about its place; spawned by `AmbienceServer` when `IsSunnyDay` (not raining, by
+   day, no eclipse) for a player on a beach (the Vast Ocean counts as one), fading out in
+   the rain, at night and in an eclipse. These are still there, far off behind; the new
+   flocks are nearer.
+2. Its gulls on the beach (NPC 602 and 603, one picture between them, `NPC_602`, 44 by 540,
+   fifteen pictures, four of them flying in side view) cry by day only, one gull in 1200 a
+   tick (`NPC.UpdateNPC_CritterSounds`, legacy sound 44): `SoundID.Seagull`, the game's
+   `Zombie_106` to `108`, at a fifth of full loudness, pitched down up to 0.7.
+3. Where things are drawn: the overlays of `RenderLayers.Background` are drawn after the
+   sky, the sea behind (`BackgroundWater`, where VastOceanSky draws the water's colour and
+   the haze) and the backgrounds, and before the walls and tiles, in the game's batch open
+   in the world's pixels with the camera's zoom, sampling the nearest texel
+   (`Main.DefaultSamplerState`); `SystemLoader.PostDrawTiles` comes after the tiles and
+   before the projectiles, the players and the creatures drawn after them. `Main.tileColor`
+   is the light the game gives whatever the sky shines on
+   (`Main.ApplyColorOfTheSkiesToTiles`).
+
+### 3. The gulls (`Content/Biomes/VastOceanGulls.cs`, new)
+
+1. The picture: the game's flock picture, near drawn half as big again (each of its own
+   pixels three of the screen's, as even as two; about the size of the game's beach gulls),
+   far as it is. Each gull beats its wings through the nine pictures, three to five ticks a
+   picture, out of step with the rest, and glides between, on its wings-level picture (7)
+   or, soaring, its wings-lifted one (2). It faces the way it goes. Lit as the game lights
+   whatever is where it is, and never darker than the sun's light (`Main.tileColor`): a gull
+   going by in front of the tower's walls, where the sky's light does not reach the tiles,
+   is still out in the sun. Its corner on a whole pixel.
+2. Across the sea: while the sky over the water is on the screen, a flock every 6 to 21
+   seconds (longer in the first and last hour of the day), three crossing at a time at most.
+   It comes in from off the side of the screen it is going away from, three times in four
+   with the wind (2.2 to 4.2 pixels a tick, faster the windier), once in four against it
+   (1.4 to 2.6); six flocks in ten near, four far off (smaller and three quarters as fast).
+   Its height on the screen, between 3 tiles over the water and 170. A loose patch about a
+   middle that moves: places in an oval 26 pixels and 10 more a gull either way across and 8
+   and 4 more a gull up and down (half as much again near), at least 24 pixels apart (36
+   near); each gull drifting a few pixels about its place, slowly, out of step; the whole
+   flock rising and falling some 14 pixels as it goes; climbing, a gull beats its wings.
+   Drawn behind the world's tiles and walls: it passes behind the platform, the lighthouse
+   and its island, and the player. Taken away only once it is off the screen on the side it
+   was going to (or long out of sight, or far off).
+3. At the lighthouse: while the player is within 320 columns of it (and not more than 40
+   rows down in the sea), from half an hour after dawn, a flock wheels round the tower: a
+   loose patch going round together on a circle 26 to 40 tiles out, its middle anywhere from
+   16 tiles over the lantern to 30 under it (the lowest of its gulls a good ten tiles over
+   the plateau's tree and flagstaff), the circle tilted 8 to 20 hundredths of its width, the
+   whole patch rising and falling 1 to 3 tiles, going round at 2.2 to 2.8 pixels a tick, the
+   patch spread along the circle and up and down (30 pixels and 12 more a gull along it, 8
+   and 3 more up and down, half as much again), its gulls soaring 2 to 7 seconds between one
+   or two wingbeats. On the near half of the circle a gull is drawn in front of the world's
+   tiles (in front of the tower), on the far half behind them; it goes from one to the other
+   only where there is nothing of the world (a tile of any kind or a wall) within two tiles
+   of it, so that none is seen to jump in front of anything or behind it; the far half a
+   little darker (86 hundredths at the back). Every 40 to 120 seconds, two times in five, a
+   second flock gathers at least 14 tiles above or below the first. After 90 to 240 seconds
+   a flock breaks off: away over the sea with the wind (either way if there is none),
+   climbing 2 to 10 tiles, drawing in to a patch, each gull staying in front of the tiles or
+   behind them as it was; the next gathers 20 to 60 seconds after. One that gathers while
+   the lighthouse is on the screen flies in from off the side of the screen the lighthouse
+   is on; one that gathers out of sight is put in its place.
+4. When: as the game has its gulls, by day, not in the rain (`Main.IsItRaining`), not in an
+   eclipse. When the rain comes, or the day is down to its last quarter hour (the share of
+   the day under 0.15: 880 ticks before dusk), the flocks at the lighthouse break off and
+   go; none gathers in the last half hour; at night, none at all. Those crossing go on
+   across; none is taken away where it can be seen.
+5. Their cry: `SoundID.Seagull` from a gull on the screen or within 400 pixels of it, one
+   gull in 3600 a tick (the game's beach gulls, one in 1200), half a second apart at least:
+   about one cry every six seconds with ten gulls in sight.
+6. For the looks only, on each player's own machine: nothing of them is sent (two players
+   see flocks of their own), nothing hits them or is hit by them, they take no room among
+   the creatures. Not drawn on a server. Cleared when the place is left and when a world is
+   left.
+
+### 4. Checked
+
+1. Compiled against tML 2026.8.3.0's assemblies: 0 errors, the 10 known warnings (out172).
+2. The gulls' own code run in my rig (headless, the mod's code on the game's own WorldGen,
+   outside the mod folder) on the laid Vast Ocean, five seeds, 18 checks of 18 each:
+- from the platform's deck by day, six minutes: 26 to 29 flocks, every one five to thirteen;
+     every one in from off the screen and taken away only off it; three crossing at a time
+     at most; none lower than 4 tiles over the water; 17 to 20 of each seed's flocks with
+     the wind; on the screen 8 to 11 gulls on average; 9 to 13 cries a minute;
+- on the lighthouse's gallery, six minutes: a flock gathered at once, flying in from off the
+     screen, two or three in the six minutes, their times 91 to 216 seconds; settled, none
+     more than 42 tiles from the tower; half the time in front of it and half behind; 222 to
+     269 changes of side, none where anything of the world was about the gull; a gull held
+     on its side waiting for open air at most 370 of some 174,000 gull-ticks; none at the
+     lighthouse taken away in sight;
+- by night, in the rain and in an eclipse, a minute each at the deck: no flock came; the
+     rain coming on while a flock wheeled: it broke off and went;
+- toward dusk at the lighthouse: none wheeling in the last 880 ticks before dusk; none
+     gathered in the last half hour.
+3. The cost here (two cores, shared, the rig's own reflection included): some 0.3
+   microseconds a gull a tick; 6 to 8 microseconds a tick with twenty gulls.
+4. Pictures, in Claude outputs, drawn from the rig's films of the final code on seed 1234567
+   with the game's own picture of the gull (decoded from its file) at the size, place and
+   light `VastOceanGulls` draws it, over the island and the platform as the earlier previews
+   drew them: `gulls_lighthouse_1697.gif` (a flock gathering at the lighthouse and wheeling,
+   passing in front of the tower and behind it, and a flock crossing behind it),
+   `gulls_sea_1697.gif` (flocks crossing from the deck, near and far),
+   `gulls_stills_1697.png` (in front, behind, and over the sea, one to one).
+
+### 5. Not done
+
+1. Never run in the game: how they look against the game's own sky, VastOceanSky's haze and
+   its shaders, and how the cries sound with the music and the ambience, not seen or heard
+   here. The previews' sea and sky are flat.
+2. A gull whose circle's far half begins beside something of the world (a tree, the
+   flagstaff) stays in front until it is clear of it, so that none jumps; seen in the rig,
+   rarely.
+3. None at night, about the lamp's beam or anywhere: as the game has its gulls. Say if
+   wanted.
+4. Two players see flocks of their own: they are not sent.
+
+### 6. Files
+
+| File | |
+|---|---|
+| `Content/Biomes/VastOceanGulls.cs` (new) | the flocks across the sea and at the lighthouse, their wings, their light, their cries |
+| `PADWorkFlow_1.md`, `RELEASE_TODO.md` | notes |
+
+Sources: the game's own code (tModLoader.dll of tML 2026.8.3.0) and its picture
+`Images/Backgrounds/Ambience/Seagull.xnb`.
+
+## 16.98 Session 7: five weapons for the first days: the Mantrap, Mycelium, Finish Them, the Defacer, the Parade Sabre, the Signal Pistol
+
+Asked: "alright if ur gonna make it make it properly: Mantrap, Mycelium Finish Them, Defacer,
+Paraade Sabre, Signal Pistol. make it appropriate, and beautiful."
+
+### 1. Read as
+
+1. Five of the weapons suggested in chat for the first days of a world, picked by name, each
+   built whole: its code, its pictures (all drawn, none a stand-in), where a player finds it in
+   the world, its words, these notes.
+2. "Appropriate": numbers for the first days, weighed against the game's own weapons of that
+   time (nothing of Calamity's); where each is found fits the Lore Bible, and every gun takes
+   something from whoever holds it (§XXI): the Mantrap their foot, the Signal Pistol their
+   sight.
+3. "Beautiful": pictures placed pixel by pixel in the house style (the sprite rules), each
+   weapon's movement and effects of its own, drawn with the game's own passes (no new shader).
+4. The Parade Sabre lives in Grace, so it is in a Grand world only; the other four are in every
+   world.
+
+### 2. What the game has (read in tModLoader.dll, and in the rig)
+
+1. `Item.ChangeItemType(int)` turns an item into another kind where it lies; a prefix is put
+   back after with `Item.Prefix`.
+2. `NPC.HitModifiers.ArmorPenetration` adds to the defense a hit ignores;
+   `GlobalNPC.ModifyTypeName` changes the name the game gives a creature.
+3. `Player.Hurt` with `dodgeable: false` and `knockback: 0f`: a hurt nothing dodges, with no
+   push.
+4. `WorldGen.PlaceChest` returns the chest's place in `Main.chest`; a dresser is a chest (tile
+   88), its style its item's `placeStyle` (`ContentSamples`).
+5. `Main.tileCut` (read in the rig): cobwebs, pots, plants and the small glowing mushrooms are
+   cut by a blade; small rubble and stalactites are not.
+6. `ModContent.ItemType<T>()` gives 0 for a kind that is not loaded (so the world passes run in
+   the rig with the mod's code but not the mod).
+
+### 3. The weapons
+
+1. **The Mantrap** (ranged; `Content/Items/Ranged/Mantrap.cs`): a goblin pistol that throws
+   iron jaws. 22 damage, a shot every half second, three jaws to a load and 80 ticks to set
+   three more (PSItem's magazine). The jaws fly open, turning over, and fall: what they hit,
+   they shut on (a clack, sparks, a flash). An enemy the Meat Hook would drag is held where it
+   stands for a second (its own AI not run; it still falls and still hurts what touches it);
+   anything bigger is bitten and the jaws drop off. Jaws that miss land and lie open; after
+   24 ticks a click and a glint, and the first enemy to step in is shut on for half as much
+   again. Three at most lie open for one player (a fourth set shuts the oldest on nothing);
+   left 30 seconds, one rusts shut. They shut on their owner's foot too: a bite of 6% of their
+   life (8 at least) that nothing dodges, and 40 ticks unable to walk, jump, drop, hook or
+   mount ("{0} stepped where they had set it."); standing on it when it set, its owner has to
+   step off first. Lore: §XXI (the gun's verb is stop), §XIX (Grace fell to "a better trap").
+2. **Mycelium, Finish Them** (an incantation; `Content/Items/Mage/Incantation/`): a ring of
+   glowing caps called up out of the ground nearest the cursor (as the Court of Hands finds it;
+   none in reach, the mana comes back), for 10 seconds. Nine caps burst out of the floor from
+   the middle out, overshooting and settling, a tall one in the middle, threads of light
+   running between them under the ground with a pulse going outward, spores rising. Everything
+   in it, 7 tiles either side and 6 up, is hurt every half second for 14, with no push. What
+   dies in it goes into the ground: a cap comes up where it fell (6 to a player) and puffs a
+   spore every 48 ticks at the nearest enemy it can see within 12 tiles, squashing as it does;
+   the pieces of the dead lying in the ring sink into the ground, spores rising off them.
+   Another cast withers the last ring. Conjuration, Fungal (a new element: dark under the
+   ground, edged in the caps' blue, `MagicColours`); 24 mana. Lore: §XXVIII (the fungal caves
+   are the only place where things finish), §XXIV (the elements are places).
+3. **The Defacer** (melee; `Content/Items/Melee/Defacer.cs`): a mason's bush hammer, its face
+   cut into teeth. 36 damage. Held down it is lifted up and back in both hands, slowly (42
+   ticks, less with melee speed), grit falling off the teeth, and its wielder walks at 70%;
+   let go, it comes down, the toothed face first, and is brought back. It hits for 55% to 220%
+   of its damage by how far it was lifted; the ground stops it, with a crack of stone, chips
+   and dust, and the floor heaved if it was lifted all the way. Lifted all the way, what it
+   hits is Defaced for 8 seconds: every hit on it from anything ignores 10 of its defense, and
+   its name is scratched out. Lore: §XVII, the Low Court's mark ("chipped faces on angel
+   statues, scratched-out names on shrines"), and its followers, who "keep a drawer". Nothing
+   says whose.
+4. **The Parade Sabre** (melee; `Content/Items/Melee/ParadeSabre.cs`): white and gold, made
+   for the parade. 20 damage, swung as the game's swords are, a gold arc behind it. Every hit on
+   an enemy takes a little of its gold leaf off (120 hits' worth, counted in its tooltip, kept
+   with it), and the leaf comes away in flakes that turn over and fall. When the last of it is
+   gone, at the end of that swing, it is the Plain Sabre: plain steel, 28 damage, a little
+   quicker, a cold arc, for good; its prefix kept. Lore: §XIX, Grace's claim was favour and
+   what beat it was a better trap: the steel was under the blessing all along.
+5. **The Signal Pistol** (ranged; `Content/Items/Ranged/SignalPistol.cs`): a brass flare
+   pistol, one round to a load and two and a half seconds to load the next. 14 damage. Its
+   flare burns 6 seconds wherever it ends up: stuck in what it hit, burning it every half
+   second for 60% with no push; stuck where it landed, burning what touches it; or sinking
+   slowly through water, bubbling. It lights a wide circle red, and what swims within 30 tiles
+   turns toward it (no boss, no town folk). While one burns, its owner has the game's Darkness:
+   the light has gone where it was sent. Its report is made to be seen (§XXI).
+
+### 4. Where they are found
+
+1. The Mantrap: the goblins of an army (the peon, the thief, the warrior, the sorcerer, the
+   archer; not the scout, who comes before any army), one in 50 each (`VanillaLoot`).
+2. Mycelium, Finish Them: the Fairy Ring (`FairyRingPass`, new): a mushroom chest on the
+   floor of the glowing mushroom caves, ringed by small glowing mushrooms, with the incantation,
+   10 to 25 Glowing Mushrooms and two or three of what anybody would leave there; one a world.
+   And the Spore Zombies (both kinds), one in 25.
+3. The Defacer: the Drawers (`CourtDrawersPass`, new): a dresser of the cabin's own wood
+   beside the chest of up to six of the game's underground cabins, its drawers holding what
+   anybody keeps in one; the first keeps a Defacer, and one in four of the rest another. Where
+   no cabin has room for a dresser at all, the Defacer goes into a cabin's own chest (or, with
+   no cabin, any chest underground): the Drawers are its only source.
+4. The Parade Sabre: Grace's armouries (Grand): a chest of the kingdom's military loot at the
+   start of each armoury's row of stands; the first armoury chest keeps a Parade Sabre, one in
+   four after it.
+5. The Signal Pistol: the east sea chest of the lighthouse's watch room, in the Vast Ocean
+   (`LighthouseTower`; the sea's layout 9, so a Vast Ocean made before is made again).
+6. The two new world passes run before the game's last tidying in a new world, and by
+   `/struct update` in a world made before ("The Drawers", "The Fairy Ring"), each once, in
+   the update's ledger.
+
+### 5. The pictures
+
+All mine, drawn by code pixel by pixel to the house rules (no soft pixel, palettes of 10 to 19
+colours, the dark rim only on the shadow side, shadows cool and highlights warm), each beside
+its class; listed with their sizes and the points the code reads in `PlaceholderTextures.md`:
+the Mantrap (goblin iron, brass, purple rag, iron jaws at the muzzle) and its jaws open and
+shut; the Signal Pistol (a fat brass barrel with a red band at the muzzle, a break frame, a
+steel hammer, a checkered walnut grip, a lanyard ring) and its flare; the Defacer (a squared
+head of dark forged iron, its face toothed, on a wooden haft wound in leather); the Parade
+Sabre (a curved gilt blade with a honed steel edge, a gold guard with a knuckle bow, an ivory
+grip wound with gold wire, a tassel) and the Plain Sabre (steel, a dark hilt, the cord frayed
+where the tassel was); Mycelium, Finish Them on your incantation page (`IncantationTemplate.png`,
+yours, as the others are): a glowing ring with caps growing out of it and a mushroom in it,
+spores going up; the ring's caps (a bell, a dome, a parasol) and their glow; the Defaced icon
+(16x16 at 2x, as your buff icons: a stone face split, chips off it); the gold flake and the
+stone chip (tinted as they fly).
+
+### 6. Checked
+
+1. Compiled against tML 2026.8.3.0's assemblies: 0 errors, the known warnings (out176).
+2. The two world passes, as compiled, run in my rig on your own world Huh (its tiles and 851
+   chests read from `Huh.wld`; Extra Large, Grace on the left):
+   - The Drawers: 44 cabins found. As first written it put in one dresser: in Huh's cabins
+     nearly every place beside a chest is taken by cobwebs, rubble or a pot, or has no wall
+     behind it. Changed: cobwebs, small rubble, stalactites and what a blade cuts are cleared
+     for a dresser (never a pot), the house wall behind half of it is enough, and it has to
+     stand on the cabin's own built floor. Then: 6 dressers (the most), in six cabins, each
+     whole on the cabin's floor beside its chest (wood and boreal), the first holding the
+     Defacer; drawn from the dump with the game's pictures (`Drawers_in_Huh_1698.png`).
+   - The Fairy Ring: as first written it found no place in 8000 tries: the caves' grass is
+     never bare (small glowing mushrooms grow on all of it), and a place picked at random
+     rarely falls on it. Changed: every floor two wide is found first (once, over the
+     underground), the small mushrooms where the chest goes are cleared (never a pot), and the
+     floors are tried in no order. Then it found one at once: a mushroom chest at (9434, 1668)
+     with the incantation, Glowing Mushrooms and spares, 18 small glowing mushrooms within 22
+     tiles of it.
+   - 40 checks of 40.
+3. The lighthouse built again in the rig with the Signal Pistol in its chest: 14 checks of 14.
+4. Every picture measured with the sprite check; previewed zoomed and at the game's size on a
+   cave and on the sky (`PAD_1698_Sprites.png`); the ring's look put together from its own
+   pictures as `FairyRing` draws them (`FairyRing_mock_1698.png`, a composition, not a
+   screenshot).
+5. All the new code read through again: two fixes. The Mantrap's open jaws could shut on a
+   critter standing beside the enemy that set them off (now only on a body they can bite); a
+   Parade Sabre's arc went on into the next swing when the sabre swung again at once (now each
+   swing has its own and the last one fades).
+
+### 7. Not done
+
+1. Never run in the game; never tried with a second player.
+2. Grace's armoury chest not seen in the Grace preview (its harness is not in this workspace):
+   it goes at the start of each armoury's row of stands, before them, or the row is as it was.
+3. A world made before: `/struct update` gives it the Drawers and the Fairy Ring; Grace's
+   armoury chests come only with a new Grand world. The Vast Ocean is made again on its next
+   visit (layout 9): what was built in the old one is not in the new.
+4. The numbers are mine: RELEASE_TODO.
+
+### 8. Files
+
+| File | |
+|---|---|
+| `Content/Items/Ranged/Mantrap.cs` + `.png` (new) | the gun, its shot, the muzzle (`MuzzleOf`, used by the Signal Pistol too) |
+| `Content/Projectiles/Ranged/MantrapJaws.cs` + `.png` (new) | the jaws: flying, lying open, holding, the owner's foot, letting go |
+| `Content/Combat/MantrapHold.cs` (new) | `MantrapNPC` (held: its AI not run), `MantrapSnare` (a foot in it) |
+| `Content/Items/Mage/Incantation/MyceliumFinishThem.cs` + `.png` (new) | the incantation |
+| `Content/Projectiles/Magic/FairyRing.cs` (new), `FairyRingCap.png`, `FairyRingCapGlow.png` | the ring; `FairyRingDeaths`; `FairyRingSoil` |
+| `Content/Projectiles/Magic/FairyRingFruit.cs`, `FairyRingSpore.cs` (new) | the cap where something died; its spore |
+| `Content/Items/Mage/MagicColours.cs` | the Fungal element's colours |
+| `Content/Items/Melee/Defacer.cs` + `.png` (new) | the hammer |
+| `Content/Projectiles/Melee/DefacerHoldout.cs` (new) | the lift and the blow; `DefacerPose`; `DefacerLayer` (drawn in the hands) |
+| `Content/Buffs/Defaced.cs` + `.png` (new) | Defaced; `DefacedNPC` (the defense, the name) |
+| `Content/Particles/StoneChip.cs` + `.png` (new) | chips of stone |
+| `Content/Items/Melee/ParadeSabre.cs` (new), `ParadeSabre.png`, `ParadeSabreBare.png` | the gilt sabre, the plain one |
+| `Content/Projectiles/Melee/ParadeSabreArc.cs` (new) | the swing's arc |
+| `Content/Particles/GiltFlake.cs` + `.png` (new) | flakes of gold leaf |
+| `Content/Items/Ranged/SignalPistol.cs` + `.png` (new) | the flare pistol |
+| `Content/Projectiles/Ranged/SignalFlare.cs` + `.png` (new) | the flare |
+| `Content/NPCs/VanillaLoot.cs` | the goblins' Mantrap, the Spore Zombies' incantation |
+| `Content/Structures/CourtDrawersPass.cs`, `FairyRingPass.cs` (new) | the Drawers; the Fairy Ring |
+| `Content/Structures/StructureUpdate.cs` | both in `/struct update` and its ledger |
+| `Content/Structures/Grace/GraceRooms.cs`, `GraceLoot.cs` | the armoury's chest and its sabre |
+| `Content/Structures/Grace/LighthouseTower.cs`, `Content/Subworlds/VastOcean.cs` | the Signal Pistol's chest; layout 9 |
+| `Localization/en-US_Mods.PisAndDag.hjson` | the words |
+| `PAD_Item_Plan.md`, `PAD_Prehardmode_Checklist.md`, `PlaceholderTextures.md`, `PADWorkFlow_1.md`, `RELEASE_TODO.md` | notes |
+
+Sources: the game's own code (tModLoader.dll of tML 2026.8.3.0); the Lore Bible (§XVII, §XIX,
+§XXI, §XXIV, §XXVIII); your world Huh, for the rig.
+
+## 16.99 Handoff: end of session 7 (start here in a fresh chat)
+
+Written because the session's context had grown costly ("its taking 12% of my weekly usage
+for 5 hrs"). Keep replies minimal (§0's directive).
+
+### 1. Setup, in order
+
+1. Connect the mod folder (§1). Nothing in the cloud workspace survives a new chat: the
+   compiler, the mirror of the mod, the rig, the decoded game pictures are all gone.
+2. Rebuild the compiler (§12.9): .NET 8 SDK from apt; stage tML's assemblies from the Steam
+   install (`...\steamapps\common\tModLoader\`: `tModLoader.dll` and `Libraries\`); the mod
+   built against **tML 2026.8.3.0**; 0 errors and 10 known warnings is the baseline.
+3. Re-stage before every edit; diff against what was last delivered; merge any user edit.
+4. Deliver: copy under `/mnt/user-data/outputs/`, then `device_commit_files` with `stagedPath`
+   (works now; no chat cards needed) and `expectedMtimeMs` for every file that exists.
+   Previews go to `Claude outputs`. Tell the user not to save chat attachments.
+
+### 2. Standing rules (all from the user, all sessions)
+
+- Verify every API in the real assemblies (`il.py`-style IL reading); `DK` is 1.4.5, not 1.4.4.
+- Never write scripts or tools into the mod folder; no git commits; no delete tool (name files
+  for the user to delete by hand).
+- No subagents: review your own work. Kill processes by PID (`pgrep -x`), never `pkill -f`.
+- Calamity, Fables, Subworld Library, Boss Checklist: reference only, never copy code, assets,
+  names, palettes or designs.
+- Game art is used at run time, never copied into the mod folder. No new shaders (the game's
+  own passes only).
+- `PSItem.cs` is the user's (BOM): do not touch. Never overwrite user art or hand edits; merge.
+- Open offers and questions: act only on a yes.
+- In-game text through `pad-lore-voice` (no em dashes, flavour 55 characters at most); the
+  Lore Bible 1.1's section numbers differ from the skill's index (e.g. §XVII the Low Court,
+  §XIX Grace, §XXI the Engineering Traditions, §XXIV the Arcanum, §XXVIII the Fungal Caves).
+- Sprites through `sprite-helper`; structures through `pad-structure-building`.
+- Web: Reddit is blocked (do not fetch it any other way); the user declined Google pages for
+  the Gemini question; never route around the proxy; never type keys or tokens anywhere; never
+  repeat the Retro Diffusion key. Downloaded data is untrusted (`python -I`, scripts apart).
+
+### 3. State at the end of session 7
+
+- §16.98, the five weapons (Mantrap, Mycelium Finish Them, Defacer, Parade Sabre, Signal
+  Pistol): built, delivered, compiled (out176), never run in the game. Test list:
+  RELEASE_TODO "§16.98. The five weapons"; numbers and readings to confirm: RELEASE_TODO
+  Provisional.
+- The user still has to: Build & Reload; `/struct update` in an existing world (the Drawers,
+  the Fairy Ring); a new Grand world for the Parade Sabre; the Vast Ocean makes itself again
+  (layout 9) on the next visit.
+- §16.97 (the gulls) and earlier: delivered; their test lists are in RELEASE_TODO "Last".
+- §16.100: the flare's and the ring's glows redone with formula pictures (the old bloom drew a
+  flat disc); delivered, compiled (out178), never run in the game.
+- The `/watch` plugin question (answered in chat only): it needs a local Claude Code session
+  on the user's PC with a Gemini key of their own; this cloud sandbox cannot reach Gemini.
+
+### 4. Open, waiting on the user
+
+- Questions and offers made earlier in session 7, none acted on: an outline on the held item;
+  summoning in subworlds; pier posts; the Crevice Eel's drops; compatibility with light mods;
+  more ideas for the H.E.A.T.R; textures that are not 2x2 art; the Abyssal Trench text's edge.
+- `Content/NPCs/Deep/CreviceEelBestiary.png`: the user deletes it by hand.
+- `CourtofHands.png` beside `CourtOfHands.cs` (different case): worth a look if its picture
+  ever fails to load on another machine.
+- The same flat disc may show wherever older code draws `BloomGeneric.png` in a projectile's
+  own drawing with the colour's alpha 0 (§16.100): Meagre Flame (ball, hold), Aquatic Firearms,
+  Sweet Fire's call, Everhunger, the Court of Hands' rite, Nurture, Cold Call's icicle,
+  Resuscitate, Arm Me, the Mycellaneous spore, the Slime Mass. Offered, not done: the same swap
+  onto `GlowSoft`/`GlowHot`, each looked at first.
+
+### 5. The rig (gone with this workspace)
+
+`GenRig` ran the mod's compiled code on the game's own WorldGen, headless: it laid the Vast
+Ocean and the island, read a saved world (`Huh.wld`: tiles by hand, chests through
+`WorldFile.LoadChests` by reflection), ran passes, checked them, and dumped regions drawn with
+the game's decoded pictures (§16.79 on). Worth rebuilding only for worldgen work; most of its
+notes are in §16.79 to §16.98.
+
+## 16.100 Session 7: the Signal Flare's and Mycelium's glows made smooth
+
+Asked (with a screenshot of the flare over a forest: a big pink disc with a hard edge): "why is
+both mycellium finish them and signal pistoll projectile using this ugly ass circle? use those
+python generated radial effects, effects effects effects always", "I said make it look pretty".
+
+1. The cause: `BloomGeneric.png` is stored straight, white out to the edge of its circle with the
+   falloff only in alpha, and tML does not premultiply a mod's pictures. Drawn as a particle (the
+   additive batch, which weighs by alpha) it is soft; drawn in a projectile's own drawing as added
+   light (the colour's alpha 0, which adds the picture's colour as it is) it is a flat disc. The
+   flare's halo, the ring's ground glow and its spores drew it that way. Reproduced exactly in a
+   mock before changing anything.
+2. Three pictures made by formula, premultiplied (colour equal to alpha), each reaching 0 at its
+   edge with no slope (`Content/Graphics/`): `GlowSoft.png` 256, (1 - r^2)^3, a wide halo;
+   `GlowHot.png` 128, a tight gaussian core over a soft skirt; `GlowStar.png` 128, a four point
+   glint. A particle on the soft one, `SoftGlow` (BloomGeneric's life: up fast, down slow).
+3. The flare: a wide faint red halo (210 pixels, 300 in water and fainter), breathing and
+   wavering; the flame's orange light; a white-hot core; two glints turning slowly against each
+   other. The muzzle's flash a `SoftGlow`.
+4. Mycelium: the ground's glow a long soft band with a brighter middle; a soft blue glow in the
+   air about every cap (the fruit's too), breathing with it; the spore a soft ball, a brighter
+   glow in it and a pale point; the fruit's birth a `SoftGlow`. The Mantrap's snap and the
+   Defacer's full hit moved onto `SoftGlow` too.
+5. Checked: compiled (out178, 0 errors, the known warnings); before and after drawn from the
+   pictures as the code draws them: `Claude outputs\SignalFlare_glow_1698.png` (the before is the
+   screenshot's disc), `FairyRing_mock_1698.png` (redrawn). Never run in the game.
+
+| File | |
+|---|---|
+| `Content/Graphics/GlowSoft.png`, `GlowHot.png`, `GlowStar.png` (new) | the formula glows |
+| `Content/Particles/SoftGlow.cs` (new) | the soft flash |
+| `Content/Projectiles/Ranged/SignalFlare.cs`, `Content/Items/Ranged/SignalPistol.cs` | the flare's glows, the muzzle |
+| `Content/Projectiles/Magic/FairyRing.cs`, `FairyRingSpore.cs`, `FairyRingFruit.cs` | the ring's glows |
+| `Content/Projectiles/Ranged/MantrapJaws.cs`, `Content/Projectiles/Melee/DefacerHoldout.cs` | their flashes |
+
+## 17.1 Session 8: start (read at the top of a fresh chat)
+
+Asked: "read the hand off .md and add anything necessary". The hand-off is this file (§16.99, then §16.100).
+
+1. Checked against the mod folder at the start: `GlowSoft.png`, `GlowHot.png`, `GlowStar.png` are in `Content/Graphics/`; `RELEASE_TODO.md` already carries the §16.100 test line and the BloomGeneric note. Nothing in §16.99 or §16.100 is contradicted by the folder.
+2. Header pointer fixed in place: §16.100 follows §16.99, so "start at §16.99" now also says to read §16.100.
+3. Setup step 2 (§16.99 §1) is **not yet done** in this chat: no .NET SDK in the sandbox (`dotnet` missing), tML's assemblies not staged. Do it on the first task that touches code; nothing so far has needed a compile.
+4. For the user to delete by hand: `Content/NPCs/Deep/CreviceEelBestiary.png` (still there), and `~$aceholderTextures.md` in the mod root, a 162 byte lock file left by an app that has `PlaceholderTextures.md` open. Neither is read by the build.
+5. Still open, unchanged from §16.99 §4: the questions and offers of session 7 (act only on a yes); the `CourtofHands.png` / `CourtOfHands.cs` case difference; the flat-disc `BloomGeneric.png` check on older code. §16.98 and §16.100 have never been run in the game: Build & Reload, then the RELEASE_TODO lists.
+6. Next task: not yet given. The newest open lists are RELEASE_TODO "Last" and "Provisional".
+
+## 17.2 Session 8: the Empress of Light's coming and her death, her arena, her favour
+
+Asked: "Empress of Light change: Spawn animation once hit the butterfly: Cinematic. Player cant
+move; all music and ambiance stops. The light flickers, moon becomes dark and bright, sky become
+pitch and normal, (can do the same with sun); Shader of a darker sky apears(empress is not affected
+by shader). Spawn normally above player, Flashes on top of player so that her center is also
+player's center. hexagon of light (choose color theme of the empress) encase the player and player
+is dragged onto the middle of the ground and sky's ceiling. 10 four-point stars spreads out of her
+with much effect and color magical like her in a spin for 1 second. Then they creates a hexagonal
+Arena with outlines(player cannot physically escape the borders)(distance from player to one star
+is 600 tiles)( /watch:watch https://www.youtube.com/watch?v=zCBe1JFjqjQ from 1:03 to2:53 to see how
+the border should look and behave) if tele outside then has a debuff called "Visual Intoxication"
+- 350HP per second. hexagon cage breaks and player falls down, he is given a buff: "Favor of an
+Empress" allows endless flight and override custom flight speed of player now to flight speed of
+solar wings. lasts until either player die or plaer beats boss. She still 500 px above player and
+hovering. She screams and name plate does its job: Elin #ff87dd, Empress Of Light #badfff. Music
+and stuffs resume. Death Animation: Cinematic. Player flying in place, she slows downs above the
+player, camera pans to her. then lights textures shoots from her eyes and , then cracks randomly
+on her body, arms and legs with lights shining out. Meanwhile her dialogs: "Thy kind are
+exceptional toy|.|.|." "I shall observe thee |.|.|. every||where." Border closes in gradually until
+its , screen shakes. for like 3 seconds. Then border expands and vanish, She shrinks into a
+butterfly(not the prismatic lacewing) and drop her loot. (no gore). Make it beautiful, Dramatic and
+cinematic. you know what to use." Then a sketch of the border ("10 not 6", stars at the corners,
+"600 tiles"), and answers: 150 tiles to a corner; all 10 stars on the border; a real butterfly
+critter; every world. Later: "make a bigger texture to loop over and make it can be rotated 4ways
+and still connects", "put a prismatic shader over that texture too so it is colorful" ("keeping it
+pure purple kinda copycating the slime boss"), and, seeing the hexagon: "nah it should have made a
+decagon".
+
+1. **Where it lives.** A `GlobalNPC` on vanilla's Empress (`EmpressOfLight`, four partial files),
+   the Queen Slime rework's pattern: a scene (Arrival, Death), a beat and a clock; vanilla's AI
+   switched off while a scene plays (`PreAI` false) and handed back with her state reset
+   (`Release`); the server decides each beat, every machine plays it, the scene sent in
+   `SendExtraAI` (clocks snapped when more than 6 ticks apart). Her first death is refused
+   (`CheckDead`) and starts the death; its end kills her for real with her death sound and gore
+   taken away (`VanillaHitEffect` detour while ending). Every world, every time.
+2. **Her coming** (`EmpressOfLight.Arrival.cs`, beat table at its top): HUSH 36 (held, bars, music
+   pushed down, ambience muted through `GraveyardSilence.Hush`), FLICKER 150 (a table of 18 steps:
+   world light, moon dark and thrown bright, sky pitch and back; the sun hidden by day), DARK 60
+   (her sky comes: `EmpressSky`, a `CustomSky` far layer, the world's light at 0.55; she is drawn
+   at full colour, so the dark is not on her), SPAWN 120 (vanilla's own dust and Item161, and its
+   `HallowBossDeathAurora`, 380 px over the summoner drifting 60 down), FLASH 30 (onto the player,
+   her middle on theirs, ten afterimages down the way), CAGE 44 (a hexagon of light, 96 px to a
+   corner, shut in 20), DRAG 50 to 150 (18 px a tick to the arena's middle: halfway between the
+   ground under the player, floating islands skipped, and the sky's ceiling, the world's top plus
+   656), STARS 60 (ten four-point stars spin out of her and round her, a turn and a quarter in the
+   second, slowing as they spread into a ring 320 px round her), FORM 195 (they shoot out to the ten
+   corners in 45 ticks, the camera going with the one bound for the right corner; the line grows
+   out of the stars along the edges from 45 for 60 ticks; what lies outside comes from 90 for 75;
+   the border thrown white as the line is whole; the camera back over the last 55), BREAK 20 (the
+   cage's sides thrown off), FALL 28, CAUGHT 24 (her favour catches them), RISE 50 (to 500 px over
+   them, by request), SCREAM 90 (`Cinematic.Roar`, Item160 and Item161; her name: `BossIntro.
+   PlayNameOnly`, "Elin" in #ff87dd, "Empress Of Light" in #badfff, `BossPlate.Colours`), HOLD
+   until the plate is in its place, then the fight and the camera home. About 21 seconds.
+3. **The arena** (`EmpressArena.cs`). A decagon lying flat, 150 tiles (2400 px) from the middle to
+   a corner (the "600 tiles" of the request read, by the answer, as 150 to a corner), a star on
+   each corner. First made a hexagon with stars on its six corners and four edge middles; made a
+   decagon on "it should have made a decagon". Asked for every tick it stands and gone a tick after
+   (`Slack` 2), so no ending of the fight can wall anybody in. Its walls (`EmpressArenaPlayer`):
+   whoever is inside when they come up is a member; a member found outside who moved no more than
+   320 px since the last tick (walking, flying, thrown, or the wall coming in on them) is put back
+   24 px in, with the speed that took them out taken away; one taken out by a bigger move in one
+   tick (a teleport: a mirror, a rod, a potion) is not put back but has **Visual Intoxication**
+   while out: 350 life a second (`UpdateBadLifeRegen`, no regeneration), the screen washed in her
+   colours and swaying, its own death line ("{0} saw what lies outside."). Nurses cannot take it.
+4. **Her favour** (`Content/Buffs/FavorOfAnEmpress.cs`, applied in `PisPlayer.PostUpdateMiscEffects`
+   after the wing trim): flight without end, with the solar wings' own flight (their `wingsLogic`
+   and their stats read at run time, so a mod that changes them is followed), whatever is worn;
+   a worn pair's own speeds ignored while it lasts (`equippedWings` cleared); no fall damage. One
+   with no wings on is lent the Empress Wings' look to be seen flying with. Given while the arena
+   stands to members and to anyone within its corner radius plus 1800 px (a player who died comes
+   back to it); gone with a death; once she is beaten, kept only until its wearer stands on
+   something (at most a minute), so nobody is left in the sky with no way down.
+5. **How the arena looks** (`EmpressVoid.cs`, drawn after the solid tiles and under everything that
+   lives, so players, she and every shot are over it): outside the decagon, what lies outside;
+   along it a line in her colours with a white heart, a glow out into the dark and a fainter one in;
+   the ten stars turning; faint lines from each star to the third on (a ten-pointed star across the
+   arena) with beads running along them. What lies outside: two textures of 2048 (`EmpressVoid.png`,
+   clouds in 16 greys, how much light and no colour; `EmpressVoidStars.png`), each made so that
+   within a band along every edge it is the same turned a quarter, so every repeat is laid turned
+   one of the four ways by a hash of where it is and still meets its neighbours (the band kept to
+   12 texels, the corners left dark, the bright knots kept off the edges: anything standing on a
+   seam is the same on all four). The colour is laid over the grey per vertex on a 128 px grid:
+   her wheel (pink, gold, mint, sky, lilac), deepened, run across the world by a slow field and
+   turning with time (a full turn of the wheel every 33 s), each layer a little further round it;
+   where the clouds are thick or thin by another field far bigger than the texture's clouds. Three
+   layers: the far clouds (2 px a texel, 0.35 of the camera's movement), the nearer (3 px, 0.6),
+   the stars (2 px, 0.5), each drifting on the void's own clock (the game's restarts every hour).
+   All of it is triangles through the game's `BasicEffect`: no shader of the mod's own.
+6. **Her death** (`EmpressOfLight.Death.cs`): SLOW 80 (she slows over the player, who hangs where
+   they are, and the camera goes to her), EYES 100 (light out of her eyes, two beams, her first
+   line), CRACKS 366 (cracks run through her body, arms and legs, worked out from her own picture,
+   light shining out of each; her second line; the length set by the lines: half a letter a tick,
+   30 ticks a pause), CLOSE 180 (the border in from where it stood to just past the shot's corners
+   in half a second, then slowly to 440 px round her and the player under her, the camera between
+   them, the world shaking harder and harder), BURST 30 (it is thrown out and gone; her death
+   sound), SHRINK 70 (she shrinks, all light, into a real butterfly at 56: vanilla's critter, the
+   Purple Emperor, made by the server; her loot falls where she was; no gore). About 14 seconds.
+   Her lines as given, through `Dialogue.Aside` (said, not answered).
+7. **Checked**: compiled against tML 1.4.4 (0 errors, the 10 known warnings); drawn frame by frame
+   by a Python stand-in of the drawing code (the void's colour and turning, the arena forming, the
+   spin, the death's eyes, cracks and close): `Claude outputs\Empress*_1702.png`; the texture's
+   seams measured on randomly turned mosaics (no larger jumps across seams than anywhere else).
+   **Never run in the game.**
+8. **A separate review of the code**, and what it changed: (a) her scene's hush, flicker, black and
+   sky, and the shakes and flashes of the border's forming, are only for a player in the scene (or,
+   the sky, near the arena: `EmpressArena.Reach`, 3200 px past a corner), not the whole world; what
+   lies outside is drawn out to its fringe's end (2600 px past the border and 420 more fading), not
+   over the whole world, so a player far off, or one come back after a death, sees the world;
+   (b) in multiplayer a client's own killing blow no longer starts her death there (a packet the
+   server sent before it heard of the blow would undo it and it would start again): she is held at
+   one life and out of the fight on that client until the server says (two seconds at most, then
+   it lapses); (c) a failed frame of her drawing can no longer take her out of the world (the
+   batch is begun again however the frame failed: the game drops an NPC whose drawing throws);
+   (d) the death's closing border holds nobody (a wall coming in that fast would have dragged
+   players through the ground); (e) a machine that falls behind and first sees the cage being
+   dragged is put in it then. Found fine: the beats always advance, the loot drops, the walls never
+   dazzle anybody who did nothing, the favour cannot last for ever, the void's cutting has no gaps.
+
+| File | |
+|---|---|
+| `Content/NPCs/Empress/EmpressOfLight.cs` (new) | the GlobalNPC: scenes, sync, CheckDead, her plate and portrait |
+| `Content/NPCs/Empress/EmpressOfLight.Arrival.cs` (new) | her coming |
+| `Content/NPCs/Empress/EmpressOfLight.Death.cs` (new) | her death |
+| `Content/NPCs/Empress/EmpressOfLight.Look.cs` (new) | her drawing in the scenes: cage, stars, cracks, eyes |
+| `Content/NPCs/Empress/EmpressArena.cs` (new) | the decagon, the arena, the walls, the favour's giving |
+| `Content/NPCs/Empress/EmpressVoid.cs` (new) | the arena's drawing |
+| `Content/NPCs/Empress/EmpressSky.cs` (new) | her sky, the flicker, the hush of the music |
+| `Content/NPCs/Empress/EmpressArt.cs` (new) | her colours; her drawn as vanilla draws her; her cracks |
+| `Content/NPCs/Empress/EmpressVoid.png`, `EmpressVoidStars.png` (new) | what lies outside |
+| `Content/Buffs/FavorOfAnEmpress.cs`, `.png`, `VisualIntoxication.cs`, `.png` (new) | the buff and the debuff |
+| `Content/PADplayer/PisPlayer.cs` | the favour's flight, after the wing trim |
+| `Content/Structures/GraveyardBurial.cs` | `GraveyardSilence.Hush()` |
+| `Content/UI/BossPlate.cs` | `BossPlate.Colours` (a boss's own name and title colours) |
+| `Content/UI/DialoguePortrait.cs` | `DialoguePortrait.Introduce` |
+| `Localization/en-US_Mods.PisAndDag.hjson` | the two buffs; the death line |
+
+Open: everything in RELEASE_TODO under §17.2. The offers of the session's start (the checklist's
+misquote and repeats; the ore pistols' costs) still wait on a yes.
+
+## 17.3 Session 8, later: the Wall's ten seconds, her sky's stripes, her favour's end, her plate, the Defacer's reach
+
+Asked: "currently there is a huge lag about 10-15 secs after defeating wall of flesh for the first
+time, prob a huge transition of new bioimes in grand world but can you make it run in the
+background while players still able to move."; with pictures of her fight, "need to stretch these
+better", "the stripes in the background" and "place the stripe better or make it loop"; with one of
+a player by day, "btw im still using this" (Favor of an Empress on the bar); "waiting too long
+between the scream and the nameplate, also cinematic should end as boss name plate roll in"; and
+"defacer weapon, double range".
+
+1. **The Wall's ten seconds** (`Content/Structures/TheForces.cs`). Not the game's hardmode work:
+   that already runs off the game's thread (`WorldGen.StartHardmode` queues it), the V with it. It
+   was the Ball's arms (`TheBallPass`, PAD_World_Plan §4; Grand worlds), grown in the Wall's
+   `OnKill` on the game's thread, every blob of every arm framing each tile it turned, with its
+   neighbours, as it went (`SquareTileFrame`). The blobs overlap step to step, so each tile was
+   framed dozens of times: about 35.6 million framings, counted by a stand-in of the growth
+   (`Claude outputs\BallSpread_framings_1703.py`). Now: (a) the arms grow in the game's own
+   hardmode work, one more of its passes, after the V ("PisAndDag: The Ball Spreads",
+   `BallState.ModifyHardmodeTasks`, after "Hardmode Evil"), off the game's thread, so everybody
+   plays on while it runs, and the game sends the changed world to every player when its work is
+   done, as it does for the V; (b) the tiles an arm turns are marked, and framed once each with
+   their neighbours when the growing is done (about 430 thousand framings, 83 times fewer); a tile
+   already the Ball's stone is not turned again; (c) a world that was in hardmode before the Ball
+   could spread (an older build's) grows them the next time a Wall dies, off the game's thread too;
+   whatever goes wrong in it is written to the log and goes no further (an exception off the game's
+   thread would close the game); (d) found on the way: the Dungeon's keep-out read the generator's
+   plan of where the Dungeon is, which is not kept once the world is made (0 by hardmode); now the
+   world's own `Main.dungeonX` then.
+2. **Her sky's stripes** (`EmpressSky.cs`). Each band of her colours was one stretched smear
+   (`Smear.png`, a swing's smear: a hard bottom edge and hard ends), a screen and a half wide,
+   drifting and jumping back: one of its ends was on the screen most of the time. Now three ribbons
+   (pink, sky blue, lilac), higher (a tenth, a fifth and a third of the way down the screen), each
+   the whole width of the screen and past both sides, drawn as 240 thin upright slices of the middle
+   column of the soft glow (`GlowSoft`): soft above and below, with no end anywhere. How bright each
+   is along its length, its colour (between its own and the next one's), how thick, and its rise
+   and fall, all come from waves that repeat every screen's width, so it drifts on (a screen in
+   about three to five minutes, the middle one the other way) with no seam and no jump; on the
+   void's clock (`EmpressVoidSystem.Clock`), which does not start again every hour as the game's
+   does; a screen of the camera's travel slides them 3% of a screen, for distance. The dark under
+   them is drawn in rows of three pixels (24 bands before, two or three shades between one and the
+   next, which showed as stripes too). The stand-in of both, old and new:
+   `Claude outputs\EmpressSky_ribbons_1703.png`.
+3. **Her favour's end** (`EmpressArena.cs`). It was kept after her death until its wearer stood
+   on something (a minute at most), so nobody would fall out of her sky; by request it "lasts until
+   either player die or plaer beats boss", and it now goes the moment her arena does: as her border
+   goes at her death, or with her however else she leaves. One it ends on in the air is let down
+   instead: the game's slow fall (as a Featherfall Potion gives it; down held falls as fast as
+   ever) and no fall damage, until they stand on something or a minute has gone. No buff for it.
+4. **Her plate** (`EmpressOfLight.Arrival.cs`, `BossIntro.cs`). Her name came up with her scream,
+   but on the long plate (a second rising, two still, one down to the bar, a second and a half
+   sitting) and the scene held through all of it: 5.6 seconds from the scream to the fight. Now her
+   plate is brisk (`BossIntroProfile.Brisk`, new; name-only runs): up with the scream (a second),
+   read for half a second (`BossIntro.BriskRead`, 30), and as it starts down to the bar the scene
+   lets go: the bars go, the interface is back, the camera walks home over the second the name
+   takes to land, the zoom eased back with it, the music back. HOLD is gone; SCREAM is the rise and
+   the read (90 ticks, as it was). From the scream to the fight 1.5 seconds, to the name on the bar
+   2.5; her coming about 17 seconds in all. Her arms come down over the scream's last half second.
+   "Roll in" read as the name going down into its place on the bar (as it rises, the scream's first
+   tick would have ended the scene).
+5. **The Defacer's reach** (`Defacer.png`, `DefacerHoldout.cs`, `Defacer.cs`). Doubled with a
+   longer haft: the head 56 texels past the hands (28 before), the picture 68 by 68 (48), its haft
+   lengthened by twenty steps of its own grain between the grip and the head, the head and the butt
+   as they were; so 52 pixels past its wielder's front (24). The haft strikes too, at four points
+   (8, 18, 28 and 38 texels past the hands): an enemy up against its wielder, inside the head's
+   sweep, is not missed. On flat ground the blow meets the floor about 60 pixels in front (30), and
+   a full lift's heave with it. The picture before: `Claude outputs\Defacer_48_before_1703.png`;
+   both: `Defacer_longer_haft_1703.png`.
+6. **Checked**: compiled against tML 1.4.4 (0 errors, the 10 known warnings); her sky through a
+   stand-in of the old drawing and the new; the Defacer's picture against the house rules (alpha
+   whole, 15 colours, an even box, on the diagonal). **Never run in the game.**
+
+| File | |
+|---|---|
+| `Content/Structures/TheForces.cs` | the Ball's arms in the hardmode work, each tile framed once; the Dungeon's keep-out at hardmode |
+| `Content/NPCs/Empress/EmpressSky.cs` | the ribbons; the dark without bands |
+| `Content/NPCs/Empress/EmpressVoid.cs` | `EmpressVoidSystem.Clock` |
+| `Content/NPCs/Empress/EmpressArt.cs` | the smear no longer loaded |
+| `Content/NPCs/Empress/EmpressArena.cs` | the favour gone with the arena; the way down |
+| `Content/Buffs/FavorOfAnEmpress.cs` | its comment |
+| `Content/NPCs/Empress/EmpressOfLight.Arrival.cs` | SCREAM ends the scene; HOLD gone; the brisk plate |
+| `Content/NPCs/Empress/EmpressOfLight.Look.cs` | her arms at the scream's end |
+| `Content/UI/BossIntro.cs` | `BossIntroProfile.Brisk`, `BossIntro.BriskRead` |
+| `Content/Items/Melee/Defacer.cs`, `.png` | the longer hammer |
+| `Content/Projectiles/Melee/DefacerHoldout.cs` | its points on the picture; the haft strikes |
+
+Open: RELEASE_TODO under §17.3. The offers of the session's start (the checklist's misquote and
+repeats; the ore pistols' costs) still wait on a yes.
+
+## 17.4 Session 8, later: Elin in Legends (her dash a grab; seven acts of her own); the Inner Tube in five colours
+
+Asked: "make inner tube have color variations and is saved upon generation / 5 colors: pink (original),
+cyan, neon green, maroon, and solar orange"; and for Legends, the Empress: her dash, "if it hits player
+than player is held on one hand, zooms in then other hand flashes a ball of light, and pushes to the
+player making a huge explosion dealing roughly 200 damage normal and have scalings" ("You can cut up the
+arm textures and rotate them for better character animation"); four new moves for her first half (a world
+cracked like a mirror that shatters after two seconds and mends; laser pillars dragged down every 0.2
+seconds, 6 tiles apart, toward the player's side, "colorful tho for night"; a prism of glass thrown to the
+arena's middle, a white ray into it from the far side, seven rainbow rays out of it, sweeping as she goes
+round; a light chainsaw, the Photon Ripper's kind, driven slowly at the player while her own attacks go on
+"except dash and tele"); "if daylighth all attack means certain death"; "Make it beautiful, Dramatic and
+cinematic. But still keep close to the aesthetic light related of Empress of Light"; and two to five more
+of my choosing. Answered, one row: of those offered, the Mirage, the Eclipse Corona and the Aurora
+Curtains, "but things have to return to normal after she done with her act"; her moves "Every other,
+randomized, no repetition also dont repeat attack for more than 3 moves"; the grab "Phase 1 only"; the
+tube's colours all equally likely.
+
+1. **When** (`EmpressOfLight.Legends.cs`). In a Legends world, her first half only (until vanilla's own
+   change at half her life), with her arena up. Every other move is one of seven acts of hers instead
+   of vanilla's next: taken on the very tick vanilla would choose (its state 1, at 45 ticks, 22.5 in a
+   For the Worthy world), at random from those she has not played in her last three. The move between is
+   vanilla's own, as it would have come (its cycle kept where it was). An act ends by handing her back
+   to vanilla at its pause before choosing. By day everything of hers kills, as vanilla's does (a blow
+   of 9999, doubled as the game doubles any hostile shot). Everything an act brings goes with it: the
+   dark, her copies, the curtains, the mirror, the saw, the hold on a player; nothing is left to undo.
+   The server (or a single player) chooses and steps each act; every machine plays it from the same few
+   numbers (`SendExtraAI`). Whatever hurts is an unseen hostile projectile of the server's
+   (`EmpressHitbox`, its death line "Elin"), so each player is hurt on their own machine as by her
+   lances, with the game's own immunity frames, dodges and death lines. All but the round blows ask her
+   act, each tick, where they are as that machine draws them; they reach only players inside her arena,
+   never town folk or anything else; they go with the act, and at her death. Her body hurts through an
+   act as vanilla reckons it each tick (none through the grab and the mirage's strike).
+2. **Her arms** (`EmpressArt.cs`). As allowed: each arm as the game draws it held straight out (the
+   seventh frame of its sheet, the dash's reach), cut from the sheet and turned about its shoulder to
+   any angle. The screen's left arm is the left sheet's, the right the right sheet's, whichever way she
+   faces, so no arm is ever drawn mirrored. Her palm is known for any angle (`PalmAt`), so what she holds
+   (a player, a ball of light, a prism, the saw's haft) sits in her hand.
+3. **The grab** (`EmpressOfLight.Grab.cs`, `EmpressHeld`). A dash of her first half that touches a player
+   (not one in their moment of grace after a hit) stops dead on them: a ring of light, a crack of her
+   voice, and they are in her hand, held out to their side (CATCH, 14 ticks). LIFT (40): held up a
+   little, the camera between the two of them and leaning in (theirs alone), the bars in; her other hand
+   draws up and back, away from them, and a ball of light fills in it, white at its heart, her colours
+   round it, flashing, light running in. PUSH (14): the hand comes over the top and through, the ball
+   into them. BLAST (30): a blast of light where they are, rings and glass and a roar; 200 in a normal
+   world (240 Expert, 360 Master, as vanilla scales her shots); they are thrown out of her hand, away from
+   her. LET (22): her arms come down, and vanilla's pause before its next move. Held, a player can do
+   nothing; they rock a little in her palm. A dash that meets nobody is vanilla's. The second half's
+   dashes are vanilla's (by request).
+4. **The mirror crack** (`EmpressOfLight.Crack.cs`, `EmpressMirror.cs`). She flies over the player, above
+   the crack's reach (the world breaks below her, not her with it), and raises a hand; a glint where each
+   player stands (her target and up to two more near her). The world cracks out from each glint to 22
+   tiles, as a struck mirror does: eleven cracks straight out from the middle, unevenly, and across each
+   wedge its own three cracks round, not meeting the next wedge's; the cracks glisten the rainbow, light
+   running out along them, and stars come and go where they cross. For two seconds from the first crack
+   each shard shifts and tips a little more, trembling, the world in it moved with it and seen a little
+   nearer or further, as in a mirror a little turned; the panes catch the light; the ring at the edge
+   brightens. Then it shatters: the shards are thrown out, turning, the world in them, and where they
+   were the world goes dark; everyone inside is hurt (140 normal, 180 Expert, 270 Master). The shards fly
+   back to their places and the cracks close: the world whole again. The world in the shards is the
+   world itself, as the game drew it that frame (its own capture of the screen, the one its screen
+   effects use, asked for only while a crack is up), cut and moved with vanilla's BasicEffect: no shader
+   of the mod's. With Retro or Trippy lighting there is no capture: the cracks are drawn, the world in
+   them unmoved.
+5. **The laser pillars** (`EmpressOfLight.Pillars.cs`). She raises the hand on the player's side, it
+   fills with light, and she drags it down. From beside her toward the player's side a row of pillars
+   runs across the arena, one every 0.2 seconds, 6 tiles apart: each first a thin flickering line of its
+   colour for half a second, then the beam, shot down the arena's whole height in 5 ticks, held a
+   quarter second, gone over another; each the next colour of the rainbow, full colours (not her pale
+   ones), for the night; on until 40 tiles past the player or the arena's edge. A beam hurts while it is
+   whole (100 normal, 128 Expert, 192 Master).
+6. **The prism** (`EmpressOfLight.Prism.cs`). A prism of glass forms in her raised hand; she throws it,
+   turning end over end, to the arena's middle, where it stands, six tiles tall. She flies to the far side
+   of the middle from the player (1000 px out). Two seconds: her hands at the prism, light running into
+   them, a thin white ray flickering on between her and it, thickening, the prism lighting up. Then the
+   white ray at full, and out of the prism's far side seven rays, red to violet, fanned 30 degrees, out
+   past the arena's edge; she goes round the middle slowly (70 degrees in five seconds), one way or the
+   other, and the rays go round with her. The ray stops; the prism bursts into light. The white ray and
+   the seven hurt (110 normal, 144 Expert, 216 Master).
+7. **The light chainsaw** (`EmpressOfLight.Saw.cs`). She stops and holds both hands out at the player; a
+   blade of light grows from them, a band of white, her colours round its edge, and a chain of teeth of
+   prism light (spikes leaning back, as a chain's do) running round it. Then vanilla is let go with the
+   saw out: its bolts, lances, sun dance and rainbow go on, while she comes at the player behind the
+   saw, slowly, turning it after them; its dash is skipped for the next move of its cycle and its dart to
+   the player between moves is not made. Two of vanilla's moves, or eleven seconds, and the teeth are
+   flung off the blade and it goes out. The blade hurts (120 normal, 160 Expert, 240 Master).
+8. **The mirage** (`EmpressOfLight.Mirage.cs`). A flash, and two of her peel off her; the three go to
+   three places round the player, a third of a turn apart, and keep them as the player moves. Her copies
+   cast her prismatic bolts (vanilla's own) in turn; she does not, and a glint of light runs over her
+   crown every two thirds of a second: the bolts and the glint are how to tell. Then all three come
+   through where the player was: the copies are light and go through; she takes whoever she meets, as
+   her dash does (the grab). The copies break into her colours and are gone.
+9. **The eclipse** (`EmpressOfLight.Eclipse.cs`). Over the player she draws the light in: the sky and the
+   world go dark (for whoever is near her arena), motes stream into her from all round, and she goes
+   dark in front of a ring of light wider than her wings, a sun in eclipse, its streamers turning. A
+   notch opens in the ring, a quarter turn or so from the player, two faint lines marking the way out
+   across the arena. The ring is thrown out across the whole arena, its notch with it: inside the notch
+   it passes by; anywhere else it hurts (130 normal, 168 Expert, 252 Master). The light comes back, and
+   she with it.
+10. **The aurora curtains** (`EmpressOfLight.Aurora.cs`). She raises her arms; the curtains stir at the
+    arena's sides and the way through is shown where the player is (two dashed green lines). The curtains
+    sweep in from both sides, the whole height of the arena, to the edges of the gap; for four seconds the
+    gap drifts one way and back and narrows (28 tiles to 16); then they draw back and are gone. A curtain
+    hurts wherever it hangs, top to bottom (110 normal, 144 Expert, 216 Master). Drawn at the screen's own
+    size (a curtain is the arena's whole height, 285 tiles, and the screen shows a fifth of it): a faint
+    wash all the way up and down, so nowhere in it looks safe; folds of light one over another every 45
+    tiles up, each a wavering green foot rising through blue to violet; rays up from each foot,
+    flickering; the folds rising slowly; brighter toward the gap, and a line of white at each inner edge.
+    Only what is on the screen is drawn.
+11. **The Inner Tube** (`Content/Items/InnerTubeColours.cs`). Each tube's colour is chosen when the tube
+    is made, however it comes (in a chest as the world is made, or any other way), one in five each: pink (the game's own), cyan, neon green, maroon, solar orange; and kept with it: saved,
+    sent to the other players, kept through a reforge. Its name says its colour ("Cyan Inner Tube"; the
+    pink is the plain Inner Tube). The pictures are the game's own, read at run time and recoloured shade
+    for shade (the item, and the tube round the waist in water: six shades of pink, each given the same
+    step of the new colour's ramp), never copied into the mod; a dye dyes the new colour as it did the
+    pink. A tube from before there were colours keeps the one it is given as it loads.
+12. **Checked**: compiled against tML 1.4.4 (0 errors, the 10 known warnings); every act drawn by a
+    stand-in of its drawing, key frames at the game's own zoom (`Claude outputs\Empress_Legends_previews_1704.png`),
+    and four things changed by it (the free hand drawing back, not across, before the push; the crack a
+    struck mirror's, not a web's, its world moved more and its cracks the rainbow; the corona behind her
+    and wider than her wings; the curtains made at the screen's size); the tube's colours on its own
+    pictures (`Claude outputs\InnerTube_colours_1704.png`). An independent read of the code found eleven
+    things, all mended: (a) in multiplayer the long blows (the prism's rays, the saw, the curtains, the
+    ring) stopped hurting a second in, on the players' own machines: a projectile's life is not sent with
+    it, and a client's copy died at the game's default; now its life is sent, and each asks her act where
+    it is; (b) the curtains, the ring and the rays reached past her arena, to anyone outside the gap's
+    width anywhere in the world, and could kill town folk (a hostile shot of the server's strikes
+    friendly NPCs); now only players in her arena, and no NPC; (c) her body did not hurt through an act
+    in a single-player world (the damage put back was read after her coming had zeroed it), and too much
+    on a client; now vanilla's own reckoning; (d) a player caught on her left was held in her right hand
+    on the other screens (the side was not sent); (e) the ring could hurt a moment after its act, and an
+    act's blows on after her death; (f) the crack's mend left the world in its shards out of true until
+    the last frame; (g) the aurora's gap could drift past the arena's edge; (h) the prism formed in the
+    hand not raised; (i) an act could put off her leaving when called by day and the day was over; (j)
+    her blows' death line had no name; (k) the ring's reach on a late-joining player's machine started
+    from nothing. **Never run in the game.**
+
+| File | |
+|---|---|
+| `Content/NPCs/Empress/EmpressOfLight.Legends.cs` | new: the acts' turn, choice, sync, end; her arms posed; drawing |
+| `Content/NPCs/Empress/EmpressOfLight.Grab.cs` | new: the grab; `EmpressHeld` |
+| `Content/NPCs/Empress/EmpressOfLight.Crack.cs` | new: the mirror crack; `CrackNet` |
+| `Content/NPCs/Empress/EmpressMirror.cs` | new: the shards, the dark behind them, the glass's light, over the finished screen |
+| `Content/NPCs/Empress/EmpressOfLight.Pillars.cs` | new |
+| `Content/NPCs/Empress/EmpressOfLight.Prism.cs` | new |
+| `Content/NPCs/Empress/EmpressOfLight.Saw.cs` | new |
+| `Content/NPCs/Empress/EmpressOfLight.Mirage.cs` | new |
+| `Content/NPCs/Empress/EmpressOfLight.Eclipse.cs` | new |
+| `Content/NPCs/Empress/EmpressOfLight.Aurora.cs` | new |
+| `Content/NPCs/Empress/EmpressHitbox.cs` | new: what hurts, unseen |
+| `Content/NPCs/Empress/EmpressOfLight.cs` | `Scene.Act`, `Scene.Grab`; the acts in PreAI/PostAI, contact, sync |
+| `Content/NPCs/Empress/EmpressOfLight.Look.cs` | drawing an act; over the players |
+| `Content/NPCs/Empress/EmpressOfLight.Death.cs` | an act let go of at her death |
+| `Content/NPCs/Empress/EmpressArt.cs` | arms cut and turned; her shape without arms |
+| `Content/NPCs/Empress/EmpressArena.cs` | `Decagon.Upright`, `Decagon.Level` |
+| `Content/Graphics/Strip.cs` | `Pair` with a row of the texture |
+| `Content/Items/InnerTubeColours.cs` | new |
+| `Localization/en-US_Mods.PisAndDag.hjson` | `Projectiles.EmpressHitbox`; `InnerTube` |
+
+Open: RELEASE_TODO under §17.4.
+
+## 17.5 Session 8, later: Elin, played: her voice and her sounds, a wider prism, a longer saw, a longer warning, the pillars across, a bigger crack, her name not twice
+
+Asked, after a fight in the game, with pictures: "she needs more sounds in her attacks, pitch it high and lows";
+"1, the prism need more spread, from first to last ray need be at least 90 degrees"; "2, cinematic lasting too
+long here" (her mirage, the black bars on); "3, chainsaw needs to extend from here to max length of 50 tiiles and
+during this she moves 50% faster"; "4, give like 1 second more wait time after it show the escape for the player
+to escape" (the eclipse); "5, the pillars need to start from all the way from the edge of the screen not from
+empress's center and it should end at the arena's edge"; "she needs more of her screams during the gameplay"; the
+saw "too short"; the crack "needs a bigger radius too"; "needs the chainsaw sound also".
+
+1. **Her voice** (`EmpressOfLight.Legends.cs`: `Sound`, `Scream`, `ActPitch`). Her scream (her dash's shriek, the
+   game's, with her cry under it a little lower) as each act begins, each act at its own pitch (high for the
+   mirage, the crack, the aurora and the prism; low for the eclipse, the saw and the pillars), with a ring of her
+   pink off her; and at each act's height: the grab's catch and push, the crack's shatter, the pillars' drag, the
+   prism's firing, the saw at its full length, the mirage's strike (all three of her, three voices, hers in the
+   middle), the eclipse's burst, the curtains closing; her loudest as her change begins at half her life.
+2. **Her acts heard** (each act's file). The game's own sounds, laid high and low over one another:
+   the crack: a chime as she raises her hand; the crack high and low together, a splinter over it; through the
+   strain glass creaking high and quick (quicker as it goes) and groaning low; the shatter a deep boom under the
+   glass; the shards coming home in four rising tinks. The pillars: a chime as her hand fills; a whoomph as she
+   drags it down; a high tick as each line comes; each beam high and low by turns, climbing along the row, a thump
+   under every third; heard where each beam crosses the player's height (they were heard at the arena's floor, too
+   far off to hear). The prism: crystal high and low as it forms; a whoosh as it is thrown and as she flies; a hum
+   climbing from low to high through the charge; a boom and the Rainbow Gun's ring as it fires; the rays' hum
+   wavering high and low as she goes round, a shimmer now and then; shattering high and low as it breaks. The
+   mirage: a bell high and a whoosh low as she splits; her copies' bolts one high, one low; a high tink at her crown
+   with each glint (hers alone: the glint can be heard); the strike's three screams. The eclipse: a hum falling
+   from high to low as the light goes; a high bell as the notch opens, then a tick counting down to the burst,
+   climbing; the burst a deep boom with a high ring over it. The aurora: a bell as she calls them; the curtains'
+   low whoosh from either side; high glints either side through the hold; a whoosh as they open. The grab: a low
+   thud at the catch; the ball filling with a chime climbing from low to high; a whoosh with the push; the blast a
+   deep boom and a high ring under the glass. The saw: item 5.
+3. **The prism** (`EmpressOfLight.Prism.cs`). The seven rays 16 degrees apart: 96 from the first to the last (30).
+4. **Her name, not twice** (`BossIntro.cs`, `BossPlate.cs`). The black bars in the mirage were her name's plate
+   put up a second time, the default one, with bars all through it (about five seconds). Her arrival keeps the
+   interface hidden while the camera walks home (60 ticks), and her own plate's flight down to the bar ends at
+   about the same tick; when the plate ended first, the boss bar was first seen after it, and the bar's wait for a
+   name (a boss that names itself) found no plate running and put up the default. Now the last boss named is
+   remembered until its fight is over (`BossIntro.Named`, `ForgetNamed`), and the wait asks. Every boss that names
+   itself is kept from it the same way.
+5. **The saw** (`EmpressOfLight.Saw.cs`). Conjured 14 tiles long as before; over the drive's first two seconds it
+   grows out to 50 tiles (by request), its teeth and edge with it; its tip turns no faster than 14 px a tick (the
+   long blade sweeps no faster than the short one could be dodged); she comes half again as fast (3.9 px a tick).
+   Heard as a chainsaw, the game's own (Item22 its motor, Item23 its rev): the motor catching and revving up as
+   she conjures it; through the drive the motor in two notes, high and low by turns, climbing as the blade grows;
+   a rev now and then; a whine as it grows; her scream as it reaches its length; winding down as it goes out.
+6. **The eclipse** (`EmpressOfLight.Eclipse.cs`). The way out shown for a second and two thirds (two thirds
+   before), a high tick counting down to the burst.
+7. **The pillars** (`EmpressOfLight.Pillars.cs`). The row starts at the edge of the screen on her side, as the
+   player sees it (half the screen's width from them; a server, with no screen, takes 1000 px), or at the arena's
+   edge if that is nearer, and runs on to the arena's far edge (64 pillars at the most): not from beside her, and
+   not stopping 40 tiles past the player.
+8. **The crack** (`EmpressOfLight.Crack.cs`). 32 tiles (22), with a fourth crack round each wedge so the shards
+   are no bigger; each wedge's cracks moved at most a third of the way toward the next ring (always in order). She
+   hangs up and to her side of it, 470 px each way, past its reach.
+9. **Checked**: compiled (0 errors, the 10 known warnings); the prism's fan, the saw at full length and the bigger
+   crack drawn by the stand-in (`Claude outputs\Empress_round3_1705.png`). **Never run in the game.**
+
+| File | |
+|---|---|
+| `Content/NPCs/Empress/EmpressOfLight.Legends.cs` | `Sound`, `Scream`, `ActPitch`; a scream at each act's start and at her change; the saw heard going out |
+| `Content/NPCs/Empress/EmpressOfLight.Saw.cs` | the blade out to 50 tiles; her pace; its tip's turn; the chainsaw heard |
+| `Content/NPCs/Empress/EmpressOfLight.Prism.cs` | the rays 96 degrees across; its sounds |
+| `Content/NPCs/Empress/EmpressOfLight.Eclipse.cs` | MARK 100 ticks; its countdown; its sounds |
+| `Content/NPCs/Empress/EmpressOfLight.Pillars.cs` | the row from the screen's edge to the arena's; its sounds, heard at the player's height |
+| `Content/NPCs/Empress/EmpressOfLight.Crack.cs` | 32 tiles, five rings; her place; its sounds |
+| `Content/NPCs/Empress/EmpressOfLight.Mirage.cs` | its sounds; the glint heard; three voices |
+| `Content/NPCs/Empress/EmpressOfLight.Aurora.cs` | its sounds |
+| `Content/NPCs/Empress/EmpressOfLight.Grab.cs` | its sounds and screams |
+| `Content/UI/BossIntro.cs` | `Named`, `ForgetNamed` |
+| `Content/UI/BossPlate.cs` | the wait for a name asks whether it was given; the name forgotten when the fight is over |
+
+Open: RELEASE_TODO under §17.5.
+
+## 17.6 Session 8, later: the prism's circle quickening, and longer
+
+Asked: "her speed around the prism gets faster, 1x turn speed at the start, 1.7x at half and 3x at the end of the
+prism attack, it should also last like 7-8 secs".
+
+1. **Her circle** (`EmpressOfLight.Prism.cs`: `OrbitRound`, `OrbitSpeed`). FIRE is 450 ticks, seven and a half
+   seconds (five). Her turn round the middle starts at what it was (14 degrees a second) and speeds up smoothly,
+   as 1 + 0.8p + 1.2p² of it at a share p of the fire: 1.7 times it half way (24 degrees a second), 3 times it at
+   the end (42); 189 degrees round in all (70). The rays go round with her, as before. Their hum sounds each time
+   she has gone a little further round, so it quickens with her (a note every 18 ticks at first, every 6 at the
+   end), and climbs from low to high over the fire. The rays' hitbox lives the longer fire.
+2. **Checked**: compiled (0 errors, the 10 known warnings); the speeds and the sweep reckoned. **Never run in the
+   game.**
+
+| File | |
+|---|---|
+| `Content/NPCs/Empress/EmpressOfLight.Prism.cs` | FIRE 450 ticks; her circle quickening 1x, 1.7x, 3x; the hum with her |
+
+Open: RELEASE_TODO under §17.6.
+
+## 17.7 Session 8, later: her arena smaller, by the world
+
+Asked: "ok now the arena should radius is 150 tiles right? make it only 125 tiles in normal, 115 in expert, 100 in
+master and -15 in legends".
+
+1. **Its size** (`EmpressArena.cs`: `Radius`, `Reach`, `FavourReach`, all three worked out each time from the world
+   now, not fixed). From the middle to a corner: 125 tiles in a normal world, 115 in an expert one, 100 in a master
+   one, and 15 fewer in a Legends world (110, 100, 85); it was 150 in every world. Journey goes by its difficulty
+   slider, as the game's own expert and master do. The world's own settings, saved and sent, so every machine has
+   the same arena. Everything that stood on the old number goes by the new: her stars' flight out to the corners
+   and the camera with one, the walls, what lies outside and how far it reaches, her sky and her favour's reach,
+   where the arena stands in from the world's sides, her death's border closing (from the corner in to 1100 px:
+   still inward at the smallest, 1360 px), and her Legends acts (the pillars' row to the edge, the curtains' gap
+   kept in, now in the middle if an arena were ever too small to keep it in from the sides).
+2. **Checked**: compiled (0 errors, the 10 known warnings). **Never run in the game.**
+
+| File | |
+|---|---|
+| `Content/NPCs/Empress/EmpressArena.cs` | `Radius` by the world; `Reach`, `FavourReach` from it |
+| `Content/NPCs/Empress/EmpressOfLight.cs` | its comment |
+| `Content/NPCs/Empress/EmpressOfLight.Aurora.cs` | the gap kept inside a small arena |
+
+Open: RELEASE_TODO under §17.7.
+
+## 17.8 Session 8, later: her numbers, her words, and Dame Quilt's
+
+Asked: "Buff her natural defense by 25% / Legends: life * 1.65f / defense *1.15 / damage * 1.2 / And i think she
+should trash talk dialog (a system that is only a line and underlined like edlen ring and it auto skips after a while
+depending on the text) in phase 1 in legends.Look into trash talks from Elden ring and Dark Souls bosses . Fix Dame
+Quilt to have this kinda trash talk system^".
+
+1. **Her numbers** (`EmpressOfLight.cs`: `SetDefaults`, and `EmpressShots`, a GlobalProjectile). Set before the
+   world's own scaling, so each is on top of the usual. Every world: defense 50 to 63 (x1.25; vanilla's x1.2 for her
+   second half then makes it 75). Legends, on top: life x1.65 (70,000 to 115,500 before the world scales it),
+   defense x1.15 (63 to 72; 86 in her second half), damage x1.2. The damage is her body's (80 to 96, which vanilla
+   works her blow from each tick, her dash's too) and everything she throws, where it is made: vanilla's bolts,
+   lances, sun dance and rainbows, and her Legends acts' own (the grab's blast 200 to 240 in a normal world). By day
+   her blows still kill (9999), left as they are.
+2. **The line** (`Content/UI/Taunt.cs`, new). What a boss says mid-fight: one line at the foot of the screen, over
+   the boss bar and its name. No box, no name, nothing to answer: the words in a pale cream on a soft shadow, and
+   under them a thin rule in the speaker's colours (one in the middle, another at the ends), brightest in the middle
+   and gone at its ends, drawn out from the middle as the words rise into place. It stays as long as the words take
+   to read (60 ticks, 4 more for every letter, 100 at least and 420 at most), then fades. A new line takes the place
+   of one still up (that one going in 10 ticks); a speech of several lines says them one after another. It stays
+   through a cutscene's hiding of the interface (its layer is ahead of the F11 toggle, as the boss bar's is); the
+   player's own F11 hides it; the dialogue panel, when up, has the foot of the screen to itself. Heard by whoever is
+   near the speaker when it is said. Nothing sent: each machine says it as its own copy of the fight comes to it.
+3. **Her words** (`EmpressOfLight.Talk.cs`, new; Legends, her first half only). Elden Ring's bosses say little, in an
+   old way of speaking, to the player and by a name of their own for them, mostly at the fight's turns: as it begins,
+   at a change, when the player dies (Dark Souls' hardly speak). Hers is that, a little more often, in her death's
+   voice (thee and thou, and "toy"): she does not threaten; she corrects, and she is amused. Her rule is her pink in
+   the middle and her sky blue at the ends.
+
+   | When | What she says (in turn; none twice before the rest) |
+   |---|---|
+   | as the fight begins, 1.5 s after her name is down at the bar | "A lacewing, for a toy." / "It is a fair price." -- or "Thou didst break one of mine." / "Come. Let me see how thou art made." -- or "So. This is what called me down." / "I expected more." |
+   | the mirror crack begins | "Hold still. There is a flaw." -- "It was always glass." -- "Thy world breaks so easily." |
+   | the laser pillars | "Every colour in its place." -- "Stand where the light allows." -- "In order, toy. Always in order." |
+   | the prism | "Seven, from one. As it should be." -- "See how the light obeys." -- "It only turns faster." |
+   | the light chainsaw | "Come closer. I have made thee something." -- "Light has an edge, too." -- "Do not squirm. I am being careful." |
+   | the mirage | "Look well. Only one of us looks back." -- "Choose. Thy kind always choose wrong." |
+   | the eclipse | "Without me, there is no light at all." -- "Thou art very small, in the dark." -- "There is one way out. Find it." |
+   | the aurora curtains | "The sky is drawing shut." -- "Thou wert never meant to be up here." -- "Stay where thou art put." |
+   | she has someone in her hand | "Be still." -- "So light. All thy kind are." -- "I have thee, toy." |
+   | anyone in her arena dies | "Broken already." -- "Down. Where thy kind belong." -- "I shall have another." -- "Thy wings were only lent." |
+   | the one she fights keeps 20 tiles over her for 3 s (once) | "Thou fliest by my leave." |
+   | a fifth of her life gone (once) | "A mark on me. It will be corrected." |
+   | her change, at half her life | "Not broken yet." / "Then enough play." -- or "Thou art a better toy than most." / "Enough play." |
+
+   One act in three begins with a line, which one of each three by chance (by request, "make it rare tho, like 1 in 3 attack have one"; it was 7 in 10). After any line she is quiet 7 s more than it takes to say, but for her
+   first words, her hand, a fall and her change, which she always says. Her death takes down whatever she was saying
+   (her last words are in the panel). Which line comes is the same on every machine that has seen the same fight.
+4. **Dame Quilt** (`DonaQuinn.cs`, `DonaQuinn.Fight.cs`, `DonaQuinn.Draw.cs`). Her four lines, as they were and
+   when they were, now said on that line, with a gold rule (paler at its ends), heard within 2400 px of her; the
+   line over her head is gone. (`Bark.cs` stays, no longer used by anyone.)
+5. **Checked**: compiled (0 errors, the 10 known warnings); a mock-up of the line at 1920x1080 with a stand-in font
+   (Taunt_line_1708.png). **Never run in the game.**
+
+| File | |
+|---|---|
+| `Content/UI/Taunt.cs` | new: the line |
+| `Content/NPCs/Empress/EmpressOfLight.Talk.cs` | new: her words and when |
+| `Content/NPCs/Empress/EmpressOfLight.cs` | `SetDefaults` (her numbers); `EmpressShots`; `Talk` each tick |
+| `Content/NPCs/Empress/EmpressOfLight.Legends.cs` | a line as an act begins; her change's two |
+| `Content/NPCs/Empress/EmpressOfLight.Grab.cs` | a line as she catches someone; the blast's comment |
+| `Content/NPCs/Empress/EmpressOfLight.Arrival.cs` | her first words, from the end of her coming |
+| `Content/NPCs/DonaQuinn/DonaQuinn.cs`, `.Fight.cs`, `.Draw.cs` | her shouts on the line; the over-head line gone |
+| `Content/UI/Bark.cs` | a comment |
+
+Open: RELEASE_TODO under §17.8.
+
+## 17.9 Session 8, later: the world bent by her light, her acts dressed, her own sounds, her death in butterflies, solid walls, and her weapons in Legends
+
+Asked: "Make her pillar have the surrounding distortion effect like in the video i told you, and make every attack more
+pretty and aesthetics with some weird brain tickling sound effect. Take your time"; then "when she dies make it burst into
+a bunch of butterfly maybe a clutter of 20 ish, flying in different directions, updown left right, sorta like malenia";
+then "And the border doesnt teleport the player back, make it impenetratable even with dash, the bottom can be stood on.";
+then "no like butterfly critters not butterfly particles"; then "just for this buff her weapons damage by 1.15x in
+legends".
+
+1. **The clip, again** (GE69XUz_Uzs, 2:24 to 2:27, looked at frame by frame in the built-in browser). Thin lines down the
+   screen; a light falls down each, a streak with stars along it; where it passes, everything beside it is pushed
+   sideways in a sharp V (the lines kinked, the clouds behind them sheared), and the lines and the air along them
+   wobble after. That is what the pillars now do.
+2. **The world bent** (`EmpressWarp.cs`, new). The game's own capture of the world (`Main.screenTarget`, the one its
+   screen effects use, as the mirror crack already used it) bent in the capture itself, as the capture ends and before
+   the game lays its screen filters over it (a hook on `FilterManager.EndCapture`): the world set aside, then drawn back
+   through a grid about 10 px apart (about 30,000 points at any size), each point taking its picture from a little way
+   off; point sampled, so what is not bent is pixel for pixel itself. So a Blood Moon's red, the water's own waves and
+   the world turned over for one who walks upside down go over the bends as over everything else. Four kinds of bend,
+   summed: a KINK (a falling light's V), a HAZE (the air along a line of light rippling, rising), a RIPPLE (a ring, or
+   two walls about a line, going out: a shockwave seen through), a LENS (the world swollen or drawn in about a point,
+   and turned). Vanilla's `BasicEffect` only, no shader of the mod's own. The capture made only while it is wanted:
+   while one of her acts is on within 4,000 px of the player, or a ripple runs, and the game's Waves Quality is on; or
+   while a crack is up as near, whatever the waves. The screen's worth of memory the world is set aside in is given back
+   when nothing wants it. The mirror's shards are drawn after the bends, the same way (`EmpressMirror` no longer listens
+   itself), so a bend never covers them, and the filters go over them too. Off with Lighting Retro or Trippy (no
+   capture) and with Waves Quality Off. UI is never bent; the players and everything else in the world are.
+3. **The pillars** (`EmpressOfLight.Pillars.cs`). Each line now shimmers, and down it falls its light, from the top of the
+   screen to its foot over the line's half second (so it reaches the foot as the beam comes), a streak with three
+   stars on it, the world beside it kinked as it passes (the whole row the same way, against the way the row runs).
+   Each beam: its glow, its colour, its white heart as before; its two neighbouring colours thin at its edges; bright
+   slips of light running down it; the world kinked at its head as it shoots down; the air either side rippling while
+   it holds; two walls of bending thrown out either side as it fires, sparks off it. The raised hand: seven motes, one
+   of each colour, spiralling in, a second star turning against the first, the world about the palm drawn in and
+   turning; a wave out of it as it is dragged down.
+4. **Every other act** (the same request: prettier, and the new sounds):
+   - Mirror crack: the glint a drop of glass the world swells in; a wave as it cracks and a bigger one as it bursts;
+     flecks of glass glinting inside it while it strains (more as it strains); sparkles running home along its cracks
+     as it mends; rainbow sparks thrown out of the burst.
+   - Prism: the world seen through its glass, swollen in it, more as it fills; glints running round its edges; two
+     strands of her pink and blue twisting round the white ray, the air along the ray shimmering; sparks running out
+     along the seven and the air over them shimmering a little (kept slight: the rays hurt where they are drawn); a
+     wave as it lands, as the seven come out and as it breaks; glass triangles, edged in light and turning, when it
+     breaks.
+   - Light chainsaw: faint images of the blade where it was a moment ago as it swings; a glint running out along it;
+     the air along it shimmering and whirled at its tip.
+   - Mirage: a wave as she splits; the copies peeling off fringed red and blue, coming together; the air about all
+     three shimmering alike (no new tell); each copy coming apart into five lacewings of light.
+   - Eclipse: the world drawn in toward her, turning, as she gathers the light (let go before the notch opens, so the
+     way out is seen where it is: the turn would otherwise move the notch's look 24°), the motes spiralling in; beads of
+     light round her ring's rim; the diamond ring of an eclipse at the notch's two edges as it opens; the ring bending
+     the world as it goes out, riding with it.
+   - Aurora: the air along the curtains' inner edges shimmering; sparkles drifting up through them.
+   - Grab: sparks circling in to the ball and the world about it drawn into it, turning; the blast a shockwave through
+     the world.
+5. **Her sounds** (`EmpressSounds.cs`, `Content/Sounds/Empress/*.ogg`, new: seventeen files, thirteen sounds). Made
+   here by formula, nothing recorded, nothing copied; mono, 44.1 kHz, Vorbis at quality 8; each levelled to a peak and a
+   loudness and measured after encoding (none clips; the loudest peak is the Shock's, -1.6 dBFS):
+   - **Tingle** 1-3: ten or eleven tiny glass pings, high, bunched early, a whisper of air under them.
+   - **Crinkle**: glass under strain: micro-clicks, quicker and quicker, four snaps among them.
+   - **Swell**: a glass bell played backwards with its room, a sweep rising under it, cut off at its loudest.
+   - **Drop** 1-2: a falling star: a ting, then a note gliding down three octaves, wavering.
+   - **Zap** 1-2: a laser of glass: a ringing that falls off and sags, a crack, a thump under it.
+   - **Wobble**: a glass tone beating slowly against itself, wavering, trembling.
+   - **Whoosh1** and **Whoosh2** (WhooshUp, WhooshDown): a whispered swish rising; the same falling.
+   - **Chime**: seven bells up a whole-tone run, a small room after them.
+   - **Flutter**: twenty soft wings taking off together and thinning out, a sparkle or two over them.
+   - **Hum**: a low hollow beating hum, a faint glass shimmer over it.
+   - **Shards**: glass burst into sparkles: a crack, then fifty pings falling off, a few bouncing on.
+   - **Shock**: a shockwave: a thump gliding down, a whoom closing, a glass whistle falling under it.
+
+   Laid over the game's own, never instead of them. Tingle through every act; Crinkle in the crack as it strains; Swell
+   as the crack, the grab, the pillars, the prism and the saw gather; Drop as each pillar's line falls; Zap as the
+   pillars and the prism fire and the mirage's copies strike; Wobble under what holds (the crack, the prism firing, the
+   saw, the curtains, the pillars' sweep, the mirage's feint); WhooshUp and WhooshDown as things go up and come down;
+   Chime as the prism fires, the eclipse bursts and is given back, the curtains open, and as she becomes butterflies;
+   Flutter as she becomes butterflies and the mirage's copies come apart; Hum as the eclipse and the curtains are
+   called; Shards when glass breaks (the crack, the prism, the saw, the grab's blast) and as her border is thrown out at
+   her death; Shock under every great blow.
+6. **Her death in butterflies** (`EmpressButterflies.cs`, new; `EmpressOfLight.Death.cs`). Asked again: "no like
+   butterfly critters not butterfly particles". As she becomes a butterfly she bursts into twenty of the game's own
+   butterflies, real ones (NPCs a net catches and a jar keeps), round her colours as they go round the ring: Purple
+   Emperors for her pink and her lilac, Sulphurs for her gold, Ulysses for her mint, Tree Nymphs for her sky, the first
+   straight up. Thrown out every way (up, down, left, right and between), some much faster than others so they go out a
+   cloud and not a ring; slowing to a flutter over about a second and still going out for 2.5 to 3.7 seconds, wandering
+   off their lines, curling, bobbing as they beat their wings; what stops them turns them, and, as the game's own do,
+   they turn up from ground or water close under them. A little of her light on them (enough on the dark round each to
+   see it by, a faint glow behind in its colour, a mote now and then; nothing more, so they look like what they are),
+   gone over five seconds. Then the game's own butterfly flight takes each on from the way it was going (one gone far
+   comes back once toward whoever is near, as a new one does). The server makes them and sends each with its flight (the
+   butterfly's extra AI, one bit when it is not hers), so every machine flies it the same. The lone Purple Emperor of
+   before is one of the twenty now. The camera walks home from her more slowly (110 ticks, was 60) so they are seen
+   going. A rush of wings and a run of bells with it, and a wave through the world. The border thrown out before it is
+   now a shockwave through the world too. (`LacewingFlight`, lacewings of light, stays for the mirage's copies.)
+7. **The border solid** (`EmpressArena.cs`). For whoever is in the arena: before the game moves them, whatever of their
+   speed would carry any of them through an edge is taken off (`Decagon.HoldInside`): they run, fly, dash or are thrown
+   into a wall and stop at it, sliding along it. The lower edges (the bottom one, and the two either side of it, 36° off
+   level) are a floor: they land on it exactly, stand still on it (slopes too), walk up and down it, and jump from it as
+   from the ground; no fall damage onto it. The game's own ways home and away (the Magic and Ice Mirrors, the Cell Phone
+   and the Shellphone in all four of its ways, the Magic and Demon Conches, the Recall, Teleportation and Return
+   potions) cannot be used inside her walls at all: "It finds no way out of her light." floats over whoever tries
+   (`EmpressArenaItems`). Anything else that puts them past it in one go (more than 320 px in a tick): a short jump (a
+   Rod of Discord or Harmony, another mod's blink) is stopped at the wall on its way out; a long one (anything that
+   would land them more than twice the arena's reach from her middle) is not made at all, and they stay where they
+   stood. Whatever else gets any of them past it is put back in where it is. Nobody is dazzled any more (Visual
+   Intoxication is no longer given; the buff stays in the mod). Not while she holds them (her grab) or her cage pins
+   them; not through her death's closing border (it never held). Simulated (fall, stand, slope, walk up and down and
+   across onto the flat, jump, a 25 px/tick dash into a wall, a diagonal dash into a corner): all held.
+8. **Her weapons, in Legends** (`Content/Items/EmpressWeapons.cs`, new). Asked: "just for this buff her weapons damage
+   by 1.15x in legends" (asked which weapons: her drops). Nightglow, Starlight, Kaleidoscope, Eventide and Terraprisma
+   hit 1.15 times as hard in a Legends world, and their tooltips say so; anywhere else they are the game's. Everything
+   each throws or swings takes the weapon's damage, the whip's lash with the rest; Terraprisma's blades, which the game
+   gives the weapon's bare number every tick, are made 1.15 times as hard as each hit lands. An arrow from Eventide adds
+   what an arrow adds, and the whip's mark stays what it is. Asked of the world as it is at every swing: a world that
+   turns Legends has them so at once.
+9. **Checked**: compiled (0 errors, the 10 known warnings); the bends and the new looks mocked up in Python with the
+   same sums (Empress_pillars_bent_1709.png, Empress_acts_pretty_1709.png); the butterflies' flight run in Python with
+   the same sums and the game's own butterfly flight after it (Empress_butterflies_1709.png); the walls simulated; the
+   sounds measured (peak and loudness) and their spectrograms looked at, not heard; an independent review of the code:
+   two faults found and mended (a mirror used standing on her floor could land one anywhere on her border: the sums put
+   one standing there a hair past the floor about a third of the time, and the stop then went wrong; with a second
+   screen filter on, a Blood Moon's say, the bends showed the world without it, and upside down for one walking upside
+   down: drawn after the filters, now before them), and two costs cut (no capture with the waves off unless a crack is
+   up, nor for a player far from her); the rest held (the grid, the walls fuzzed with 200,000 boxes at every edge and
+   corner, her holds, hooks and mounts, a dedicated server). A second review of the mends and the new files: one more
+   fault mended (a mirror's trip home, undone by the walls, left the game's second of untouchability given at every use:
+   now the ways home cannot be used in there), and smaller things done (the capture put back whole should a bend go
+   wrong as it is drawn; the set-aside screen given back after; a crack listened for only near it; the butterflies
+   turning before water); the butterflies' sending, their kinds and what a net catches, their handing over to the game's
+   flight, and the weapons' 1.15 (never twice; Terraprisma's blades as they hit; arrows and the whip's mark as they
+   were) found right. **Never run in the game.**
+
+| File | |
+|---|---|
+| `Content/NPCs/Empress/EmpressWarp.cs` | new: the world bent |
+| `Content/NPCs/Empress/EmpressSounds.cs` | new: her sounds |
+| `Content/Sounds/Empress/*.ogg` | new: Tingle1-3, Crinkle, Swell, Drop1-2, Zap1-2, Wobble, Whoosh1-2, Chime, Flutter, Hum, Shards, Shock |
+| `Content/NPCs/Empress/EmpressButterflies.cs` | new: the butterflies she bursts into, flown out and let go |
+| `Content/Particles/LacewingFlight.cs` | new: a lacewing of light flying off (the mirage's copies) |
+| `Content/NPCs/Empress/EmpressMirror.cs` | drawn by EmpressWarp, after the bends, before the game's filters |
+| `Content/NPCs/Empress/EmpressArena.cs` | solid walls, a floor; teleports stopped or not made; the ways home not used in there; no dazzle |
+| `Content/NPCs/Empress/EmpressOfLight.cs` | its comment |
+| `Content/NPCs/Empress/EmpressOfLight.Legends.cs` | `Bending`, `View` |
+| `Content/NPCs/Empress/EmpressOfLight.Pillars.cs` | the falling lights, the kinks, the hazes, the beams' new look |
+| `Content/NPCs/Empress/EmpressOfLight.Crack.cs`, `.Prism.cs`, `.Saw.cs`, `.Mirage.cs`, `.Eclipse.cs`, `.Aurora.cs`, `.Grab.cs` | their new looks and sounds |
+| `Content/NPCs/Empress/EmpressOfLight.Death.cs` | the twenty butterflies; the shockwave; the slower walk home |
+| `Content/Items/EmpressWeapons.cs` | new: her five weapons 1.15 times as hard in Legends |
+
+Open: RELEASE_TODO under §17.9.
+
+## 17.10 Session 8, later: Elin's second half in Legends: her change, her veil, her bow, the day stopped, thirteen acts, her dash a burning grab; her pictures in the mod's folder
+
+Asked for (in the user's words): "second phase transition: cinematic camera pans and zoom to her and she warps the
+reality and bends it onto her bust and hips, so its see thru ... (Port all the textures of empress into a folder so i
+will edit it later at PisAndDag\Content\NPCs\Legends\Empress). this lasts for 3 seconds and make it dramatic. The hand on
+her left raise, and a bow forms out of pure light (the eventide but bigger), she uses it in her second phase. Time of day
+in game stop flowing with a sound effect. She says something like malenia and morgott and godrick." Then eight acts, by
+number (below), and "Suggest 3-4 attacks and behaviors noble and related to light": five chosen from those offered. The
+veil, after mock-ups: "a veil that see thru, makes the empress texture transparent, she still have her tentacles", "like
+deletion of pixels", "streak a cross not just a bubble", "bigger streaks, and more angled, it moves too, sometimes covering
+her legs as well". Mid-way: "Her vanilla dash in phase two grabs the player in one hand and with that hand, burns the
+lights pierces thru the body of the player loosing 75 life a sec for 4 sec ... and is casted aside, ragdoll style"; "add
+the enlarged texture of the eventide onto the folder, ill change it later"; "make it beautiful tho, dont create a texture
+that is chopped off or doesnt blend in with a gradiant"; "why is there ghastly texture on her transparent part? I supposed
+this is unaffected glow layer, make it transparent with the streak too"; "You dont need to repaint bow, it looks out of
+place"; "js enlarge, the texture to like 5x whatever looks proportionally correct, then put it in the folder, I am going
+to redraw it later"; then, of the bow at two and a half times beside her, "this size of bow is perfect", "0.6x", "keep
+the 5x5 block but change it ingame".
+
+1. **Her pictures, the mod's own** (`EmpressTextures`): every picture of hers copied out of the game into
+   `Content/NPCs/Legends/Empress` (body, wings and their glow, arms, streamers, the glow over her dress, map head, the
+   Prismatic Lacewing, her shots) and put in the game's place while the mod is loaded, so whatever is painted over them
+   is what is seen, everywhere she is drawn (her panel's face too); the game's given back when the mod goes. Each is
+   made premultiplied as it loads: the game keeps its own pictures so (each colour times its alpha, as its alpha blend
+   takes them), and a mod's are packed as painted (`ImageIO.ToRaw`, read back by `RawImgReader`, neither touching the
+   colours), so without it every soft picture copied in (her rainbow bolts, lasting rainbows, sun dance, death aurora,
+   the lances' line, her wings' glow) would have been drawn too bright, its gradient lost. With them three of the mod's
+   own: **Bow.png** (the game's Eventide enlarged two and a half times, each of its 2 x 2 blocks 5 x 5, its string
+   taken off, in a clear margin of 10: to redraw; drawn in the fight at 0.6 of that), **Arrow.png** (Daybreak's own parts in its places, painted as soft
+   light in greys, tinted as it flies, in a margin of 6), **Veil.png** (where the veil may take her body away). A README
+   there (not packed: `*.md` is in buildIgnore) says what each is, that anything soft may be painted, that the margins
+   stay clear, and the bow's grip and string places to move if its shape changes. The rule that her pictures are read
+   from the game at run time is the user's to lift, and lifted.
+2. **Her change** (`EmpressOfLight.Change`), three seconds, in place of vanilla's own (its state 10) the moment it is
+   chosen: she stops and cries out; the camera goes to her and leans in, the bars come, whoever is near is held. The world
+   bends into her bust and her hips, turning, closer and closer (EmpressWarp), threads of light spiralling in after it;
+   under a flash of white she is her second half, the bends let go in a wave, and her veil tears through her. Her left hand
+   rises (she faces left through it); light spirals into it and is the bow, its string set with a thrum (the forming
+   sound's chord and thrum land on that moment); behind her a clock of her light, its hands going round slower and slower.
+   At 2.5 seconds the day stops: the clock's hands with it, a slow ring through the world, the time-stop sound's frozen
+   chord on the moment (0.86 seconds into it). Her scream; the camera walks home. Her lines (Taunt, at the foot of the
+   screen), one pair a fight: "Look at me, toy. Not at the light." / "Be still. The hours are."; or "Thou hast only seen
+   what I wear." / "The day will wait. It always has." (her first half's last two lines are gone, these in their place).
+3. **The day stopped** (`EmpressTime`): from that moment until she is gone the game's clock does not move (its rate of
+   time put to nothing, as Journey's freeze does), on every machine; gone with her, it goes on.
+4. **Her veil** (`EmpressVeil`): three streaks of nothing across her, every pixel of her body under them taken out (what
+   is behind her seen through: her streamers, her wings, the sky): a broad one over her bust tilted one way, a broader one
+   over her hips tilted the other, a thin broken one between; drifting, their torn edges rippling, the hip one sliding
+   down over her legs and back every seven seconds. Only where Veil.png allows (all of her below her face); her arms,
+   wings and streamers never. The torn edges glow: brightest on the edge, fading over four pixels into her and three out
+   into the gap. The glow the game lays over her dress in her second half (Skirt.png, four copies a few pixels about her
+   in her pulsing light) is cut with the streaks, eight pixels wider, so nothing ghostly is left in the gaps. Remade every
+   other tick once whole (every tick as it comes).
+5. **Her bow** (`EmpressBow`): in the hand on the side she faces, all through her second half, one and a half times
+   Eventide's own size, a little over half her height (its picture at two and a half times, each block 5 x 5, drawn at
+   0.6 of that: `EmpressBow.Size`, the one number for another size): at rest held upright beside her; raised and aimed to shoot, her other hand (on the game's own frame of it with
+   the hand at her chest) drawing the rainbow string back toward her chest, as far as leaves a nocked arrow's tip clear of the bow, her
+   fingers holding it by a thread of light. Drawn as light: her colours about it, white
+   through it, glints running along its limbs, the string a thread of her rainbow. Her arrows (`EmpressArrow`) Daybreak's
+   shape in her light, a glow just outside their edges, white-hot along their middles, images of them trailing them;
+   arrows nocked together share out their heads' light (one white blaze otherwise). Between her acts she turns to
+   whoever she fights (vanilla never turns her), with some give.
+6. **Thirteen acts**, every other move (the other vanilla's own next), never one of the last three; her first after the
+   change always the moored volley. Before each she steps into her arena if vanilla left her outside it or near its border
+   (it parks her above the player, who may be high): 260 pixels in from it, a flash where she was and where she is. The
+   eight asked for:
+   - **The moored volley**: three to seven arrows, fanned; each one's way shown to the border with how far its burst will
+     reach; let go fast; each sticks in the border, ticking, a ring closing on it, and three seconds after bursts thirty
+     tiles about (half as hard again as the arrow).
+   - **The negative**: the world turned inside out out of her, a ring of her light at its edge swelling past the screen;
+     vanilla's next three moves in it, a wash of her colours over it going round; then back into her. (No shader: white
+     drawn so it takes each colour from its own inverse, then her colour multiplied in. A colour cannot be turned round
+     the wheel without one: the wash going round is how it goes round.) Only seen.
+   - **The cage of curtains**: her curtains stir all round the border and where they will close is shown; she drags them
+     in to a decagon seven tiles to a corner about the player, its walls holding them in as the arena's do, and leads it
+     wandering about the arena for five and a half seconds. Once closed its walls hurt whoever's body touches them, but
+     its floor and the slopes beside it, which are stood on. Its curtains run on past their corners into each other.
+   - **The constellation**: six marks thrown out of her hand about the arena (two near the player), each linked to the
+     other five by a guideline brightening for one second, then lasers down all fifteen; the marks burst.
+   - **The blinks**: five, every half second: gone (an image of her left going out), somewhere else at once (never too
+     near the player), her screech, a ring of six of vanilla's homing bolts out of her. Each place is the server's, chosen
+     a blink ahead and sent in its own slot, so no machine puts her a blink ahead.
+   - **The mirror barrier**: still, a sphere of glass about her, unseen but for the world bent through it; every blow on
+     her strikes it instead (none of it reaches her; the game's numbers not shown, the glass's own small ones instead) and
+     cracks it where it lands, more the harder; at 2000 taken or eight seconds it comes off her at the player, faster and
+     faster, shoving whoever it meets before it, until it meets the border, and bursts there.
+   - **The ricochets**: two to four arrows of glass; each one's whole way shown, wall to wall, as a mirror sends it; very
+     fast; off each wall as off a mirror (the way it comes turned about the wall's own line square to it), losing nothing,
+     three times, then broken on the next.
+   - **The prism at her heart**: a prism formed in her free hand at her chest; seven thin lines of her seven colours where
+     the rays will go (0.7 seconds); then the seven, out to the border, turning about her, quicker as they go; she does
+     not move.
+   The five chosen:
+   - **The lightspeed shot**, twice: one arrow drawn slowly, a line from it to the player following them; it locks
+     (white, pulsing, two pings: a half second, then a third); faster than the eye, a line of light to the border, a
+     thunderclap of glass, the line burning a moment; she is thrown back by it.
+   - **The dawnbreak**: an arrow into the border at the horizon on the far side of her; a false sun rises there over three
+     seconds, the world going gold and then white, her shadow thrown long across the arena away from it, darkest down its
+     middle, softening to its edges and let go past them over a few pixels, its very edges marked in lilac; everything
+     not in her shadow is seared. Her shadow, the sun's light and its rays are laid behind her and the players.
+   - **The refraction volley**: a prism cast between her and the player, an arrow into it, and seven out of it every way,
+     slowing, held; one after another a line of light from each to the player and down it.
+   - **The rain of light**: five arrows up out of the arena; three waves of columns where they come down, each shown first
+     as a thin line the arena's whole height: across the arena; about the player; between the first wave's.
+   - **The blade of everlasting rainbow**: her free hand a blade of the Everlasting Rainbow's colours, thirty tiles; three
+     sweeps, each with her flying in, stopping, its arc shown, and swept with her planted; the arc shown is the blade's
+     whole reach (about her shoulder: arm, blade and its edge); the last a whole turn about her, longer, and longer shown.
+7. **Her dash, a burning grab** (`EmpressOfLight.Grab`, `EmpressHeld`): in her second half too it takes whoever it meets,
+   in the hand her bow leaves free; light burns out of her palm through them and out of their back in rays, 75 of their
+   life a second for four seconds (300, whatever they wear: taken as fire takes it, on their own machine; by day it
+   kills), the camera close; then she casts them aside: thrown limp and turning, off her walls (a ragdoll: no use of
+   themselves, bounced, until they lie still or a second and a half is out), righted after. Died of it: "<name> was seen
+   through."
+8. **Her sky** kept dark through her acts and her grab too (it was let lighten through each of her first half's acts
+   but the eclipse).
+9. **Every light soft at its ends and edges**: a beam standing alone (a laser, a ray, a column, a guideline, an arrow's
+   way, the clock's hands, the blade's light, her grab's beam, the thread to her drawing hand) is drawn rounded off at
+   both ends inside its two points (`EmpressArt.DrawBeam`, three parts of SoftBeam.png: SoftLine's own profile across, a
+   soft half circle at each end) rather than cut square; lines joined end to end keep `DrawLine`. Her rings are drawn in
+   enough short lines that a thick one shows no beads.
+10. **Sounds** (`Content/Sounds/Empress`, made by formula as the first set): TimeStop, BowForm, Draw, Loose, Thunk,
+    Tick1-2, Burst, Invert, Fold, Lock, Beam, Blink, Barrier, Crack1-3, Shatter, Ricochet, Charge, Lightspeed, Sunrise,
+    Sear, Refract, Fall1-2, Blade, Slash. Every one at its level, no clipping, rebuilt twice to the byte.
+11. **Checked**: compiled (0 errors, the 10 known warnings); her poses with the bow, the key frames of the change and of
+    every act, the veil's gaps, the bow at three sizes and the beams' ends mocked up in Python with the same sums
+    (Empress_second_poses_1710.png, Empress_change_1710.png, Empress_second_acts_1710.png, Empress_veil_gaps_1710.png,
+    Empress_bow_sizes_1710.png, Empress_beam_ends_1710.png). A review of the second half's code against the game's own:
+    no crash, no batch left open, nothing made off the main thread, nothing spawned on clients, its sending lining up;
+    eight things found and mended (the dawn's sear not to be dodged, and arrows stuck at once in the far wall, and the
+    barrier bursting on her, when an act began with her outside her arena: she steps in; a client putting her a blink
+    ahead; the cage's floor hurting whoever stood on it, its side walls hurting through a gap, and its walls catching
+    some and missing others as they swept in; the blade's shown arc short of its reach, and her lunge carrying it past
+    it; the veil remade every tick; fifteen hazes at once; a few things made every frame; other machines' numbers falling
+    for a burned player; a batch begun twice should a draw fail); one left (a client may hear vanilla's own cry at the
+    change as well as hers: sound only). Delivered and checked file by file (the pictures' pixels; the copies here carry
+    a note of where they came from, which the game does not read). **Never run in the game.**
+
+| File | |
+|---|---|
+| `Content/NPCs/Legends/Empress/*.png` | new: her pictures, the mod's own (Body, WingsBack, WingsGlow, ArmLeft, ArmRight, Streamers, Skirt, Head, Lacewing, Lance, LanceLine, RainbowStreak, LastingRainbow, SplitShotCore, DeathAurora, SunDance), and Bow (Eventide, enlarged), Arrow, Veil |
+| `Content/NPCs/Legends/Empress/README.md` | new: what each picture is, painting them, the bow's points (not packed) |
+| `Content/Graphics/SoftBeam.png` | new: a line of light with soft round ends, in three parts |
+| `Content/NPCs/Empress/EmpressTextures.cs` | new: her pictures put in the game's place while the mod is loaded, premultiplied as they load |
+| `Content/NPCs/Empress/EmpressOfLight.Change.cs` | new: her change |
+| `Content/NPCs/Empress/EmpressOfLight.Second.cs` | new: her second half: its acts chosen, her step in, her bow held and drawn, her turning, her drawing |
+| `Content/NPCs/Empress/EmpressTime.cs` | new: the day stopped |
+| `Content/NPCs/Empress/EmpressVeil.cs` | new: her veil, its edges' glow, the dress's glow cut with it |
+| `Content/NPCs/Empress/EmpressBow.cs`, `EmpressArrow.cs` | new: her bow, her arrows |
+| `Content/NPCs/Empress/EmpressOfLight.Volleys.cs` | new: the moored volley, the ricochets, the lightspeed shot, the refraction volley, the rain of light |
+| `Content/NPCs/Empress/EmpressOfLight.Negative.cs`, `.Cage.cs`, `.Constellation.cs`, `.Blink.cs`, `.Shield.cs`, `.Heart.cs`, `.Dawn.cs`, `.Blade.cs` | new: the negative, the cage, the constellation, the blinks, the mirror barrier, the prism at her heart, the dawnbreak, the blade |
+| `Content/NPCs/Empress/EmpressOfLight.cs` | the change a scene; her second half drawn by the mod; her sky dark through acts and grabs; what is sent; her step seen |
+| `Content/NPCs/Empress/EmpressOfLight.Legends.cs` | thirteen acts more; the change in place of her cry at half life |
+| `Content/NPCs/Empress/EmpressOfLight.Grab.cs` | her dash a burning grab; cast aside (`EmpressHeld`: the burn, the ragdoll); rings drawn rounder |
+| `Content/NPCs/Empress/EmpressOfLight.Talk.cs` | her change's lines |
+| `Content/NPCs/Empress/EmpressOfLight.Death.cs`, `.Look.cs` | her arrows cleared and her bow broken at her death; her veil on her as she dies |
+| `Content/NPCs/Empress/EmpressArt.cs` | her veiled body and the dress's glow cut with it; her arms posed; DrawBeam |
+| `Content/NPCs/Empress/EmpressArena.cs` | the cage; the decagon's reach and bounce; the thrown thrown off its walls |
+| `Content/NPCs/Empress/EmpressHitbox.cs` | the new acts' shapes |
+| `Content/NPCs/Empress/EmpressSounds.cs` | the new sounds |
+| `Content/Sounds/Empress/*.ogg` | new: TimeStop, BowForm, Draw, Loose, Thunk, Tick1-2, Burst, Invert, Fold, Lock, Beam, Blink, Barrier, Crack1-3, Shatter, Ricochet, Charge, Lightspeed, Sunrise, Sear, Refract, Fall1-2, Blade, Slash |
+
+Open: RELEASE_TODO under §17.10.

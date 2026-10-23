@@ -23,6 +23,8 @@ namespace PisAndDag.Content.Structures
     ///                         Legends already on (the Orb was broken, so it was here)
     ///   The Way Down          its own record (WayDownState), saved with the world; made
     ///                         last, so that it keeps off a graveyard made just before it
+    ///   The Drawers           the ledger only: worldgen writes it there too (CourtDrawersPass)
+    ///   The Fairy Ring        the ledger only, the same (FairyRingPass)
     /// Anything this places is also written to a ledger saved with the world, so a
     /// structure the player has since dismantled is not put back a second time.
     ///
@@ -42,6 +44,14 @@ namespace PisAndDag.Content.Structures
         public const string Monument = "Mors Monument";
         public const string Shrine = "Blood Shrine";
         public const string WayDown = "The Way Down";
+        public const string Drawers = "The Drawers";
+        public const string FairyRing = "The Fairy Ring";
+
+        /// <summary>
+        /// Writes a structure in the ledger: a pass that has no other mark of itself in the world
+        /// says so from worldgen, so that a world made with it is never given it again.
+        /// </summary>
+        public static void Record(string name) => placed.Add(name);
 
         public override void ClearWorld() => placed.Clear();
 
@@ -154,6 +164,45 @@ namespace PisAndDag.Content.Structures
             {
                 MeasureBeaches();
                 anything |= Apply(new GraveyardPass("PisAndDag: Shoreline Graveyard", 80.0), Graveyard, report);
+            }
+
+            // Into the game's own cabins and caves; nothing they lay needs framing afterwards.
+            if (placed.Contains(Drawers))
+            {
+                report.Add(Drawers + ": present.");
+            }
+            else
+            {
+                int drawers = CourtDrawersPass.Place(out bool defacer);
+
+                if (drawers > 0)
+                {
+                    placed.Add(Drawers);
+                    report.Add(Drawers + ": placed, " + drawers + ".");
+                }
+                else if (defacer)
+                {
+                    placed.Add(Drawers);
+                    report.Add(Drawers + ": no cabin had room for a dresser; the hammer is in a chest underground.");
+                }
+                else
+                {
+                    report.Add(Drawers + ": no cabin had room, and no chest underground.");
+                }
+            }
+
+            if (placed.Contains(FairyRing))
+            {
+                report.Add(FairyRing + ": present.");
+            }
+            else if (FairyRingPass.Place())
+            {
+                placed.Add(FairyRing);
+                report.Add(FairyRing + ": placed.");
+            }
+            else
+            {
+                report.Add(FairyRing + ": the mushroom caves had nowhere for it.");
             }
 
             // Last: it keeps off whatever the passes above have just made.

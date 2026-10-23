@@ -12,13 +12,15 @@ namespace PisAndDag.Content.Subworlds
     /// walls behind them ("also you didnt put walls for the caves"), dripstone in them ("need
     /// more of these dripstone ambience objects in caves"), and the crevices the eels live in.
     ///
-    /// A NETWORK IN EACH RANGE. How deep in the rock every cell of the range is, the fewest
-    /// steps to the water (<see cref="Depths"/>), is worked out first; then THE GREAT CAVERN,
-    /// where the rock is deepest, up to a hundred cells across, its floor flatter than its
-    /// roof; then, where the rock is at least <see cref="NodeDepth"/> deep, no two nearer than
-    /// <see cref="NodeSpacing"/> and none in the cavern's reach, places for more hollows (one
-    /// for every <see cref="RockPerHollow"/> cells of such rock, fourteen to forty-eight in
-    /// all), each of a kind, the big kinds oftener where there is room:
+    /// A NETWORK IN EACH RANGE, a maze since by request ("Make cavern even deeper and more maze
+    /// like"). How deep in the rock every cell of the range is, the fewest steps to the water
+    /// (<see cref="Depths"/>), is worked out first, from over its summit down to
+    /// <see cref="LowestUnder"/> rows under the sediment's top (25 before), into its root; then
+    /// THE GREAT CAVERN, where the rock is deepest, up to a hundred cells across, its floor
+    /// flatter than its roof; then, where the rock is at least <see cref="NodeDepth"/> deep, no
+    /// two nearer than <see cref="NodeSpacing"/> and none in the cavern's reach, places for more
+    /// hollows (one for every <see cref="RockPerHollow"/> cells of such rock, sixteen to
+    /// sixty-four in all), each of a kind, the big kinds oftener where there is room:
     ///   - a HALL, wide and low, its floor flatter than its roof;
     ///   - a DOME, about as high as it is wide;
     ///   - a GALLERY, long and low, leaning a little;
@@ -26,17 +28,25 @@ namespace PisAndDag.Content.Subworlds
     ///   - a POCKET, small;
     ///   - or none, the ways meeting there (a JUNCTION).
     /// Each no bigger than leaves <see cref="Skin"/> cells of rock between it and the water and
-    /// twelve between it and the next hollow's middle, its edge ragged by noise. The hollows
-    /// are joined by the shortest tree through them all (by length; a way that would come
-    /// nearer the water than <see cref="WayDepth"/> taken only if there is no other), and three
-    /// in ten of the other pairs among each hollow's three nearest joined too, so that there
-    /// are loops; each way bending a little, and narrow (one in five), wide (one in seven) or
-    /// between. Three to five mouths on the water, at least one on either side of the range:
-    /// from a hollow down the rock's own slope to the water (the steepest way down its depths,
-    /// so out through the nearest face), the hollows nearest the water first. Half the
-    /// hollows have a dead end going off them, as far as the rock is thick, a pocket at its
-    /// end where there is room. One hall, dome or grotto in four is a garden of the glowing
-    /// mosses, and one great cavern in two.
+    /// twelve between it and the next hollow's middle, its edge ragged by noise. Then the KNOTS
+    /// of the maze in the rock left between them (one for every <see cref="RockPerKnot"/> cells,
+    /// twenty to a hundred and ten): where only ways meet, a little wider there. The hollows and
+    /// knots are joined by the shortest tree through them all (by length; a way that would come
+    /// nearer the water than <see cref="WayDepth"/> taken only if there is no other), and four
+    /// in ten of the other pairs among each one's four nearest joined too, so that there are
+    /// loops all through it; each way winding back and forth, and narrow (one in five), wide
+    /// (one in seven) or between. Four to six mouths on the water (fewer where they would come
+    /// out too near each other), at least one on either side of the range: from a hollow down
+    /// the rock's own slope to the water (the steepest way down its depths, so out through the
+    /// nearest face), the hollows nearest the water first. Three
+    /// hollows in five and a third of the knots have a dead end going off them, as far as the
+    /// rock is thick, a pocket at its end where there is room, one in three of them forking. One
+    /// hall, dome or grotto in four is a garden of the glowing mosses, and one great cavern in two.
+    ///
+    /// DENS AND FLOATING ROCKS (<see cref="Dens"/>): in the big rooms, the eels' dens, two to
+    /// five crevices together in their walls (three most often) where the eels come in a group;
+    /// and single rocks floating, obsidian or the room's own; neither near where a way comes
+    /// into the room.
     ///
     /// WALLS. Every cell cut out of rock while a cave is being cut has a wall put behind it,
     /// of the rock it was (<see cref="WallFor"/>: basalt's grey-blue cobbles with a few patches
@@ -83,12 +93,32 @@ namespace PisAndDag.Content.Subworlds
 
         /// <summary>The least depth (cells of rock to the water) a hollow's middle is put at, and the least room between two hollows' middles.</summary>
         private const int NodeDepth = 15;
-        private const int NodeSpacing = 40;
+        private const int NodeSpacing = 38;
 
         /// <summary>A hollow for every so many cells of rock deep enough for one, and no fewer or more than these.</summary>
-        private const int RockPerHollow = 7000;
-        private const int LeastHollows = 14;
-        private const int MostHollows = 48;
+        private const int RockPerHollow = 5000;
+        private const int LeastHollows = 16;
+        private const int MostHollows = 64;
+
+        /// <summary>
+        /// Rows under the sediment's top a hollow may be put at, by request ("Make cavern even
+        /// deeper and more maze like"): 25 before, now as far again as most of a section, down
+        /// into the range's root.
+        /// </summary>
+        private const int LowestUnder = 25 + 200;
+
+        /// <summary>
+        /// The knots of the maze: where only ways meet, a little wider there: one for every so many
+        /// cells of rock deep enough, no fewer or more than these, none nearer another knot or
+        /// hollow's middle than <see cref="KnotSpacing"/>, nor within eight cells of a hollow's edge.
+        /// </summary>
+        private const int RockPerKnot = 2600;
+        private const int LeastKnots = 20;
+        private const int MostKnots = 110;
+        private const int KnotSpacing = 18;
+
+        /// <summary>Of each hollow's (and knot's) four nearest, the share joined to it besides the tree: the loops of the maze.</summary>
+        private const float LoopShare = 0.4f;
 
         /// <summary>The great cavern's half width, at the most.</summary>
         private const float CavernMost = 52f;
@@ -121,8 +151,32 @@ namespace PisAndDag.Content.Subworlds
             public Hollow Kind;
             public float Rx, Ry;
 
+            /// <summary>Its lean and whether its floor is pressed flatter than its roof, as its hollow was cut (<see cref="Blob"/>); a knot is round.</summary>
+            public float Lean;
+            public bool Flat;
+
             public Vector2 At => new Vector2(X + 0.5f, Y + 0.5f);
+
+            /// <summary>
+            /// How far out in its own shape a point is (1 at its edge, before the edge's raggedness,
+            /// which reaches 1.145 at the most), as <see cref="Blob"/> cuts it.
+            /// </summary>
+            public float Out(Vector2 p)
+            {
+                float c = (float)Math.Cos(Lean), s = (float)Math.Sin(Lean);
+                float dx = p.X - (X + 0.5f), dy = p.Y - (Y + 0.5f);
+                float u = (dx * c + dy * s) / Rx;
+                float v = (-dx * s + dy * c) / Ry;
+
+                if (Flat && v > 0f)
+                    v *= 1.35f;
+
+                return (float)Math.Sqrt(u * u + v * v);
+            }
         }
+
+        /// <summary>Every hollow the ranges' networks cut, with its shape, for the dens (<see cref="Dens"/>).</summary>
+        private static readonly List<Node> rooms = new List<Node>();
 
         /// <summary>
         /// How deep in the rock each cell of a box is: 0 where it is open, else the fewest steps
@@ -266,12 +320,12 @@ namespace PisAndDag.Content.Subworlds
                 deepest = Math.Max(deepest, baseTop[x]);
 
             int y0 = Math.Max(VastOcean.Surface + 2, range.PeakRow - 60);
-            int y1 = Math.Min(VastOcean.High - 60, deepest + 40);
+            int y1 = Math.Min(VastOcean.High - 60, deepest + LowestUnder + 15);
             var depth = new Depths(x0, y0, x1, y1);
 
             // Where a hollow may go: rock at least NodeDepth deep, in this range's own columns
-            // (where it stands thirty rows or more over the sediment), no lower than 25 rows
-            // under the sediment's top. Looked at every five cells, each standing for 25.
+            // (where it stands thirty rows or more over the sediment), no lower than LowestUnder
+            // rows under the sediment's top. Looked at every five cells, each standing for 25.
             var spots = new List<Point>();
             int rock = 0;
 
@@ -280,7 +334,7 @@ namespace PisAndDag.Content.Subworlds
                 if (mount[x] < 30f || !Owns(range, x))
                     continue;
 
-                int lowest = Math.Min(y1, baseTop[x] + 25);
+                int lowest = Math.Min(y1 - 15, baseTop[x] + LowestUnder);
 
                 for (int y = y0; y <= lowest; y += 5)
                 {
@@ -386,6 +440,42 @@ namespace PisAndDag.Content.Subworlds
                 return;
             }
 
+            foreach (Node n in nodes)
+            {
+                if (n.Kind != Hollow.Junction)
+                    rooms.Add(n);
+            }
+
+            // The knots of the maze, in the rock left between the hollows (the spots are shuffled
+            // already): none within KnotSpacing of another's middle, nor within eight cells of a
+            // hollow's ragged edge.
+            int hollowCount = nodes.Count;
+            int knotsWanted = Math.Clamp(rock / RockPerKnot, LeastKnots, MostKnots);
+
+            foreach (Point p in spots)
+            {
+                if (nodes.Count - hollowCount >= knotsWanted)
+                    break;
+
+                var at = new Vector2(p.X + 0.5f, p.Y + 0.5f);
+                bool clear = true;
+
+                for (int i = 0; i < nodes.Count && clear; i++)
+                {
+                    Node n = nodes[i];
+                    float keep = i < hollowCount ? Math.Max(KnotSpacing, Math.Max(n.Rx, n.Ry) * 1.15f + 8f) : KnotSpacing;
+
+                    if (Vector2.DistanceSquared(at, n.At) < keep * keep)
+                        clear = false;
+                }
+
+                if (clear)
+                    nodes.Add(new Node { X = p.X, Y = p.Y, Depth = depth.At(p.X, p.Y), Kind = Hollow.Junction });
+            }
+
+            for (int i = hollowCount; i < nodes.Count; i++)
+                Knot(nodes[i], rand);
+
             // The ways: the shortest tree through them all, then loops among near pairs.
             var edges = Tree(nodes, depth);
             int treeEdges = edges.Count;
@@ -396,9 +486,9 @@ namespace PisAndDag.Content.Subworlds
 
             for (int i = 0; i < nodes.Count; i++)
             {
-                foreach (int j in Nearest(nodes, i, 3))
+                foreach (int j in Nearest(nodes, i, 4))
                 {
-                    if (joined.Contains(Pair(i, j)) || rand.NextFloat() >= 0.3f)
+                    if (joined.Contains(Pair(i, j)) || rand.NextFloat() >= LoopShare)
                         continue;
 
                     if (depth.Shallowest(nodes[i].At, nodes[j].At) < WayDepth)
@@ -415,20 +505,32 @@ namespace PisAndDag.Content.Subworlds
             // The mouths.
             int mouths = Mouths(range, nodes, depth, rand);
 
-            // The dead ends.
+            // The dead ends: off three hollows in five and a third of the knots, one in three of
+            // them forking.
             int deadEnds = 0;
 
             foreach (Node n in nodes.ToArray())
             {
-                if (n.Kind == Hollow.Junction || rand.Next(2) == 0)
+                if (rand.NextFloat() >= (n.Kind == Hollow.Junction ? 0.35f : 0.6f))
                     continue;
 
-                if (DeadEnd(n, depth, rand))
-                    deadEnds++;
+                deadEnds += DeadEnd(n, depth, rand);
             }
 
             Log.Add(("range network", range.Middle, range.PeakRow));
-            Log.Add(($"range network: {nodes.Count} hollows, {treeEdges} ways in the tree and {edges.Count - treeEdges} loops, {mouths} mouths, {deadEnds} dead ends", range.Middle, range.PeakRow));
+            Log.Add(($"range network: {hollowCount} hollows and {nodes.Count - hollowCount} knots, {treeEdges} ways in the tree and {edges.Count - treeEdges} loops, {mouths} mouths, {deadEnds} dead ends", range.Middle, range.PeakRow));
+        }
+
+        /// <summary>A knot of the maze: where its ways meet, a widening a little wider than a way, at any lean.</summary>
+        private static void Knot(Node n, UnifiedRandom rand)
+        {
+            float r = 3.4f + 1.2f * rand.NextFloat();
+
+            n.Rx = r;
+            n.Ry = r * (0.8f + 0.2f * rand.NextFloat());
+            n.Lean = rand.NextFloat() * MathHelper.Pi;
+            Blob(n.X + 0.5f, n.Y + 0.5f, n.Rx, n.Ry, n.Lean, false, rand.Next(1000));
+            Hollows.Add((Hollow.Junction, n.X, n.Y, n.Rx, n.Ry));
         }
 
         private static long Pair(int a, int b) => a < b ? (long)a << 32 | (uint)b : (long)b << 32 | (uint)a;
@@ -608,6 +710,8 @@ namespace PisAndDag.Content.Subworlds
             n.Kind = kind;
             n.Rx = rx;
             n.Ry = ry;
+            n.Lean = lean;
+            n.Flat = flat;
 
             Blob(n.X + 0.5f, n.Y + 0.5f, rx, ry, lean, flat, rand.Next(1000));
             Hollows.Add((kind, n.X, n.Y, rx, ry));
@@ -653,9 +757,11 @@ namespace PisAndDag.Content.Subworlds
         }
 
         /// <summary>
-        /// A way between two hollows: bending once (twice on a long one) to one side by up to an
-        /// eighth of its length, if the rock under the bent line is deep enough, else straight;
-        /// narrow one time in five, wide one in seven, else between.
+        /// A way between two hollows (or knots), winding: bending back and forth once for every
+        /// twenty-two cells or so of its length (one to five times), each bend out to one side and
+        /// the next to the other by up to a sixth of its length (ten cells at most); if the rock
+        /// under the line so bent is too thin, bent half as far, and again; at the last, straight.
+        /// Narrow one time in five, wide one in seven, else between.
         /// </summary>
         private static void Way(Node a, Node b, Depths depth, UnifiedRandom rand)
         {
@@ -663,25 +769,30 @@ namespace PisAndDag.Content.Subworlds
             float length = Vector2.Distance(from, to);
             Vector2 along = (to - from) / Math.Max(1f, length);
             Vector2 side = new Vector2(-along.Y, along.X);
-            List<Vector2> path;
+            int bends = Math.Clamp((int)(length / 22f), 1, 5);
+            float most = Math.Min(length / 6f, 10f);
+            float first = rand.Next(2) == 0 ? -1f : 1f;
+            List<Vector2> path = null;
 
-            if (length > 70f)
+            for (float shrink = 1f; shrink > 0.2f && path == null; shrink *= 0.5f)
             {
-                path = new List<Vector2>
+                var tried = new List<Vector2> { from };
+
+                for (int k = 1; k <= bends; k++)
                 {
-                    from,
-                    Vector2.Lerp(from, to, 0.33f) + side * (rand.NextFloat() * 2f - 1f) * 0.12f * length,
-                    Vector2.Lerp(from, to, 0.67f) + side * (rand.NextFloat() * 2f - 1f) * 0.12f * length,
-                    to,
-                };
-            }
-            else
-            {
-                path = new List<Vector2> { from, (from + to) * 0.5f + side * (rand.NextFloat() * 2f - 1f) * 0.12f * length, to };
+                    float t = (k + (rand.NextFloat() - 0.5f) * 0.5f) / (bends + 1);
+                    float off = first * (k % 2 == 0 ? -1f : 1f) * most * shrink * (0.45f + 0.55f * rand.NextFloat());
+
+                    tried.Add(Vector2.Lerp(from, to, t) + side * off);
+                }
+
+                tried.Add(to);
+
+                if (depth.Shallowest(tried) >= WayDepth)
+                    path = tried;
             }
 
-            if (depth.Shallowest(path) < WayDepth)
-                path = new List<Vector2> { from, (from + to) * 0.5f, to };
+            path ??= new List<Vector2> { from, (from + to) * 0.5f, to };
 
             float roll = rand.NextFloat();
             float radius = roll < 0.2f ? 2.7f + 0.2f * rand.NextFloat() : roll < 0.34f ? 3.8f + 0.7f * rand.NextFloat() : 3f + 0.4f * rand.NextFloat();
@@ -691,7 +802,7 @@ namespace PisAndDag.Content.Subworlds
         }
 
         /// <summary>
-        /// Three to five mouths on the water, at least one each side of the range's middle: from
+        /// Four to six mouths on the water, at least one each side of the range's middle: from
         /// a hollow down the steepest way through the rock's depths (<see cref="Descend"/>), the
         /// hollows with the shortest such way first, no two coming out within forty columns and
         /// rows of each other. Returns how many were cut.
@@ -735,7 +846,7 @@ namespace PisAndDag.Content.Subworlds
                 }
             }
 
-            int more = 1 + rand.Next(3);
+            int more = 2 + rand.Next(3);
 
             foreach (var w in ways)
             {
@@ -813,19 +924,55 @@ namespace PisAndDag.Content.Subworlds
         }
 
         /// <summary>
-        /// A dead end off a hollow, at a random heading: from its edge as far as the rock under
-        /// it is at least eight deep, fourteen to forty cells; none if that is under ten. A pocket
-        /// at its end if the rock there is deep enough for one.
+        /// A dead end off a hollow (or a knot), at a random heading: from its edge as far as the
+        /// rock under it is at least eight deep, fourteen to forty cells; none if that is under
+        /// ten. A pocket at its end if the rock there is deep enough for one. One time in three it
+        /// forks: from part way along it, another, ten to twenty-five cells, turned off it by
+        /// 35 to 75 degrees either way. Returns how many ends were cut (0 to 2).
         /// </summary>
-        private static bool DeadEnd(Node n, Depths depth, UnifiedRandom rand)
+        private static int DeadEnd(Node n, Depths depth, UnifiedRandom rand)
         {
             float heading = rand.NextFloat() * MathHelper.TwoPi;
             Vector2 dir = new Vector2((float)Math.Cos(heading), (float)Math.Sin(heading));
             Vector2 start = n.At + dir * Math.Max(n.Rx, n.Ry) * 0.8f;
-            int length = 14 + rand.Next(27);
+            int ok = Sound(depth, start, dir, 14 + rand.Next(27));
+
+            if (ok < 10)
+                return 0;
+
+            Vector2 end = start + dir * ok;
+            Vector2 bend = Vector2.Lerp(start, end, 0.5f) + new Vector2(-dir.Y, dir.X) * (rand.NextFloat() * 2f - 1f) * 0.15f * ok;
+
+            Tunnel(new List<Vector2> { n.At, start, bend, end }, 2.7f + 0.2f * rand.NextFloat(), rand);
+            EndPocket(end, depth, rand);
+            Ways.Add(("range dead end", n.At, end));
+
+            if (rand.Next(3) != 0)
+                return 1;
+
+            Vector2 from = Vector2.Lerp(start, end, 0.4f + 0.25f * rand.NextFloat());
+            float turn = (rand.Next(2) == 0 ? -1f : 1f) * (0.6f + 0.7f * rand.NextFloat());
+            Vector2 way = new Vector2((float)Math.Cos(heading + turn), (float)Math.Sin(heading + turn));
+            int far = Sound(depth, from, way, 10 + rand.Next(16));
+
+            if (far < 8)
+                return 1;
+
+            Vector2 forkEnd = from + way * far;
+            Vector2 forkBend = Vector2.Lerp(from, forkEnd, 0.5f) + new Vector2(-way.Y, way.X) * (rand.NextFloat() * 2f - 1f) * 0.15f * far;
+
+            Tunnel(new List<Vector2> { from, forkBend, forkEnd }, 2.7f + 0.2f * rand.NextFloat(), rand);
+            EndPocket(forkEnd, depth, rand);
+            Ways.Add(("range fork", from, forkEnd));
+            return 2;
+        }
+
+        /// <summary>How far from <paramref name="start"/> the way given the rock under it stays at least eight deep, in steps of two, up to <paramref name="most"/>.</summary>
+        private static int Sound(Depths depth, Vector2 start, Vector2 dir, int most)
+        {
             int ok = 0;
 
-            for (int k = 2; k <= length; k += 2)
+            for (int k = 2; k <= most; k += 2)
             {
                 if (depth.At(start + dir * k) < 8)
                     break;
@@ -833,24 +980,19 @@ namespace PisAndDag.Content.Subworlds
                 ok = k;
             }
 
-            if (ok < 10)
-                return false;
+            return ok;
+        }
 
-            Vector2 end = start + dir * ok;
-            Vector2 bend = Vector2.Lerp(start, end, 0.5f) + new Vector2(-dir.Y, dir.X) * (rand.NextFloat() * 2f - 1f) * 0.15f * ok;
+        /// <summary>A pocket at a dead end's end, if the rock there is deep enough for one.</summary>
+        private static void EndPocket(Vector2 end, Depths depth, UnifiedRandom rand)
+        {
+            if (depth.At(end) < 11)
+                return;
 
-            Tunnel(new List<Vector2> { n.At, start, bend, end }, 2.7f + 0.2f * rand.NextFloat(), rand);
+            float rx = 3.6f + 1.4f * rand.NextFloat(), ry = 3.6f + 0.8f * rand.NextFloat();
 
-            if (depth.At(end) >= 11)
-            {
-                float rx = 3.6f + 1.4f * rand.NextFloat(), ry = 3.6f + 0.8f * rand.NextFloat();
-
-                Blob(end.X, end.Y, rx, ry, rand.NextFloat() * MathHelper.Pi, false, rand.Next(1000));
-                Hollows.Add((Hollow.Pocket, (int)end.X, (int)end.Y, rx, ry));
-            }
-
-            Ways.Add(("range dead end", n.At, end));
-            return true;
+            Blob(end.X, end.Y, rx, ry, rand.NextFloat() * MathHelper.Pi, false, rand.Next(1000));
+            Hollows.Add((Hollow.Pocket, (int)end.X, (int)end.Y, rx, ry));
         }
 
         // ---- the dripstone ----------------------------------------------------------------------
@@ -864,16 +1006,25 @@ namespace PisAndDag.Content.Subworlds
         /// five or six rows left between them: one time in three in a great cavern, one in five
         /// in a hall. Each put in only if, with it, every column about it still has five rows
         /// open through the hollow, and every two side by side four rows open together
-        /// (<see cref="Leaves"/>): never a way through a hollow shut.
+        /// (<see cref="Leaves"/>): never a way through a hollow shut; and none within eight cells
+        /// of where a way comes into it (<see cref="Bars"/>), where that run does not show the way.
         /// </summary>
         private static void Dripstones(UnifiedRandom rand)
         {
             int hung = 0, stood = 0, columns = 0, refused = 0;
+            var shapes = new Dictionary<long, Node>();
+
+            foreach (Node room in rooms)
+                shapes[Key(room.X, room.Y)] = room;
 
             foreach (var (kind, cx, cy, rx, ry) in Hollows)
             {
                 if (kind is Hollow.Pocket or Hollow.Junction)
                     continue;
+
+                // Where the ways come into it (a range's hollow; the trench's and the sinkholes'
+                // have their one way through their middles).
+                List<Vector2> ways = shapes.TryGetValue(Key(cx, cy), out Node shape) ? WaysInto(shape) : null;
 
                 int span = (int)(rx * 0.9f);
                 int reach = (int)(Math.Max(rx, ry) * 1.3f) + 4;
@@ -961,6 +1112,22 @@ namespace PisAndDag.Content.Subworlds
                     if (down == 0 && up == 0)
                         continue;
 
+                    // None where a way comes into the room (the mouth of a way there narrowed,
+                    // its part of the run through the room's middle row not showing it).
+                    bool downBars = down > 0 && Bars(ways, x, roof, 1, down), upBars = up > 0 && Bars(ways, x, floor, -1, up);
+
+                    if (pair && (downBars || upBars) || downBars && upBars || downBars && up == 0 || upBars && down == 0)
+                    {
+                        refused++;
+                        continue;
+                    }
+
+                    if (downBars)
+                        down = 0;
+
+                    if (upBars)
+                        up = 0;
+
                     if (!Leaves(top, bottom, i, roof, down, floor, up))
                     {
                         // A pair goes in whole or not at all; else the hanging one alone, or the
@@ -1002,6 +1169,25 @@ namespace PisAndDag.Content.Subworlds
             }
 
             Log.Add(($"dripstone: {hung} hanging, {stood} standing, {columns} of them pairs all but meeting; {refused} left out for the way through", 0, 0));
+        }
+
+        /// <summary>
+        /// A point of rock this long from (<paramref name="x"/>, <paramref name="root"/>) the way
+        /// given would come within eight cells of where a way comes into the room, at its root,
+        /// its middle or its tip.
+        /// </summary>
+        private static bool Bars(List<Vector2> ways, int x, int root, int dir, int length)
+        {
+            if (ways == null)
+                return false;
+
+            foreach (int k in new[] { 0, length / 2, length })
+            {
+                if (Near(ways, new Vector2(x + 0.5f, root + dir * k + 0.5f), 8f))
+                    return true;
+            }
+
+            return false;
         }
 
         /// <summary>How many cells from its root a point of rock this long fills in the column <paramref name="d"/> from its middle (the shape <see cref="Drip"/> gives it).</summary>
@@ -1123,6 +1309,8 @@ namespace PisAndDag.Content.Subworlds
             if (type == 0)
                 return;
 
+            Drips.Add((x, root, dir, length));
+
             int half = Math.Min(3, length / 3);
 
             for (int k = 1; k <= length; k++)
@@ -1134,6 +1322,9 @@ namespace PisAndDag.Content.Subworlds
                     Set(x + dx, root + dir * k, type);
             }
         }
+
+        /// <summary>Every point of dripstone made of the rock (its column, the row it hangs from or stands on, which way, how long), for the preview's checks.</summary>
+        public static readonly List<(int x, int root, int dir, int length)> Drips = new List<(int, int, int, int)>();
 
         // ---- the crevices --------------------------------------------------------------------
 
@@ -1148,7 +1339,7 @@ namespace PisAndDag.Content.Subworlds
 
             foreach (var (kind, cx, cy, rx, ry) in Hollows)
             {
-                if (kind == Hollow.Junction || rand.Next(2) == 0)
+                if (kind == Hollow.Junction || denned.Contains(Key(cx, cy)) || rand.Next(2) == 0)
                     continue;
 
                 int most = kind == Hollow.Cavern ? 3 : kind is Hollow.Hall or Hollow.Gallery ? 2 : 1;
@@ -1192,7 +1383,8 @@ namespace PisAndDag.Content.Subworlds
         /// two cells of rock either side of it from its back to two short of its mouth, and two
         /// rows of rock six across behind its back; and the two cells before its mouth, both
         /// across, open, the second of them with open cells either side (the hollow it opens on,
-        /// wider than it: not the end of another crevice). Recorded by its back and the way out.
+        /// wider than it: not the end of another crevice); and no floating rock within
+        /// <see cref="StrikeClear"/> cells of its mouth. Recorded by its back and the way out.
         /// </summary>
         private static bool TryLair(int mx, int my, int ix, int iy, int length)
         {
@@ -1202,6 +1394,14 @@ namespace PisAndDag.Content.Subworlds
 
             if (Math.Min(bx, mx) < Left || Math.Max(bx, mx) > Right || Math.Min(by, my) < VastOcean.Surface + 20 || Math.Max(by, my) > VastOcean.High - 50)
                 return false;
+
+            // Nor with a floating rock before its mouth, where its eel strikes (they are put in
+            // last: Floaters).
+            foreach (var (fx, fy, _) in FloatingRocks)
+            {
+                if (Vector2.Distance(new Vector2(fx, fy), new Vector2(mx, my)) < StrikeClear)
+                    return false;
+            }
 
             for (int k = -2; k < length; k++)
             {
@@ -1239,6 +1439,304 @@ namespace PisAndDag.Content.Subworlds
             Lairs.Add((bx, by, dx, dy, length));
             Log.Add(("eel crevice", bx, by));
             return true;
+        }
+
+        // ---- the dens and the floating rocks -------------------------------------------------
+
+        /// <summary>
+        /// Every den cut (its room's middle, how many crevices it has, how many rocks float in its
+        /// room), and every rock left floating in a room (where, and of what), for the preview.
+        /// </summary>
+        public static readonly List<(int x, int y, int crevices, int rocks)> DenRooms = new List<(int, int, int, int)>();
+        public static readonly List<(int x, int y, ushort type)> FloatingRocks = new List<(int, int, ushort)>();
+
+        /// <summary>Every crevice cut for a den: its room's middle, and which of <see cref="Lairs"/> it is, for the preview's checks.</summary>
+        public static readonly List<(int roomX, int roomY, int lair)> DenLairs = new List<(int, int, int)>();
+
+        /// <summary>Every point where a way into a hollow of the networks crosses its edge, hollow by hollow, for the preview's checks.</summary>
+        public static readonly List<(int roomX, int roomY, float x, float y)> RoomWays = new List<(int, int, float, float)>();
+
+        /// <summary>The rooms given a den, left out of the crevices cut after (<see cref="Crevices"/>).</summary>
+        private static readonly HashSet<long> denned = new HashSet<long>();
+
+        private static long Key(int x, int y) => (long)y << 32 | (uint)x;
+
+        /// <summary>A room big enough for a den or floating rocks: the great caverns, and halls and domes at least this big (half width by half height).</summary>
+        private const float BigRoom = 300f;
+
+        /// <summary>Cells kept clear about every way into a big room, of crevice mouths (a den's eel strikes seven tiles) and of floating rocks.</summary>
+        private const float MouthClear = 11f;
+        private const float RockClear = 9f;
+
+        /// <summary>Cells kept clear of floating rocks about a crevice's mouth, where its eel strikes (eight tiles out at the most: CreviceEelHead.StrikeReach).</summary>
+        private const float StrikeClear = 10f;
+
+        /// <summary>A den's crevices' mouths all within this many cells of its first: a den together, filled together (CreviceEelSpawns.GroupTiles).</summary>
+        private const float DenSpread = 22f;
+
+        /// <summary>
+        /// The dens and the floating rocks, by request ("place random chunk of these in large rooms
+        /// of caverns", "eels and some single floating obsidian/ rock", "dont hinder entrences and
+        /// exits tho"): in the big rooms of the ranges' networks (every great cavern, and halls and
+        /// domes of <see cref="BigRoom"/> or more), after their dripstone:
+        ///   - a DEN in four great caverns in five and two in five of the others: three to six
+        ///     crevices tried for in its walls (<see cref="TryLair"/>; two to five cut, three most
+        ///     often, two at the least to be a den), their mouths five cells apart or more, within
+        ///     <see cref="DenSpread"/> of the first, and <see cref="MouthClear"/> from every way into
+        ///     the room, where the eels come in a group (CreviceEelSpawns);
+        ///   - SINGLE ROCKS left floating in its open water: four to eight in a den's room, two to
+        ///     five in three in five of the others, each half the time obsidian, else the room's own
+        ///     rock; each with nothing solid within four cells of it, so that it never narrows a way
+        ///     past it, six or more from the next, <see cref="RockClear"/> from every way into the
+        ///     room, and <see cref="StrikeClear"/> from a crevice's mouth. Put in once the faces are worn
+        ///     (<see cref="Floaters"/>), so that each stays a whole block.
+        /// Where a way comes into a room is where any way cut (<see cref="Tunnel"/>) crosses its edge;
+        /// every hollow of the networks' such points are kept clear of, in every room (hollows may
+        /// run into one another).
+        /// </summary>
+        private static void Dens(UnifiedRandom rand)
+        {
+            walling = WallByRock;
+            int dens = 0, crevices = 0;
+
+            // Where the ways come into every hollow of the networks (hollows may run into one
+            // another): kept clear of in every room.
+            var ways = new List<Vector2>();
+
+            foreach (Node room in rooms)
+            {
+                List<Vector2> into = WaysInto(room);
+
+                ways.AddRange(into);
+
+                foreach (Vector2 w in into)
+                    RoomWays.Add((room.X, room.Y, w.X, w.Y));
+            }
+
+            foreach (Node room in rooms)
+            {
+                bool cavern = room.Kind == Hollow.Cavern;
+
+                if (!cavern && !(room.Kind is Hollow.Hall or Hollow.Dome && room.Rx * room.Ry >= BigRoom))
+                    continue;
+
+                var mouths = new List<Vector2>();
+
+                if (rand.NextFloat() < (cavern ? 0.8f : 0.4f))
+                {
+                    int want = 3 + rand.Next(4);
+                    var cut = new List<int>();
+
+                    for (int attempt = 0; attempt < 160 && mouths.Count < want; attempt++)
+                    {
+                        int sx, sy;
+
+                        // The first from anywhere in the room; the rest from near the first's mouth.
+                        if (mouths.Count == 0)
+                        {
+                            if (!InRoom(room, 0.65f, rand, out sx, out sy))
+                                continue;
+                        }
+                        else
+                        {
+                            sx = (int)(mouths[0].X + (rand.NextFloat() * 2f - 1f) * DenSpread * 0.8f);
+                            sy = (int)(mouths[0].Y + (rand.NextFloat() * 2f - 1f) * DenSpread * 0.8f);
+
+                            if (room.Out(new Vector2(sx + 0.5f, sy + 0.5f)) > 0.95f || SolidAt(sx, sy))
+                                continue;
+                        }
+
+                        int way = rand.Next(4);
+                        int ix = way == 0 ? 1 : way == 1 ? -1 : 0, iy = way == 2 ? 1 : way == 3 ? -1 : 0;
+                        int mx = sx, my = sy, guard = 0;
+
+                        while (!SolidAt(mx, my) && guard++ < 120)
+                        {
+                            mx += ix;
+                            my += iy;
+                        }
+
+                        if (guard >= 120)
+                            continue;
+
+                        // The crevice's mouth, its first cell (at the face) and the cell beside it across.
+                        var mouth = new Vector2(mx + 0.5f + (iy == 0 ? 0f : 0.5f), my + 0.5f + (iy == 0 ? 0.5f : 0f));
+
+                        if (Near(ways, mouth, MouthClear) || Near(mouths, mouth, 5f) || mouths.Count > 0 && Vector2.Distance(mouths[0], mouth) > DenSpread)
+                            continue;
+
+                        if (TryLair(mx, my, ix, iy, LairShortest + rand.Next(LairLongest - LairShortest + 1)))
+                        {
+                            mouths.Add(mouth);
+                            cut.Add(Lairs.Count - 1);
+                        }
+                    }
+
+                    if (mouths.Count >= 2)
+                    {
+                        denned.Add(Key(room.X, room.Y));
+                        dens++;
+                        crevices += mouths.Count;
+
+                        foreach (int lair in cut)
+                            DenLairs.Add((room.X, room.Y, lair));
+                    }
+                }
+
+                bool den = denned.Contains(Key(room.X, room.Y));
+                int rocks = 0;
+
+                if (den || rand.NextFloat() < 0.6f)
+                {
+                    int wantRocks = den ? 4 + rand.Next(5) : 2 + rand.Next(4);
+                    ushort own = RoomRock(room);
+                    var placed = new List<Vector2>();
+
+                    for (int attempt = 0; attempt < 120 && placed.Count < wantRocks; attempt++)
+                    {
+                        if (!InRoom(room, 0.85f, rand, out int x, out int y))
+                            continue;
+
+                        var at = new Vector2(x + 0.5f, y + 0.5f);
+
+                        if (!Clear(x, y, 4) || Near(ways, at, RockClear) || Near(placed, at, 6f) || Near(mouths, at, StrikeClear))
+                            continue;
+
+                        placed.Add(at);
+                        FloatingRocks.Add((x, y, rand.Next(2) == 0 ? TileID.Obsidian : own));
+                    }
+
+                    rocks = placed.Count;
+                }
+
+                if (den)
+                {
+                    DenRooms.Add((room.X, room.Y, mouths.Count, rocks));
+                    Log.Add(("eel den", room.X, room.Y));
+                }
+
+                if (rocks > 0)
+                    Log.Add(("floating rocks", room.X, room.Y));
+            }
+
+            walling = NoWalls;
+            Log.Add(($"dens: {dens}, {crevices} crevices in them; floating rocks: {FloatingRocks.Count}", 0, 0));
+        }
+
+        /// <summary>
+        /// Where the ways cut come into a room: every point at which one crosses its edge (its
+        /// shape before the raggedness, <see cref="Node.Out"/>), looked for along each way every
+        /// half cell.
+        /// </summary>
+        private static List<Vector2> WaysInto(Node room)
+        {
+            var found = new List<Vector2>();
+            float reach = Math.Max(room.Rx, room.Ry) * 1.5f + 2f;
+            Vector2 middle = room.At;
+
+            foreach (List<Vector2> path in tunnels)
+            {
+                for (int i = 0; i + 1 < path.Count; i++)
+                {
+                    Vector2 a = path[i], b = path[i + 1];
+
+                    // Nowhere near this room: passed over.
+                    if (Math.Min(a.X, b.X) > middle.X + reach || Math.Max(a.X, b.X) < middle.X - reach || Math.Min(a.Y, b.Y) > middle.Y + reach || Math.Max(a.Y, b.Y) < middle.Y - reach)
+                        continue;
+
+                    int steps = Math.Max(1, (int)(Vector2.Distance(a, b) * 2f));
+                    bool lastIn = room.Out(a) < 1f;
+
+                    for (int s = 1; s <= steps; s++)
+                    {
+                        Vector2 p = Vector2.Lerp(a, b, (float)s / steps);
+                        bool inside = room.Out(p) < 1f;
+
+                        if (inside != lastIn)
+                            found.Add(p);
+
+                        lastIn = inside;
+                    }
+                }
+            }
+
+            return found;
+        }
+
+        /// <summary>A random open cell of the room within this much of its shape (<see cref="Node.Out"/>).</summary>
+        private static bool InRoom(Node room, float within, UnifiedRandom rand, out int x, out int y)
+        {
+            float r = Math.Max(room.Rx, room.Ry) * within;
+
+            x = room.X + (int)Math.Round((rand.NextFloat() * 2f - 1f) * r);
+            y = room.Y + (int)Math.Round((rand.NextFloat() * 2f - 1f) * r);
+
+            return room.Out(new Vector2(x + 0.5f, y + 0.5f)) <= within && !SolidAt(x, y);
+        }
+
+        /// <summary>Any of these points within this distance of the one given.</summary>
+        private static bool Near(List<Vector2> points, Vector2 at, float within)
+        {
+            foreach (Vector2 p in points)
+            {
+                if (Vector2.DistanceSquared(p, at) < within * within)
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>Nothing solid within <paramref name="r"/> cells of this one (a circle), nor in it.</summary>
+        private static bool Clear(int x, int y, int r)
+        {
+            for (int dy = -r; dy <= r; dy++)
+            {
+                for (int dx = -r; dx <= r; dx++)
+                {
+                    if (dx * dx + dy * dy <= r * r + r && SolidAt(x + dx, y + dy))
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>The room's own rock, for its floating rocks: the paler stone if most of its walls are of it, else basalt (the game's granite), whatever else they are cut in.</summary>
+        private static ushort RoomRock(Node room)
+        {
+            int stone = 0, dark = 0;
+
+            for (int k = 0; k < 16; k++)
+            {
+                double a = k * Math.PI / 8;
+                float dx = (float)Math.Cos(a), dy = (float)Math.Sin(a);
+
+                for (int step = 0; step < 120; step++)
+                {
+                    int x = room.X + (int)Math.Round(dx * step), y = room.Y + (int)Math.Round(dy * step);
+
+                    if (!SolidAt(x, y))
+                        continue;
+
+                    ushort type = Main.tile[x, y].TileType;
+
+                    if (type == Rock)
+                        stone++;
+                    else if (type == Dark)
+                        dark++;
+
+                    break;
+                }
+            }
+
+            return stone > dark ? Rock : Dark;
+        }
+
+        /// <summary>The floating rocks put in, each a whole block (after the faces are worn: <see cref="Smooth"/>), the room's wall behind it as it has.</summary>
+        private static void Floaters()
+        {
+            foreach (var (x, y, type) in FloatingRocks)
+                Set(x, y, type);
         }
 
         // ---- the walls -------------------------------------------------------------------------

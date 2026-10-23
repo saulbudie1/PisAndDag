@@ -201,6 +201,16 @@ namespace PisAndDag.Content.UI
             namedAt[npc.type] = Main.GameUpdateCount;
         }
 
+        /// <summary>
+        /// The player has this one's name now, however they came by it: said on a plate rather than in
+        /// a line (the Empress's, as she screams). The face comes up out of the black, and the tab says it.
+        /// </summary>
+        public static void Introduce(int npcType)
+        {
+            if (DialogueIntroductions.Known.Add(DialogueIntroductions.Key(npcType)))
+                namedAt[npcType] = Main.GameUpdateCount;
+        }
+
         /// <summary>On the Dialogue panel, whose box is <paramref name="box"/>, drawn in its own <paramref name="panel"/>.</summary>
         internal static void DrawOnPanel(SpriteBatch spriteBatch, NPC npc, Rectangle box, Texture2D panel, float alpha)
         {

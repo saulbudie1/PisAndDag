@@ -206,6 +206,11 @@ namespace PisAndDag.Content.Structures.Grace
                 case Theme.Armoury:
                 {
                     int x = r.X0 + 1;
+
+                    // The racks' chest first: what was not on a stand (GraceLoot.StashArmoury).
+                    if (x + 2 <= r.X1 && StashArmoury(x, r.Stand, s))
+                        x += 3;
+
                     while (x + 2 <= r.X1)
                     {
                         if (c.OneIn(2))

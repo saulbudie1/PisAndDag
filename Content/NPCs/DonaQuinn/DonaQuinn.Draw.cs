@@ -12,7 +12,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
 {
     /// <summary>
     /// Drawing her: on Triunfo (him first, under her), or on her own feet, or in the air, or
-    /// on the ground; her bark over her head; the little pool under her.
+    /// on the ground; the little pool under her. (What she shouts is at the foot of the screen: Taunt.)
     ///
     /// Riding, back to front: Triunfo, her body and near leg, the lance, the arm whose fist
     /// is round the lance's grip, her face, her hair. On foot the hand hangs under her face
@@ -106,17 +106,6 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             DrawPool(spriteBatch, screenPos);
             DrawOnFoot(spriteBatch, screenPos, light);
             return false;
-        }
-
-        public override void PostDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
-        {
-            TriunfoTheDonkey donkey = Donkey();
-
-            DonaRig.Pose pose = InSaddle && donkey != null
-                ? RidingPose(donkey)
-                : DonaRig.OnFoot(VisualMiddle(), facing, body, armRel, headRel);
-
-            Bark.Draw(spriteBatch, NPC, BarkPoint(pose), screenPos);
         }
 
         private void DrawRiding(SpriteBatch spriteBatch, Vector2 screenPos, Color light, DonaRig.Pose pose, float speedX)

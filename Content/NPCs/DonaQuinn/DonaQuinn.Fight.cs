@@ -1292,7 +1292,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         // HER VOICE
         // ============================================================
 
-        /// <summary>Now and then, one of these, over her head; not if she has just said something.</summary>
+        /// <summary>Now and then, one of these, at the foot of the screen (Taunt); not if she has just said something.</summary>
         private void BarkMaybe(float chance, params int[] lines)
         {
             if (Main.dedServ || barkWait > 0 || lines.Length == 0 || Main.rand.NextFloat() >= chance)
@@ -1307,21 +1307,18 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             Shout(pick);
         }
 
-        /// <summary>This one, now.</summary>
+        /// <summary>
+        /// This one, now: a line at the foot of the screen, underlined in her gold, gone by itself (Taunt, by request:
+        /// "Fix Dame Quilt to have this kinda trash talk system"), for whoever is near enough to hear her.
+        /// </summary>
         private void Shout(int line)
         {
             if (Main.dedServ)
                 return;
 
-            Bark.Say(NPC, Barks[line]);
+            Taunt.Say(NPC, Barks[line], VoiceGold, VoiceGoldFar, VoiceReach);
             lastBark = line;
             barkWait = 300;
-        }
-
-        /// <summary>Where her bark sits: over her head, wherever her rig has it.</summary>
-        private Vector2 BarkPoint(DonaRig.Pose pose)
-        {
-            return new Vector2(pose.NapeAt.X, Math.Min(pose.NapeAt.Y, pose.MiddleAt.Y) - BarkAbove + 8f);
         }
 
         // ============================================================

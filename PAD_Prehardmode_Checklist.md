@@ -34,7 +34,7 @@ named in section 6, and each of the mod's own in section 5.
 | Minibosses | 1: the Giant Clam | 0 | 1 or 2 |
 | Events | 1: Acid Rain, its first tier | 0 | 1 |
 | New places | 2 biomes: the Sulphurous Sea, the Sunken Sea | the Wasted Mile, the Cleared Ground and Grace (Grand); the Blood Shrine, the shoreline graveyard, the Mors monument; the Vast Ocean, through the waygate on the beach (every world) | one in every world size |
-| Weapons | 161: melee 32, ranged 30, magic 27, summon 27, rogue 43, two of no class | 17: melee 5, ranged 4, magic 4 casts (a fifth only shields; and 2 catalysts), summon 4 | 116: melee 32, ranged 30, magic 27, summon 27 (there is no rogue here) |
+| Weapons | 161: melee 32, ranged 30, magic 27, summon 27, rogue 43, two of no class | 22: melee 7, ranged 6, magic 5 casts (a sixth only shields; and 2 catalysts), summon 4 | 116: melee 32, ranged 30, magic 27, summon 27 (there is no rogue here) |
 | Accessories | 72 (5 for expert) | 6 | 72 |
 | Armour | 8 sets, 35 pieces | 0 | 8 |
 | Tools and gadgets | 29 | 1, the Trumpet (and a crafting station, the Makeshift Altar) | 29 |
@@ -44,7 +44,7 @@ named in section 6, and each of the mod's own in section 5.
 | Difficulty | Revengeance, Death and its other modes | Legends (the Game Changing Orb) | |
 
 What there is is deep (every built thing has its own machinery, words and art) and thin: two
-fights in five stages, four ranged weapons and four summon weapons, and nothing to wear, drink
+fights in five stages, six ranged weapons and four summon weapons, and nothing to wear, drink
 or mine. Both bosses, what they give, and the Handswitch are in Grand worlds only. The targets
 above are mine: Calamity's numbers, less its own class.
 
@@ -95,6 +95,19 @@ The world: spawn in forest, snow two hundred tiles east, desert and the evil wes
   after what you fight, a segment longer for each summon.
 - [x] Summon: **Vulture Staff** (the Vulture, 1 in 40, your edit, PADWorkFlow §16.79):
   vultures that sit on your shoulders and dive on the weakest enemy near you.
+- [x] Melee: **Defacer** (a dresser put into one of the game's underground cabins, the Drawers;
+  PADWorkFlow §16.98): a toothed hammer lifted and brought down, harder the higher; lifted all
+  the way it leaves what it hits Defaced.
+- [x] Melee: **Parade Sabre** (Grand): the first armoury chest of Grace, one in four after it
+  (§16.98); its gold leaf wears off it hit by hit, and bare it is the Plain Sabre, better.
+- [x] Ranged: **Mantrap** (the goblins of an army, 1 in 50; §16.98): iron jaws that hold what
+  they hit, or lie open and wait; its wielder's foot too.
+- [x] Ranged: **Signal Pistol** (the lighthouse's watch room, in the Vast Ocean; §16.98): a
+  flare that burns where it lands, lights the dark red and draws what swims; it dims its
+  wielder's sight while it burns.
+- [x] Incantation: **Mycelium, Finish Them** (a chest in the glowing mushroom caves, the Fairy
+  Ring; Spore Zombies, 1 in 25; §16.98): a ring of glowing caps that hurts what stands in it;
+  what dies there comes up as a cap that puffs spores.
 - [x] Catalyst: **Seal of a Clothier** (the Guide's Witchcraft kit, in a new world; later the
   Clothier and Skeletron).
 - [ ] (mine) **Pistols and daggers in every ore.** A pistol (the game's magazines and
@@ -102,8 +115,9 @@ The world: spawn in forest, snow two hundred tiles east, desert and the evil wes
   iron or lead, silver or tungsten, gold or platinum, and later demonite or crimtane,
   meteorite, hellstone. One recipe each, through "Any" groups as the Trumpet's. Seven of each:
   fourteen of the hundred, and what the mod is called.
-- [ ] (mine) **An incantation for the first days.** The Witchcraft kit's seal has nothing to
-  cast before the Dryad's shield or a Fire Imp's Meagre Flame.
+- [x] (mine) **An incantation for the first days.** The Witchcraft kit's seal has nothing to
+  cast before the Dryad's shield or a Fire Imp's Meagre Flame: Mycelium, Finish Them (above,
+  §16.98).
 
 **Accessories**
 
@@ -220,7 +234,8 @@ The world: spawn in forest, snow two hundred tiles east, desert and the evil wes
 
 - [x] The Wasted Mile, the Cleared Ground, Grace and the halls under it.
 - [ ] (mine) Grace's armouries and treasuries, read as loot: chests with the kingdom's own
-  arms, so a Grand world pays for its walk.
+  arms, so a Grand world pays for its walk. The first of the arms: the Parade Sabre, in an
+  armoury chest at the start of every armoury's row of stands (§16.98).
 - [x] (mine) One place of the mod's own in every world size, so that a world that is not Grand
   has more than the Blind Tusker: the Vast Ocean (2.1, PADWorkFlow §16.79).
 
@@ -265,7 +280,7 @@ Update as boxes are ticked.
 | Bosses | 5 | 2 | 0 | 3 |
 | Minibosses | 1 or 2 | 0 | 0 | 1 |
 | Events | 1 | 0 | 0 | 1 |
-| Weapons | 116 | 17 | 4 (Gaping Jaw, the hand minion, the bow of teeth, the throw) | 14 pistols and daggers, and more |
+| Weapons | 116 | 22 | 4 (Gaping Jaw, the hand minion, the bow of teeth, the throw) | 14 pistols and daggers, and more |
 | Accessories | 72 | 6 | 0 | a handful |
 | Armour sets | 8 | 0 | 0 | 7 |
 | Tools and gadgets | 29 | 1 | 0 | 4 |
@@ -279,10 +294,11 @@ Update as boxes are ticked.
 Read where each comes from in the mod's code (PADWorkFlow §16.77, §16.78, §16.79). Counted in
 section 1, as a player can have them before the Wall:
 
-- **Weapons (17).** Melee: Fly Swatter, Iron Flow, Visus, Flesh Maiden (Grand), Blade of Mors.
-  Ranged: Wooden Crossbow, Mycellaneous, Handswitch (Grand), Meat Hook (Grand; as you count it,
-  §16.78). Magic: Meagre Flame, Cold Call, Court of Hands (Grand), Everhunger (Grand); and
-  Forest, Nurture Me, which only shields. Summon: Hoard of Undead, Worminator, Vulture Staff
+- **Weapons (22).** Melee: Fly Swatter, Iron Flow, Visus, Flesh Maiden (Grand), Blade of Mors,
+  Defacer, Parade Sabre (Grand; bare, the Plain Sabre). Ranged: Wooden Crossbow, Mycellaneous,
+  Handswitch (Grand), Meat Hook (Grand; as you count it, §16.78), Mantrap, Signal Pistol. Magic:
+  Meagre Flame, Cold Call, Court of Hands (Grand), Everhunger (Grand), Mycelium, Finish Them;
+  and Forest, Nurture Me, which only shields. Summon: Hoard of Undead, Worminator, Vulture Staff
   (§16.79), Joint Arms of the Defiled (Grand). Catalysts: Seal of a Clothier, Tree Branch
   Staff.
 - **Accessories (6).** Boots, Metallurgist's Brilliant Stone, Dryad's Blessing, Bone Casing,

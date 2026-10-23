@@ -265,6 +265,9 @@ namespace PisAndDag.Content.UI
 
         public static bool Open => npcIndex >= 0;
 
+        /// <summary>The panel is on the screen at all: open, or still fading after it shut.</summary>
+        public static bool Showing => Open || fade > 0f;
+
         /// <summary>Read by DialogueLock, which is what actually holds the player.</summary>
         public static bool Locked => Open && locked;
 

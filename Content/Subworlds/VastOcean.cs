@@ -90,7 +90,8 @@ namespace PisAndDag.Content.Subworlds
     /// the lens, which cannot be broken.
     ///
     /// THE FLOOR: its ground, its caves, its trench, its pillars, its odd things and its life
-    /// are VastOceanFloor's, whose notes say what they are. In its sand, drifts of shell (Shell
+    /// are VastOceanFloor's, whose notes say what they are. None of its blocks can be broken
+    /// (<see cref="KeepsTile"/>). In its sand, drifts of shell (Shell
     /// Pile); on its sediment, shells and starfish lying on it (under the depth at which shells
     /// dissolve, starfish only); and on its sediment and its rock, the game's own piles of what
     /// the sea takes: stones, bones and skulls, wreckage of wood, the broken marble and gold of
@@ -119,8 +120,9 @@ namespace PisAndDag.Content.Subworlds
     ///     silence (VastOceanAmbience).
     ///
     /// WHAT IS DONE HERE, as on a beach (the members under "what may be done here"): the
-    /// ground may be worked, the game spawns, the clock runs and is the world's, and the game
-    /// takes it for the sea. What is the place's own besides is in VastOceanSea (the water
+    /// ground may be worked (but for the floor's own blocks from the 8th section down, which
+    /// the place keeps: <see cref="KeepsTile"/>), the game spawns, the clock runs and is the
+    /// world's, and the game takes it for the sea. What is the place's own besides is in VastOceanSea (the water
     /// that cannot be carried off, the creatures of open water) and VastOceanBiome (the
     /// biome, its light and its shaders), and the depths' (above).
     /// </summary>
@@ -239,8 +241,8 @@ namespace PisAndDag.Content.Subworlds
         public override int Width => Wide;
         public override int Height => High;
 
-        /// <summary>7: a network of caves in each range, walled, with dripstone and the eels' crevices (VastOceanFloor.Caves). Before it: the lighthouse island (VastOceanIsland), 6; the floor of hills, mountains, caves and a trench, its ground deeper (VastOceanFloor), 5; half as deep again, its sections 224 rows, 4; twice the sky over it, 3; eighteen times as wide and four times as deep as the first, 2.</summary>
-        public override int Layout => 7;
+        /// <summary>9: the Signal Pistol in the lighthouse's watch room (LighthouseTower). Before it: the ranges' caves deeper and a maze, with the eels' dens and rocks floating in their big rooms (VastOceanFloor.Caves), 8; a network of caves in each range, walled, with dripstone and the eels' crevices, 7; the lighthouse island (VastOceanIsland), 6; the floor of hills, mountains, caves and a trench, its ground deeper (VastOceanFloor), 5; half as deep again, its sections 224 rows, 4; twice the sky over it, 3; eighteen times as wide and four times as deep as the first, 2.</summary>
+        public override int Layout => 9;
 
         public override Point Door => new Point(GateLeft, GateTop);
 
@@ -264,7 +266,30 @@ namespace PisAndDag.Content.Subworlds
         public override double SurfaceLine => SurfaceLineRow;
         public override double RockLine => RockLineRow;
 
-        public override bool KeepsTile(int x, int y) => PlatformArea.Contains(x, y) && PlatformTile(x, y) != 0;
+        /// <summary>
+        /// What the place keeps of its own, that nobody can break: all of the platform; and, by
+        /// request ("Blocks on the sediment cannot be broken"), from the 8th section down
+        /// (<see cref="GroundKeptFrom"/>: the floor, its mountains, caves and trench all lie
+        /// under it) every block the place was made with: a solid one not put down by hand
+        /// (VastOceanPressure.PutDownAt), which crumbles there and must be broken to. What lies
+        /// on the floor and is not a block (its life, shells, piles, dripstone, the island's
+        /// chains) may be broken as before, and the walls.
+        /// </summary>
+        public override bool KeepsTile(int x, int y)
+        {
+            if (PlatformArea.Contains(x, y) && PlatformTile(x, y) != 0)
+                return true;
+
+            if (y < GroundKeptFrom || !WorldGen.InWorld(x, y))
+                return false;
+
+            Tile tile = Main.tile[x, y];
+
+            return tile.HasTile && Main.tileSolid[tile.TileType] && !Main.tileSolidTop[tile.TileType] && !Biomes.VastOceanPressure.PutDownAt(x, y);
+        }
+
+        /// <summary>From here down the place's own blocks are kept (<see cref="KeepsTile"/>): the 8th section, where whatever is put down crumbles.</summary>
+        public const int GroundKeptFrom = CrumbleFrom;
 
         // ---- the floor -------------------------------------------------------------------------
 

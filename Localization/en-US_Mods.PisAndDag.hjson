@@ -450,6 +450,67 @@ Items: {
 			'They are very good at waiting.'
 			'''
 	}
+
+	Mantrap: {
+		DisplayName: Mantrap
+		Tooltip:
+			'''
+			Throws iron jaws that shut on the first enemy they hit, holding a small one still for 1 second
+			Jaws that miss lie open where they land, and shut on the next enemy to step in for 50% more damage
+			Up to 3 lie open at once. They shut on your foot too
+			'A better trap. That was the whole war.'
+			'''
+	}
+
+	MyceliumFinishThem: {
+		DisplayName: Mycelium, Finish Them
+		Tooltip:
+			'''
+			Calls a ring of glowing caps up out of the ground under the cursor, for 10 seconds
+			Spores hurt everything inside the ring every half second
+			Whatever dies in the ring sinks into the ground
+			A cap comes up where it lay and puffs spores at enemies
+			'Here, at least, the dead go somewhere.'
+			'''
+	}
+
+	Defacer: {
+		DisplayName: Defacer
+		Tooltip:
+			'''
+			Hold to lift it, release to bring it down. You walk slower while it is lifted
+			The higher it was lifted, the harder it hits, up to 220% damage
+			Lifted all the way, it throws stone chips and leaves what it hits Defaced for 8 seconds
+			'Faces first. Then the names.'
+			'''
+	}
+
+	ParadeSabre: {
+		DisplayName: Parade Sabre
+		Tooltip:
+			'''
+			Every hit on an enemy flakes off a little of its gold leaf
+			When the gold is gone it is plain steel, and hits harder for good
+			'The gold was for the parade.'
+			'''
+		GiltLeft: "{0} hits of gold leaf left"
+	}
+
+	ParadeSabreBare: {
+		DisplayName: Plain Sabre
+		Tooltip: "'Under the gold, a sword.'"
+	}
+
+	SignalPistol: {
+		DisplayName: Signal Pistol
+		Tooltip:
+			'''
+			Fires a flare that burns for 6 seconds, stuck in what it hits or where it lands
+			It lights the dark red, sinks slowly in water, and draws what swims toward it
+			While a flare burns, your own sight is dimmed
+			'Red means come. Nobody came.'
+			'''
+	}
 }
 
 Buffs: {
@@ -593,6 +654,21 @@ Buffs: {
 		Description: You breathe the water
 		Holds: Safe from the water's weight down to {0} feet
 	}
+
+	Defaced: {
+		DisplayName: Defaced
+		Description: Its defense is chipped away
+	}
+
+	FavorOfAnEmpress: {
+		DisplayName: Favor of an Empress
+		Description: Flight without end, at the speed of solar wings
+	}
+
+	VisualIntoxication: {
+		DisplayName: Visual Intoxication
+		Description: Losing 350 life a second
+	}
 }
 
 DeathText: {
@@ -622,6 +698,8 @@ DeathText: {
 	Crushed1: "{0} went a fathom too deep."
 	Crushed2: "{0} caved in like an empty tin."
 	Crushed3: "{0} was made very small by the sea."
+	Mantrap: "{0} stepped where they had set it."
+	VisualIntoxication: "{0} saw what lies outside."
 }
 
 Tiles: {
@@ -713,6 +791,14 @@ Projectiles: {
 	WorminatorTail.DisplayName: Worminator
 	VultureMinion.DisplayName: Vulture
 	ResuscitateCall.DisplayName: Resuscitate Call
+	MantrapJaws.DisplayName: Mantrap
+	FairyRing.DisplayName: Mycelium, Finish Them
+	FairyRingFruit.DisplayName: Mycelium, Finish Them
+	FairyRingSpore.DisplayName: Spore
+	DefacerHoldout.DisplayName: Defacer
+	ParadeSabreArc.DisplayName: Parade Sabre
+	SignalFlare.DisplayName: Signal Flare
+	EmpressHitbox.DisplayName: Elin
 }
 
 NPCs: {
@@ -734,11 +820,11 @@ NPCs: {
 	}
 
 	CreviceEelHead: {
-		DisplayName: Hole Dweller
+		DisplayName: Crevice Eel
 		Bestiary: It waits in a crack in the rock with only its head out, its mouth opening and shutting as if it were counting. Bleed anywhere in the caves and it comes the whole way, every turn of them, and never once looks lost.
 	}
 
-	CreviceEelBody.DisplayName: Hole Dweller
+	CreviceEelBody.DisplayName: Crevice Eel
 }
 
 Biomes: {
@@ -804,6 +890,9 @@ Subworlds: {
 
 	DepthMeter: {
 		VastOcean: Vast Ocean
+		SchoolerZone: Schooler Zone
+		HummersSea: Hummer's Sea
+		LightParty: Light Party
 		ForevernightZone: Forevernight Zone
 		AbyssalTrench: Abyssal Trench
 	}
@@ -1103,6 +1192,15 @@ Configs: {
 			Tooltip: Never broken by a parry, whatever else they are
 		}
 	}
+}
+
+InnerTube: {
+	// A tube's colour before its name; the pink, the game's own, keeps the plain name
+	Named: "{0} {1}"
+	Colour1: Cyan
+	Colour2: Neon Green
+	Colour3: Maroon
+	Colour4: Solar Orange
 }
 
 UI: {

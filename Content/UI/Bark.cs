@@ -27,6 +27,9 @@ namespace PisAndDag.Content.UI
     /// Drawn in the world, in the speaker's own draw (<see cref="Draw"/>), above a point
     /// the speaker gives (their head, wherever their rig has it). Local: nothing here is
     /// sent, and each machine rolls its own lines.
+    ///
+    /// (Dame Quilt, who spoke this way, now speaks at the foot of the screen instead: Taunt. This stays for
+    /// whoever wants a line over a head.)
     /// </summary>
     public static class Bark
     {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -14,22 +15,24 @@ using Terraria.ModLoader;
 namespace PisAndDag.Content.NPCs.Deep
 {
     /// <summary>
-    /// THE HOLE DWELLER, by request ("Create a worm ai, Eel enemy, (no gravity, dont go thru
-    /// tiles) living in these caverns, if player goes deep they jump out and slither thru the
-    /// caves to you. research eels habits"); first the Crevice Eel, a name of mine, then renamed
-    /// ("rename it: Hole Dwellers", one of them a Hole Dweller), its code and files keeping the
-    /// first name. Made bigger to look menacing ("make the eel kinda bigger too"), its pictures
-    /// drawn again in 2x2 pixels, in the look of the gulper eel pointed at (CreviceEelHead,
-    /// CreviceEelBody and their Glow pictures; the bestiary's eel is drawn from them, moving:
-    /// <see cref="DrawBestiary"/>). What is known of morays and
-    /// congers (the notes for section 16.92 have the sources): they live in holes and crevices
-    /// of the rock (congers in wrecks too, and down to 500 metres and deeper), resting there by
-    /// day with the head out; the mouth opens and shuts the while, which is how they breathe,
+    /// THE CREVICE EEL, by request ("Create a worm ai, Eel enemy, (no gravity, dont go thru
+    /// tiles) living in these caverns, if player goes deep they jump out and slither thru
+    /// the caves to you. research eels habits"); the Crevice Eel, a name of mine, then the
+    /// Hole Dweller ("rename it: Hole Dwellers"), and the Crevice Eel again ("Rename it to
+    /// Crevice Eel"), its code and files keeping that name throughout. Made bigger to look
+    /// menacing ("make the eel kinda bigger too"), its pictures drawn again in 2x2 pixels,
+    /// in the look of the gulper eel pointed at (CreviceEelHead, CreviceEelBody and their
+    /// Glow pictures; the bestiary's eel is drawn from them, moving:
+    /// <see cref="DrawBestiary"/>). What is known of morays and congers (the notes for
+    /// section 16.92 have the sources): they live in holes and crevices of the rock
+    /// (congers in wrecks too, and down to 500 metres and deeper), resting there by day
+    /// with the head out; the mouth opens and shuts the while, which is how they breathe,
     /// pushing water out through small gill openings; they see poorly and hunt by smell, at
-    /// night; their teeth are jagged, and a second pair of jaws in the throat pulls prey down.
-    /// Mine, from that: it strikes from its crevice at what comes near and goes back into it
-    /// tail first; it smells blood from farther; its bite leaves the bitten bleeding; and in
-    /// the caves, where it is always night, it hunts whenever a player is there.
+    /// night; their teeth are jagged, and a second pair of jaws in the throat pulls prey
+    /// down. Mine, from that: it strikes from its crevice at what comes near and goes back
+    /// into it tail first; it smells blood from farther; its bite leaves the bitten
+    /// bleeding; and in the caves, where it is always night, it hunts whenever a player is
+    /// there.
     ///
     /// <b>The body.</b> A head (this) and <see cref="Segments"/> pieces after it, the last a
     /// tail (<see cref="CreviceEelBody"/>), each a creature of its own for being hit (the head's
@@ -50,20 +53,38 @@ namespace PisAndDag.Content.NPCs.Deep
     /// its whole hitbox was before), so that it still takes the ways it always took: its burrows
     /// two cells across, and the caves a head two cells across can swim (<see cref="CollideCore"/>).
     ///
-    /// <b>What it does.</b>
+    /// <b>What it does</b>, made more of a hunter since by request ("make their movement more
+    /// creepy and predatorial. research eel hunting mechanic."), from what is known of morays
+    /// (the notes for section 16.96 have the sources): an ambush hunter that rests in a crevice
+    /// with only its head out, the mouth always working (it breathes so); that strikes in a
+    /// fraction of a second, its second jaws in its throat seizing what it bites and pulling it
+    /// back; that hunts by smell more than by sight, at night, through the reef and into its
+    /// holes; that ties itself in a knot to tear and to hold what it has; and that will hunt in
+    /// company. Mine, from that:
     ///   - LURKS in its crevice (CreviceEelSpawns puts it there), the head at the mouth, the
-    ///     body in the rock behind it, the mouth working;
-    ///   - STRIKES at a player who comes within <see cref="StrikeTiles"/> tiles of its head and
-    ///     in its sight: out of the crevice straight at them, up to <see cref="StrikeReach"/>
-    ///     tiles, and back into it tail first the way it came (RECOILS);
+    ///     body in the rock behind it, the mouth working; a player within
+    ///     <see cref="WatchTiles"/> tiles and in its sight, it slides its head out of the crevice
+    ///     and turns it to follow them, breathing faster (<see cref="Peek"/>); nearer than
+    ///     <see cref="ReadyTiles"/>, it draws back into the crevice, ready;
+    ///   - COILS, drawing its head back a moment, and STRIKES at a player who comes within
+    ///     <see cref="StrikeTiles"/> tiles of its head and in its sight: out of the crevice
+    ///     straight at them, fast, up to <see cref="StrikeReach"/> tiles, and back into it tail
+    ///     first the way it came (RECOILS), dragging whom it bit with it (CreviceEelSeized);
     ///   - HUNTS a player who has gone deep (in the Vast Ocean from the 8th section down, under
     ///     rock: four solid rows or more within forty over them) and is within
     ///     <see cref="HuntTiles"/> tiles of it by the way through the caves (<see cref="SmellTiles"/>
-    ///     if they are bleeding): out of the crevice and through the caves to them, the whole
-    ///     body waving, by the shortest way through the water a head its size can take (a chart
-    ///     of steps to them from every cell within <see cref="ChartReach"/> tiles, worked out
-    ///     again every half second); and when it is within <see cref="LungeTiles"/> tiles of
-    ///     them and sees them, LUNGES, fast, straight, its mouth open, and RECOVERS after;
+    ///     if they are bleeding): out of the crevice and through the caves to them by the
+    ///     shortest way through the water a head its size can take (a chart of steps to them from
+    ///     every cell within <see cref="ChartReach"/> tiles, worked out again every half second),
+    ///     keeping to the rock where the way allows; stalking, slow, the body in long waves,
+    ///     stopping now and then to taste the water, its head turning; seeing them near, it
+    ///     creeps; within <see cref="LungeTiles"/> tiles, it COILS and LUNGES, its mouth wide;
+    ///     having bitten, it shakes them, and RECOVERS backing off the way it came, tail first,
+    ///     to come again;
+    ///   - in company: one comes in at a time while the others hold off, circling at
+    ///     <see cref="HoldOffTiles"/> tiles; and one that strikes or hunts wakes the others
+    ///     lurking within <see cref="WakeTiles"/> tiles of it, one after another (a den,
+    ///     CreviceEelSpawns);
     ///   - hit, it strikes at whoever hit it if they are near, or hunts them;
     ///   - gives up a hunt when they are out of the caves for four seconds, or farther than
     ///     <see cref="LoseTiles"/> tiles by the way through them for three, or after forty
@@ -93,6 +114,28 @@ namespace PisAndDag.Content.NPCs.Deep
         public const float NeckGap = 34f;
 
         /// <summary>
+        /// Pieces of body past <see cref="Segments"/> it may have, none to two, rolled as it is put
+        /// in its crevice, by request ("their length is randomized, base now to base + 2
+        /// segment"; CreviceEelSpawns): kept in NPC.ai[2], so every machine knows it.
+        /// </summary>
+        public const int MostExtra = 2;
+
+        public int Extra => Math.Clamp((int)NPC.ai[2], 0, MostExtra);
+
+        /// <summary>Its pieces of body after the head, the last a tail.</summary>
+        public int Length => Segments + Extra;
+
+        /// <summary>How far behind the head's middle the tail's tip lies, with this many pieces of body (the tail's picture 32 long about its middle).</summary>
+        public static float BehindHead(int pieces) => NeckGap + (pieces - 1) * Spacing + 16f;
+
+        /// <summary>
+        /// Whether one with this many pieces past the least fits a crevice this long, lurking: its
+        /// tail's tip no further behind its head than the crevice's back and the two rows of rock
+        /// behind it (as the least of them lie in the shortest crevices).
+        /// </summary>
+        public static bool Fits(int lairLength, int extra) => (lairLength - 1) * 16f + 40f >= BehindHead(Segments + extra);
+
+        /// <summary>
         /// The head's hitbox, square about its jaws, as thick as the head is there (its picture, 36
         /// to 42 high about them); and its core, what the rock keeps out (what its hitbox was before
         /// it grew: a head of it fits a burrow two cells across with room to spare).
@@ -103,8 +146,15 @@ namespace PisAndDag.Content.NPCs.Deep
         /// <summary>Where in the head's picture (one frame: 72 by 52) the head's middle is: at its jaws, 48 from its neck.</summary>
         public static readonly Vector2 HeadPivot = new Vector2(48f, 26f);
 
-        /// <summary>Provisional, for the deep: life, armour, the head's bite and the body's.</summary>
-        public const int Life = 2400;
+        /// <summary>
+        /// Its life, by request ("base Crevice eel is 9500, each segment is +1200"; 7000 and 750
+        /// before): 9500 at its least length, 1200 more for each piece past it (as the game raises
+        /// a creature's life for the world's difficulty, so these: <see cref="Size"/>), one life for
+        /// the whole eel, its pieces' the head's (CreviceEelBody), shown once, over the head.
+        /// Provisional, for the deep: armour, the head's bite and the body's.
+        /// </summary>
+        public const int Life = 9500;
+        public const int LifeEachPiece = 1200;
         public const int Armour = 16;
         public const int Bite = 85;
         public const int BodyBite = 55;
@@ -113,24 +163,62 @@ namespace PisAndDag.Content.NPCs.Deep
         public const float StrikeTiles = 7f;
         public const float StrikeReach = 8f;
 
+        /// <summary>
+        /// Lurking: tiles within which it watches a player it sees, its head out of the crevice
+        /// (its jaws this many pixels past the mouth's middle, turned toward them by as much as
+        /// <see cref="LookMost"/>); and nearer than which it draws back into the crevice, ready,
+        /// its jaws this many pixels inside.
+        /// </summary>
+        public const float WatchTiles = 22f;
+        public const float ReadyTiles = 11f;
+        public const float PeekOut = 26f;
+        public const float DrawBack = 12f;
+        public const float LookMost = 0.85f;
+
         /// <summary>Tiles, by the way through the caves: hunts a player gone deep this near; this near if they bleed; loses them farther.</summary>
         public const int HuntTiles = 60;
         public const int SmellTiles = 90;
         public const int LoseTiles = 100;
 
-        /// <summary>Tiles: lunges at a player this near, and seen.</summary>
+        /// <summary>Tiles: lunges at a player this near, and seen; creeps, seeing them, this near.</summary>
         public const float LungeTiles = 10f;
+        public const float CloseTiles = 18f;
 
-        /// <summary>Pixels a tick.</summary>
-        public const float StrikeSpeed = 9f;
-        public const float HuntSpeed = 5f;
-        public const float LungeSpeed = 10.5f;
+        /// <summary>Tiles: waiting its turn, it holds off this far from the prey; it wakes others lurking this near.</summary>
+        public const float HoldOffTiles = 13f;
+        public const float WakeTiles = 48f;
+
+        /// <summary>Pixels a tick: striking; hunting far off (more than forty steps by the way), stalking, creeping; lunging; going back into its crevice; backing off; circling; going home.</summary>
+        public const float StrikeSpeed = 12.5f;
+        public const float CruiseSpeed = 4.8f;
+        public const float StalkSpeed = 3.4f;
+        public const float CreepSpeed = 2.2f;
+        public const float LungeSpeed = 13f;
         public const float BackSpeed = 4.5f;
+        public const float BackOffSpeed = 2.8f;
+        public const float CircleSpeed = 2.4f;
         public const float HomeSpeed = 4f;
 
-        public const int StrikeTicks = 18;
-        public const int LungeTicks = 22;
-        public const int RecoverTicks = 30;
+        /// <summary>Pixels a tick it draws back along its own body, coiling to lunge.</summary>
+        public const float CoilBackSpeed = 1.4f;
+
+        /// <summary>
+        /// Ticks: coiling before a strike, and before a lunge; striking; lunging; shaking what it
+        /// has bitten; backing off after; and stalking, a stop of <see cref="PauseTicks"/> in
+        /// every <see cref="StalkBeat"/>.
+        /// </summary>
+        public const int CoilTicks = 8;
+        public const int LungeCoilTicks = 12;
+        public const int StrikeTicks = 14;
+        public const int LungeTicks = 18;
+        public const int ShakeTicks = 16;
+        public const int BackOffTicks = 30;
+        public const int StalkBeat = 150;
+        public const int PauseTicks = 40;
+
+        /// <summary>Pixels: the body's waves, at the tail, swimming; their length along it.</summary>
+        public const float WaveMost = 5f;
+        public const float WaveLength = 140f;
 
         /// <summary>Of the deep: never pressed.</summary>
         public int SafeTo => VastOceanWeight.Deepest;
@@ -143,6 +231,7 @@ namespace PisAndDag.Content.NPCs.Deep
         private enum Mode : byte
         {
             Lurk,
+            Coil,
             Strike,
             Recoil,
             Hunt,
@@ -157,6 +246,32 @@ namespace PisAndDag.Content.NPCs.Deep
         private int prey = -1;
         private EelLair lair;
         private bool lairKnown;
+
+        /// <summary>What it coils for: a strike (from its crevice) or a lunge (hunting).</summary>
+        private Mode coilInto = Mode.Strike;
+
+        /// <summary>Where its head was as it began to coil.</summary>
+        private Vector2 coilFrom;
+
+        /// <summary>Its lunge ended on the prey: it shakes them before it backs off.</summary>
+        private bool bit;
+
+        /// <summary>Which way it circles, holding off (1 or -1).</summary>
+        private sbyte side = 1;
+
+        /// <summary>Lurking, it sees a player near and watches them (its breath quicker).</summary>
+        private bool watching;
+
+        /// <summary>Woken by another of its kind near it striking or hunting: ticks till it comes out too, and after whom (where it is decided).</summary>
+        private int waking;
+        private int wakePrey = -1;
+
+        /// <summary>A player worth hunting noticed, lurking: ticks it waits yet, and who (where it is decided); 0, none.</summary>
+        private int patience;
+        private int patiencePrey = -1;
+
+        /// <summary>The body's waves: how big now (pixels at the tail), and how far along they have run.</summary>
+        private float waveAmp, wavePhase;
 
         /// <summary>The trail's length when the head is at its crevice's mouth: what it recoils to.</summary>
         private float lurkLength;
@@ -173,6 +288,13 @@ namespace PisAndDag.Content.NPCs.Deep
         public int Id => (int)NPC.ai[3];
 
         public bool Lives(EelLair other) => lairKnown && lair.Same(other);
+
+        /// <summary>
+        /// What it has seized it lets go (CreviceEelSeized): its head two and a half tiles from its
+        /// crevice's mouth, coming back (what it bit pulled up to the hole and no further, not
+        /// pressed against the rock about it), lurking, or gone into it.
+        /// </summary>
+        public bool LetsGo => mode == Mode.Lurk || mode == Mode.Recoil && lairKnown && Vector2.Distance(NPC.Center, lair.Mouth) < 40f || mode == Mode.Home && inside;
 
         // ---- set up -----------------------------------------------------------------------------
 
@@ -196,7 +318,7 @@ namespace PisAndDag.Content.NPCs.Deep
         }
 
         /// <summary>
-        /// For a Hole Dweller's head, the box the game keeps out of the rock (NPC.UpdateCollision,
+        /// For a Crevice Eel's head, the box the game keeps out of the rock (NPC.UpdateCollision,
         /// and its slopes) is its core, <see cref="CoreSize"/> square about its middle, not its
         /// hitbox; every other creature's is as the game has it.
         /// </summary>
@@ -272,6 +394,9 @@ namespace PisAndDag.Content.NPCs.Deep
             writer.Write((byte)mode);
             writer.Write(timer);
             writer.Write((short)prey);
+            writer.Write((byte)coilInto);
+            writer.Write(bit);
+            writer.Write(side);
             writer.Write(lairKnown);
 
             if (lairKnown)
@@ -289,12 +414,18 @@ namespace PisAndDag.Content.NPCs.Deep
             mode = (Mode)reader.ReadByte();
             timer = reader.ReadInt32();
             prey = reader.ReadInt16();
+            coilInto = (Mode)reader.ReadByte();
+            bit = reader.ReadBoolean();
+            side = reader.ReadSByte();
             bool known = reader.ReadBoolean();
 
             if (known)
             {
                 var got = new EelLair(reader.ReadInt16(), reader.ReadInt16(), reader.ReadSByte(), reader.ReadSByte(), reader.ReadByte());
                 bool fresh = !lairKnown || !lair.Same(got) || trailCount == 0;
+
+                if (fresh)
+                    way.Clear();
 
                 lair = got;
                 lairKnown = true;
@@ -385,8 +516,8 @@ namespace PisAndDag.Content.NPCs.Deep
 
         // ---- the body along it ------------------------------------------------------------------
 
-        private readonly Vector2[] placed = new Vector2[Segments + 1];
-        private readonly float[] turned = new float[Segments + 1];
+        private readonly Vector2[] placed = new Vector2[Segments + MostExtra + 1];
+        private readonly float[] turned = new float[Segments + MostExtra + 1];
 
         /// <summary>
         /// The way the head faces as it is drawn: from where its neck lies on its trail (as far
@@ -398,11 +529,11 @@ namespace PisAndDag.Content.NPCs.Deep
         private uint placedOn = uint.MaxValue;
         private Vector2 placedFrom;
 
-        /// <summary>Where a piece of the body lies now (1 the first after the head, <see cref="Segments"/> the tail), and which way it faces (toward the head).</summary>
+        /// <summary>Where a piece of the body lies now (1 the first after the head, <see cref="Length"/> the tail), and which way it faces (toward the head).</summary>
         public Vector2 Piece(int index, out float facing)
         {
             Place();
-            index = Math.Clamp(index, 1, Segments);
+            index = Math.Clamp(index, 1, Length);
             facing = turned[index];
             return placed[index];
         }
@@ -425,7 +556,7 @@ namespace PisAndDag.Content.NPCs.Deep
             int i = trailCount - 1;
             float walked = 0f;
 
-            for (int piece = 1; piece <= Segments; piece++)
+            for (int piece = 1; piece <= Length; piece++)
             {
                 float want = NeckGap + (piece - 1) * Spacing;
 
@@ -463,6 +594,44 @@ namespace PisAndDag.Content.NPCs.Deep
                     walked += d;
                     a = b;
                     i--;
+                }
+            }
+
+            // Swimming, waves run down the body from the neck, growing to the tail, as an eel's
+            // do (each piece put out to its side by the wave there, and turned with it).
+            if (waveAmp > 0.05f)
+            {
+                float whole = BehindHead(Length);
+                float k = MathHelper.TwoPi / WaveLength;
+
+                float Off(float s) => waveAmp * Math.Clamp(s / whole, 0f, 1f) * (float)Math.Sin(wavePhase - k * s);
+
+                float before = 0f;
+
+                // From the second piece: the first is held at the neck, where its hitbox and the
+                // head's only just meet (NeckGap).
+                for (int piece = 2; piece <= Length; piece++)
+                {
+                    float s = NeckGap + (piece - 1) * Spacing;
+                    float facing = turned[piece];
+                    Vector2 left = new Vector2(-(float)Math.Sin(facing), (float)Math.Cos(facing));
+
+                    // No more than three pixels out from the piece before, so that their hitboxes
+                    // still meet (the tail's, the smallest, by four).
+                    float off = MathHelper.Clamp(Off(s), before - 3f, before + 3f);
+
+                    // None where the rock is close beside it that way (in a crevice, a narrow way).
+                    Vector2 probe = placed[piece] + left * Math.Sign(off) * (16f + Math.Abs(off));
+
+                    if (EelLairs.Rock((int)(probe.X / 16f), (int)(probe.Y / 16f)))
+                    {
+                        before = 0f;
+                        continue;
+                    }
+
+                    placed[piece] += left * off;
+                    turned[piece] = facing + (float)Math.Atan2(Off(s - 10f) - Off(s + 10f), 20f);
+                    before = off;
                 }
             }
 
@@ -522,6 +691,9 @@ namespace PisAndDag.Content.NPCs.Deep
 
         private short[] chart;
         private static int[] chartQueue;
+
+        /// <summary>Room for the head at each cell of the chart being made (0 not looked at yet, 1 room, 2 none): each looked at once.</summary>
+        private static byte[] chartRoom;
         private Point chartGoal = new Point(int.MinValue, int.MinValue);
         private int chartAge;
 
@@ -529,7 +701,7 @@ namespace PisAndDag.Content.NPCs.Deep
         private static bool Room(int x, int y) => !EelLairs.Rock(x, y) && !EelLairs.Rock(x + 1, y) && !EelLairs.Rock(x, y + 1) && !EelLairs.Rock(x + 1, y + 1);
 
         /// <summary>The cell (two by two tiles from it) a point is in the middle of, near enough.</summary>
-        private static Point CellOf(Vector2 world) => new Point((int)Math.Round(world.X / 16f) - 1, (int)Math.Round(world.Y / 16f) - 1);
+        internal static Point CellOf(Vector2 world) => new Point((int)Math.Round(world.X / 16f) - 1, (int)Math.Round(world.Y / 16f) - 1);
 
         private static Vector2 MiddleOf(int x, int y) => new Vector2((x + 1) * 16f, (y + 1) * 16f);
 
@@ -555,7 +727,9 @@ namespace PisAndDag.Content.NPCs.Deep
         {
             chart ??= new short[ChartSide * ChartSide];
             chartQueue ??= new int[ChartSide * ChartSide];
+            chartRoom ??= new byte[ChartSide * ChartSide];
             Array.Fill(chart, (short)-1);
+            Array.Clear(chartRoom);
 
             Point g = CellOf(goal);
             chartGoal = g;
@@ -600,15 +774,13 @@ namespace PisAndDag.Content.NPCs.Deep
                     if (chart[n] != -1)
                         continue;
 
-                    int wx = g.X - ChartReach + nx, wy = g.Y - ChartReach + ny;
-
-                    if (!Room(wx, wy))
+                    if (!Charted(nx, ny))
                     {
                         chart[n] = -2;
                         continue;
                     }
 
-                    if (k >= 4 && (!Room(wx - DX[k], wy) || !Room(wx, wy - DY[k])))
+                    if (k >= 4 && (!Charted(nx - DX[k], ny) || !Charted(nx, ny - DY[k])))
                         continue;
 
                     chart[n] = next;
@@ -617,16 +789,73 @@ namespace PisAndDag.Content.NPCs.Deep
             }
         }
 
+        /// <summary>Room for the head at this cell of the chart being made (counted from its corner; off it, looked at as any cell).</summary>
+        private bool Charted(int i, int j)
+        {
+            int wx = chartGoal.X - ChartReach + i, wy = chartGoal.Y - ChartReach + j;
+
+            if (i < 0 || j < 0 || i >= ChartSide || j >= ChartSide)
+                return Room(wx, wy);
+
+            int c = j * ChartSide + i;
+
+            if (chartRoom[c] == 0)
+                chartRoom[c] = (byte)(Room(wx, wy) ? 1 : 2);
+
+            return chartRoom[c] == 1;
+        }
+
+        /// <summary>
+        /// How near the rock the cell (two by two tiles from it) keeps: none against it (rock in
+        /// the twelve tiles round it, a corner the head would catch on); else, of the twenty tiles
+        /// round those, how many are rock, up to three (a wall a tile off).
+        /// </summary>
+        private static int Hug(int x, int y)
+        {
+            for (int dy = -1; dy <= 2; dy++)
+            {
+                for (int dx = -1; dx <= 2; dx++)
+                {
+                    if ((dx == 0 || dx == 1) && (dy == 0 || dy == 1))
+                        continue;
+
+                    if (EelLairs.Rock(x + dx, y + dy))
+                        return 0;
+                }
+            }
+
+            int rock = 0;
+
+            for (int dy = -2; dy <= 3; dy++)
+            {
+                for (int dx = -2; dx <= 3; dx++)
+                {
+                    if (dx >= -1 && dx <= 2 && dy >= -1 && dy <= 2)
+                        continue;
+
+                    if (EelLairs.Rock(x + dx, y + dy) && ++rock >= 3)
+                        return 3;
+                }
+            }
+
+            return rock;
+        }
+
         /// <summary>
         /// The way to go from where the head is, by the chart: toward the cell three steps on down
-        /// it; the head's steps to the goal. False if the head is not on the chart (nor within two
-        /// cells of it).
+        /// it, of the cells as near the goal the one a tile off the rock if there is one
+        /// (<see cref="Hug"/>: so that it keeps to the walls where the way allows, as a moray goes
+        /// through the reef, and does not catch on them); the head's steps to the goal. False if
+        /// the head is not on the chart (nor within two cells of it).
         /// </summary>
-        private bool Way(out Vector2 toward, out int steps)
+        private bool Way(out Vector2 toward, out int steps) => Way(NPC.Center, out toward, out steps);
+
+        /// <summary>The same from this place.</summary>
+        private bool Way(Vector2 from, out Vector2 toward, out int steps)
         {
-            Point at = CellOf(NPC.Center);
+            Point at = CellOf(from);
             steps = Steps(at.X, at.Y);
-            toward = NPC.Center;
+            toward = from;
 
             if (steps < 0)
             {
@@ -657,16 +886,24 @@ namespace PisAndDag.Content.NPCs.Deep
             for (int hop = 0; hop < 3; hop++)
             {
                 Point next = at;
-                short least = Steps(at.X, at.Y);
+                short here = Steps(at.X, at.Y), least = here;
+                int hugged = -1;
 
                 for (int k = 0; k < 8; k++)
                 {
-                    short s = Steps(at.X + DX[k], at.Y + DY[k]);
+                    int nx = at.X + DX[k], ny = at.Y + DY[k];
+                    short s = Steps(nx, ny);
 
-                    if (s >= 0 && s < least)
+                    if (s < 0 || s >= here)
+                        continue;
+
+                    int hug = Hug(nx, ny);
+
+                    if (s < least || s == least && hug > hugged)
                     {
                         least = s;
-                        next = new Point(at.X + DX[k], at.Y + DY[k]);
+                        hugged = hug;
+                        next = new Point(nx, ny);
                     }
                 }
 
@@ -716,9 +953,12 @@ namespace PisAndDag.Content.NPCs.Deep
         /// the line as well, and so finds the walls of a crevice two cells across in the way of
         /// any line out of it.)
         /// </summary>
-        private bool Sees(Player player)
+        private bool Sees(Player player) => Sees(NPC.Center, player);
+
+        /// <summary>No rock on the straight line from this point to their middle, looked at every four pixels.</summary>
+        private static bool Sees(Vector2 a, Player player)
         {
-            Vector2 a = NPC.Center, b = player.Center;
+            Vector2 b = player.Center;
             int steps = (int)(Vector2.Distance(a, b) / 4f);
 
             for (int s = 1; s < steps; s++)
@@ -734,7 +974,7 @@ namespace PisAndDag.Content.NPCs.Deep
 
         private bool Deciding => Main.netMode != NetmodeID.MultiplayerClient;
 
-        /// <summary>What it does next, where that is decided (elsewhere it is heard of).</summary>
+        /// <summary>What it does next, where that is decided (elsewhere it is heard of); coming out after someone, it wakes the others near (<see cref="Wake"/>).</summary>
         private void Become(Mode next, int target = -2)
         {
             if (!Deciding)
@@ -747,6 +987,42 @@ namespace PisAndDag.Content.NPCs.Deep
                 prey = target;
 
             NPC.netUpdate = true;
+
+            if (next is Mode.Coil or Mode.Strike or Mode.Hunt)
+                Wake();
+        }
+
+        /// <summary>Coils, then strikes (from its crevice) or lunges (hunting).</summary>
+        private void CoilFor(Mode then, int target = -2)
+        {
+            if (!Deciding)
+                return;
+
+            coilInto = then;
+            Become(Mode.Coil, target);
+        }
+
+        /// <summary>
+        /// The others of its kind lurking within <see cref="WakeTiles"/> tiles of it, not yet
+        /// woken, wake: each comes out after the same player, if it is worth hunting, one after
+        /// another, a half to nearly two seconds on (where it is decided).
+        /// </summary>
+        private void Wake()
+        {
+            if (!Fair(prey))
+                return;
+
+            foreach (NPC other in Main.ActiveNPCs)
+            {
+                if (other.whoAmI == NPC.whoAmI || other.ModNPC is not CreviceEelHead eel || eel.mode != Mode.Lurk || eel.waking > 0)
+                    continue;
+
+                if (other.DistanceSQ(NPC.Center) > WakeTiles * WakeTiles * 256f)
+                    continue;
+
+                eel.waking = Main.rand.Next(25, 111);
+                eel.wakePrey = prey;
+            }
         }
 
         public override void AI()
@@ -755,6 +1031,7 @@ namespace PisAndDag.Content.NPCs.Deep
             if (Deciding && NPC.ai[3] == 0f)
             {
                 NPC.ai[3] = Main.rand.Next(1, 1 << 24);
+                side = (sbyte)(Main.rand.Next(2) == 0 ? 1 : -1);
                 NPC.netUpdate = true;
             }
 
@@ -763,7 +1040,7 @@ namespace PisAndDag.Content.NPCs.Deep
                 bodied = true;
                 int bodyType = ModContent.NPCType<CreviceEelBody>();
 
-                for (int i = 1; i <= Segments; i++)
+                for (int i = 1; i <= Length; i++)
                 {
                     int s = NPC.NewNPC(NPC.GetSource_FromAI(), (int)NPC.Center.X, (int)NPC.Center.Y, bodyType, NPC.whoAmI, NPC.whoAmI, i, NPC.ai[3]);
 
@@ -775,6 +1052,7 @@ namespace PisAndDag.Content.NPCs.Deep
                 }
             }
 
+            Size();
             timer++;
 
             // Only on its way home is it going into its crevice, or fading there.
@@ -785,8 +1063,8 @@ namespace PisAndDag.Content.NPCs.Deep
             }
 
             // Where the head is now, onto the way it has come; but not when it is going back
-            // along that way, or lying still in its crevice.
-            if (mode != Mode.Recoil && mode != Mode.Lurk)
+            // along that way (recoiling, coiling, backing off), or lying in its crevice.
+            if (mode is Mode.Strike or Mode.Hunt or Mode.Lunge or Mode.Home or Mode.Leave || mode == Mode.Recover && Shaking)
                 Record(NPC.Center);
 
             // Nobody near: gone.
@@ -814,6 +1092,9 @@ namespace PisAndDag.Content.NPCs.Deep
                 case Mode.Lurk:
                     Lurk();
                     break;
+                case Mode.Coil:
+                    Coil();
+                    break;
                 case Mode.Strike:
                     Strike();
                     break;
@@ -839,6 +1120,20 @@ namespace PisAndDag.Content.NPCs.Deep
 
             provoked = false;
 
+            // Its head's core never left in the rock: where it is put straight onto its own way
+            // back (recoiling, coiling, backing off), that way's points joined by straight lines can
+            // cut a corner, and the game's own test lets a box already in a tile go on into it.
+            if (!OpenAt(NPC.Center, CoreSize / 2f - 1f))
+                NPC.Center = Unstick(NPC.Center);
+
+            // The body's waves: as it swims out in the water, the faster the bigger, up to
+            // WaveMost at the tail; none in a crevice (lurking, coiling there, recoiling, gone in).
+            bool free = mode is Mode.Hunt or Mode.Leave || mode == Mode.Home && !inside || mode == Mode.Recover && Shaking;
+            float wave = free ? WaveMost * Math.Min(1f, NPC.velocity.Length() / 4f) : 0f;
+
+            waveAmp = mode is Mode.Lurk or Mode.Recoil || inside ? 0f : MathHelper.Lerp(waveAmp, wave, 0.06f);
+            wavePhase = (wavePhase + 0.1f + NPC.velocity.Length() * 0.05f) % MathHelper.TwoPi;
+
             // Facing away from its body, a little ahead where it is going.
             Place();
             Vector2 ahead = NPC.Center + NPC.velocity * 4f - placed[1];
@@ -846,6 +1141,31 @@ namespace PisAndDag.Content.NPCs.Deep
             if (ahead.LengthSquared() > 1f)
                 NPC.rotation = ahead.ToRotation();
         }
+
+        /// <summary>
+        /// Its life made up to its length, once, on every machine as it hears of its length
+        /// (NPC.ai[2]): as much more than <see cref="Life"/> as its pieces past the least ask for,
+        /// in the same proportion as the game has already raised its life for the world's
+        /// difficulty; still whole if it was whole.
+        /// </summary>
+        private void Size()
+        {
+            if (sized)
+                return;
+
+            sized = true;
+
+            if (Extra <= 0)
+                return;
+
+            bool whole = NPC.life >= NPC.lifeMax;
+            NPC.lifeMax = (int)Math.Round(NPC.lifeMax * (double)(Life + LifeEachPiece * Extra) / Life);
+
+            if (whole)
+                NPC.life = NPC.lifeMax;
+        }
+
+        private bool sized;
 
         /// <summary>Gone, nothing dropped (the server tells everyone).</summary>
         private void Vanish()
@@ -857,6 +1177,15 @@ namespace PisAndDag.Content.NPCs.Deep
                 NetMessage.SendData(MessageID.SyncNPC, -1, -1, null, NPC.whoAmI);
         }
 
+        /// <summary>
+        /// In its crevice: at the mouth, swaying a little in and out with its breath; a player
+        /// within <see cref="WatchTiles"/> tiles and in its sight from the mouth, its head out and
+        /// turned after them (<see cref="Peek"/>), slowly; one nearer than
+        /// <see cref="ReadyTiles"/>, drawn back in, ready (on every machine, from what it knows of
+        /// the players). Where it is decided: woken, out after whom woke it; a player within
+        /// <see cref="StrikeTiles"/> tiles and seen, or one who hit it within twelve, a strike;
+        /// one worth hunting, a hunt.
+        /// </summary>
         private void Lurk()
         {
             NPC.velocity = Vector2.Zero;
@@ -867,30 +1196,160 @@ namespace PisAndDag.Content.NPCs.Deep
                 return;
             }
 
-            // At its mouth, swaying a little in and out with its breath.
-            float sway = (float)Math.Sin((Main.GameUpdateCount + NPC.whoAmI * 31) * 0.05f) * 2f;
-            NPC.Center = lair.Mouth + new Vector2(lair.Dx, lair.Dy) * sway;
-
-            // Looked about every sixth of a second for one to strike at, every half second for
-            // one to hunt; at once, hit.
-            if (!Deciding || timer < 0 || timer % 10 != 0 && !provoked)
-                return;
-
+            Vector2 axis = new Vector2(lair.Dx, lair.Dy);
             int near = Nearest(out float nearest);
+            Player p = near >= 0 ? Main.player[near] : null;
+            bool seen = p != null && nearest < WatchTiles * 16f && Sees(Eye, p);
+            Vector2 pose;
 
-            if (near < 0)
+            watching = seen;
+
+            if (!seen)
+                pose = lair.Mouth + axis * (float)Math.Sin((Main.GameUpdateCount + NPC.whoAmI * 31) * 0.05f) * 2f;
+            else if (nearest < ReadyTiles * 16f)
+                pose = lair.Mouth - axis * DrawBack;
+            else
+                pose = Peek(p.Center);
+
+            // Eased toward it, never through the rock about the mouth: the head's core kept clear,
+            // going along the crevice first where the straight way would cut its corner, or
+            // back over its middle line, coming in.
+            Vector2 next = Vector2.Lerp(NPC.Center, pose, seen ? 0.12f : 0.08f);
+
+            if (!OpenAt(next, CoreSize / 2f - 1f))
+            {
+                Vector2 across = new Vector2(-axis.Y, axis.X);
+                Vector2 along = NPC.Center + axis * Vector2.Dot(next - NPC.Center, axis);
+                Vector2 centred = NPC.Center - across * Vector2.Dot(NPC.Center - lair.Mouth, across) * 0.25f;
+
+                next = OpenAt(along, CoreSize / 2f - 1f) ? along : OpenAt(centred, CoreSize / 2f - 1f) ? centred : NPC.Center;
+            }
+
+            NPC.Center = next;
+
+            if (!Deciding || timer < 0)
                 return;
 
-            Player p = Main.player[near];
-
-            if (nearest < StrikeTiles * 16f && Sees(p) || provoked && nearest < 12 * 16f)
+            if (waking > 0 && --waking == 0 && Fair(wakePrey) && HuntWorth(Main.player[wakePrey]))
             {
-                Become(Mode.Strike, near);
+                Become(Mode.Hunt, wakePrey);
                 return;
             }
 
-            if (provoked || timer % 30 == 0 && HuntWorth(p))
+            if (patience > 0 && --patience == 0 && Fair(patiencePrey))
+            {
+                Become(Mode.Hunt, patiencePrey);
+                return;
+            }
+
+            // Looked about every sixth of a second for one to strike at, every half second for
+            // one to hunt; at once, hit.
+            if (p == null || timer % 10 != 0 && !provoked)
+                return;
+
+            if (nearest < StrikeTiles * 16f && seen || provoked && nearest < 12 * 16f)
+            {
+                CoilFor(Mode.Strike, near);
+                return;
+            }
+
+            if (provoked)
+            {
                 Become(Mode.Hunt, near);
+                return;
+            }
+
+            // One worth hunting: it waits a while first, watching if it can see them (a second and
+            // a half to five; a third of a second to one, if they bleed), then comes out.
+            if (timer % 30 == 0)
+            {
+                if (!HuntWorth(p))
+                {
+                    patience = 0;
+                }
+                else if (patience == 0)
+                {
+                    patience = p.bleed ? Main.rand.Next(20, 61) : Main.rand.Next(90, 301);
+                    patiencePrey = near;
+                }
+            }
+        }
+
+        /// <summary>Where a lurking eel looks out from: half a tile out from its crevice's mouth, whatever its head is doing.</summary>
+        private Vector2 Eye => lair.Mouth + new Vector2(lair.Dx, lair.Dy) * 8f;
+
+        /// <summary>
+        /// Its head out of the crevice and turned toward this point: its neck at the crevice's
+        /// mouth, its jaws <see cref="PeekOut"/> pixels past the mouth's middle when straight out,
+        /// turned toward the point as far as <see cref="LookMost"/>, and no further than leaves the
+        /// head's core and its neck in open water (less, then, a quarter at a time; straight out
+        /// at the least, where the crevice opens two cells wide).
+        /// </summary>
+        private Vector2 Peek(Vector2 toward)
+        {
+            Vector2 axis = new Vector2(lair.Dx, lair.Dy);
+            float out0 = axis.ToRotation();
+            Vector2 neck = lair.Mouth + axis * (PeekOut - HeadPivot.X);
+            float want = MathHelper.Clamp(MathHelper.WrapAngle((toward - neck).ToRotation() - out0), -LookMost, LookMost);
+
+            for (int step = 4; step > 0; step--)
+            {
+                Vector2 jaws = neck + (out0 + want * step / 4f).ToRotationVector2() * HeadPivot.X;
+
+                if (OpenAt(jaws, CoreSize / 2f) && OpenAt(Vector2.Lerp(neck, jaws, 0.6f), 8f))
+                    return jaws;
+            }
+
+            return lair.Mouth + axis * PeekOut;
+        }
+
+        /// <summary>The nearest place about this one, within twelve pixels, where the head's core is clear of the rock (the eight ways, a pixel further each time); this one if there is none.</summary>
+        private static Vector2 Unstick(Vector2 at)
+        {
+            for (int r = 1; r <= 12; r++)
+            {
+                for (int k = 0; k < 8; k++)
+                {
+                    Vector2 tried = at + (k * MathHelper.PiOver4).ToRotationVector2() * r;
+
+                    if (OpenAt(tried, CoreSize / 2f - 1f))
+                        return tried;
+                }
+            }
+
+            return at;
+        }
+
+        /// <summary>The way straight from here to there clear for the head's core, looked at every four pixels.</summary>
+        private static bool Clear(Vector2 from, Vector2 to)
+        {
+            int steps = (int)(Vector2.Distance(from, to) / 4f);
+
+            for (int i = 1; i <= steps; i++)
+            {
+                if (!OpenAt(Vector2.Lerp(from, to, (float)i / steps), CoreSize / 2f))
+                    return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>No rock in the square this far about this point.</summary>
+        private static bool OpenAt(Vector2 at, float half)
+        {
+            int x0 = (int)Math.Floor((at.X - half) / 16f), x1 = (int)Math.Floor((at.X + half - 0.01f) / 16f);
+            int y0 = (int)Math.Floor((at.Y - half) / 16f), y1 = (int)Math.Floor((at.Y + half - 0.01f) / 16f);
+
+            for (int x = x0; x <= x1; x++)
+            {
+                for (int y = y0; y <= y1; y++)
+                {
+                    if (EelLairs.Rock(x, y))
+                        return false;
+                }
+            }
+
+            return true;
         }
 
         /// <summary>The nearest player living, and how far.</summary>
@@ -921,16 +1380,77 @@ namespace PisAndDag.Content.NPCs.Deep
         {
             int reach = player.bleed ? SmellTiles : HuntTiles;
 
-            if (!GoneDeep(player) || player.Distance(NPC.Center) > reach * 16f)
+            // Lurking, reckoned from its crevice's mouth, wherever its head is turned.
+            Vector2 from = mode == Mode.Lurk && lairKnown ? lair.Mouth : NPC.Center;
+
+            if (!GoneDeep(player) || player.Distance(from) > reach * 16f)
                 return false;
 
             Chart(player.Center);
 
-            if (!Way(out _, out int steps))
+            if (!Way(from, out _, out int steps))
                 return false;
 
             return steps <= reach;
         }
+
+        /// <summary>
+        /// Drawing its head back a moment before it goes: from its crevice, into it, its jaws
+        /// <see cref="DrawBack"/> pixels inside the mouth, over <see cref="CoilTicks"/>; hunting,
+        /// back along its own body, slowing to nothing, over <see cref="LungeCoilTicks"/>. Then it
+        /// strikes, or lunges (if the way straight at them is still clear for its head; else on
+        /// hunting, to come nearer); the prey gone meanwhile, back into its crevice, or home.
+        /// </summary>
+        private void Coil()
+        {
+            NPC.velocity = Vector2.Zero;
+            bool fromLair = coilInto == Mode.Strike && lairKnown;
+            int ticks = coilInto == Mode.Strike ? CoilTicks : LungeCoilTicks;
+
+            if (timer == 1)
+            {
+                coilFrom = NPC.Center;
+
+                if (fromLair)
+                {
+                    Lay();
+                    Rewind(DrawBack);
+                }
+            }
+
+            if (fromLair)
+            {
+                float t = Math.Min(1f, timer / (float)ticks);
+                NPC.Center = Vector2.Lerp(coilFrom, TrailAt(trailCount - 1), t * t * (3f - 2f * t));
+            }
+            else if (trailCount > 1)
+            {
+                Rewind(CoilBackSpeed);
+                NPC.Center = TrailAt(trailCount - 1);
+            }
+
+            if (timer < ticks || !Deciding)
+                return;
+
+            balked = false;
+
+            if (!Fair(prey))
+            {
+                Become(coilInto == Mode.Strike ? Mode.Recoil : lairKnown ? Mode.Home : Mode.Leave);
+            }
+            else if (coilInto == Mode.Lunge && !Clear(NPC.Center, Main.player[prey].Center))
+            {
+                balked = true;
+                Become(Mode.Hunt);
+            }
+            else
+            {
+                Become(coilInto);
+            }
+        }
+
+        /// <summary>Its last coil to lunge given up (the way not clear): it waits a second before it coils again (where it is decided).</summary>
+        private bool balked;
 
         private void Strike()
         {
@@ -957,7 +1477,7 @@ namespace PisAndDag.Content.NPCs.Deep
 
             bool done = timer >= StrikeTicks
                 || lairKnown && Vector2.Distance(NPC.Center, lair.Mouth) > StrikeReach * 16f
-                || NPC.Distance(p.Center) < 18f
+                || NPC.Distance(p.Center) < 24f
                 || timer > 4 && NPC.velocity.Length() < 2f;
 
             if (done && Deciding)
@@ -997,6 +1517,16 @@ namespace PisAndDag.Content.NPCs.Deep
             }
         }
 
+        /// <summary>
+        /// After them through the caves by the chart (<see cref="Way"/>, keeping to the rock):
+        /// stalking, slow, the body in long waves (<see cref="StalkSpeed"/>, <see cref="CruiseSpeed"/>
+        /// while more than forty steps off), and every <see cref="StalkBeat"/> ticks stopping
+        /// <see cref="PauseTicks"/> to taste the water, its head turning; seeing them within
+        /// <see cref="CloseTiles"/>, creeping, without stopping; within <see cref="LungeTiles"/>,
+        /// seen, and its turn (<see cref="MyTurn"/>), it coils to lunge; its turn not come, it
+        /// holds off, circling them (<see cref="Circle"/>). Where it is decided, it gives them up
+        /// as before (<see cref="LoseTiles"/>, out of the caves, too long too far).
+        /// </summary>
         private void Hunt()
         {
             if (!Fair(prey))
@@ -1012,11 +1542,14 @@ namespace PisAndDag.Content.NPCs.Deep
             if (chartAge++ >= 30 || Math.Abs(CellOf(p.Center).X - chartGoal.X) > 4 || Math.Abs(CellOf(p.Center).Y - chartGoal.Y) > 4)
                 Chart(p.Center);
 
-            Vector2 toward;
-            bool onChart = Way(out toward, out int steps);
+            bool onChart = Way(out Vector2 toward, out int steps);
 
             if (!onChart)
                 toward = p.Center;
+
+            float distance = NPC.Distance(p.Center);
+            bool seen = distance < CloseTiles * 16f && Sees(p);
+            bool turn = MyTurn(p);
 
             if (Deciding)
             {
@@ -1029,22 +1562,88 @@ namespace PisAndDag.Content.NPCs.Deep
                     return;
                 }
 
-                if (timer > 20 && NPC.Distance(p.Center) < LungeTiles * 16f && Sees(p))
+                // Lunging only where the way to them is all but straight (by the chart, a head its
+                // size can take it), so that it does not go at them through a gap it cannot pass.
+                // And from where it will be once coiled (drawn back along its own body).
+                if (timer > (balked ? 60 : 20) && distance < LungeTiles * 16f && seen && turn && onChart && steps <= distance / 16f * 1.25f + 3f
+                    && Clear(Back(LungeCoilTicks * CoilBackSpeed), p.Center))
                 {
-                    Become(Mode.Lunge);
+                    CoilFor(Mode.Lunge);
                     return;
                 }
             }
 
-            // Waving as it goes, the whole body after it.
-            float heading = (toward - NPC.Center).ToRotation() + 0.35f * (float)Math.Sin(timer * 0.22f);
-            NPC.velocity = Vector2.Lerp(NPC.velocity, heading.ToRotationVector2() * HuntSpeed, 0.1f);
+            if (!turn && seen && distance < (HoldOffTiles + 2f) * 16f)
+            {
+                Circle(p, distance);
+                return;
+            }
+
+            if (Pausing && !seen)
+            {
+                // Stopped, tasting the water: the way it was going let go, the head turning a
+                // little either way.
+                Vector2 body = (NPC.Center - placed[1]).SafeNormalize(Vector2.UnitX);
+                NPC.velocity = NPC.velocity * 0.86f + new Vector2(-body.Y, body.X) * (float)Math.Sin(timer * 0.25f) * 1.6f;
+                return;
+            }
+
+            float speed = seen ? CreepSpeed : steps > 40 ? CruiseSpeed : StalkSpeed;
+            float heading = (toward - NPC.Center).ToRotation() + 0.28f * (float)Math.Sin(timer * 0.16f);
+            NPC.velocity = Vector2.Lerp(NPC.velocity, heading.ToRotationVector2() * speed, 0.08f);
         }
 
+        /// <summary>Hunting, stopped a while to taste the water (the last <see cref="PauseTicks"/> of every <see cref="StalkBeat"/>, each eel on its own beat).</summary>
+        private bool Pausing => mode == Mode.Hunt && (timer + Id % StalkBeat) % StalkBeat >= StalkBeat - PauseTicks;
+
+        /// <summary>
+        /// Its turn to go in at its prey: no other of its kind after them coiling to lunge,
+        /// lunging or shaking them, and none hunting them nearer them by a tile and a half.
+        /// </summary>
+        private bool MyTurn(Player p)
+        {
+            float mine = NPC.Distance(p.Center);
+
+            foreach (NPC other in Main.ActiveNPCs)
+            {
+                if (other.whoAmI == NPC.whoAmI || other.ModNPC is not CreviceEelHead eel || eel.prey != prey)
+                    continue;
+
+                if (eel.mode == Mode.Coil && eel.coilInto == Mode.Lunge || eel.mode == Mode.Lunge || eel.Shaking)
+                    return false;
+
+                if (eel.mode == Mode.Hunt && other.Distance(p.Center) + 24f < mine)
+                    return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Holding off, its turn not come: round its prey at <see cref="HoldOffTiles"/> tiles, one
+        /// way (<see cref="side"/>) till the rock turns it back (where it is decided).
+        /// </summary>
+        private void Circle(Player p, float distance)
+        {
+            Vector2 outward = (NPC.Center - p.Center) / Math.Max(1f, distance);
+            Vector2 round = new Vector2(-outward.Y, outward.X) * side;
+            Vector2 want = round * CircleSpeed + outward * MathHelper.Clamp((HoldOffTiles * 16f - distance) * 0.03f, -2f, 2f);
+
+            NPC.velocity = Vector2.Lerp(NPC.velocity, want, 0.07f);
+
+            if (Deciding && (NPC.collideX || NPC.collideY) && timer % 15 == 0)
+            {
+                side = (sbyte)-side;
+                NPC.netUpdate = true;
+            }
+        }
+
+        /// <summary>Straight at them, fast, where they will be, its mouth wide; ended on them, it has bitten (<see cref="bit"/>).</summary>
         private void Lunge()
         {
             if (!Fair(prey))
             {
+                bit = false;
                 Become(Mode.Recover);
                 return;
             }
@@ -1060,29 +1659,134 @@ namespace PisAndDag.Content.NPCs.Deep
                     SoundEngine.PlaySound(Rush, NPC.Center);
             }
 
-            if ((timer >= LungeTicks || timer > 4 && NPC.velocity.Length() < 3f) && Deciding)
+            bool reached = NPC.Distance(p.Center) < 30f;
+
+            if ((timer >= LungeTicks || reached || timer > 4 && NPC.velocity.Length() < 3f) && Deciding)
             {
                 if (!Main.dedServ)
                     SoundEngine.PlaySound(Snap, NPC.Center);
 
+                bit = reached;
                 Become(Mode.Recover);
             }
         }
 
+        /// <summary>After a lunge that ended on its prey, shaking it, its head thrown from side to side.</summary>
+        private bool Shaking => mode == Mode.Recover && bit && timer <= ShakeTicks;
+
+        /// <summary>
+        /// After a lunge: if it bit, shaking them (<see cref="ShakeTicks"/>); then backing off the
+        /// way it came, tail first, along its own body (<see cref="BackOffTicks"/>), and a moment
+        /// still; then after them again, or home.
+        /// </summary>
         private void Recover()
         {
-            NPC.velocity *= 0.9f;
+            if (Shaking)
+            {
+                Vector2 body = (NPC.Center - placed[1]).SafeNormalize(Vector2.UnitX);
+                NPC.velocity = new Vector2(-body.Y, body.X) * (float)Math.Sin(timer * 1.2f) * 3.5f;
+                return;
+            }
 
-            if (timer >= RecoverTicks && Deciding)
+            int back = timer - (bit ? ShakeTicks : 0);
+            NPC.velocity = Vector2.Zero;
+
+            if (back <= BackOffTicks && trailCount > 1)
+            {
+                Rewind(BackOffSpeed);
+                NPC.Center = TrailAt(trailCount - 1);
+            }
+
+            if (back >= BackOffTicks + 6 && Deciding)
                 Become(Fair(prey) ? Mode.Hunt : lairKnown ? Mode.Home : Mode.Leave);
         }
 
-        /// <summary>Back to its crevice through the caves, into it head first, and gone; or, if it cannot get there, away.</summary>
+        // ---- the way home -----------------------------------------------------------------------
+
+        /// <summary>Tiles about it a crevice is looked for in, when it cannot get to its own.</summary>
+        public const int AdoptTiles = 100;
+
+        /// <summary>
+        /// The way it is following home (cells, from the first after where it was when the way was
+        /// found: <see cref="EelWays"/>), the cell of it it is at, and ticks since it was found.
+        /// </summary>
+        private readonly List<Point> way = new List<Point>();
+        private int wayAt, wayAge;
+
+        /// <summary>Where it was two seconds ago on its way home, and how many times running it has made no headway since.</summary>
+        private Vector2 wayCheck;
+        private int stuckFor;
+
+        /// <summary>A way from where its head is to this place, followed from its start; false if there is none.</summary>
+        private bool WayTo(Vector2 goal)
+        {
+            wayAt = 0;
+            wayAge = 0;
+            return EelWays.Find(CellOf(NPC.Center), CellOf(goal), way);
+        }
+
+        /// <summary>
+        /// Where to swim for on the way found: three cells on from the cell of it nearest the head
+        /// (looked for a little back and on from the last). False if it has strayed more than three
+        /// cells from the way, or there is none.
+        /// </summary>
+        private bool Along(out Vector2 toward)
+        {
+            toward = NPC.Center;
+            int best = -1;
+            float nearest = float.MaxValue;
+
+            for (int i = Math.Max(0, wayAt - 4); i < Math.Min(way.Count, wayAt + 12); i++)
+            {
+                float d = Vector2.DistanceSquared(MiddleOf(way[i].X, way[i].Y), NPC.Center);
+
+                if (d < nearest)
+                {
+                    nearest = d;
+                    best = i;
+                }
+            }
+
+            if (best < 0 || nearest > 48f * 48f)
+                return false;
+
+            wayAt = best;
+            int ahead = Math.Min(way.Count - 1, best + 3);
+            toward = MiddleOf(way[ahead].X, way[ahead].Y);
+            return true;
+        }
+
+        /// <summary>The nearest free crevice it can get to (and its body fits) taken for its own, on its way home to it; false if there is none within <see cref="AdoptTiles"/> tiles.</summary>
+        private bool Adopt()
+        {
+            if (!Deciding || !CreviceEelSpawns.Nearest(this, CellOf(NPC.Center), AdoptTiles, way, out EelLair found))
+                return false;
+
+            lair = found;
+            lairKnown = true;
+            inside = false;
+            stuckFor = 0;
+            Become(Mode.Home);
+            wayAt = 0;
+            wayAge = 0;
+            return true;
+        }
+
+        /// <summary>
+        /// Back to its crevice, into it head first, and gone, by request ("they should have smart ai
+        /// to find their way back inside"): by the shortest way through the water a head its size
+        /// can take, from wherever it is (<see cref="EelWays"/>), found again every two seconds, if
+        /// it strays from it, or if it makes no headway; if there is no way to its own crevice, or
+        /// it is stuck three times running, the nearest free crevice it can get to becomes its own
+        /// (<see cref="Adopt"/>); with none, away (<see cref="Leave"/>).
+        /// </summary>
         private void Home()
         {
             if (!lairKnown)
             {
-                Become(Mode.Leave);
+                if (Deciding && !Adopt())
+                    Become(Mode.Leave);
+
                 return;
             }
 
@@ -1119,26 +1823,57 @@ namespace PisAndDag.Content.NPCs.Deep
                 return;
             }
 
-            if (chartAge++ >= 30 || chartGoal != CellOf(lair.Mouth))
-                Chart(lair.Mouth);
-
-            if (!Way(out Vector2 toward, out _))
+            // The way home: found when first wanted, every two seconds, and when it has strayed.
+            if (way.Count == 0 || wayAge++ >= 120 || !Along(out Vector2 toward))
             {
-                lost++;
+                if (!WayTo(lair.Mouth) || !Along(out toward))
+                {
+                    toward = lair.Mouth;
 
-                if (lost > 180 && Deciding)
-                    Become(Mode.Leave);
+                    if (Deciding && !Adopt())
+                    {
+                        Become(Mode.Leave);
+                        return;
+                    }
+                }
+            }
 
-                toward = lair.Mouth;
+            // No headway in two seconds: the way found again; three times running, another crevice.
+            if (timer % 120 == 0 && timer > 0)
+            {
+                if (Vector2.Distance(NPC.Center, wayCheck) < 32f)
+                {
+                    wayAge = 120;
+
+                    if (++stuckFor >= 3 && Deciding)
+                    {
+                        stuckFor = 0;
+
+                        if (!Adopt())
+                        {
+                            Become(Mode.Leave);
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    stuckFor = 0;
+                }
+
+                wayCheck = NPC.Center;
             }
 
             float heading = (toward - NPC.Center).ToRotation() + 0.3f * (float)Math.Sin(timer * 0.2f);
             NPC.velocity = Vector2.Lerp(NPC.velocity, heading.ToRotationVector2() * HomeSpeed, 0.1f);
         }
 
-        /// <summary>Away from whoever is nearest, and gone once nobody can see it.</summary>
+        /// <summary>With no crevice to go to: home to one it can get to after all if there is one (looked for every two seconds), else away from whoever is nearest, and gone once nobody can see it.</summary>
         private void Leave()
         {
+            if (Deciding && timer % 120 == 1 && Adopt())
+                return;
+
             int near = Nearest(out float distance);
 
             if (near < 0 || distance > 70 * 16f)
@@ -1166,8 +1901,10 @@ namespace PisAndDag.Content.NPCs.Deep
                 {
                     int by = Fair(NPC.lastInteraction) ? NPC.lastInteraction : Nearest(out _);
 
-                    if (Fair(by))
-                        Become(mode == Mode.Lurk && NPC.Distance(Main.player[by].Center) < 12 * 16f ? Mode.Strike : Mode.Hunt, by);
+                    if (Fair(by) && mode == Mode.Lurk && NPC.Distance(Main.player[by].Center) < 12 * 16f)
+                        CoilFor(Mode.Strike, by);
+                    else if (Fair(by))
+                        Become(Mode.Hunt, by);
                 }
             }
 
@@ -1181,7 +1918,7 @@ namespace PisAndDag.Content.NPCs.Deep
             {
                 Place();
 
-                for (int k = 1; k <= Segments; k++)
+                for (int k = 1; k <= Length; k++)
                 {
                     for (int i = 0; i < 3; i++)
                         Dust.NewDust(placed[k] - new Vector2(9f), 18, 18, DustID.Blood, 0f, 0f);
@@ -1189,10 +1926,16 @@ namespace PisAndDag.Content.NPCs.Deep
             }
         }
 
+        /// <summary>
+        /// Its bite (the head's only): it tears, the bitten bleeding five to ten seconds; and it
+        /// seizes, the bitten held and pulled along with the head a moment, as a moray's second
+        /// jaws take what it bites and pull it back (CreviceEelSeized; run on the bitten one's own
+        /// machine, where their moving is decided).
+        /// </summary>
         public override void OnHitPlayer(Player target, Player.HurtInfo hurtInfo)
         {
-            // The bite tears: the bitten bleed, five to ten seconds.
             target.AddBuff(BuffID.Bleeding, Main.rand.Next(300, 601));
+            target.GetModPlayer<CreviceEelSeized>().Seize(NPC, Id);
 
             if (!Main.dedServ)
                 SoundEngine.PlaySound(Snap, NPC.Center);
@@ -1208,20 +1951,29 @@ namespace PisAndDag.Content.NPCs.Deep
             switch (mode)
             {
                 case Mode.Lurk:
-                    // Its breath: the mouth shut, opening, open, closing, over two seconds.
-                    int t = (int)((Main.GameUpdateCount + (uint)(NPC.whoAmI * 17)) % 120);
-                    frame = t < 60 ? 0 : t < 75 ? 1 : t < 95 ? 2 : 1;
+                    // Its breath: the mouth shut, opening, open, closing, over two seconds;
+                    // watching someone, over a little more than one.
+                    int period = watching ? 70 : 120;
+                    frame = Breath((int)((Main.GameUpdateCount + (uint)(NPC.whoAmI * 17)) % (uint)period), period);
+                    break;
+                case Mode.Coil:
+                    // Shut as it draws back; opening as it goes.
+                    frame = timer >= (coilInto == Mode.Strike ? CoilTicks : LungeCoilTicks) - 2 ? 1 : 0;
                     break;
                 case Mode.Strike:
                 case Mode.Lunge:
                     frame = 2;
                     break;
-                case Mode.Recoil:
                 case Mode.Recover:
+                    frame = Shaking ? (timer / 3 % 2 == 0 ? 2 : 1) : 1;
+                    break;
+                case Mode.Recoil:
                     frame = 1;
                     break;
                 case Mode.Hunt:
-                    frame = timer / 20 % 3 == 0 ? 0 : 1;
+                    // Stalking, the mouth working slowly; stopped to taste the water, twice as fast.
+                    int beat = Pausing ? 50 : 100;
+                    frame = Breath(timer % beat, beat);
                     break;
                 default:
                     frame = 0;
@@ -1229,6 +1981,13 @@ namespace PisAndDag.Content.NPCs.Deep
             }
 
             NPC.frame.Y = frame * frameHeight;
+        }
+
+        /// <summary>The mouth through one breath of this many ticks: shut half of it, opening, open, closing.</summary>
+        private static int Breath(int t, int period)
+        {
+            float f = t / (float)period;
+            return f < 0.5f ? 0 : f < 0.625f ? 1 : f < 0.79f ? 2 : 1;
         }
 
         // ---- drawing ----------------------------------------------------------------------------
@@ -1244,6 +2003,7 @@ namespace PisAndDag.Content.NPCs.Deep
             bodyLights = null;
             eyes = null;
             chartQueue = null;
+            chartRoom = null;
         }
 
         private static void Request()
@@ -1268,10 +2028,10 @@ namespace PisAndDag.Content.NPCs.Deep
 
             Place();
 
-            for (int k = Segments; k >= 1; k--)
+            for (int k = Length; k >= 1; k--)
             {
                 Color light = Lighting.GetColor((int)(placed[k].X / 16f), (int)(placed[k].Y / 16f)) * shown;
-                DrawPiece(spriteBatch, placed[k] - screenPos, turned[k], k == Segments ? 2 : k % 2, light, shown, NPC.scale);
+                DrawPiece(spriteBatch, placed[k] - screenPos, turned[k], k == Length ? 2 : k % 2, light, shown, NPC.scale);
             }
 
             DrawHead(spriteBatch, NPC.Center - screenPos, headFacing, NPC.frame, drawColor * shown, shown, NPC.scale);

@@ -287,6 +287,19 @@ namespace PisAndDag.Content.Structures
         private static bool muted;
         private static float saved;
 
+        /// <summary>Ticks left of a hush asked for by something other than the zone.</summary>
+        private static int hushed;
+
+        /// <summary>
+        /// The same quiet, this tick, wherever the player is: for something that silences the world
+        /// for a moment (the Empress's coming, EmpressSky). Asked for every tick it should hold, and
+        /// let go of a tick after it stops being asked, whichever of the two runs first in a tick.
+        /// </summary>
+        public static void Hush()
+        {
+            hushed = 2;
+        }
+
         public override void Load()
         {
             if (!Main.dedServ)
@@ -315,7 +328,12 @@ namespace PisAndDag.Content.Structures
                 && !Main.ingameOptionsWindow
                 && GraveyardZone.Contains(Main.LocalPlayer);
 
-            if (inside)
+            bool hush = hushed > 0 && !Main.gameMenu && !Main.ingameOptionsWindow;
+
+            if (hushed > 0)
+                hushed--;
+
+            if (inside || hush)
                 Mute();
             else
                 Restore();
@@ -341,9 +359,17 @@ namespace PisAndDag.Content.Structures
             muted = false;
         }
 
-        public override void OnWorldUnload() => Restore();
+        public override void OnWorldUnload()
+        {
+            hushed = 0;
+            Restore();
+        }
 
-        public override void PreSaveAndQuit() => Restore();
+        public override void PreSaveAndQuit()
+        {
+            hushed = 0;
+            Restore();
+        }
 
         public override void Unload() => Restore();
     }

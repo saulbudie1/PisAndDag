@@ -47,6 +47,8 @@ namespace PisAndDag.Content.Items.Mage
             ["Draconic"] = (new Color(0xb0, 0xa1, 0x58), new Color(0xdb, 0x18, 0x4c)),
             // The sea's: a deep teal, in the pale of light through water.
             ["Water"] = (new Color(0x0e, 0x3a, 0x52), new Color(0x3f, 0xb8, 0xd6)),
+            // The mushroom caves': the dark under the ground, edged in the blue the caps give off.
+            ["Fungal"] = (new Color(0x1b, 0x15, 0x54), new Color(0x6f, 0xb6, 0xff)),
         };
 
         /// <summary>

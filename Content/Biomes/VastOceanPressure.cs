@@ -19,6 +19,10 @@ namespace PisAndDag.Content.Biomes
     ///
     /// The breaking is done where it was put down from (the player's own machine, or a single
     /// player's game), and in a game with others sent on as any mined tile is.
+    ///
+    /// The place keeps its own ground down there, by request ("Blocks on the sediment cannot be
+    /// broken": VastOcean.KeepsTile); what is put down is noted on every machine as it is put
+    /// down (<see cref="PutDownAt"/>), so that it is not kept, and can crumble.
     /// </summary>
     public class VastOceanPressure : ModSystem
     {
@@ -28,9 +32,45 @@ namespace PisAndDag.Content.Biomes
         /// <summary>Each tile put down down there, what it was and when.</summary>
         private static readonly Dictionary<Point, (ushort type, uint at)> failing = new();
 
-        public override void ClearWorld() => failing.Clear();
+        /// <summary>
+        /// Every tile put down from the 8th section down, by anyone, on every machine: through
+        /// the game's one place for putting a tile down (WorldGen.PlaceTile, by detour), a
+        /// player's own as they put it down, and the server's as it is told of it. The place keeps
+        /// its own ground there (VastOcean.KeepsTile, by request: "Blocks on the sediment cannot be
+        /// broken"); these it does not, so that they can crumble, and be broken before they do.
+        /// </summary>
+        private static readonly HashSet<Point> putDown = new();
 
-        public override void Unload() => failing.Clear();
+        /// <summary>Whether a tile put down by hand is here (or was: a block can only come back by being put down again).</summary>
+        internal static bool PutDownAt(int x, int y) => putDown.Count > 0 && putDown.Contains(new Point(x, y));
+
+        public override void Load()
+        {
+            On_WorldGen.PlaceTile += NotePutDown;
+        }
+
+        public override void ClearWorld()
+        {
+            failing.Clear();
+            putDown.Clear();
+        }
+
+        public override void Unload()
+        {
+            failing.Clear();
+            putDown.Clear();
+        }
+
+        /// <summary>A tile put down in the Vast Ocean from the 8th section down, noted on whatever machine it is put down on; not while the place is being laid out.</summary>
+        private static bool NotePutDown(On_WorldGen.orig_PlaceTile orig, int i, int j, int Type, bool mute, bool forced, int plr, int style)
+        {
+            bool put = orig(i, j, Type, mute, forced, plr, style);
+
+            if (put && !WorldGen.gen && j >= VastOcean.GroundKeptFrom && SubworldKeeper.Current is VastOcean)
+                putDown.Add(new Point(i, j));
+
+            return put;
+        }
 
         internal static void Put(int i, int j, int type)
         {
@@ -52,6 +92,10 @@ namespace PisAndDag.Content.Biomes
 
         public override void PostUpdateEverything()
         {
+            // What was put down and is gone again, forgotten now and then.
+            if (putDown.Count > 0 && Main.GameUpdateCount % 600 == 0)
+                putDown.RemoveWhere(at => !WorldGen.InWorld(at.X, at.Y) || !Main.tile[at.X, at.Y].HasTile);
+
             if (failing.Count == 0)
                 return;
 
