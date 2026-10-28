@@ -7,7 +7,7 @@ using Terraria.ModLoader;
 namespace PisAndDag
 {
     /// <summary>
-    /// Test wind. The O bind steps it; "/wind" steps it too, "/wind 0.5" sets it.
+    /// Test wind. "/wind" steps it, "/wind 0.5" sets it. (The O bind that stepped it is the off hand's now: PADKeybinds.OffHand.)
     ///
     /// Vanilla's own numbers: 0.4 is where it calls a day windy, 0.85 is the most it
     /// ever blows. Current and target both, or the weather drifts it straight back.

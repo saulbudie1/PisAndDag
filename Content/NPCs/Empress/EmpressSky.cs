@@ -387,17 +387,21 @@ namespace PisAndDag.Content.NPCs.Empress
             if (!EmpressSky.Hushed)
                 return;
 
-            // The music, whatever is playing and whatever is coming in, pushed down; the game lifts it
-            // again by itself (a two-hundredth a tick) once nothing pushes.
+            // All the music pushed down: what is playing, what is coming in, and every track still fading out under
+            // them. (Pushing down only the track the game calls its own let the one before it play on: the game fades
+            // an old track out only while the new one can be heard, so with the new one silenced the old one stayed
+            // at its full volume.) The game lifts the one it wants again by itself (a two-hundredth a tick) once
+            // nothing pushes; the others it lets go as ever.
             int playing = Main.curMusic;
-
-            if (playing > 0 && playing < Main.musicFade.Length)
-                Main.musicFade[playing] = Math.Max(0f, Main.musicFade[playing] - MusicDown);
-
             int coming = Main.newMusic;
 
-            if (coming > 0 && coming < Main.musicFade.Length && coming != playing)
-                Main.musicFade[coming] = 0f;
+            for (int i = 1; i < Main.musicFade.Length; i++)
+            {
+                if (i == coming && coming != playing)
+                    Main.musicFade[i] = 0f;
+                else
+                    Main.musicFade[i] = Math.Max(0f, Main.musicFade[i] - MusicDown);
+            }
 
             GraveyardSilence.Hush();
         }

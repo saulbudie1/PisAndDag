@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -41,8 +42,20 @@ namespace PisAndDag.Content.NPCs.Empress
         public static Asset<Texture2D> Arrow;
         public static Asset<Texture2D> Veil;
 
-        /// <summary>The game's own, put back as they were.</summary>
-        private static readonly List<(Asset<Texture2D>[] Array, int Index, Asset<Texture2D> Game)> taken = new();
+        /// <summary>
+        /// Her second half's own body in Legends (her dress gone, her body under it; the places the veil must always cover
+        /// marked in red) and her head and shoulders, laid back over it so the veil never takes them (both two frames, as
+        /// Body.png): the user's. Null if not in the folder (her second half then drawn from Body.png, as before).
+        /// </summary>
+        public static Asset<Texture2D> BodySecond;
+        public static Asset<Texture2D> HeadOver;
+
+        /// <summary>
+        /// The game's own, put back as they were: into whichever array holds them at the time (asked for then, never kept:
+        /// tModLoader makes these arrays anew as it loads and unloads mods, so one kept from Load is no longer the game's
+        /// by Unload, and putting the game's back into it left the mod's own, gone with the mod, in the real one).
+        /// </summary>
+        private static readonly List<(Func<Asset<Texture2D>[]> Array, int Index, Asset<Texture2D> Game)> taken = new();
 
         /// <summary>The mod's own already made premultiplied (Premultiply), each once.</summary>
         private static readonly HashSet<Texture2D> premultiplied = new();
@@ -55,36 +68,91 @@ namespace PisAndDag.Content.NPCs.Empress
             Bow = Mine("Bow");
             Arrow = Mine("Arrow");
             Veil = Mine("Veil");
+            BodySecond = Optional("BodyPhase2");
+            HeadOver = Optional("HeadAndShoulderForPhase2");
 
-            Put(TextureAssets.Npc, NPCID.HallowBoss, "Body");
-            Put(TextureAssets.Npc, NPCID.EmpressButterfly, "Lacewing");
-            Put(TextureAssets.Extra, ExtrasID.HallowBossWings, "WingsGlow");
-            Put(TextureAssets.Extra, ExtrasID.HallowBossArmsLeft, "ArmLeft");
-            Put(TextureAssets.Extra, ExtrasID.HallowBossWingsBack, "WingsBack");
-            Put(TextureAssets.Extra, ExtrasID.HallowBossArmsRight, "ArmRight");
-            Put(TextureAssets.Extra, 178, "LanceLine");
-            Put(TextureAssets.Extra, ExtrasID.HallowBossTentacles, "Streamers");
-            Put(TextureAssets.Extra, ExtrasID.HallowBossSkirt, "Skirt");
-            Put(TextureAssets.NpcHeadBoss, 37, "Head");
-            Put(TextureAssets.Projectile, ProjectileID.HallowBossSplitShotCore, "SplitShotCore");
-            Put(TextureAssets.Projectile, ProjectileID.HallowBossLastingRainbow, "LastingRainbow");
-            Put(TextureAssets.Projectile, ProjectileID.HallowBossRainbowStreak, "RainbowStreak");
-            Put(TextureAssets.Projectile, ProjectileID.HallowBossDeathAurora, "DeathAurora");
-            Put(TextureAssets.Projectile, ProjectileID.FairyQueenLance, "Lance");
-            Put(TextureAssets.Projectile, ProjectileID.FairyQueenSunDance, "SunDance");
+            Put(() => TextureAssets.Npc, NPCID.HallowBoss, "Body");
+            Put(() => TextureAssets.Npc, NPCID.EmpressButterfly, "Lacewing");
+            Put(() => TextureAssets.Extra, ExtrasID.HallowBossWings, "WingsGlow");
+            Put(() => TextureAssets.Extra, ExtrasID.HallowBossArmsLeft, "ArmLeft");
+            Put(() => TextureAssets.Extra, ExtrasID.HallowBossWingsBack, "WingsBack");
+            Put(() => TextureAssets.Extra, ExtrasID.HallowBossArmsRight, "ArmRight");
+            Put(() => TextureAssets.Extra, 178, "LanceLine");
+            Put(() => TextureAssets.Extra, ExtrasID.HallowBossTentacles, "Streamers");
+            Put(() => TextureAssets.Extra, ExtrasID.HallowBossSkirt, "Skirt");
+            Put(() => TextureAssets.NpcHeadBoss, 37, "Head");
+            Put(() => TextureAssets.Projectile, ProjectileID.HallowBossSplitShotCore, "SplitShotCore");
+            Put(() => TextureAssets.Projectile, ProjectileID.HallowBossLastingRainbow, "LastingRainbow");
+            Put(() => TextureAssets.Projectile, ProjectileID.HallowBossRainbowStreak, "RainbowStreak");
+            Put(() => TextureAssets.Projectile, ProjectileID.HallowBossDeathAurora, "DeathAurora");
+            Put(() => TextureAssets.Projectile, ProjectileID.FairyQueenLance, "Lance");
+            Put(() => TextureAssets.Projectile, ProjectileID.FairyQueenSunDance, "SunDance");
+        }
+
+        /// <summary>
+        /// Once every mod's content is set up (the arrays made their final size), each of the mod's own put in the game's
+        /// place again, in the arrays as they now are, should any have been made anew since Load without it.
+        /// </summary>
+        public override void PostSetupContent()
+        {
+            if (Main.dedServ)
+                return;
+
+            foreach ((Func<Asset<Texture2D>[]> array, int index, Asset<Texture2D> _) in taken)
+            {
+                Asset<Texture2D>[] now = array();
+
+                if (now != null && index >= 0 && index < now.Length && mine.TryGetValue((array, index), out Asset<Texture2D> ours))
+                    now[index] = ours;
+            }
         }
 
         public override void Unload()
         {
-            foreach ((Asset<Texture2D>[] array, int index, Asset<Texture2D> game) in taken)
+            foreach ((Func<Asset<Texture2D>[]> array, int index, Asset<Texture2D> game) in taken)
             {
-                if (array != null && index >= 0 && index < array.Length)
-                    array[index] = game;
+                Asset<Texture2D>[] now = array();
+
+                if (now != null && index >= 0 && index < now.Length)
+                    now[index] = game;
             }
 
+            // And then anything of the mod's own still left in the game's arrays, wherever (should anything have copied it
+            // about), put back as the game's own by name: the mod's pictures are gone with it, and one left behind is a
+            // picture with nothing in it, which the game, setting up its own after, cannot measure.
+            Sweep(TextureAssets.Npc, "Images/NPC_");
+            Sweep(TextureAssets.Extra, "Images/Extra_");
+            Sweep(TextureAssets.NpcHeadBoss, "Images/NPC_Head_Boss_");
+            Sweep(TextureAssets.Projectile, "Images/Projectile_");
+
             taken.Clear();
+            mine.Clear();
             premultiplied.Clear();
-            Bow = Arrow = Veil = null;
+            Bow = Arrow = Veil = BodySecond = HeadOver = null;
+        }
+
+        /// <summary>Each of the mod's own in <paramref name="array"/> made the game's own again, by its name (<paramref name="path"/> and its place).</summary>
+        private static void Sweep(Asset<Texture2D>[] array, string path)
+        {
+            if (array == null)
+                return;
+
+            HashSet<Asset<Texture2D>> ours = new(mine.Values);
+
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (array[i] == null || !ours.Contains(array[i]))
+                    continue;
+
+                try
+                {
+                    array[i] = Main.Assets.Request<Texture2D>(path + i, AssetRequestMode.DoNotLoad);
+                }
+                catch
+                {
+                    array[i] = null;
+                }
+            }
         }
 
         /// <summary>
@@ -97,6 +165,9 @@ namespace PisAndDag.Content.NPCs.Empress
             Main.QueueMainThreadAction(() => Premultiply(asset));
             return asset;
         }
+
+        /// <summary>One of the mod's own if it is in the folder, else null.</summary>
+        private static Asset<Texture2D> Optional(string name) => ModContent.HasAsset(Folder + name) ? Mine(name) : null;
 
         /// <summary>
         /// The picture as the game keeps its own: each colour times its own alpha. The game's reader does this to its
@@ -144,14 +215,21 @@ namespace PisAndDag.Content.NPCs.Empress
             }
         }
 
+        /// <summary>The mod's own, by where they go.</summary>
+        private static readonly Dictionary<(Func<Asset<Texture2D>[]>, int), Asset<Texture2D>> mine = new();
+
         /// <summary>The mod's copy in the game's place, the game's kept to be given back.</summary>
-        private static void Put(Asset<Texture2D>[] array, int index, string name)
+        private static void Put(Func<Asset<Texture2D>[]> array, int index, string name)
         {
-            if (array == null || index < 0 || index >= array.Length)
+            Asset<Texture2D>[] now = array();
+
+            if (now == null || index < 0 || index >= now.Length)
                 return;
 
-            taken.Add((array, index, array[index]));
-            array[index] = Mine(name);
+            Asset<Texture2D> ours = Mine(name);
+            taken.Add((array, index, now[index]));
+            mine[(array, index)] = ours;
+            now[index] = ours;
         }
     }
 }

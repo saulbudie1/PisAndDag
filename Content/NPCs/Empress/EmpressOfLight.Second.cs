@@ -472,6 +472,7 @@ namespace PisAndDag.Content.NPCs.Empress
             look.NoArms = true;
             look.Veil = VeilNow(npc);
             look.VeilFlare = VeilFlareNow;
+            look.VeilWhite = scene == Scene.Change ? ChangeVeilWhite() : 0f;
 
             if (at.HasValue)
                 look.At = at.Value;
@@ -633,7 +634,13 @@ namespace PisAndDag.Content.NPCs.Empress
                 spriteBatch.Draw(wings, at, wingFrame, colour, npc.rotation, wingFrame.Size() / 2f, npc.scale * 2f, effects, 0f);
                 spriteBatch.Draw(glow, at, wingFrame, colour, npc.rotation, wingFrame.Size() / 2f, npc.scale * 2f, effects, 0f);
                 spriteBatch.Draw(streamers, at, streamerFrame, colour, npc.rotation, EmpressArt.BodyOrigin, npc.scale, effects, 0f);
-                spriteBatch.Draw(body, at, bodyFrame, colour, npc.rotation, EmpressArt.BodyOrigin, npc.scale, effects, 0f);
+                // Her images as she is now: her own second body, veiled, if she has it.
+                Texture2D now = EmpressVeil.Current;
+
+                if (now != null)
+                    spriteBatch.Draw(now, at, null, colour, npc.rotation, EmpressArt.BodyOrigin, npc.scale, effects, 0f);
+                else
+                    spriteBatch.Draw(body, at, bodyFrame, colour, npc.rotation, EmpressArt.BodyOrigin, npc.scale, effects, 0f);
                 spriteBatch.Draw(leftSheet, at, leftFrame, colour, npc.rotation, leftFrame.Size() / 2f, npc.scale, effects, 0f);
                 spriteBatch.Draw(rightSheet, at, rightFrame, colour, npc.rotation, rightFrame.Size() / 2f, npc.scale, effects, 0f);
             }
@@ -714,6 +721,9 @@ namespace PisAndDag.Content.NPCs.Empress
         {
             if (act == Act.Cage)
                 DrawCageBands(npc);
+
+            if (act == Act.Blade)
+                DrawBladeBands(npc);
         }
 
         // ---- sync ---------------------------------------------------------------------------------------------

@@ -679,6 +679,9 @@ namespace PisAndDag.Content.NPCs.Empress
         /// <summary>The bands of an act (no batch open): the aurora's curtains, the eclipse's ring.</summary>
         private void DrawLegendsBands(NPC npc)
         {
+            if (sawing || sawFade > 0 || scene == Scene.Act && act == Act.Saw)
+                DrawSawBands(npc);
+
             if (scene != Scene.Act)
                 return;
 

@@ -592,6 +592,8 @@ namespace PisAndDag.Content.Combat
 
         internal static void Unload()
         {
+            OverBars = null;
+
             Texture2D oldPool = pool;
             pool = null;
 
@@ -815,6 +817,47 @@ namespace PisAndDag.Content.Combat
             }
         }
 
+        /// <summary>
+        /// What has to read over the bars (words at the foot of the screen, the skip prompt), drawn in interface space
+        /// right after them on the frames they are drawn over everything (BarsOverEverything). On every other frame
+        /// the bars are the first thing in the interface and those draw over them by their own layers.
+        /// </summary>
+        public static event Action<SpriteBatch> OverBars;
+
+        /// <summary>
+        /// The bars are being drawn after everything this frame (the interface hidden by a sequence): anything that would
+        /// sit over them must draw through <see cref="OverBars"/>, not its own layer, or the bars cover it.
+        /// </summary>
+        public static bool BarsOverEverything => Main.hideUI && !Main.gameMenu && (Framed || Shaded || Roaring || Covered || Faded);
+
+        /// <summary>The <see cref="OverBars"/> draws, in interface space (the interface's scale, and the screen's size in it, as its layers have them).</summary>
+        internal static void DrawOverBars(SpriteBatch spriteBatch)
+        {
+            if (OverBars == null)
+                return;
+
+            int width = Main.screenWidth;
+            int height = Main.screenHeight;
+
+            try
+            {
+                Main.screenWidth = (int)(width / Main.UIScale);
+                Main.screenHeight = (int)(height / Main.UIScale);
+
+                spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
+                    DepthStencilState.None, RasterizerState.CullNone, null, Main.UIScaleMatrix);
+
+                OverBars(spriteBatch);
+
+                spriteBatch.End();
+            }
+            finally
+            {
+                Main.screenWidth = width;
+                Main.screenHeight = height;
+            }
+        }
+
         /// <summary>Height of one bar once fully in, in screen pixels, for laying a shot out between them. Zero when the screen is already this wide.</summary>
         public static float FullBarHeight => Math.Max(0f, (Main.screenHeight - Main.screenWidth / Wide) * 0.5f);
 
@@ -957,6 +1000,9 @@ namespace PisAndDag.Content.Combat
             Cinematic.DrawBars(Main.spriteBatch);
 
             Main.spriteBatch.End();
+
+            // What reads over them: drawn here, after them, or they cover it.
+            Cinematic.DrawOverBars(Main.spriteBatch);
         }
     }
 

@@ -16,15 +16,21 @@ namespace PisAndDag.Content.NPCs.Empress
     // strange's mirror shield move ... the more damage the more it cracks. After taking about 2000 of culmilative damage,
     // it pushes at player until it reachs borders and explode."
     //
-    //     RAISE   30   she stops, her free hand out: about her a sphere of glass is made, unseen but for how the world
-    //                  bends through it, and a glint going round its edge as it closes
-    //     HOLD  ≤480   she is still; every blow on her strikes the glass instead, none of it reaching her, and cracks it
-    //                  where it lands, more the harder (the world's own numbers not shown: the glass shows it); at two
-    //                  thousand of it, or eight seconds whichever first,
-    //     PUSH  ≤260   it comes off her at the player, faster and faster, pushing whoever it meets before it, until it
-    //                  meets the border
-    //     BURST   40   and bursts there: glass every way, a blast of light (100 in a normal world, 65 in an expert one,
-    //                  doubled as the game doubles any hostile shot)
+    //     RAISE   30   she stops, her free hand out: in front of her, between her and the player, the world cracks as glass
+    //                  struck: a small star of a crack, a glint
+    //     HOLD  ≤600   she is still; every blow on her strikes the glass instead, none of it reaching her, and cracks it
+    //                  where it comes through it (the world's own numbers not shown: the glass shows it). The crack grows
+    //                  outward with what it takes (and a little with time), a spine across the way to the player and
+    //                  branches off it, forked; its panes are shards, the world in them moved, and again smaller inside each
+    //                  (EmpressBarrier, EmpressMirror). The sphere it guards is still there about her, unseen. At two
+    //                  thousand five hundred of it, or ten seconds whichever first,
+    //     PUSH  ≤260   it comes off her at the player, whole now, at the front of the sphere: faster and faster, pushing
+    //                  whoever it meets before it, until it meets the border
+    //     BURST   40   and bursts there: its shards flying every way, turning, a blast of light (100 in a normal world, 65
+    //                  in an expert one, doubled as the game doubles any hostile shot)
+    //
+    // By request, later: "its size the circle is still there but invisible but its freeform and it expands outwards ...
+    // Make it pretty and make the glass actually have the fracture and repeating effect".
     //
     // What it takes is counted by the server (its word sent); every machine puts back what a blow took of her, as each
     // machine takes it. Each machine cracks the glass where it sees a blow land.
@@ -37,12 +43,16 @@ namespace PisAndDag.Content.NPCs.Empress
         private const int ShieldBurst = 3;
 
         private const int ShieldRaiseTicks = 30;
-        private const int ShieldHoldMost = 480;
+        private const int ShieldHoldMost = 600;
         private const int ShieldBurstTicks = 40;
 
-        /// <summary>The sphere: middle to its edge; what it takes before it goes (by request, "about 2000"); its blast's reach.</summary>
+        /// <summary>
+        /// The sphere: middle to its edge; what it takes before it goes (by request, "about 2000", then "after 2500
+        /// acumulative damage, it pushed towards the player at an increasingly fast speed, and breaks upon reaching the
+        /// arena border"); its blast's reach.
+        /// </summary>
         private const float ShieldRadius = 160f;
-        private const int ShieldBreaks = 2000;
+        private const int ShieldBreaks = 2500;
         private const float ShieldBlast = 380f;
 
         /// <summary>How fast it goes once it comes off her: at first, the most, and how fast it gathers.</summary>
@@ -57,20 +67,33 @@ namespace PisAndDag.Content.NPCs.Empress
         private int shieldTaken;
         private bool shieldOwed;
 
-        /// <summary>A crack in the glass, each machine's own: where on the sphere it struck (its way from her, how far out), how big it has grown, its own seed.</summary>
+        /// <summary>Where a blow came through the glass, each machine's own: how far across it (a share of its whole reach), how much it has taken there, its own seed.</summary>
         private struct GlassCrack
         {
-            public float Angle;
-            public float Out;
+            public float At;
             public float Size;
             public int Seed;
         }
 
         private readonly List<GlassCrack> glass = new();
 
-        /// <summary>The last blow seen: when, and where on the sphere.</summary>
+        /// <summary>The last blow seen: when, and where across the glass; where the blow on its way came from.</summary>
         private uint struckAt;
-        private float struckWay;
+        private float struckOn;
+        private Vector2 blowFrom;
+        private bool blowKnown;
+
+        /// <summary>
+        /// The crack as this machine has it: how far it has grown (0 to 1 of its reach), the way it faces (to the player),
+        /// how far in front of her middle it stands.
+        /// </summary>
+        private float barrierGrow;
+        private float barrierTurn;
+        private float barrierOut;
+
+        /// <summary>The crack's whole reach either way from its middle, at its full growth; how far in front of her it stands as she holds it.</summary>
+        private const float BarrierReach = 190f;
+        private const float BarrierHeld = 104f;
 
         private void PlanShield(NPC npc, Player target)
         {
@@ -110,6 +133,7 @@ namespace PisAndDag.Content.NPCs.Empress
         private void RunShield(NPC npc, Player who, bool entered)
         {
             int t = timer;
+            GrowBarrier(npc, who, entered);
 
             switch (beat)
             {
@@ -121,6 +145,7 @@ namespace PisAndDag.Content.NPCs.Empress
                     {
                         glass.Clear();
                         struckAt = 0;
+                        blowKnown = false;
 
                         if (!Main.dedServ)
                         {
@@ -262,13 +287,20 @@ namespace PisAndDag.Content.NPCs.Empress
 
         public override void ModifyIncomingHit(NPC npc, ref NPC.HitModifiers modifiers)
         {
-            // The game's numbers not shown for blows the glass takes: the glass shows them.
-            if (Shielding)
+            // The game's numbers not shown for blows the glass takes (the glass shows them), nor for blows in the
+            // negative (they heal her: her own green numbers instead).
+            if (Shielding || Inverted(npc))
                 modifiers.HideCombatText();
         }
 
         public override void HitEffect(NPC npc, NPC.HitInfo hit)
         {
+            if (Inverted(npc) && !Shielding)
+            {
+                NegativeHeals(npc, hit.Damage);
+                return;
+            }
+
             if (!Shielding)
                 return;
 
@@ -284,53 +316,122 @@ namespace PisAndDag.Content.NPCs.Empress
             GlassStruck(npc, hit.Damage);
         }
 
-        /// <summary>A blow on the glass, seen: a crack where it lands (toward whoever it came from), or the one there grown; a flash, its sound.</summary>
+        public override void ModifyHitByProjectile(NPC npc, Projectile projectile, ref NPC.HitModifiers modifiers)
+        {
+            if (Shielding)
+            {
+                blowFrom = projectile.Center - projectile.velocity * 2f;
+                blowKnown = true;
+            }
+        }
+
+        public override void ModifyHitByItem(NPC npc, Player player, Item item, ref NPC.HitModifiers modifiers)
+        {
+            if (Shielding)
+            {
+                blowFrom = player.Center;
+                blowKnown = true;
+            }
+        }
+
+        /// <summary>
+        /// The crack's growth, its way and its place, this tick, on every machine: a small star of it as she raises it; then
+        /// growing outward with what it takes, a little with time too; whole as it goes. Turned to the player as she holds it,
+        /// to its way as it goes; in front of her, then at the sphere's front as it goes, where it pushes.
+        /// </summary>
+        private void GrowBarrier(NPC npc, Player who, bool entered)
+        {
+            float want = (who.Center - npc.Center).ToRotation();
+
+            if (beat == ShieldRaise && entered)
+            {
+                barrierGrow = 0f;
+                barrierTurn = want;
+                barrierOut = BarrierHeld;
+            }
+
+            switch (beat)
+            {
+                case ShieldRaise:
+                    barrierGrow = 0.14f * Ease(timer / (float)ShieldRaiseTicks);
+                    barrierTurn = LerpAngle(barrierTurn, want, 0.08f);
+                    break;
+
+                case ShieldHold:
+                    {
+                        float target = Math.Max(0.14f + 0.86f * (float)Math.Pow(ShieldStrain, 0.7), 0.14f + 0.45f * timer / ShieldHoldMost);
+                        barrierGrow += (target - barrierGrow) * 0.1f;
+                        barrierTurn = LerpAngle(barrierTurn, want, 0.05f);
+                        barrierOut = BarrierHeld;
+                        break;
+                    }
+
+                case ShieldPush:
+                    barrierGrow += (1f - barrierGrow) * 0.15f;
+                    barrierTurn = LerpAngle(barrierTurn, actTurn, 0.25f);
+                    barrierOut += (ShieldRadius - 8f - barrierOut) * 0.2f;
+                    break;
+            }
+        }
+
+        /// <summary>A blow on the glass, seen: a crack where it came through (or the one there grown), a ripple in the glass, a flash, its sound.</summary>
         private void GlassStruck(NPC npc, int damage)
         {
             if (Main.dedServ)
                 return;
 
             Player by = npc.lastInteraction >= 0 && npc.lastInteraction < Main.maxPlayers && Main.player[npc.lastInteraction].active ? Main.player[npc.lastInteraction] : Main.LocalPlayer;
-            float way = (by.Center - npc.Center).ToRotation() + Main.rand.NextFloat(-0.4f, 0.4f);
+            Vector2 from = blowKnown ? blowFrom : by.Center;
+            blowKnown = false;
+
+            // Where the line from the blow to her meets the glass's plane, across it.
+            Vector2 face = barrierTurn.ToRotationVector2();
+            Vector2 across = new Vector2(-face.Y, face.X);
+            Vector2 off = from - npc.Center;
+            float forward = Vector2.Dot(off, face);
+            float side = Vector2.Dot(off, across);
+            float y = forward > barrierOut + 1f ? side * barrierOut / forward : side;
+            float on = MathHelper.Clamp(y / BarrierReach, -0.95f, 0.95f);
             float grow = MathHelper.Clamp(damage / 160f, 0.2f, 1.2f);
 
             int nearest = -1;
-            float closest = 0.3f;
+            float closest = 0.07f;
 
             for (int i = 0; i < glass.Count; i++)
             {
-                float off = Math.Abs(MathHelper.WrapAngle(glass[i].Angle - way));
+                float d = Math.Abs(glass[i].At - on);
 
-                if (off < closest)
+                if (d < closest)
                 {
-                    closest = off;
+                    closest = d;
                     nearest = i;
                 }
             }
 
-            if (nearest >= 0 || glass.Count >= 32)
+            if (nearest >= 0 || glass.Count >= 24)
             {
                 if (nearest < 0)
                     nearest = Main.rand.Next(glass.Count);
 
                 GlassCrack crack = glass[nearest];
-                crack.Size = Math.Min(2.2f, crack.Size + grow * 0.5f);
+                crack.Size = Math.Min(2.2f, crack.Size + grow * 0.4f);
                 glass[nearest] = crack;
             }
             else
             {
-                glass.Add(new GlassCrack { Angle = way, Out = Main.rand.NextFloat(0.55f, 0.95f), Size = 0.3f + grow * 0.6f, Seed = Main.rand.Next(1 << 20) });
+                glass.Add(new GlassCrack { At = on, Size = 0.4f + grow * 0.5f, Seed = Main.rand.Next(1 << 20) });
             }
 
             struckAt = Main.GameUpdateCount;
-            struckWay = way;
+            struckOn = on;
 
-            Vector2 at = npc.Center + way.ToRotationVector2() * ShieldRadius * 0.92f;
+            Vector2 at = BarrierPoint(npc, on);
             Sound(EmpressSounds.Crack, at, MathHelper.Lerp(0.4f, -0.3f, grow / 1.2f), 0.55f + 0.3f * grow, 4);
 
             if (Main.rand.NextBool(2))
                 Sound(SoundID.Item27, at, Main.rand.NextFloat(0.3f, 0.9f), 0.3f, 3);
 
+            EmpressWarp.Ripple(at, 7f, 22f, 5f + 4f * grow, 14);
             SparkShard.Spray(at, Color.White, 3 + (int)(grow * 5f), 4f, 30f, 12, palette: EmpressArt.Sparks);
             CombatText.NewText(new Rectangle((int)at.X - 8, (int)at.Y - 8, 16, 16), EmpressArt.Sky, damage, false, true);
         }
@@ -343,11 +444,339 @@ namespace PisAndDag.Content.NPCs.Empress
             DrawSecondHer(npc, spriteBatch, screenPos, bright, 0.35f + 0.25f * ShieldStrain);
         }
 
-        /// <summary>The glass: the world bent through it; its edge, more seen the more it has taken; its cracks; a blow's flash.</summary>
+        // ---- the crack, as it is this frame --------------------------------------------------------------------
+
+        /// <summary>One shard of the crack: its corners (in the shared list), its middle, how the world is moved in it, its flight.</summary>
+        internal struct Shard
+        {
+            public int Start;
+            public int Count;
+            public Vector2 Middle;
+            public Vector2 Shift;
+            public float Zoom;
+            public float Hue;
+            public Vector2 Flown;
+            public float Spin;
+        }
+
+        /// <summary>A line of the crack: its ends, how wide, how bright, its colour's place round her colours.</summary>
+        internal struct CrackLine
+        {
+            public Vector2 A;
+            public Vector2 B;
+            public float Width;
+            public float Light;
+            public float Hue;
+        }
+
+        internal static readonly List<Vector2> BarrierCorners = new();
+        internal static readonly List<Shard> BarrierShards = new();
+        internal static readonly List<CrackLine> BarrierLines = new();
+
+        /// <summary>The crack is up (EmpressMirror draws its shards).</summary>
+        internal bool Barrier => scene == Scene.Act && act == Act.Shield && !dying;
+
+        /// <summary>How much of it is seen: coming as she raises it, going as it bursts.</summary>
+        internal float BarrierShown => beat == ShieldRaise ? Ease(timer / 12f) : beat == ShieldBurst ? 1f - Ease(timer / (float)ShieldBurstTicks) : 1f;
+
+        /// <summary>How far its shards have flown as it bursts (0 to 1).</summary>
+        internal float BarrierFlight => beat == ShieldBurst ? (float)Math.Pow(Ease(timer / (float)ShieldBurstTicks), 0.6) : 0f;
+
+        /// <summary>A point of the crack: its share x toward the player, y across, of its reach now.</summary>
+        private Vector2 BarrierAt(NPC npc, Vector2 q)
+        {
+            Vector2 face = barrierTurn.ToRotationVector2();
+            Vector2 across = new Vector2(-face.Y, face.X);
+            float reach = BarrierReach * Math.Max(0.02f, barrierGrow);
+            return ShieldAt(npc) + face * (barrierOut + q.X * reach) + across * (q.Y * reach);
+        }
+
+        /// <summary>The point on the spine this share of its whole reach across (where a blow came through).</summary>
+        private Vector2 BarrierPoint(NPC npc, float on)
+        {
+            BarrierNet net = BarrierNet.Of(actSeed);
+            float y = MathHelper.Clamp(on / Math.Max(0.05f, barrierGrow), -0.92f, 0.92f);
+            float u = (y + 1f) * 0.5f * BarrierNet.Steps;
+            int i = Math.Clamp((int)u, 0, BarrierNet.Steps - 1);
+            return BarrierAt(npc, Vector2.Lerp(net.Spine[i], net.Spine[i + 1], u - i));
+        }
+
+        /// <summary>
+        /// The crack worked out for this frame, in the world: its lines (the spine, the branches as far as they have come,
+        /// their twigs), its shards (the panes between the spine and each two branches on a side, and beyond them between
+        /// the branches' first and second lengths), each with the world moved in it and, as it bursts, its flight.
+        /// </summary>
+        internal void BuildBarrier(NPC npc)
+        {
+            BarrierCorners.Clear();
+            BarrierShards.Clear();
+            BarrierLines.Clear();
+
+            if (!Barrier || barrierGrow <= 0.003f)
+                return;
+
+            BarrierNet net = BarrierNet.Of(actSeed);
+            float grow = barrierGrow;
+            float time = (float)Main.timeForVisualEffects;
+            Vector2 face = barrierTurn.ToRotationVector2();
+            Vector2 across = new Vector2(-face.Y, face.X);
+            Vector2 heart = BarrierAt(npc, Vector2.Zero);
+            float flight = BarrierFlight;
+
+            Span<Vector2> spine = stackalloc Vector2[BarrierNet.Steps + 1];
+
+            for (int i = 0; i <= BarrierNet.Steps; i++)
+                spine[i] = BarrierAt(npc, net.Spine[i]);
+
+            for (int i = 0; i < BarrierNet.Steps; i++)
+                BarrierLines.Add(new CrackLine { A = spine[i], B = spine[i + 1], Width = 1f, Light = 1f, Hue = i * 0.06f });
+
+            // The branches as far as they have come; and their ends, for the shards.
+            int count = net.Branches.Length;
+            Span<Vector2> first = stackalloc Vector2[count];
+            Span<Vector2> second = stackalloc Vector2[count];
+            Span<float> grown = stackalloc float[count];
+
+            for (int k = 0; k < count; k++)
+            {
+                BarrierNet.Branch branch = net.Branches[k];
+                float g = BarrierNet.Grown(branch, grow);
+                grown[k] = g;
+                Vector2 root = net.Spine[branch.Root];
+                Vector2 previous = spine[branch.Root];
+
+                for (int s = 0; s < branch.Points.Length; s++)
+                {
+                    Vector2 next = BarrierAt(npc, root + branch.Points[s] * g);
+
+                    if (s == 0)
+                        first[k] = next;
+                    else if (s == 1)
+                        second[k] = next;
+
+                    if (g > 0.01f)
+                        BarrierLines.Add(new CrackLine { A = previous, B = next, Width = 0.75f - 0.12f * s, Light = g, Hue = branch.Own + s * 0.1f });
+
+                    previous = next;
+                }
+
+                if (branch.Twigs != null && g > 0.7f)
+                {
+                    Vector2 end = root + branch.Points[^1];
+                    float t = (g - 0.7f) / 0.3f;
+
+                    foreach (Vector2 twig in branch.Twigs)
+                        BarrierLines.Add(new CrackLine { A = previous, B = BarrierAt(npc, end + twig * t), Width = 0.4f, Light = t, Hue = branch.Own + 0.4f });
+                }
+            }
+
+            // The shards, each side of the spine: a pane between each two branches on it that have come (the spine's ends
+            // counted as branches too, short ones), bounded by the spine, the two branches out to their second points, and
+            // the line between those; beyond, between their second and last points, once both have come far.
+            Span<Vector2> third = stackalloc Vector2[count];
+
+            for (int k = 0; k < count; k++)
+            {
+                BarrierNet.Branch branch = net.Branches[k];
+                third[k] = BarrierAt(npc, net.Spine[branch.Root] + branch.Points[^1] * grown[k]);
+            }
+
+            for (int side = -1; side <= 1; side += 2)
+            {
+                int previousK = -1;
+                int previousRoot = 0;
+                Vector2 previousFirst = BarrierAt(npc, net.Spine[0] + new Vector2(side * 0.16f, -0.05f));
+                Vector2 previousSecond = BarrierAt(npc, net.Spine[0] + new Vector2(side * 0.3f, -0.1f));
+
+                for (int k = 0; k <= count; k++)
+                {
+                    bool end = k == count;
+
+                    if (!end && (net.Branches[k].Side != side || grown[k] < 0.2f))
+                        continue;
+
+                    int root = end ? BarrierNet.Steps : net.Branches[k].Root;
+                    Vector2 hereFirst = end ? BarrierAt(npc, net.Spine[BarrierNet.Steps] + new Vector2(side * 0.16f, 0.05f)) : first[k];
+                    Vector2 hereSecond = end ? BarrierAt(npc, net.Spine[BarrierNet.Steps] + new Vector2(side * 0.3f, 0.1f)) : second[k];
+
+                    if (root > previousRoot || end)
+                    {
+                        int start = BarrierCorners.Count;
+
+                        for (int i = previousRoot; i <= root; i++)
+                            BarrierCorners.Add(spine[i]);
+
+                        BarrierCorners.Add(hereFirst);
+                        BarrierCorners.Add(hereSecond);
+                        BarrierCorners.Add(previousSecond);
+                        BarrierCorners.Add(previousFirst);
+                        AddShard(start, heart, face, across, grow, flight, time, side * 31 + k);
+                    }
+
+                    if (!end && previousK >= 0 && grown[k] > 0.75f && grown[previousK] > 0.75f)
+                    {
+                        int start = BarrierCorners.Count;
+                        BarrierCorners.Add(second[previousK]);
+                        BarrierCorners.Add(third[previousK]);
+                        BarrierCorners.Add(third[k]);
+                        BarrierCorners.Add(second[k]);
+                        AddShard(start, heart, face, across, grow, flight, time, side * 53 + k + 400);
+                    }
+
+                    previousRoot = root;
+                    previousFirst = hereFirst;
+                    previousSecond = hereSecond;
+                    previousK = end ? previousK : k;
+                }
+            }
+        }
+
+        /// <summary>
+        /// A shard of the corners from <paramref name="start"/> on: its middle, the world in it moved (toward her, a little
+        /// across, a little nearer), its colour; as it bursts, where it has flown and how it has turned.
+        /// </summary>
+        private void AddShard(int start, Vector2 heart, Vector2 face, Vector2 across, float grow, float flight, float time, int own)
+        {
+            int n = BarrierCorners.Count - start;
+
+            if (n < 3)
+            {
+                BarrierCorners.RemoveRange(start, n);
+                return;
+            }
+
+            Vector2 middle = Vector2.Zero;
+
+            for (int i = start; i < BarrierCorners.Count; i++)
+                middle += BarrierCorners[i];
+
+            middle /= n;
+
+            UnifiedRandomish dice = new UnifiedRandomish(actSeed * 7 + own * 131);
+            float r1 = dice.Next();
+            float r2 = dice.Next();
+            float r3 = dice.Next();
+            float sway = (float)Math.Sin(time * 0.02f + own);
+
+            Vector2 shift = -face * (16f + 30f * r1) * (0.4f + 0.6f * grow) + across * (r2 - 0.5f) * 26f + across * sway * 3f;
+            Vector2 outward = (middle - heart).SafeNormalize(face) + face * 0.4f;
+            Vector2 flown = outward.SafeNormalize(face) * (180f + 220f * r3) * flight + new Vector2(0f, 110f * flight * flight);
+
+            BarrierShards.Add(new Shard
+            {
+                Start = start,
+                Count = n,
+                Middle = middle,
+                Shift = shift,
+                Zoom = 1.05f + 0.08f * r2,
+                Hue = r1 + r3 * 0.5f,
+                Flown = flown,
+                Spin = (r3 - 0.5f) * 5f * flight,
+            });
+        }
+
+        /// <summary>A shard's corner where the shard is now (flown and turned as it bursts).</summary>
+        internal static Vector2 ShardCorner(in Shard shard, Vector2 corner) => shard.Middle + shard.Flown + (corner - shard.Middle).RotatedBy(shard.Spin);
+
+        /// <summary>
+        /// The crack's light, over its shards (or alone, with no shards to draw): each line its colour wide, white down its
+        /// middle; the shards' edges and their smaller selves' (the mirror in the mirror); where blows came through, a star
+        /// of small cracks and a ring; glints running down the spine; the shards' edges flying as it bursts.
+        /// </summary>
+        internal void DrawBarrierLines(NPC npc, SpriteBatch spriteBatch, bool shards)
+        {
+            float shown = BarrierShown;
+            float time = (float)Main.timeForVisualEffects;
+            float flight = BarrierFlight;
+
+            if (shown <= 0.003f)
+                return;
+
+            if (flight <= 0.001f)
+            {
+                foreach (CrackLine l in BarrierLines)
+                {
+                    float glint = 0.75f + 0.25f * (float)Math.Sin(time * 0.1f + l.Hue * 9f);
+                    Color colour = EmpressArt.Prism(l.Hue + time / 240f);
+                    EmpressArt.DrawLine(spriteBatch, l.A, l.B, 7f * l.Width, EmpressArt.Additive(colour, 0.35f * l.Light * shown * glint));
+                    EmpressArt.DrawLine(spriteBatch, l.A, l.B, 1.9f * l.Width + 0.3f, EmpressArt.Additive(Color.White, 0.95f * l.Light * shown));
+                }
+            }
+
+            // The shards' own edges, and their smaller selves': thin, faint, catching the light in turn.
+            foreach (Shard shard in BarrierShards)
+            {
+                for (int depth = 0; depth < (shards ? 3 : 1); depth++)
+                {
+                    float scale = 1f - 0.27f * depth;
+                    float light = (depth == 0 ? (flight > 0f ? 0.9f : 0.25f) : 0.3f) * shown * (0.6f + 0.4f * (float)Math.Sin(time * 0.06f + shard.Hue * 11f + depth));
+                    Color colour = depth == 0 ? Color.White : EmpressArt.Prism(shard.Hue + depth * 0.2f + time / 300f);
+
+                    for (int c = 0; c < shard.Count; c++)
+                    {
+                        Vector2 a = BarrierCorners[shard.Start + c];
+                        Vector2 b = BarrierCorners[shard.Start + (c + 1) % shard.Count];
+                        a = ShardCorner(shard, shard.Middle + (a - shard.Middle) * scale);
+                        b = ShardCorner(shard, shard.Middle + (b - shard.Middle) * scale);
+                        EmpressArt.DrawLine(spriteBatch, a, b, depth == 0 ? 1.4f : 1f, EmpressArt.Additive(colour, light));
+                    }
+                }
+            }
+
+            if (flight > 0.001f)
+                return;
+
+            // Where blows came through: a star of small cracks, a ring or two, a glint.
+            foreach (GlassCrack crack in glass)
+            {
+                Vector2 at = BarrierPoint(npc, crack.At);
+                UnifiedRandomish dice = new UnifiedRandomish(crack.Seed);
+                int rays = 5 + (int)(dice.Next() * 3f);
+                float reach = 10f + 16f * crack.Size;
+
+                for (int r = 0; r < rays; r++)
+                {
+                    float a = (r + dice.Next() * 0.6f) / rays * MathHelper.TwoPi;
+                    Vector2 mid = at + a.ToRotationVector2() * reach * 0.5f;
+                    Vector2 tip = mid + (a + (dice.Next() - 0.5f) * 0.6f).ToRotationVector2() * reach * (0.4f + 0.5f * dice.Next());
+                    EmpressArt.DrawLine(spriteBatch, at, mid, 1.3f, EmpressArt.Additive(Color.White, 0.8f * shown));
+                    EmpressArt.DrawLine(spriteBatch, mid, tip, 1f, EmpressArt.Additive(Color.White, 0.6f * shown));
+                }
+
+                for (int k = 1; k <= (crack.Size > 1f ? 2 : 1); k++)
+                    DrawRing(spriteBatch, at, reach * 0.35f * k, 1.1f, EmpressArt.Additive(Color.White, 0.5f * shown));
+
+                EmpressArt.DrawStar(spriteBatch, at, 22f + 18f * crack.Size, time * 0.03f + crack.Seed, EmpressArt.Additive(Color.White, 0.7f * shown));
+            }
+
+            // Glints running down the spine, out from its middle.
+            BarrierNet net = BarrierNet.Of(actSeed);
+
+            for (int k = 0; k < 4; k++)
+            {
+                float run = (time * 0.012f + k * 0.25f) % 1f;
+                float y = (k % 2 == 0 ? 1f : -1f) * run;
+                float u = (y + 1f) * 0.5f * BarrierNet.Steps;
+                int i = Math.Clamp((int)u, 0, BarrierNet.Steps - 1);
+                Vector2 at = BarrierAt(npc, Vector2.Lerp(net.Spine[i], net.Spine[i + 1], u - i));
+                float twinkle = (float)Math.Sin(run * MathHelper.Pi);
+                EmpressArt.DrawStar(spriteBatch, at, 34f * twinkle + 6f, time * 0.05f + k, EmpressArt.Additive(Color.White, 0.8f * twinkle * shown));
+            }
+        }
+
+        /// <summary>
+        /// Over the players: the crack (its lines here when the world cannot be drawn into its shards; else EmpressMirror
+        /// draws both), the air along it shimmering, a blow's flash; going, images of its spine behind it; bursting, the light.
+        /// </summary>
         private void DrawShieldOver(NPC npc, SpriteBatch spriteBatch)
         {
             float time = (float)Main.timeForVisualEffects;
             Vector2 at = ShieldAt(npc);
+
+            BuildBarrier(npc);
+
+            if (!EmpressMirror.WillDraw)
+                DrawBarrierLines(npc, spriteBatch, false);
 
             if (beat == ShieldBurst)
             {
@@ -355,108 +784,45 @@ namespace PisAndDag.Content.NPCs.Empress
                 return;
             }
 
-            float made = beat == ShieldRaise ? Ease(timer / (float)ShieldRaiseTicks) : 1f;
-            float strain = ShieldStrain;
-            float radius = ShieldRadius * (beat == ShieldRaise ? 0.4f + 0.6f * made : 1f);
+            float shown = BarrierShown;
+            BarrierNet net = BarrierNet.Of(actSeed);
+            Vector2 top = BarrierAt(npc, net.Spine[0]);
+            Vector2 bottom = BarrierAt(npc, net.Spine[BarrierNet.Steps]);
+            EmpressWarp.Haze(top, bottom, 46f, (1.2f + 1.8f * ShieldStrain) * shown, 80f, 0.7f);
 
-            // Unseen but for the world bent through it.
-            EmpressWarp.Lens(at, radius * 1.08f, (0.07f + 0.08f * strain) * made, 0.05f * (float)Math.Sin(time * 0.02f));
+            // Its heart: a soft light where it began.
+            Vector2 heart = BarrierAt(npc, Vector2.Zero);
+            EmpressArt.DrawBloom(spriteBatch, heart, 70f + 90f * barrierGrow, EmpressArt.Additive(EmpressArt.Prism(time / 200f), 0.25f * shown));
 
-            // Its edge: barely there, more seen as it takes; a glint going round it; a pale shine on its upper side.
-            DrawRing(spriteBatch, at, radius, 2f, EmpressArt.Additive(Color.White, (0.08f + 0.45f * strain) * made));
-            DrawRing(spriteBatch, at, radius * 1.01f, 8f, EmpressArt.Additive(EmpressArt.Prism(time / 200f), (0.04f + 0.18f * strain) * made));
+            if (beat == ShieldRaise)
+                EmpressArt.DrawStar(spriteBatch, heart, 120f * Ease(timer / 10f) * (1f - Ease((timer - 10) / 20f)) + 1f, time * 0.04f, EmpressArt.Additive(Color.White, 0.9f));
 
-            float glint = time * 0.04f;
-            EmpressArt.DrawStar(spriteBatch, at + glint.ToRotationVector2() * radius, 34f, glint, EmpressArt.Additive(Color.White, 0.6f * made));
-
-            for (int k = 0; k < 5; k++)
-            {
-                float a = -2.2f + k * 0.12f;
-                Vector2 p1 = at + a.ToRotationVector2() * radius * 0.82f;
-                Vector2 p2 = at + (a + 0.12f).ToRotationVector2() * radius * 0.82f;
-                EmpressArt.DrawLine(spriteBatch, p1, p2, 4f, EmpressArt.Additive(Color.White, (0.08f + 0.15f * strain) * made));
-            }
-
-            // A blow: a flash where it landed, a ring of it going round.
+            // A blow: a flash where it came through.
             uint since = Main.GameUpdateCount - struckAt;
 
             if (struckAt != 0 && since < 14 && beat == ShieldHold)
             {
                 float fade = 1f - since / 14f;
-                Vector2 hit = at + struckWay.ToRotationVector2() * radius * 0.92f;
+                Vector2 hit = BarrierPoint(npc, struckOn);
                 EmpressArt.DrawBloom(spriteBatch, hit, 90f, EmpressArt.Additive(Color.White, 0.7f * fade));
-                DrawRing(spriteBatch, at, radius, 6f * fade, EmpressArt.Additive(EmpressArt.Sky, 0.45f * fade));
+                EmpressArt.DrawStar(spriteBatch, hit, 70f * fade, time * 0.1f, EmpressArt.Additive(EmpressArt.Sky, 0.7f * fade));
             }
 
-            // The cracks.
-            foreach (GlassCrack crack in glass)
-                DrawGlassCrack(spriteBatch, at, radius, crack, time);
-
-            // Going: images of its edge behind it.
+            // Going: images of its spine behind it.
             if (beat == ShieldPush)
             {
                 Vector2 back = -actTurn.ToRotationVector2();
                 float speed = Math.Min(ShieldMost, ShieldStart + ShieldGather * timer);
 
                 for (int k = 1; k <= 4; k++)
-                    DrawRing(spriteBatch, at + back * speed * k * 1.6f, radius, 3f, EmpressArt.Additive(EmpressArt.Prism(k / 5f + time / 100f), 0.18f * (1f - k / 5f)));
-            }
-        }
-
-        /// <summary>One crack, struck glass's: lines out every way from where it struck, jagged, and rings round it, kept inside the sphere.</summary>
-        private static void DrawGlassCrack(SpriteBatch spriteBatch, Vector2 centre, float radius, GlassCrack crack, float time)
-        {
-            UnifiedRandomish dice = new UnifiedRandomish(crack.Seed);
-            Vector2 struck = centre + crack.Angle.ToRotationVector2() * radius * crack.Out;
-            int rays = 5 + (int)(dice.Next() * 4f);
-            float reach = radius * (0.25f + 0.35f * crack.Size);
-
-            for (int r = 0; r < rays; r++)
-            {
-                float a = (r + dice.Next() * 0.6f) / rays * MathHelper.TwoPi;
-                float length = reach * (0.5f + 0.6f * dice.Next());
-                Vector2 previous = struck;
-                float hue = dice.Next();
-
-                for (int s = 1; s <= 3; s++)
                 {
-                    a += (dice.Next() - 0.5f) * 0.6f;
-                    Vector2 next = previous + a.ToRotationVector2() * length / 3f;
+                    Vector2 by = back * speed * k * 1.6f;
+                    Color colour = EmpressArt.Additive(EmpressArt.Prism(k / 5f + time / 100f), 0.3f * (1f - k / 5f));
 
-                    // Kept inside the glass.
-                    if (Vector2.Distance(next, centre) > radius)
-                        next = centre + (next - centre).SafeNormalize(Vector2.UnitX) * radius;
-
-                    float glint = 0.6f + 0.4f * (float)Math.Sin(time * 0.12f + r + s);
-                    EmpressArt.DrawLine(spriteBatch, previous, next, 5f, EmpressArt.Additive(EmpressArt.Prism(hue + s * 0.1f + time / 240f), 0.4f * glint));
-                    EmpressArt.DrawLine(spriteBatch, previous, next, 1.4f, EmpressArt.Additive(Color.White, 0.85f * glint));
-                    previous = next;
+                    for (int i = 0; i < BarrierNet.Steps; i++)
+                        EmpressArt.DrawLine(spriteBatch, BarrierAt(npc, net.Spine[i]) + by, BarrierAt(npc, net.Spine[i + 1]) + by, 5f, colour);
                 }
             }
-
-            // Rings round where it struck, as a struck mirror breaks.
-            int rings = crack.Size > 1f ? 2 : 1;
-
-            for (int k = 1; k <= rings; k++)
-            {
-                float r = reach * 0.28f * k;
-                int steps = 10 + 4 * k;
-                Vector2 previous = struck + new Vector2(r, 0f);
-
-                for (int i = 1; i <= steps; i++)
-                {
-                    float a = i / (float)steps * MathHelper.TwoPi;
-                    float wobble = 1f + 0.18f * (dice.Next() - 0.5f);
-                    Vector2 next = struck + a.ToRotationVector2() * r * wobble;
-
-                    if (Vector2.Distance(next, centre) <= radius && Vector2.Distance(previous, centre) <= radius)
-                        EmpressArt.DrawLine(spriteBatch, previous, next, 1.2f, EmpressArt.Additive(Color.White, 0.6f));
-
-                    previous = next;
-                }
-            }
-
-            EmpressArt.DrawStar(spriteBatch, struck, 26f + 20f * crack.Size, time * 0.03f + crack.Seed, EmpressArt.Additive(Color.White, 0.7f));
         }
 
         /// <summary>The glass gone: its pieces flying out, turning, edged in her colours; a flash, rings.</summary>

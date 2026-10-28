@@ -209,6 +209,9 @@ namespace PisAndDag.Content.NPCs.Empress
             public float Veil;
             public float VeilFlare;
 
+            /// <summary>Her change: the veil's streaks filled white, fading to clear (1 white, 0 clear).</summary>
+            public float VeilWhite;
+
             public static Look Of(NPC npc) => new Look
             {
                 At = npc.Center,
@@ -312,22 +315,37 @@ namespace PisAndDag.Content.NPCs.Empress
             Texture2D rim = null;
             Texture2D veiledWhite = null;
             Texture2D veiledSkirt = null;
+            Texture2D veiledStreaks = null;
 
             if (second && look.Veil > 0.003f && !npc.IsABestiaryIconDummy)
-                veiled = EmpressVeil.BodyNow(npc, 1, look.Veil, out rim, out veiledWhite, out veiledSkirt);
+                veiled = EmpressVeil.BodyNow(npc, 1, look.Veil, out rim, out veiledWhite, out veiledSkirt, out veiledStreaks);
 
             if (veiled != null)
             {
                 spriteBatch.Draw(veiled, at, null, colour, turn, half, size, effects, 0f);
+
+                // As she changes: the streaks white, solid at first, slowly going clear (by request: "it should have a
+                // white streak right away and slowly transparent cuz without streak it would look naked").
+                if (veiledStreaks != null && look.VeilWhite > 0.003f)
+                    spriteBatch.Draw(veiledStreaks, at, null, Color.White * (look.VeilWhite * look.Opacity), turn, half, size, effects, 0f);
+
                 EmpressVeil.DrawRim(spriteBatch, rim, at, turn, half, size, effects, look.Opacity, look.VeilFlare);
+
+                // Her head and shoulders laid back over her own second body, so the veil never takes them.
+                if (EmpressVeil.PhaseTwoBody && Ready(EmpressTextures.HeadOver))
+                {
+                    Texture2D head = EmpressTextures.HeadOver.Value;
+                    spriteBatch.Draw(head, at, head.Frame(1, 2, 0, 1), colour, turn, half, size, effects, 0f);
+                }
             }
             else
             {
                 spriteBatch.Draw(body, at, bodyFrame, colour, turn, half, size, effects, 0f);
             }
 
-            // The glow over her dress, in her pulsing light; with her veil, cut where its streaks are.
-            if (second)
+            // The glow over her dress, in her pulsing light; with her veil, cut where its streaks are; none over her own
+            // second body, which has no dress for it to glow over.
+            if (second && !(veiled != null && EmpressVeil.PhaseTwoBody))
             {
                 Texture2D skirt = veiled != null && veiledSkirt != null ? veiledSkirt : Skirt;
 

@@ -19,14 +19,14 @@ namespace PisAndDag.Content.Items.Mage.Incantation
     /// lets the last one wither.
     ///
     /// The incantation for the first days the checklist asked for: a chest in the mushroom caves
-    /// (FairyRingPass, every new world, and /struct update), and the Spore Zombies, one in
-    /// <see cref="SporeZombieChance"/> (VanillaLoot). Lore: §XXVIII, "the only place where things
+    /// (FairyRingPass, every new world, and /struct update), and anything killed in the mushroom caves
+    /// underground, one in <see cref="DropChance"/> (VanillaLoot). Lore: §XXVIII, "the only place where things
     /// finish"; §XXIV, the element is the place it was drawn from.
     /// </summary>
     public class MyceliumFinishThem : Castable
     {
-        /// <summary>One in this many Spore Zombies drops it.</summary>
-        public const int SporeZombieChance = 25;
+        /// <summary>One in this many kills in the mushroom caves underground drops it (by request: "1/8").</summary>
+        public const int DropChance = 8;
 
         public override CastKind Kind => CastKind.Incantation;
         public override int CastDamage => 14;

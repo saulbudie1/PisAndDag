@@ -27,7 +27,8 @@ namespace PisAndDag.Content.Projectiles.Magic
     /// ai[0] is the ticks left: every Cold Call cast sets it to the length of that cast, the
     /// wait after it, and two ticks more (ColdCall.Cast), so the staff stays up from cast to
     /// cast without blinking, and goes down after the last one even if something else is cast
-    /// next.
+    /// next. ai[1] is the light at the staff's head: 0 Cold Call's ice, 1 Dancing Sand's warm
+    /// dust (<see cref="Keep"/>, for any spell held at the mouth).
     /// </summary>
     public class ColdCallHold : ModProjectile
     {
@@ -69,6 +70,34 @@ namespace PisAndDag.Content.Projectiles.Magic
 
         public override bool? CanDamage() => false;
 
+        private static readonly Color SandLight = new Color(214, 170, 100);
+
+        /// <summary>
+        /// The staff to this player's mouth for so many ticks more: the hold that is up given the
+        /// new count, or a new one. <paramref name="light"/> is ai[1] (the light at its head).
+        /// What ColdCall.Cast does by hand, for any other spell held at the mouth.
+        /// </summary>
+        public static void Keep(Player player, IEntitySource source, float ticks, float light)
+        {
+            int hold = ModContent.ProjectileType<ColdCallHold>();
+
+            foreach (Projectile p in Main.ActiveProjectiles)
+            {
+                if (p.owner == player.whoAmI && p.type == hold)
+                {
+                    p.ai[0] = ticks;
+                    p.ai[1] = light;
+
+                    // Not netUpdate: this is no part of its own update, and the game forgets
+                    // that one before it looks (Projectile.Update). This one it keeps.
+                    p.netUpdate2 = true;
+                    return;
+                }
+            }
+
+            Projectile.NewProjectile(source, HeadOf(player), Vector2.Zero, hold, 0, 0f, player.whoAmI, ticks, light);
+        }
+
         public override void AI()
         {
             Player player = Main.player[Projectile.owner];
@@ -97,7 +126,7 @@ namespace PisAndDag.Content.Projectiles.Magic
             player.GetModPlayer<ColdCallHoldPlayer>().Holding = true;
             player.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Quarter, ArmRotation(player));
 
-            Lighting.AddLight(Projectile.Center, ColdCallIcicle.Ice.ToVector3() * 0.3f);
+            Lighting.AddLight(Projectile.Center, (Projectile.ai[1] == 1f ? SandLight : ColdCallIcicle.Ice).ToVector3() * 0.3f);
         }
 
         /// <summary>

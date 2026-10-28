@@ -17,19 +17,25 @@ namespace PisAndDag.Content.NPCs.Empress
     // raise, and a bow forms out of pure light (the eventide but bigger), she uses it in her second phase. Time of day in
     // game stop flowing with a sound effect. She says something like malenia and morgott and godrick."
     //
-    // In place of vanilla's own (its state 10), the moment it would begin, three seconds:
+    // In place of vanilla's own (its state 10), the moment it would begin, three seconds, and then (by request: "Her
+    // transition should last longer, like maybe slower animation, 10 seconds") stretched to ten: the beats below are its
+    // own count, each 3.33 ticks (ChangeSlow). Then her speech (by request, her own words, long): two stretches are drawn
+    // out to hold it (ChangeKeyTicks), the bending until her third line is read, and the stillness for two and a half
+    // seconds of silence (her lines there were cut from the script), so the change lands at about 13.3 seconds, the day
+    // stops at about 18, she screams at about 20.6, and it ends at about 22:
     //
     //     0   she stops, and cries out (vanilla's change, her scream under it); the camera goes to her and leans in, the
-    //         bars come; whoever is near hangs where they are; her first line
+    //         bars come; whoever is near hangs where they are
     //    16   the world bends: drawn in to her bust and to her hips, turning, closer and closer, and the light of
-    //         everything round her pulled in after it in threads
+    //         everything round her pulled in after it in threads; she speaks (ChangeBendWords), and as "At me!" is read
     //    64   she changes (her second half's body, its streamers and skirt) under a flash of white; the bends let go in a
     //         wave through the world, and where they were the veil tears through her (EmpressVeil), its edges burning
     //    92   her left hand rises (she faces left through all of it: the bow's hand is the one on her left)
     //   100   light spirals in to it and is a bow (EmpressBow), its string set with a thrum at 140; behind her, a clock of
     //         her light, its hands going round and round, slower and slower
-    //   150   the day stops (EmpressTime): the clock's hands with it; a ring through the world; her second line
-    //   158   her scream; the bow lowered
+    //   150   the day stops (EmpressTime): the clock's hands with it; a ring through the world; a held silence
+    //         (ChangeStillHold), the clock held behind her, the bow held up
+    //   158   her scream, ending it; the bow lowered
     //   170   the camera walks home
     //   180   vanilla's again, in its second half (its pause before choosing), and her first act of it the moored volley
     //
@@ -39,8 +45,94 @@ namespace PisAndDag.Content.NPCs.Empress
 
     public partial class EmpressOfLight
     {
+        /// <summary>
+        /// Her change runs slower than its beats are counted (by request: "Her transition should last longer, like maybe
+        /// slower animation, 10 seconds"): each beat this many ticks. What is timed by a sound's own length (the day's
+        /// stopping, the bow's chord) is led by it in ticks, to land on its beat.
+        /// </summary>
+        private const float ChangeSlow = 600f / 180f;
+
+        /// <summary>
+        /// Two stretches of it are drawn out: the bending, to hold her speech (ChangeBendWords), from its first line to her
+        /// change, which comes as "At me!" is read at the end of the third (ChangeAtMe ticks into it: the same share of
+        /// the line's time as it had before "fleshy mortal" went into it); and the stillness, from the day stopping to her
+        /// scream, held <see cref="ChangeStillHold"/> in silence (or, with lines in ChangeStillWords, until the last
+        /// goes). The rest at ChangeSlow. The beats (ChangeKeys) and the ticks they fall on (ChangeKeyTicks); worked out
+        /// once, the same on every machine.
+        /// </summary>
+        private const int ChangeAtMe = 208;
+
+        /// <summary>The stillness held in silence, the day stopped and her bow up, before her scream: two and a half seconds.</summary>
+        private const int ChangeStillHold = 150;
+
+        private static readonly int[] ChangeKeys = { 0, 16, 64, 150, 158, 180 };
+        private static int[] changeKeyTicks;
+
+        private static int[] ChangeKeyTicks
+        {
+            get
+            {
+                if (changeKeyTicks != null)
+                    return changeKeyTicks;
+
+                int bend = Taunt.TicksFor(new[] { ChangeBendWords[0], ChangeBendWords[1] }) + ChangeAtMe;
+                int still = ChangeStillWords.Length > 0 ? Taunt.TicksFor(ChangeStillWords) - Taunt.FadeOut - 8 : ChangeStillHold;
+                int[] ticks = new int[ChangeKeys.Length];
+
+                for (int k = 1; k < ChangeKeys.Length; k++)
+                {
+                    int span = (int)Math.Round((ChangeKeys[k] - ChangeKeys[k - 1]) * ChangeSlow);
+
+                    if (ChangeKeys[k] == ChangeBecome)
+                        span = Math.Max(span, bend);
+                    else if (ChangeKeys[k] == ChangeScream)
+                        span = Math.Max(span, still);
+
+                    ticks[k] = ticks[k - 1] + span;
+                }
+
+                return changeKeyTicks = ticks;
+            }
+        }
+
+        /// <summary>The tick a beat of her change falls on.</summary>
+        private static int At(int beat)
+        {
+            int[] ticks = ChangeKeyTicks;
+
+            for (int k = 1; k < ChangeKeys.Length; k++)
+            {
+                if (beat <= ChangeKeys[k] || k == ChangeKeys.Length - 1)
+                {
+                    float s = (beat - ChangeKeys[k - 1]) / (float)(ChangeKeys[k] - ChangeKeys[k - 1]);
+                    return (int)Math.Round(MathHelper.Lerp(ticks[k - 1], ticks[k], s));
+                }
+            }
+
+            return 0;
+        }
+
+        /// <summary>How far through her change, in its beats.</summary>
+        private float ChangeNow
+        {
+            get
+            {
+                int[] ticks = ChangeKeyTicks;
+
+                for (int k = 1; k < ChangeKeys.Length; k++)
+                {
+                    if (timer <= ticks[k] || k == ChangeKeys.Length - 1)
+                    {
+                        float s = (timer - ticks[k - 1]) / (float)Math.Max(1, ticks[k] - ticks[k - 1]);
+                        return MathHelper.Lerp(ChangeKeys[k - 1], ChangeKeys[k], s);
+                    }
+                }
+
+                return 0f;
+            }
+        }
+
         private const int ChangeTicks = 180;
-        private const int ChangeLineOne = 6;
         private const int ChangeWarpFrom = 16;
         private const int ChangeBecome = 64;
         private const int ChangeRaise = 92;
@@ -62,6 +154,9 @@ namespace PisAndDag.Content.NPCs.Empress
         /// is set.
         /// </summary>
         private const int BowFormLead = 57;
+
+        /// <summary>The shimmer played backwards, at its own pitch (1.5 seconds), ending on the moment she changes.</summary>
+        private const int ChangeSwellTicks = 90;
 
         /// <summary>Her bust and her hips, from her middle, at size 1: where the world is bent into her, and her veil tears.</summary>
         private static readonly Vector2 Bust = new Vector2(0f, -20f);
@@ -119,6 +214,7 @@ namespace PisAndDag.Content.NPCs.Empress
             npc.spriteDirection = npc.direction = -1;
 
             int t = timer;
+            float c = ChangeNow;
 
             // She stops, and hangs, breathing.
             npc.velocity *= 0.82f;
@@ -132,49 +228,65 @@ namespace PisAndDag.Content.NPCs.Empress
             if (InDeath(npc))
                 EmpressArenaPlayer.Hover();
 
-            ChangeShot(npc, t);
-            ChangeArms(t);
+            // E held in the corner: straight to her second half (single player; CinematicSkip).
+            if (InDeath(npc))
+            {
+                CinematicSkip.Offer();
+
+                if (Authority && CinematicSkip.Take())
+                {
+                    SkipChange(npc);
+                    return;
+                }
+            }
+
+            ChangeShot(npc, t, c);
+            ChangeArms(c);
 
             if (entered)
                 ChangeBegins(npc);
 
-            if (Crossed(ChangeLineOne))
+            if (Crossed(At(ChangeWarpFrom)))
                 ChangeLine(npc, 0);
 
-            if (t >= ChangeWarpFrom && t < ChangeBecome)
+            // The backwards shimmer, at its own pitch, swelling to end on her change.
+            if (Crossed(At(ChangeBecome) - ChangeSwellTicks) && !Main.dedServ)
+                Sound(EmpressSounds.Swell, npc.Center, 0f, 0.8f, 2);
+
+            if (c >= ChangeWarpFrom && c < ChangeBecome)
                 Warping(npc, t);
 
-            if (Crossed(ChangeBecome))
+            if (Crossed(At(ChangeBecome)))
                 Become(npc);
 
-            if (t >= ChangeBecome && t < ChangeBecome + 50)
-                Tearing(npc, t - ChangeBecome);
+            if (c >= ChangeBecome && c < ChangeBecome + 50)
+                Tearing(npc, t - At(ChangeBecome));
 
-            if (Crossed(ChangeRaise))
+            if (Crossed(At(ChangeRaise)))
                 Raising(npc);
 
-            if (Crossed(ChangeStop - TimeStopLead))
+            if (Crossed(At(ChangeStop) - TimeStopLead))
                 Sound(EmpressSounds.TimeStop, npc.Center, 0f, 1f, 1);
 
-            if (Crossed(ChangeBowSet - BowFormLead))
+            if (Crossed(At(ChangeBowSet) - BowFormLead))
                 Sound(EmpressSounds.BowForm, npc.Center, 0f, 0.95f, 1);
 
-            if (t >= ChangeBowFrom && t < ChangeBowSet)
+            if (c >= ChangeBowFrom && c < ChangeBowSet)
                 BowForming(npc, t);
 
-            if (Crossed(ChangeBowSet))
+            if (Crossed(At(ChangeBowSet)))
                 BowSet(npc);
 
-            if (Crossed(ChangeStop))
+            if (Crossed(At(ChangeStop)))
                 TimeStops(npc);
 
-            if (Crossed(ChangeScream))
+            if (Crossed(At(ChangeScream)))
                 Scream(npc, -0.15f, 1f, rings: true);
 
-            if (Crossed(ChangeHome))
+            if (Crossed(At(ChangeHome)))
                 ChangeShotHome(npc);
 
-            if (Authority && t >= ChangeTicks)
+            if (Authority && c >= ChangeTicks)
                 EndChange(npc);
         }
 
@@ -188,12 +300,34 @@ namespace PisAndDag.Content.NPCs.Empress
             Release(npc);
         }
 
+        /// <summary>
+        /// Her change, skipped (CinematicSkip; single player): what it does to her done at once (her second half, her veil,
+        /// the day stopped), under a flash of white; her speech cut; the camera home; her second half's fight.
+        /// </summary>
+        private void SkipChange(NPC npc)
+        {
+            if (npc.ai[3] == 0f)
+                npc.ai[3] = 1f;
+            else if (npc.ai[3] == 2f)
+                npc.ai[3] = 3f;
+
+            npc.netUpdate = true;
+
+            Taunt.Hush(npc);
+
+            if (!Main.dedServ)
+                Cinematic.Flash(Color.White, 0.35f * Near(npc.Center));
+
+            ChangeShotHome(npc);
+            EndChange(npc);
+        }
+
         // ---- the shot ---------------------------------------------------------------------------------------------
 
         /// <summary>For a player near: the camera to her, leaning in, closer as the day stops; the bars; held.</summary>
-        private void ChangeShot(NPC npc, int t)
+        private void ChangeShot(NPC npc, int t, float c)
         {
-            if (t >= ChangeHome)
+            if (c >= ChangeHome)
                 return;
 
             changeWatching = InDeath(npc);
@@ -201,7 +335,7 @@ namespace PisAndDag.Content.NPCs.Empress
             if (!changeWatching)
                 return;
 
-            float lean = MathHelper.Lerp(1f, 1.45f, Ease(t / 70f)) + 0.12f * Ease((t - ChangeBowFrom) / 50f) - 0.06f * Ease((t - ChangeStop) / 10f);
+            float lean = MathHelper.Lerp(1f, 1.45f, Ease(c / 70f)) + 0.12f * Ease((c - ChangeBowFrom) / 50f) - 0.06f * Ease((c - ChangeStop) / 10f);
 
             PisPlayer.BlendCamera(npc.Center + new Vector2(0f, -12f), Smoother(t / 34f));
             Cinematic.Hold();
@@ -219,7 +353,7 @@ namespace PisAndDag.Content.NPCs.Empress
         }
 
         /// <summary>Her bow arm and her other arm through the change.</summary>
-        private void ChangeArms(int t)
+        private void ChangeArms(float t)
         {
             float raise = Ease((t - ChangeRaise) / 18f) * (1f - Ease((t - ChangeScream) / 16f));
 
@@ -232,18 +366,24 @@ namespace PisAndDag.Content.NPCs.Empress
         // ---- how far it has come (drawn) ----------------------------------------------------------------------------
 
         /// <summary>How far the world is bent into her (0 to 1, and gone at once as she changes).</summary>
-        private float ChangeWarp() => scene == Scene.Change && timer < ChangeBecome ? Ease((timer - ChangeWarpFrom) / (float)(ChangeBecome - ChangeWarpFrom)) : 0f;
+        private float ChangeWarp() => scene == Scene.Change && ChangeNow < ChangeBecome ? Ease((ChangeNow - ChangeWarpFrom) / (float)(ChangeBecome - ChangeWarpFrom)) : 0f;
 
-        private float ChangeVeil() => timer < ChangeBecome ? 0f : Ease((timer - ChangeBecome) / 44f);
+        /// <summary>
+        /// Her veil: whole the moment she changes (never her second body bare), its streaks white at first and slowly
+        /// going clear (ChangeVeilWhite).
+        /// </summary>
+        private float ChangeVeil() => ChangeNow < ChangeBecome ? 0f : 1f;
 
-        private float ChangeVeilFlare() => timer < ChangeBecome ? 0f : 1f - Ease((timer - ChangeBecome - 26f) / 50f);
+        private float ChangeVeilWhite() => ChangeNow < ChangeBecome ? 0f : 1f - Ease((ChangeNow - ChangeBecome - 10f) / 70f);
 
-        private float ChangeBowForm() => Ease((timer - ChangeBowFrom) / (float)(ChangeBowSet - ChangeBowFrom));
+        private float ChangeVeilFlare() => ChangeNow < ChangeBecome ? 0f : 1f - Ease((ChangeNow - ChangeBecome - 26f) / 50f);
+
+        private float ChangeBowForm() => Ease((ChangeNow - ChangeBowFrom) / (float)(ChangeBowSet - ChangeBowFrom));
 
         /// <summary>The clock's long hand: round and round, slower and slower, and still from the moment the day stops.</summary>
         private float ClockHand()
         {
-            float s = MathHelper.Clamp((timer - ChangeRaise) / (float)(ChangeStop - ChangeRaise), 0f, 1f);
+            float s = MathHelper.Clamp((ChangeNow - ChangeRaise) / (float)(ChangeStop - ChangeRaise), 0f, 1f);
             float span = ChangeStop - ChangeRaise;
 
             // Its speed falling to nothing as the square of what is left: gone round this far by then.
@@ -251,7 +391,7 @@ namespace PisAndDag.Content.NPCs.Empress
         }
 
         /// <summary>How much of the clock shows: coming up with the bow, held, and gone after the day has stopped.</summary>
-        private float ClockShown() => Ease((timer - ChangeRaise) / 14f) * (1f - Ease((timer - ChangeStop - 8f) / 22f));
+        private float ClockShown() => Ease((ChangeNow - ChangeRaise) / 14f) * (1f - Ease((ChangeNow - ChangeStop - 8f) / 22f));
 
         // ---- what is seen and heard ------------------------------------------------------------------------------
 
@@ -264,20 +404,20 @@ namespace PisAndDag.Content.NPCs.Empress
             Sound(SoundID.Item161, npc.Center, 0f, 1f);
             Scream(npc, -0.3f, 1f, rings: true);
 
-            // The shimmer played backwards, quickened to end on her change (it lasts 1.5 seconds at its own pitch).
-            Sound(EmpressSounds.Swell, npc.Center, 0.49f, 0.8f, 2);
+            // A low hum under it all; the shimmer played backwards comes later, to end on her change (RunChange).
             Sound(EmpressSounds.Hum, npc.Center, -0.5f, 0.7f, 2);
             Shake(npc.Center, 4f, 14);
         }
 
-        /// <summary>One of her lines, at the foot of the screen, for whoever is near: the first as it begins, the second as the day stops.</summary>
+        /// <summary>Her speech, at the foot of the screen, for whoever is near: the first as the world bends, the second as the day stops.</summary>
         private void ChangeLine(NPC npc, int line)
         {
-            if (Main.dedServ || !NearArena())
+            string[] words = line == 0 ? ChangeBendWords : ChangeStillWords;
+
+            if (Main.dedServ || !NearArena() || words.Length == 0)
                 return;
 
-            string[] speech = ChangeWords[Stir((int)(arenaCentre.X / 16f), (int)(arenaCentre.Y / 16f), ChangeWords.Length)];
-            Taunt.Say(npc, speech[Math.Clamp(line, 0, speech.Length - 1)], EmpressArt.Pink, EmpressArt.Sky, reach: 0f);
+            Taunt.Speech(npc, words, EmpressArt.Pink, EmpressArt.Sky, reach: 0f);
         }
 
         /// <summary>The world bending into her bust and hips; threads of light pulled in; a wobble climbing.</summary>
@@ -377,7 +517,7 @@ namespace PisAndDag.Content.NPCs.Empress
             if (Main.dedServ)
                 return;
 
-            float p = (t - ChangeBowFrom) / (float)(ChangeBowSet - ChangeBowFrom);
+            float p = (ChangeNow - ChangeBowFrom) / (float)(ChangeBowSet - ChangeBowFrom);
             Vector2 hand = Palm(npc, true, bowArmNow);
 
             for (int i = 0; i < 2; i++)
@@ -433,7 +573,7 @@ namespace PisAndDag.Content.NPCs.Empress
 
         private void DrawChangeHer(NPC npc, SpriteBatch spriteBatch, Vector2 screenPos)
         {
-            int t = timer;
+            float t = ChangeNow;
 
             // White over her as she changes (hiding the moment it is done), and her light thrown up as the day stops.
             float white = Ease((t - (ChangeBecome - 12f)) / 12f) * (1f - Ease((t - ChangeBecome) / 22f));
@@ -459,8 +599,8 @@ namespace PisAndDag.Content.NPCs.Empress
 
             float time = (float)Main.timeForVisualEffects;
             Vector2 middle = npc.Center;
-            float stopped = timer >= ChangeStop ? 1f : 0f;
-            float pulse = 1f + 0.35f * stopped * (1f - Ease((timer - ChangeStop) / 12f));
+            float stopped = ChangeNow >= ChangeStop ? 1f : 0f;
+            float pulse = 1f + 0.35f * stopped * (1f - Ease((ChangeNow - ChangeStop) / 12f));
 
             EmpressArt.DrawBloom(spriteBatch, middle, ClockRadius * 2.6f, EmpressArt.Additive(EmpressArt.Sky, 0.12f * shown));
             DrawRing(spriteBatch, middle, ClockRadius * pulse, 3f, EmpressArt.Additive(Color.White, 0.5f * shown));
@@ -491,7 +631,7 @@ namespace PisAndDag.Content.NPCs.Empress
             {
                 for (int k = 1; k <= 5; k++)
                 {
-                    float back = hand - k * 0.05f * (1f - Ease((timer - ChangeRaise) / (float)(ChangeStop - ChangeRaise)));
+                    float back = hand - k * 0.05f * (1f - Ease((ChangeNow - ChangeRaise) / (float)(ChangeStop - ChangeRaise)));
                     EmpressArt.DrawBeam(spriteBatch, middle, middle + back.ToRotationVector2() * ClockRadius * 0.92f, 6f, EmpressArt.Additive(EmpressArt.Prism(k / 6f), 0.12f * shown * (1f - k / 6f)));
                 }
             }
@@ -511,7 +651,9 @@ namespace PisAndDag.Content.NPCs.Empress
                     float turn = i == 0 ? 1f : -1f;
 
                     // The world drawn in to it, turning.
-                    EmpressWarp.Lens(at, MathHelper.Lerp(560f, 300f, w), -0.62f * w, 1.5f * w * turn);
+                    // Both turned the same way: turned opposite ways, the two (one just over the other) summed to the world
+                    // slid sideways between them, and the whole bend sat off her middle.
+                    EmpressWarp.Lens(at, MathHelper.Lerp(560f, 300f, w), -0.62f * w, 1.5f * w);
 
                     // Threads of light, out of everything round her, spiralling in: each a curve, its head brightest.
                     for (int k = 0; k < Threads; k++)
@@ -541,9 +683,9 @@ namespace PisAndDag.Content.NPCs.Empress
             }
 
             // The bow's light, spiralling in.
-            if (timer >= ChangeBowFrom && timer < ChangeBowSet + 6)
+            if (ChangeNow >= ChangeBowFrom && ChangeNow < ChangeBowSet + 6)
             {
-                float p = Ease((timer - ChangeBowFrom) / (float)(ChangeBowSet - ChangeBowFrom));
+                float p = Ease((ChangeNow - ChangeBowFrom) / (float)(ChangeBowSet - ChangeBowFrom));
                 Vector2 hand = Palm(npc, true, bowArmNow);
 
                 for (int k = 0; k < 10; k++)

@@ -17,13 +17,16 @@ namespace PisAndDag.Content.NPCs.Empress
     // request: "have animation of her pulling the rainbow string on that bow"); her arrows Daybreak's shape in her light
     // (EmpressArrow), images of them trailing them.
     //
-    //   THE MOORED VOLLEY (by request)
+    //   THE MOORED VOLLEY (by request), three to seven arrows, one at a time ("I didnt mean to shoot them all at once")
     //     AIM      24   the bow raised at the player
-    //     DRAW     54   three to seven arrows nocked, fanned, drawn; the way each will go shown to the border, and how far
-    //                   its burst will reach where it sticks (by request: "Shoots 3 to 7 arrows that travels fast with
-    //                   indicator")
-    //     LOOSE    26   all at once, fast; each sticks in the border, and three seconds after bursts, thirty tiles of light
-    //                   ("it is stuck onto the border and explode after 3 seconds of being stuck into a 30 tile radius")
+    //     then for each arrow:
+    //     DRAW     30   one arrow nocked and the string pulled back to her chest; the way it will go (at the player as the
+    //                   draw begins, a little to one side of them, sweeping across them arrow by arrow) shown to the
+    //                   border, and how far its burst will reach where it sticks (by request: "Shoots 3 to 7 arrows that
+    //                   travels fast with indicator")
+    //     LOOSE    12   fast; it sticks in the border, and three seconds after bursts, thirty tiles of light ("it is stuck
+    //                   onto the border and explode after 3 seconds of being stuck into a 30 tile radius"); the last
+    //                   held 26, then over. So they burst one after another, as they were shot.
     //
     //   THE RICOCHETS (by request)
     //     AIM      20   the bow raised at the player
@@ -49,8 +52,19 @@ namespace PisAndDag.Content.NPCs.Empress
     //   THE RAIN OF LIGHT (offered, chosen)
     //     AIM 22, DRAW 30, LOOSE 16: five arrows straight up, out of the top of the arena
     //     three waves of 60: where they come down, columns of light, each shown first as a thin line the arena's whole
-    //     height (36 ticks), then falling top to bottom (6), there a moment (18): across the arena; then about the player;
-    //     then between the first wave's
+    //     height (36 ticks), then falling top to bottom (6), there a moment (18): a row of them all across the screen about
+    //     the player, each its own distance from the next (6 to 11 tiles), each wave's row its own
+    //   or, by turns of chance (by request: "arrow rain can have 2 types, the one you have now and the one that is kinda
+    //   like radahn's great bow, 3 waves each last 2 seconds with 1 second interval", then "for radahn style i mean the
+    //   columns not arrows, slanted and shot one by one with ranging intervals within 2 seconds. (ofc have indicator
+    //   before)"), the starfall:
+    //     AIM 22, DRAW 30, LOOSE 16: nine arrows up out of the arena, a great volley
+    //     three waves of three seconds: nine columns of light, each slanted its own way (by request: "make it randomly
+    //     slanted, sorta like daedalus storm bow. and it pulses right away not coming down"), crossing about where the
+    //     player was as the wave began; each shown first as a thin line border to border (36 ticks), then all of it at
+    //     once, a pulse of light down its whole length, fading (22); one after another at uneven times through one
+    //     second of the wave (by request, then: "faster maybe the same amount for 1 second bit less slanted"), a
+    //     second quiet before the next
     //
     // The arrows hurt (60 in a normal world, 40 in an expert one, doubled as the game doubles any hostile shot), the
     // moored bursts and the lightspeed shot more.
@@ -64,10 +78,11 @@ namespace PisAndDag.Content.NPCs.Empress
         private const int MoorLoose = 2;
 
         private const int MoorAimTicks = 24;
-        private const int MoorDrawTicks = 54;
-        private const int MoorLooseTicks = 26;
+        private const int MoorDrawTicks = 30;
+        private const int MoorLooseTicks = 12;
+        private const int MoorLastTicks = 26;
 
-        /// <summary>How fast her arrows go; how far apart a volley's are (radians) and its widest.</summary>
+        /// <summary>How fast her arrows go; how far apart a volley's ways are about the player (radians) and its widest.</summary>
         private const float MoorSpeed = 30f;
         private const float MoorApart = 0.17f;
         private const float MoorWidest = 1.05f;
@@ -78,6 +93,7 @@ namespace PisAndDag.Content.NPCs.Empress
         private void PlanMoor(NPC npc, Player target)
         {
             actN = 3 + Main.rand.Next(5);
+            actCount = 0;
             actTurn = (target.Center - npc.Center).ToRotation();
         }
 
@@ -92,6 +108,19 @@ namespace PisAndDag.Content.NPCs.Empress
         }
 
         private float FanOf(int n, float apart, float widest) => n <= 1 ? 0f : Math.Min(apart * (n - 1), widest);
+
+        /// <summary>
+        /// The way the moored volley's next arrow (actCount) will go: at the player now, turned to its place in the fan
+        /// (the fan swept across them one way or the other, arrow by arrow). The server's, as a draw begins.
+        /// </summary>
+        private float MoorWay(NPC npc, Player who)
+        {
+            int k = actSeed % 2 == 0 ? actCount : actN - 1 - actCount;
+            return Fanned((who.Center - npc.Center).ToRotation(), k, actN, MoorApart, MoorWidest);
+        }
+
+        /// <summary>The colour of the moored volley's arrow now on the string.</summary>
+        private float MoorLook => actSeed % 97 / 97f + actCount * 0.13f;
 
         private void RunMoor(NPC npc, Player who, bool entered)
         {
@@ -110,8 +139,9 @@ namespace PisAndDag.Content.NPCs.Empress
 
                         if (Authority && t >= MoorAimTicks)
                         {
-                            // Where they will go is fixed now, and shown.
-                            actTurn = (who.Center - npc.Center).ToRotation();
+                            // The first arrow's way, fixed now and shown.
+                            actCount = 0;
+                            actTurn = MoorWay(npc, who);
                             Next(npc, MoorDraw);
                         }
 
@@ -119,10 +149,11 @@ namespace PisAndDag.Content.NPCs.Empress
                     }
 
                 case MoorDraw:
-                    Aim(actTurn, Ease(t / 40f), actN, FanOf(actN, MoorApart, MoorWidest), actSeed % 97 / 97f);
+                    // One arrow, the string pulled back to her chest.
+                    Aim(actTurn, Ease(t / 22f), 1, 0f, MoorLook);
 
                     if (entered)
-                        Sound(EmpressSounds.Draw, npc.Center, 0f, 0.9f, 2);
+                        Sound(EmpressSounds.Draw, npc.Center, 0.06f * actCount, 0.75f, 2);
 
                     if (Authority && t >= MoorDrawTicks)
                         Next(npc, MoorLoose);
@@ -130,19 +161,33 @@ namespace PisAndDag.Content.NPCs.Empress
                     break;
 
                 case MoorLoose:
-                    Aim(actTurn);
-
-                    if (entered)
                     {
-                        Loosed();
-                        LooseVolley(npc, EmpressArrow.Kind.Moor, actN, MoorApart, MoorWidest, MoorSpeed, actSeed % 97 / 97f);
-                        npc.velocity -= actTurn.ToRotationVector2() * 4f;
+                        Aim(actTurn);
+                        bool last = actCount >= actN - 1;
+
+                        if (entered)
+                        {
+                            Loosed();
+                            LooseVolley(npc, EmpressArrow.Kind.Moor, 1, MoorApart, MoorWidest, MoorSpeed, MoorLook);
+                            npc.velocity -= actTurn.ToRotationVector2() * 2.5f;
+                        }
+
+                        if (Authority && t >= (last ? MoorLastTicks : MoorLooseTicks))
+                        {
+                            if (last)
+                            {
+                                EndAct(npc);
+                            }
+                            else
+                            {
+                                actCount++;
+                                actTurn = MoorWay(npc, who);
+                                Next(npc, MoorDraw);
+                            }
+                        }
+
+                        break;
                     }
-
-                    if (Authority && t >= MoorLooseTicks)
-                        EndAct(npc);
-
-                    break;
             }
         }
 
@@ -192,23 +237,17 @@ namespace PisAndDag.Content.NPCs.Empress
             if (beat != MoorDraw)
                 return;
 
-            float shown = Ease(timer / 14f);
+            float shown = Ease(timer / 8f);
             float time = (float)Main.timeForVisualEffects;
             Vector2 nock = NockFor(npc, actTurn);
-            float look = actSeed % 97 / 97f;
+            Vector2 wall = ToWall(nock, actTurn);
+            Color colour = EmpressArt.Prism(MoorLook);
 
-            for (int i = 0; i < actN; i++)
-            {
-                float a = Fanned(actTurn, i, actN, MoorApart, MoorWidest);
-                Vector2 wall = ToWall(nock, a);
-                Color colour = EmpressArt.Prism(look + i * 0.13f);
+            DrawWay(spriteBatch, nock, wall, colour, shown, time, actCount);
 
-                DrawWay(spriteBatch, nock, wall, colour, shown, time, i);
-
-                // Where it will stick, and how far its burst will reach.
-                EmpressArt.DrawStar(spriteBatch, wall, 60f + 14f * (float)Math.Sin(time * 0.2f + i), time * 0.05f, EmpressArt.Additive(Color.White, 0.8f * shown));
-                DrawRing(spriteBatch, wall, EmpressArrow.BurstRadius, 3f, EmpressArt.Additive(colour, 0.16f * shown));
-            }
+            // Where it will stick, and how far its burst will reach.
+            EmpressArt.DrawStar(spriteBatch, wall, 60f + 14f * (float)Math.Sin(time * 0.2f + actCount), time * 0.05f, EmpressArt.Additive(Color.White, 0.8f * shown));
+            DrawRing(spriteBatch, wall, EmpressArrow.BurstRadius, 3f, EmpressArt.Additive(colour, 0.16f * shown));
         }
 
         /// <summary>
@@ -798,13 +837,67 @@ namespace PisAndDag.Content.NPCs.Empress
         private const int RainStay = 18;
         private const int RainWaveTicks = RainShow + RainFall + RainStay;
         private const float RainWidth = 50f;
-        private const int RainColumns = 8;
+        private const int RainColumns = 26;
+        private const float RainApartLeast = 96f;
+        private const float RainApartMost = 176f;
 
         private const int RainNormal = 55;
         private const int RainExpert = 36;
 
+        /// <summary>
+        /// The starfall (actN 1; the upright columns 0): its waves' beats; each wave's length (the indicators begin at once,
+        /// the columns fall through one second after the first is shown, a second quiet in all); its columns, how slanted
+        /// (from her side, actSide), how far about the wave's middle (actAt) they may stand.
+        /// </summary>
+        private const int StarWave = 7;
+        private const int StarWaveTicks = RainShow + 60 + 24;
+        private const int StarColumns = 9;
+        private const float StarSlant = 0.35f;
+        private const float StarReach = 300f;
+
+        /// <summary>A starfall column's pulse: how long it is seen, and how long of that it hurts.</summary>
+        private const int StarPulse = 22;
+        private const int StarHurts = 8;
+
+        private bool Starfall => actN == 1;
+
+        /// <summary>Is this beat one of the starfall's waves, and which.</summary>
+        private static bool StarBeat(int step, out int wave)
+        {
+            wave = step - StarWave;
+            return step >= StarWave && step < StarWave + 3;
+        }
+
+        /// <summary>Down, slanted this far (radians from straight down).</summary>
+        private static Vector2 Slanted(float slant) => new Vector2((float)Math.Sin(slant), (float)Math.Cos(slant));
+
+        /// <summary>
+        /// A starfall column of a wave: the tick of the wave it falls at (uneven, one after another through one second;
+        /// shown RainShow before), and its line, border to border, through a point about the wave's middle. The same on
+        /// every machine (the act's seed, the wave's middle as sent).
+        /// </summary>
+        private void StarColumn(int wave, int k, out int falls, out Vector2 top, out Vector2 bottom)
+        {
+            UnifiedRandomish dice = new UnifiedRandomish(actSeed * 31 + wave * 7919 + k * 104729);
+            float when = (k + 0.15f + dice.Next() * 0.7f) / StarColumns;
+            falls = RainShow + (int)(when * 57f);
+
+            // The first of each wave at the player; the rest about them, either side in turn; each slanted its own way,
+            // as a storm of arrows from all over the sky crossing about one place.
+            float across = k == 0 ? 0f : (k % 2 == 0 ? 1f : -1f) * (0.15f + 0.85f * dice.Next()) * StarReach;
+            Vector2 through = actAt + new Vector2(across, (dice.Next() - 0.5f) * 160f);
+            Vector2 way = Slanted((dice.Next() * 2f - 1f) * StarSlant);
+
+            if (!Decagon.Inside(through, arenaCentre, EmpressArena.Radius, 40f))
+                through = arenaCentre + (through - arenaCentre) * 0.9f;
+
+            top = through - way * Decagon.Reach(through, -way, arenaCentre, EmpressArena.Radius, out _);
+            bottom = through + way * Decagon.Reach(through, way, arenaCentre, EmpressArena.Radius, out _);
+        }
+
         private void PlanRain(NPC npc, Player target)
         {
+            actN = Main.rand.Next(2);
         }
 
         private void RunRain(NPC npc, Player who, bool entered)
@@ -826,7 +919,7 @@ namespace PisAndDag.Content.NPCs.Empress
                     break;
 
                 case RainDraw:
-                    Aim(-MathHelper.PiOver2 + (BowLeft(npc) ? -0.08f : 0.08f), Ease(t / 24f), 5, 0.5f, 0.35f);
+                    Aim(-MathHelper.PiOver2 + (BowLeft(npc) ? -0.08f : 0.08f), Ease(t / 24f), Starfall ? 9 : 5, Starfall ? 0.8f : 0.5f, 0.35f);
 
                     if (entered)
                         Sound(EmpressSounds.Draw, npc.Center, -0.1f, 0.85f, 2);
@@ -855,8 +948,16 @@ namespace PisAndDag.Content.NPCs.Empress
 
                     if (Authority && t >= RainLooseTicks)
                     {
-                        actAt = who.Center;
-                        Next(npc, RainWave);
+                        if (Starfall)
+                        {
+                            StarAim(npc, who);
+                            Next(npc, StarWave);
+                        }
+                        else
+                        {
+                            actAt = who.Center;
+                            Next(npc, RainWave);
+                        }
                     }
 
                     break;
@@ -887,25 +988,142 @@ namespace PisAndDag.Content.NPCs.Empress
                         EndAct(npc);
 
                     break;
+
+                default:
+                    if (StarBeat(beat, out int starWave))
+                        RunStarfall(npc, who, entered, starWave);
+
+                    break;
             }
         }
 
-        /// <summary>Where a wave's columns stand: across the arena; about the player (when the wave began); between the first wave's.</summary>
+        /// <summary>The server's: where the next wave falls about (the player now), and the side it slants from (hers).</summary>
+        private void StarAim(NPC npc, Player who)
+        {
+            actAt = who.Center;
+            actSide = who.Center.X >= npc.Center.X ? 1 : -1;
+        }
+
+        /// <summary>A wave of the starfall: its columns falling at their times (heard, and their hurt asked of RainHits).</summary>
+        private void RunStarfall(NPC npc, Player who, bool entered, int wave)
+        {
+            int t = timer;
+            Aim(-MathHelper.PiOver2 + (BowLeft(npc) ? -0.08f : 0.08f));
+
+            if (entered)
+            {
+                if (wave == 0)
+                    Hitbox(npc, EmpressHitbox.Shape.Rain, arenaCentre, 0f, Hurt(npc, RainNormal, RainExpert), StarWaveTicks * 3 + 30);
+
+                if (!Main.dedServ)
+                    Sound(EmpressSounds.Tingle, actAt, 0.3f + 0.1f * wave, 0.5f);
+            }
+
+            if (!Main.dedServ)
+            {
+                for (int k = 0; k < StarColumns; k++)
+                {
+                    StarColumn(wave, k, out int falls, out Vector2 top, out Vector2 bottom);
+
+                    if (Crossed(falls - RainShow))
+                        Sound(EmpressSounds.Lock, Vector2.Lerp(top, bottom, 0.5f), 0.05f * k, 0.35f, 4);
+
+                    if (Crossed(falls))
+                    {
+                        Vector2 near = ClosestOn(top, bottom, Main.LocalPlayer.Center);
+                        Sound(EmpressSounds.Zap, near, 0.1f * (k % 4) - 0.1f, 0.7f, 4);
+                        Sound(EmpressSounds.Beam, near, 0.2f, 0.35f, 4);
+                    }
+                }
+            }
+
+            if (Authority && t >= StarWaveTicks)
+            {
+                if (wave < 2)
+                {
+                    StarAim(npc, who);
+                    Next(npc, beat + 1);
+                }
+                else
+                {
+                    Next(npc, RainEnd);
+                }
+            }
+        }
+
+        /// <summary>The point on a line nearest another.</summary>
+        private static Vector2 ClosestOn(Vector2 a, Vector2 b, Vector2 p)
+        {
+            Vector2 ab = b - a;
+            float t = MathHelper.Clamp(Vector2.Dot(p - a, ab) / Math.Max(1f, ab.LengthSquared()), 0f, 1f);
+            return a + ab * t;
+        }
+
+        /// <summary>A starfall column seen: its line shown, then a pulse of light down the whole of it at once, fading.</summary>
+        private void DrawStarColumn(SpriteBatch spriteBatch, int k, int falls, Vector2 top, Vector2 bottom, float time)
+        {
+            int since = timer - (falls - RainShow);
+
+            if (since < 0 || since > RainShow + StarPulse)
+                return;
+
+            Color colour = Main.hslToRgb((k / (float)StarColumns + time / 600f) % 1f, 1f, 0.7f);
+
+            if (since < RainShow)
+            {
+                float p = since / (float)RainShow;
+                float flicker = 0.6f + 0.4f * (float)Math.Sin(time * 0.7f + k * 2f);
+                EmpressArt.DrawBeam(spriteBatch, top, bottom, RainWidth * 0.6f, EmpressArt.Additive(colour, 0.08f + 0.12f * p));
+                EmpressArt.DrawBeam(spriteBatch, top, bottom, 2f, EmpressArt.Additive(Color.White, (0.25f + 0.5f * p) * flicker));
+                return;
+            }
+
+            // The pulse: all of it at once, swelling a moment and thinning as it fades.
+            float q = (since - RainShow) / (float)StarPulse;
+            float fade = 1f - Ease(q);
+            float swell = 1f + 0.5f * (1f - Ease(q * 3f));
+            float width = RainWidth * swell * (1f - 0.5f * q);
+
+            EmpressArt.DrawBeam(spriteBatch, top, bottom, width * 2.8f, EmpressArt.Additive(colour, 0.3f * fade));
+            EmpressArt.DrawBeam(spriteBatch, top, bottom, width, EmpressArt.Additive(colour, 0.8f * fade));
+            EmpressArt.DrawBeam(spriteBatch, top, bottom, width * 0.35f, EmpressArt.Additive(Color.White, 0.95f * fade));
+            EmpressWarp.Haze(top, bottom, 70f, 2.6f * fade, 100f, k);
+        }
+
+        /// <summary>
+        /// Where a wave's columns stand: all across the screen about where the player was as the wave began, each its own
+        /// distance from the last (by request: "this should not only be 7 but all over the screen, without distance of 10
+        /// tiles exactly"), 6 to 11 tiles; each wave's row laid out its own way. The same on every machine (the act's seed,
+        /// the wave's middle as sent). Those outside the arena are not shown.
+        /// </summary>
         private float RainX(int wave, int k)
         {
-            float left = arenaCentre.X - EmpressArena.Radius + 60f;
-            float right = arenaCentre.X + EmpressArena.Radius - 60f;
-            float apart = (right - left) / RainColumns;
-            UnifiedRandomish dice = new UnifiedRandomish(actSeed + wave * 977 + k * 31);
-            float jitter = (dice.Next() - 0.5f) * 60f;
-
-            return wave switch
+            if (rainXFor != actSeed + wave * 977 || rainXAt != actAt.X)
             {
-                0 => left + (k + 0.5f) * apart + jitter,
-                1 => MathHelper.Clamp(actAt.X + (k - (RainColumns - 1) * 0.5f) * 170f + jitter * 0.5f, left, right),
-                _ => left + (k + 1f) * apart + jitter,
-            };
+                rainXFor = actSeed + wave * 977;
+                rainXAt = actAt.X;
+                UnifiedRandomish dice = new UnifiedRandomish(rainXFor);
+                float x = 0f;
+
+                for (int i = 0; i < RainColumns; i++)
+                {
+                    rainXs[i] = x;
+                    x += MathHelper.Lerp(RainApartLeast, RainApartMost, dice.Next());
+                }
+
+                // Centred on the player, a little off by chance so no wave stands quite where the last did.
+                float shift = x * 0.5f + (dice.Next() - 0.5f) * RainApartLeast;
+
+                for (int i = 0; i < RainColumns; i++)
+                    rainXs[i] += actAt.X - shift;
+            }
+
+            return rainXs[Math.Clamp(k, 0, RainColumns - 1)];
         }
+
+        private readonly float[] rainXs = new float[RainColumns];
+        private int rainXFor = int.MinValue;
+        private float rainXAt = float.NaN;
 
         /// <summary>A wave's columns fall: the sound of them, light where they land (the server's hurt is asked of RainHits).</summary>
         private void RainFalls(NPC npc, int wave)
@@ -928,6 +1146,22 @@ namespace PisAndDag.Content.NPCs.Empress
         /// <summary>The columns' hitbox asks: is this body under one as it falls, or in one while it stands?</summary>
         internal bool RainHits(Rectangle box)
         {
+            if (scene == Scene.Act && act == Act.Rain && StarBeat(beat, out int starWave))
+            {
+                for (int k = 0; k < StarColumns; k++)
+                {
+                    StarColumn(starWave, k, out int falls, out Vector2 top, out Vector2 bottom);
+
+                    if (timer < falls || timer > falls + StarHurts)
+                        continue;
+
+                    if (EmpressHitbox.OnLine(box, top, bottom, RainWidth))
+                        return true;
+                }
+
+                return false;
+            }
+
             if (scene != Scene.Act || act != Act.Rain || beat < RainWave || beat > RainWave + 2 || timer < RainShow || timer > RainShow + RainFall + 10)
                 return false;
 
@@ -962,11 +1196,24 @@ namespace PisAndDag.Content.NPCs.Empress
                 Vector2 nock = NockFor(npc, actTurn);
                 float flown = timer * 60f;
 
-                for (int i = 0; i < 5; i++)
+                int up = Starfall ? 9 : 5;
+
+                for (int i = 0; i < up; i++)
                 {
-                    float a = Fanned(actTurn, i, 5, 0.12f, 0.5f);
+                    float a = Fanned(actTurn, i, up, 0.12f, Starfall ? 0.8f : 0.5f);
                     EmpressBow.DrawArrow(spriteBatch, nock + a.ToRotationVector2() * flown, a, 1f, 1f - timer / (float)RainLooseTicks * 0.5f, 0.35f + i * 0.13f, 1f);
                 }
+            }
+
+            if (StarBeat(beat, out int starWave))
+            {
+                for (int k = 0; k < StarColumns; k++)
+                {
+                    StarColumn(starWave, k, out int falls, out Vector2 top, out Vector2 bottom);
+                    DrawStarColumn(spriteBatch, k, falls, top, bottom, time);
+                }
+
+                return;
             }
 
             if (beat < RainWave || beat > RainWave + 2)

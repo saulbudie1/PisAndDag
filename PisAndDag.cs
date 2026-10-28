@@ -59,6 +59,18 @@ namespace PisAndDag
         /// server from that player, server to the other clients. See MupralPlayer.
         /// </summary>
         Lantern,
+
+        /// <summary>Client to server: the Guide has read his ledger (or a command reset it). See GuideQuest.</summary>
+        GuideQuest,
+
+        /// <summary>
+        /// Client to server: an NPC thrown by something of a player's (Corosion's uppercut, the Sidewinder's
+        /// spike), to be thrown where the world is run. See Harenaeum.Launch.
+        /// </summary>
+        Launch,
+
+        /// <summary>Client to server: a player has rung the Gilded Spur on the field before the Curtain. See KnightEncounter.</summary>
+        GildedKnight,
     }
 
     // Please read https://github.com/tModLoader/tModLoader/wiki/Basic-tModLoader-Modding-Guide#mod-skeleton-contents for more information about the various files in a mod.
@@ -131,6 +143,18 @@ namespace PisAndDag
 
                 case PADPacket.Lantern:
                     Content.Items.Accessories.MupralPlayer.HandlePacket(reader, whoAmI);
+                    break;
+
+                case PADPacket.GuideQuest:
+                    Content.NPCs.GuideQuest.HandlePacket(reader, whoAmI);
+                    break;
+
+                case PADPacket.Launch:
+                    Content.Items.Misc.Harenaeum.HandleLaunch(reader, whoAmI);
+                    break;
+
+                case PADPacket.GildedKnight:
+                    Content.NPCs.GildedKnight.KnightEncounter.HandlePacket(reader, whoAmI);
                     break;
 
                 default:

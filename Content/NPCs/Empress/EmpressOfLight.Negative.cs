@@ -187,6 +187,50 @@ namespace PisAndDag.Content.NPCs.Empress
             }
         }
 
+        // ---- in the negative, what hurts her heals her -------------------------------------------------------------
+        //
+        // By request: "During the color inversion, everything damage dealt on her heals her by a multiplication of 1.5x".
+        // From the world's turning to its turning back: every blow on her is put back and half as much again given her
+        // (on every machine that takes it, as the barrier's are; the server's life is the one sent), her own green numbers
+        // over her in place of the game's; and whatever burns her (fire, poison, any of it) mends her half as fast again
+        // as it would have hurt.
+
+        /// <summary>How much of a blow, or a burn, heals her in the negative.</summary>
+        private const float NegativeHealsBy = 1.5f;
+
+        /// <summary>The world turned (as it turns out of her in her act, and the three moves after), and she not dying.</summary>
+        private bool Inverted(NPC npc) => !dying && LegendsSecond(npc) && (negativeOn || scene == Scene.Act && act == Act.Negative);
+
+        private void NegativeHeals(NPC npc, int damage)
+        {
+            if (damage <= 0)
+                return;
+
+            int heal = (int)Math.Round(damage * NegativeHealsBy);
+            npc.life = Math.Min(npc.lifeMax, npc.life + damage + heal);
+
+            if (Main.dedServ)
+                return;
+
+            CombatText.NewText(npc.Hitbox, CombatText.HealLife, heal);
+
+            if (Main.rand.NextBool(2))
+            {
+                Dust dust = Dust.NewDustPerfect(npc.Center + Main.rand.NextVector2Circular(50f, 60f), DustID.RainbowMk2, new Vector2(0f, -1.5f), 0, Color.Lerp(Color.White, EmpressArt.Mint, 0.6f), 1f);
+                dust.noGravity = true;
+            }
+        }
+
+        /// <summary>Whatever burns her, in the negative, mends her instead, half as fast again.</summary>
+        public override void UpdateLifeRegen(NPC npc, ref int damage)
+        {
+            if (npc.lifeRegen >= 0 || !Inverted(npc))
+                return;
+
+            npc.lifeRegen = (int)(-npc.lifeRegen * NegativeHealsBy);
+            damage = 0;
+        }
+
         /// <summary>How far a point on the screen is from the screen's farthest corner.</summary>
         private static float FarthestCorner(Vector2 at)
         {

@@ -57,7 +57,7 @@ namespace PisAndDag.Content.Items.LoreItem
                 return "To the " + sea + " is the sea,\n" +
                        "where you can find heroes, burials and sand,\n" +
                        "to the " + land + " is the vast jungle and iceland,\n" +
-                       "...\n" +
+                       "shielding a colossal kingdom prosperous,\n" +
                        "or at least what I remember.";
             }
 

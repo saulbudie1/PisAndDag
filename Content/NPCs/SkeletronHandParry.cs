@@ -32,9 +32,10 @@ namespace PisAndDag.Content.NPCs
     ///   lying on a player it has just struck: walked into, not swung), drawn back for a
     ///   swing (1 and 4), or held up while he spins.
     ///
-    ///   In Legends, his two moves that are theirs, in their blow: the clap as the hands
-    ///   shut, the smash as they come down (LegendsSkeletronHand.Striking). Not on their way
-    ///   to their places, waiting there, or after.
+    ///   In Legends, his moves that are theirs, in their blows, as the move says (its Aim's
+    ///   Blow: the clap as the hands shut, a punch as it goes, the whip as it cracks;
+    ///   LegendsSkeletronHand.Striking). Not on their way to their places, waiting there,
+    ///   or after; never a blow through crowd control (the flick: CCBypass).
     ///
     /// WHAT. The hand takes the parry's blow as anything does, and then a fifth of its own
     /// full life, whatever its armour (<see cref="LifeShare"/>: five parries break a hand).
@@ -43,10 +44,12 @@ namespace PisAndDag.Content.NPCs
     /// for a while after (as long as the one who parried it is spared it), or until that
     /// move is over.
     ///
-    /// The clap and the smash are both hands' as one, and a parry faces one way: with one of
+    /// Some blows are both hands' as one (LegendsSkeletronHand.Joint: the clap, the fists
+    /// bumped together, the grab from both sides), and a parry faces one way: with one of
     /// the two turned aside the blow is broken, and the other is thrown back with it (it
     /// loses nothing). On the machine of whoever parried, the other cannot touch them from
     /// that tick, whatever the server has yet to say (LegendsSkeletronHand.CanHitPlayer).
+    /// A blow of one hand is that hand's alone: the other goes on with the move.
     ///
     /// Never staggered, and so never open to the riposte; not pushed: it is thrown back
     /// instead.
@@ -94,7 +97,7 @@ namespace PisAndDag.Content.NPCs
         /// </summary>
         private const int Late = 30;
 
-        private const string Told = "a parry strikes it, takes a fifth of its full life from it and throws it back. Only while it is swung at you. In the clap and the smash the other hand is thrown back with it. Never staggered.";
+        private const string Told = "a parry strikes it, takes a fifth of its full life from it and throws it back. Only while it is swung at you. In a blow of both hands the other hand is thrown back with it. Never staggered.";
 
         // ---- decided where the world is, and sent ------------------------------------------------
 
@@ -178,7 +181,7 @@ namespace PisAndDag.Content.NPCs
 
             bool move = LegendsSkeletronHand.InMove(npc, out int serial);
 
-            if (move)
+            if (move && LegendsSkeletronHand.Joint(npc))
             {
                 LegendsSkeletronHand.Break(npc);
 

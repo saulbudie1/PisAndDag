@@ -14,8 +14,10 @@ namespace PisAndDag.Content.NPCs.Empress
     //
     //     THROW   40   she flings her free hand out: six marks of light fly out of it, one after another, to six places
     //                  about the arena (two of them near the player), and set there turning
-    //     LINK    60   from each to each of the others a guideline of light, fifteen of them, brightening: one second
-    //     FIRE    26   lasers down every one of them at once
+    //     LINK    60   through each and each of the others a guideline of light, fifteen of them, brightening: one second;
+    //                  each runs on past its two marks to the border both ways (by request: "the lines needs to keep going
+    //                  past its point, points are js guided to construct a ray whose length span from border to border")
+    //     FIRE    26   lasers down every one of them at once, border to border
     //     FADE    30   the marks burst, small, and are gone
     //
     // The lasers hurt (60 in a normal world, 40 in an expert one, doubled as the game doubles any hostile shot), and the
@@ -57,6 +59,11 @@ namespace PisAndDag.Content.NPCs.Empress
 
         private readonly Vector2[] marks = new Vector2[ConMarks];
         private int marksFor = -1;
+
+        /// <summary>The fifteen lines through each two marks, border to border: their two ends, worked out with the marks.</summary>
+        private const int ConLines = ConMarks * (ConMarks - 1) / 2;
+        private readonly Vector2[] lineFrom = new Vector2[ConLines];
+        private readonly Vector2[] lineTo = new Vector2[ConLines];
 
         private void PlanConstellation(NPC npc, Player target)
         {
@@ -111,7 +118,29 @@ namespace PisAndDag.Content.NPCs.Empress
                 marks[i] = best;
             }
 
+            // Each two marks only show the way: the line through them runs on to the border both ways.
+            int n = 0;
+
+            for (int i = 0; i < ConMarks; i++)
+            {
+                for (int j = i + 1; j < ConMarks; j++, n++)
+                {
+                    Vector2 way = (marks[j] - marks[i]).SafeNormalize(Vector2.UnitX);
+                    lineFrom[n] = marks[i] - way * Decagon.Reach(marks[i], -way, arenaCentre, radius, out _);
+                    lineTo[n] = marks[j] + way * Decagon.Reach(marks[j], way, arenaCentre, radius, out _);
+                }
+            }
+
             return marks;
+        }
+
+        /// <summary>The line through marks i and j (i before j), border to border.</summary>
+        private void ConLine(int i, int j, out Vector2 from, out Vector2 to)
+        {
+            Marks();
+            int n = i * (2 * ConMarks - i - 1) / 2 + (j - i - 1);
+            from = lineFrom[n];
+            to = lineTo[n];
         }
 
         /// <summary>Where mark i is this tick: flying out of her hand to its place over the throw, there after.</summary>
@@ -250,7 +279,10 @@ namespace PisAndDag.Content.NPCs.Empress
             for (int i = 0; i < ConMarks; i++)
             {
                 for (int j = i + 1; j < ConMarks; j++)
-                    EmpressWarp.Ripple(places[i], 10f, 30f, 6f, 16, places[j]);
+                {
+                    ConLine(i, j, out Vector2 from, out Vector2 to);
+                    EmpressWarp.Ripple(from, 10f, 30f, 6f, 16, to);
+                }
             }
         }
 
@@ -266,7 +298,9 @@ namespace PisAndDag.Content.NPCs.Empress
             {
                 for (int j = i + 1; j < ConMarks; j++)
                 {
-                    if (EmpressHitbox.OnLine(box, places[i], places[j], ConWidth))
+                    ConLine(i, j, out Vector2 from, out Vector2 to);
+
+                    if (EmpressHitbox.OnLine(box, from, to, ConWidth))
                         return true;
                 }
             }
@@ -287,6 +321,7 @@ namespace PisAndDag.Content.NPCs.Empress
                     for (int j = i + 1; j < ConMarks; j++)
                     {
                         Color colour = EmpressArt.Prism((i + j) / 10f + time / 300f);
+                        ConLine(i, j, out Vector2 from, out Vector2 to);
 
                         if (beat == ConLink)
                         {
@@ -294,8 +329,19 @@ namespace PisAndDag.Content.NPCs.Empress
                             float shown = Ease((timer - i * 6) / 12f) * (0.35f + 0.65f * Ease(timer / (float)ConLinkTicks));
                             float flicker = 0.7f + 0.3f * (float)Math.Sin(time * 0.6f + i + j * 2f);
 
-                            EmpressArt.DrawBeam(spriteBatch, places[i], places[j], 10f, EmpressArt.Additive(colour, 0.2f * shown * flicker));
-                            EmpressArt.DrawBeam(spriteBatch, places[i], places[j], 1.6f, EmpressArt.Additive(Color.White, 0.65f * shown));
+                            // Brightest between its two marks, and on past them to the border, a little fainter.
+                            EmpressArt.DrawBeam(spriteBatch, from, to, 10f, EmpressArt.Additive(colour, 0.14f * shown * flicker));
+                            EmpressArt.DrawBeam(spriteBatch, from, to, 1.4f, EmpressArt.Additive(Color.White, 0.45f * shown));
+                            EmpressArt.DrawBeam(spriteBatch, places[i], places[j], 10f, EmpressArt.Additive(colour, 0.1f * shown * flicker));
+                            EmpressArt.DrawBeam(spriteBatch, places[i], places[j], 1.6f, EmpressArt.Additive(Color.White, 0.25f * shown));
+
+                            // Light running out along it from each mark, both ways, to the border.
+                            Vector2 u = (to - from).SafeNormalize(Vector2.UnitX);
+                            float span = Vector2.Distance(from, to);
+                            float run = (time * 14f + (i * 7 + j) * 53f) % 220f;
+
+                            for (float along = run; along < span; along += 220f)
+                                EmpressArt.DrawBeam(spriteBatch, from + u * along, from + u * Math.Min(span, along + 50f), 3.5f, EmpressArt.Additive(Color.White, 0.4f * shown));
                         }
                         else
                         {
@@ -303,13 +349,17 @@ namespace PisAndDag.Content.NPCs.Empress
                             float fade = 1f - Ease(p);
                             float width = MathHelper.Lerp(ConWidth * 1.6f, ConWidth * 0.5f, Ease(p));
 
-                            EmpressArt.DrawBeam(spriteBatch, places[i], places[j], width * 2.6f, EmpressArt.Additive(colour, 0.35f * fade));
-                            EmpressArt.DrawBeam(spriteBatch, places[i], places[j], width, EmpressArt.Additive(colour, 0.85f * fade));
-                            EmpressArt.DrawBeam(spriteBatch, places[i], places[j], width * 0.3f, EmpressArt.Additive(Color.White, 0.95f * fade));
+                            EmpressArt.DrawBeam(spriteBatch, from, to, width * 2.6f, EmpressArt.Additive(colour, 0.35f * fade));
+                            EmpressArt.DrawBeam(spriteBatch, from, to, width, EmpressArt.Additive(colour, 0.85f * fade));
+                            EmpressArt.DrawBeam(spriteBatch, from, to, width * 0.3f, EmpressArt.Additive(Color.White, 0.95f * fade));
+
+                            // Where it meets the border at each end, a splash of its light.
+                            EmpressArt.DrawBloom(spriteBatch, from, width * 3f, EmpressArt.Additive(colour, 0.5f * fade));
+                            EmpressArt.DrawBloom(spriteBatch, to, width * 3f, EmpressArt.Additive(colour, 0.5f * fade));
                             // The air shimmering along them: along the marks' own chain only (each haze is a pass
                             // over the bent world, and fifteen at once cost more than they show).
                             if (j == i + 1)
-                                EmpressWarp.Haze(places[i], places[j], 50f, 2f * fade, 90f, i + j);
+                                EmpressWarp.Haze(from, to, 50f, 2f * fade, 90f, i + j);
                         }
                     }
                 }

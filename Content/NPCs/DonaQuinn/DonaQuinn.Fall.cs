@@ -74,8 +74,12 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         private const int TalkLongest = 14400;
         private const int UnseenTicks = 60;
 
-        /// <summary>The cut lands as the finish starts; then she is still; then she fades; then she is gone.</summary>
-        private const int FadeAt = 100;
+        /// <summary>
+        /// The cut lands as the finish starts; she lifts her head and says her last words
+        /// (DonaQuinn.Scene, LastWords); a beat after they are all said she is still; then she
+        /// fades; then she is gone.
+        /// </summary>
+        private const int FadeAt = LastWordsAt + LastWordsTicks + 40;
         private const int FadeTicks = 70;
 
         /// <summary>
@@ -425,7 +429,8 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             }
             else if (State == Phase.Finish && Timer > 0)
             {
-                headWant = DeadHead;
+                // Her head up a little while she says her last words; down as they end.
+                headWant = Timer < LastWordsAt + LastWordsTicks ? PleadHead : DeadHead;
                 armWant = DeadArm;
             }
             else if (State == Phase.Plead)

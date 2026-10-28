@@ -506,6 +506,10 @@ namespace PisAndDag.Content.Biomes
                         DrawFlash(spriteBatch);
                         VastOceanMotes.DrawGlow(spriteBatch);
 
+                        // The schools' own light and their glints (NPCs/VastOcean: VastOceanSchools).
+                        NPCs.Pseudo.PseudoNPCs.DrawGlow(spriteBatch);
+                        NPCs.Ocean.VastOceanSchools.DrawGlints(spriteBatch);
+
                         // The bubbles are the game's own pictures of them, laid over what is behind
                         // them as they are (not added to it as light), pixel for pixel as the game
                         // draws its own (Main.DefaultSamplerState), in the order they rose.
@@ -2568,7 +2572,7 @@ namespace PisAndDag.Content.Biomes
         /// white by Main.lightning, Main.SetBackColor), and through the height of a flash as it was:
         /// the flash is the sea's own (<see cref="DrawFlash"/>), not the sun's rays coming on.
         /// </summary>
-        private static float Daylight()
+        internal static float Daylight()
         {
             Color sky = Main.ColorOfTheSkies;
             float light = MathHelper.Clamp((sky.R * 0.3f + sky.G * 0.59f + sky.B * 0.11f) / 255f, 0f, 1f);

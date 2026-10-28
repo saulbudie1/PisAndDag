@@ -91,6 +91,9 @@ namespace PisAndDag.Content.Combat
             public bool? Flies;
             public bool Reels = true;
             public string Told;
+
+            /// <summary>How far from the player who parried it the server believes it was, if further than Believable (a blade longer than that).</summary>
+            public float Reach;
         }
 
         private sealed class Shot
@@ -125,13 +128,15 @@ namespace PisAndDag.Content.Combat
         /// weight does not say (a rider carried with no weight of her own); left out, its
         /// weight says. <paramref name="reels"/> false: no parry ever staggers it, and no
         /// count is kept. <paramref name="told"/>: what a parry does to it, in words, for
-        /// /parry, when the words for every other enemy would be wrong of it. For
+        /// /parry, when the words for every other enemy would be wrong of it.
+        /// <paramref name="reach"/>: how far from its middle a parry of it can be made, for one
+        /// whose blade is longer than the server would otherwise believe. For
         /// SetStaticDefaults.
         /// </summary>
         public static void AddNPC(int type, Func<NPC, bool> when = null, Action<NPC, Player, Vector2, bool> thrown = null, bool? flies = null,
-            bool reels = true, string told = null)
+            bool reels = true, string told = null, float reach = 0f)
         {
-            npcs[type] = new Answer { When = when, Thrown = thrown, Flies = flies, Reels = reels, Told = told };
+            npcs[type] = new Answer { When = when, Thrown = thrown, Flies = flies, Reels = reels, Told = told, Reach = reach };
         }
 
         // ---- what the config and other mods say ---------------------------------------------------
@@ -509,7 +514,10 @@ namespace PisAndDag.Content.Combat
             {
                 NPC npc = Main.npc[index];
 
-                if (Can(npc) && Near(npc.Center, by))
+                // Its middle no further from them than the server believes, or than its own reach.
+                float reach = npcs.TryGetValue(npc.type, out Answer said) ? Math.Max(Believable, said.Reach) : Believable;
+
+                if (Can(npc) && Vector2.DistanceSquared(npc.Center, by.Center) <= reach * reach)
                     Throw(npc, by);
             }
 

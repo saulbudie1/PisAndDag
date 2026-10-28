@@ -24,6 +24,8 @@ edge is cut off there, in a hard line, as the picture is drawn.
 | Bow.png | her bow of light (Legends, second half): Eventide, enlarged two and a half times, to redraw; drawn in the fight at 0.6 of its size | 1, 90 x 195 (the bow 70 x 175, in a clear margin of 10) |
 | Arrow.png | her arrows (Legends, second half): Daybreak's shape, in greys (tinted as they fly) | 1, 112 x 42 (the arrow 100 x 30, in a clear margin of 6) |
 | Veil.png | where her veil's streaks may take her body away (Legends, second half): a mask over Body.png's two frames | same size as Body.png |
+| BodyPhase2.png | her second half's own body under the veil (Legends): its second frame drawn in place of Body.png's second while the veil is on her; the red places are where the streaks always lie | same size as Body.png |
+| HeadAndShoulderForPhase2.png | her head, hair and shoulders, laid back over BodyPhase2 so the veil never takes them | same size as Body.png |
 
 ## Bow.png
 
@@ -57,3 +59,13 @@ flies, and lit with a star at its head.
 
 Not drawn: wherever it is painted (any colour), the veil's moving streaks may take her body's pixels away; wherever it
 is clear, they never do. Now: all of her below her face, in both frames.
+
+## BodyPhase2.png and HeadAndShoulderForPhase2.png
+
+Only the second frame of each is used. In BodyPhase2, paint pure red (255, 0, 0) where a streak must always lie: now a
+bar across her chest and a square at her hips. The red is never seen (each red pixel is drawn in her own colour from
+the nearest pixel above or below it until the veil takes it), and the two main streaks are held over the two places,
+turning and drifting about them but always covering them (`EmpressVeil.cs`: the upper red place is the chest streak's,
+the lower the hip one's). Everything of BodyPhase2 not under HeadAndShoulderForPhase2 may be taken by a streak;
+everything under it never is. Without either file, or at another size, her second half is drawn from Body.png as
+before.

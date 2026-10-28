@@ -20,7 +20,9 @@ namespace PisAndDag.Content.NPCs.Empress
     //                    twice all of it gone to black; and at the end it goes out and stays out
     //     DARK      60   it comes back, but darker: her sky
     //     SPAWN    120   she comes as she always has, over the player, her colours raining down onto
-    //                    her as she fades up
+    //                    her as she fades up; in Legends she speaks (IntroWords, by request "as soon as
+    //                    she appears, before she drags you up in her cage"), and it lasts until she has
+    //                    said all of it
     //     FLASH     30   she flashes down onto them, her middle on theirs, images of her left all the
     //                    way down
     //     CAGE      44   a hexagon of light shuts round them both
@@ -63,6 +65,17 @@ namespace PisAndDag.Content.NPCs.Empress
         private const int FlickerTicks = 150;
         private const int DarkTicks = 60;
         private const int SpawnTicks = 120;
+
+        /// <summary>
+        /// In Legends her speech (IntroWords) starts this many ticks into SPAWN, as she fades up; and SPAWN lasts until its
+        /// last line has been read (the flash down onto them as it goes), however long that is.
+        /// </summary>
+        private const int IntroFrom = 40;
+        private static int introSpawnTicks;
+
+        private static int SpawnFor => !PADWorld.Legends ? SpawnTicks
+            : introSpawnTicks > 0 ? introSpawnTicks
+            : introSpawnTicks = Math.Max(SpawnTicks, IntroFrom + Taunt.TicksFor(IntroWords) - Taunt.FadeOut - 8);
         private const int FlashTicks = 30;
         private const int CageTicks = 44;
         private const int StarsTicks = 60;
@@ -247,6 +260,18 @@ namespace PisAndDag.Content.NPCs.Empress
             // for them: anyone further off plays on as they were).
             bool here = InScene(npc);
 
+            // E held in the corner: straight to the fight (single player; CinematicSkip).
+            if (here)
+            {
+                CinematicSkip.Offer();
+
+                if (Authority && CinematicSkip.Take())
+                {
+                    SkipArrival(npc, who);
+                    return;
+                }
+            }
+
             // A player whose cage it is: decided once, the first tick this machine sees the cage (a machine
             // that falls behind and first sees it being dragged is put in it then).
             if (!cageDecided && beat >= ArriveFlash && beat <= ArriveForm)
@@ -326,7 +351,9 @@ namespace PisAndDag.Content.NPCs.Empress
                     {
                         float p = MathHelper.Clamp(t / (float)SpawnTicks, 0f, 1f);
 
-                        npc.Center = spawnAt + new Vector2(0f, SpawnDrift * (1f - (1f - p) * (1f - p)));
+                        // Come to rest, she hangs there breathing while she speaks.
+                        float bob = Bob() * Ease((t - SpawnTicks) / 60f);
+                        npc.Center = spawnAt + new Vector2(0f, SpawnDrift * (1f - (1f - p) * (1f - p)) + bob);
                         npc.Opacity = Ease(p);
 
                         // Between the two of them, out to take both in.
@@ -339,7 +366,11 @@ namespace PisAndDag.Content.NPCs.Empress
                         if (entered && Authority)
                             Projectile.NewProjectile(npc.GetSource_FromAI(), npc.Center + new Vector2(0f, -80f), Vector2.Zero, ProjectileID.HallowBossDeathAurora, 0, 0f, Main.myPlayer);
 
-                        if (Authority && t >= SpawnTicks)
+                        // Her speech, in Legends, for whoever is in the scene.
+                        if (Crossed(IntroFrom) && PADWorld.Legends && InScene(npc))
+                            Taunt.Speech(npc, IntroWords, EmpressArt.Pink, EmpressArt.Sky, reach: 0f);
+
+                        if (Authority && t >= SpawnFor)
                         {
                             // Down onto them: the cage starts where they are, and the arena stands over the ground there.
                             cageFrom = who.Center;
@@ -574,12 +605,40 @@ namespace PisAndDag.Content.NPCs.Empress
             if (!plated && !Main.dedServ)
                 DialoguePortrait.Introduce(NPCID.HallowBoss);
 
-            // In Legends, her first words, once her name is down at the bar (Talk); nothing else of hers before them.
+            // In Legends, she has said her piece (her speech, as she came): a while before she remarks on anything.
             if (PADWorld.Legends && !Main.dedServ)
+                talkRest = System.Math.Max(talkRest, TalkRest);
+        }
+
+        /// <summary>
+        /// Her coming, skipped (CinematicSkip; single player, so this machine decides): her arena where it would have stood,
+        /// the player where the drag would have left them, in the middle of it, and her over them; her speech cut; her name
+        /// up; the fight.
+        /// </summary>
+        private void SkipArrival(NPC npc, Player who)
+        {
+            if (!arenaSet)
             {
-                openingIn = OpeningAfter;
-                talkRest = System.Math.Max(talkRest, OpeningAfter);
+                cageFrom = who.Center;
+                arenaCentre = ArenaCentre(cageFrom);
+                arenaSet = true;
             }
+
+            // Not yet let go in her arena: put there, as the drag would have.
+            if (beat < ArriveBreak && !Main.dedServ)
+            {
+                Player me = Main.LocalPlayer;
+                me.Center = arenaCentre;
+                me.velocity = Vector2.Zero;
+                me.fallStart = (int)(me.position.Y / 16f);
+            }
+
+            npc.Center = who.Center + new Vector2(0f, -HoverAbove);
+            npc.velocity = Vector2.Zero;
+
+            Taunt.Hush(npc);
+            Announce(npc);
+            Release(npc);
         }
 
         /// <summary>This machine's player is near enough to be in her scene.</summary>

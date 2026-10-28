@@ -412,11 +412,7 @@ namespace PisAndDag.Content.PADplayer
             if (PADKeybinds.Lightning != null && PADKeybinds.Lightning.JustPressed)
                 ThrowLightning();
 
-            if (PADKeybinds.Wind != null && PADKeybinds.Wind.JustPressed)
-                StepWind();
         }
-
-        private void StepWind() => WindTest.Step(Player);
 
         /// <summary>
         /// Manual reload. StartReload refuses a full or already-reloading magazine, so

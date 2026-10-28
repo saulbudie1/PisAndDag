@@ -9,7 +9,7 @@ using Terraria.ModLoader;
 namespace PisAndDag.Content.NPCs.Empress
 {
     /// <summary>
-    /// The world as a broken mirror (EmpressOfLight.Crack): each shard of a crack drawn again over the world with the
+    /// The world as a broken mirror (EmpressOfLight.Crack; and the mirror barrier's crack, EmpressOfLight.Shield): each shard of a crack drawn again over the world with the
     /// world itself in it, moved and tipped as the shard is, the light its glass catches over it, the world gone dark
     /// behind it as it flies; then the cracks' light over them.
     ///
@@ -48,7 +48,10 @@ namespace PisAndDag.Content.NPCs.Empress
             bool want = false;
 
             for (int i = 0; i < Main.maxNPCs && !want; i++)
-                want = (EmpressOfLight.Of(i)?.Mirroring ?? false) && Main.npc[i].WithinRange(Main.LocalPlayer.Center, SeenFrom);
+            {
+                EmpressOfLight her = EmpressOfLight.Of(i);
+                want = her != null && (her.Mirroring || her.Barrier) && Main.npc[i].WithinRange(Main.LocalPlayer.Center, SeenFrom);
+            }
 
             Wanted = want;
         }
@@ -81,7 +84,16 @@ namespace PisAndDag.Content.NPCs.Empress
                 {
                     EmpressOfLight her = EmpressOfLight.Of(i);
 
-                    if (her == null || !her.Mirroring)
+                    if (her == null)
+                        continue;
+
+                    if (her.Barrier)
+                    {
+                        DrawBarrier(her, Main.npc[i], world);
+                        continue;
+                    }
+
+                    if (!her.Mirroring)
                         continue;
 
                     for (int k = 0; k < her.CrackCount; k++)
@@ -104,6 +116,124 @@ namespace PisAndDag.Content.NPCs.Empress
             {
                 ModContent.GetInstance<EmpressOfLightSystem>()?.Mod.Logger.Warn("Empress mirror: " + e.Message);
             }
+        }
+
+        /// <summary>
+        /// The mirror barrier's crack (EmpressOfLight.Shield, EmpressBarrier): each shard holding the world from a little way
+        /// off, seen a little nearer, washed in one of her colours; inside it, twice, a smaller copy of itself holding the
+        /// world from further off still and nearer still, more coloured (a mirror in a mirror); the light its glass catches
+        /// over each; as it bursts, each flying with the world still in it, going thin. Then its lines over them.
+        /// </summary>
+        private static void DrawBarrier(EmpressOfLight her, NPC npc, Texture2D world)
+        {
+            her.BuildBarrier(npc);
+            var shards = EmpressOfLight.BarrierShards;
+            var corners = EmpressOfLight.BarrierCorners;
+            float shown = her.BarrierShown;
+
+            if (shards.Count > 0 && shown > 0.003f)
+            {
+                Vector2 size = new Vector2(world.Width, world.Height);
+                float time = (float)Main.timeForVisualEffects;
+                float flight = her.BarrierFlight;
+                int count = 0;
+                int lit = 0;
+
+                foreach (EmpressOfLight.Shard shard in shards)
+                {
+                    for (int depth = 0; depth < 3; depth++)
+                    {
+                        float scale = 1f - 0.27f * depth;
+                        float zoom = shard.Zoom * (1f + 0.14f * depth);
+                        Vector2 shift = shard.Shift * (1f + 0.9f * depth);
+                        float wash = 0.12f + 0.12f * depth + 0.06f * (float)Math.Sin(time * 0.04f + shard.Hue * 7f);
+                        float alpha = shown * (1f - flight * 0.5f);
+                        Color tint = Color.Lerp(Color.White, EmpressArt.Prism(shard.Hue + depth * 0.2f), wash) * alpha;
+                        float glintWay = time * 0.035f + shard.Hue * 9f + depth;
+                        Color glass = EmpressArt.Prism(shard.Hue + time / 200f);
+                        float sheen = (0.1f + 0.05f * depth + 0.2f * flight) * shown;
+
+                        Vector2 placed = OnScreen(EmpressOfLight.ShardCorner(shard, shard.Middle));
+                        Vector2 source = OnScreen(shard.Middle + shift);
+
+                        for (int c = 0; c < shard.Count && count + 3 <= vertices.Length; c++)
+                        {
+                            Vector2 a = (corners[shard.Start + c] - shard.Middle) * scale;
+                            Vector2 b = (corners[shard.Start + (c + 1) % shard.Count] - shard.Middle) * scale;
+
+                            Vector2 pa = OnScreen(EmpressOfLight.ShardCorner(shard, shard.Middle + a));
+                            Vector2 pb = OnScreen(EmpressOfLight.ShardCorner(shard, shard.Middle + b));
+                            Vector2 sa = OnScreen(shard.Middle + shift + a / zoom);
+                            Vector2 sb = OnScreen(shard.Middle + shift + b / zoom);
+
+                            vertices[count++] = new VertexPositionColorTexture(new Vector3(placed, 0f), tint, source / size);
+                            vertices[count++] = new VertexPositionColorTexture(new Vector3(pa, 0f), tint, sa / size);
+                            vertices[count++] = new VertexPositionColorTexture(new Vector3(pb, 0f), tint, sb / size);
+
+                            if (lit + 3 <= light.Length)
+                            {
+                                light[lit++] = new VertexPositionColor(new Vector3(placed, 0f), Color.Transparent);
+                                light[lit++] = new VertexPositionColor(new Vector3(pa, 0f), EmpressArt.Additive(glass, sheen * Catch(a.ToRotation() + shard.Spin, glintWay) + 0.035f * shown));
+                                light[lit++] = new VertexPositionColor(new Vector3(pb, 0f), EmpressArt.Additive(glass, sheen * Catch(b.ToRotation() + shard.Spin, glintWay) + 0.035f * shown));
+                            }
+                        }
+                    }
+                }
+
+                Flush(world, count, lit);
+            }
+
+            Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.None, RasterizerState.CullNone, null, Main.GameViewMatrix.TransformationMatrix);
+
+            try
+            {
+                her.DrawBarrierLines(npc, Main.spriteBatch, true);
+            }
+            finally
+            {
+                Main.spriteBatch.End();
+            }
+        }
+
+        /// <summary>The triangles laid out drawn: the world's through the capture, then the light's, added.</summary>
+        private static void Flush(Texture2D world, int count, int lit)
+        {
+            if (count < 3)
+                return;
+
+            GraphicsDevice device = Main.instance.GraphicsDevice;
+            effect ??= new BasicEffect(device) { VertexColorEnabled = true };
+
+            effect.World = Matrix.Identity;
+            effect.View = Matrix.Identity;
+            effect.Projection = Matrix.CreateOrthographicOffCenter(0f, world.Width, world.Height, 0f, 0f, 1f);
+            effect.TextureEnabled = true;
+            effect.Texture = world;
+
+            device.BlendState = BlendState.AlphaBlend;
+            device.DepthStencilState = DepthStencilState.None;
+            device.RasterizerState = RasterizerState.CullNone;
+            device.SamplerStates[0] = SamplerState.LinearClamp;
+
+            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                device.DrawUserPrimitives(PrimitiveType.TriangleList, vertices, 0, count / 3);
+            }
+
+            if (lit >= 3)
+            {
+                effect.TextureEnabled = false;
+                effect.Texture = null;
+
+                foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+                    device.DrawUserPrimitives(PrimitiveType.TriangleList, light, 0, lit / 3);
+                }
+            }
+
+            device.Textures[0] = null;
         }
 
         /// <summary>A world point on the screen, as the world was drawn this frame (its zoom and all).</summary>

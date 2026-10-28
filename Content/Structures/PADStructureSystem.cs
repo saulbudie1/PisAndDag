@@ -100,7 +100,11 @@ namespace PisAndDag.Content.Structures
             int slot = 0;
 
             Put(chest, slot++, ModContent.ItemType<GameChangingOrb>(), 1);
+            Put(chest, slot++, ModContent.ItemType<Items.LoreItem.WeatheredLedger>(), 1);
             Put(chest, slot++, ItemID.LifeCrystal, ShrineLifeCrystals);
+
+            // The Guide's quest is the hut seawards and what is in it (GuideQuest).
+            NPCs.GuideQuest.LedgerPlaced = true;
 
             // WorldGen.genRand makes itself if it is not there, so this is as good from
             // /struct in a running world as it is from the pass.

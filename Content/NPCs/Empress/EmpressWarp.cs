@@ -26,7 +26,7 @@ namespace PisAndDag.Content.NPCs.Empress
     ///   RIPPLE   a ring (or, about a line, a pair of walls) going out: the world pushed out ahead of it and pulled in
     ///            behind it, as a shockwave bends what is seen through it. Timed: it runs out by itself.
     ///   LENS     the world swollen (or drawn in) about a point, and turned about it if asked
-    ///
+    ///   SHEAR    the world cut along a line: either side of it slid along it, each its own way, as a slashed picture    ///
     /// Kinks, hazes and lenses are asked for each frame by whatever draws the light that makes them (as it is drawn, so
     /// they go with it); ripples are started once and run their course. Nothing of the mod's own shader: vanilla's
     /// BasicEffect with the capture as its texture, as the mirror's shards (EmpressMirror). With lighting that makes no
@@ -44,6 +44,7 @@ namespace PisAndDag.Content.NPCs.Empress
             Haze,
             Ripple,
             Lens,
+            Shear,
         }
 
         private struct Source
@@ -97,6 +98,14 @@ namespace PisAndDag.Content.NPCs.Empress
         /// <summary>Is the capture being made (something of hers wants it)?</summary>
         internal static bool Listening => listening;
 
+        /// <summary>
+        /// Something else of the mod's that bends the world each frame (Skeletron's breath of fire: its haze) asks for the
+        /// capture this tick, as a bending Empress does; asked every tick it wants it.
+        /// </summary>
+        public static void Want() => wantedElsewhere = 3;
+
+        private static int wantedElsewhere;
+
         /// <summary>Can this machine bend the world at all: the game's waves on, a capture made (not Retro or Trippy), nothing gone wrong.</summary>
         private static bool Bendable => Main.WaveQuality > 0 && !Main.drawToScreen && Lighting.NotRetro && !failed;
 
@@ -120,14 +129,16 @@ namespace PisAndDag.Content.NPCs.Empress
 
         /// <summary>
         /// The air along a line of light shimmering this frame, out to <paramref name="wide"/> either side of it: ripples
-        /// <paramref name="wave"/> apart along it, rising; <paramref name="phase"/> its own, so lines side by side differ.
+        /// <paramref name="wave"/> apart along it, rising; <paramref name="phase"/> its own, so lines side by side differ;
+        /// within <paramref name="still"/> of the line, nothing moved (the light itself held straight, only the air
+        /// beside it shimmering).
         /// </summary>
-        public static void Haze(Vector2 from, Vector2 to, float wide, float strength, float wave = 90f, float phase = 0f)
+        public static void Haze(Vector2 from, Vector2 to, float wide, float strength, float wave = 90f, float phase = 0f, float still = 0f)
         {
             if (Main.dedServ || strength <= 0.05f || !CanBend)
                 return;
 
-            frame.Add(new Source { Kind = Kind.Haze, A = from, B = to, Wide = wide, Strength = strength, Wave = Math.Max(8f, wave), Phase = phase });
+            frame.Add(new Source { Kind = Kind.Haze, A = from, B = to, Wide = wide, Tall = still, Strength = strength, Wave = Math.Max(8f, wave), Phase = phase });
         }
 
         /// <summary>The world swollen about a point this frame (a positive share: seen nearer; negative: drawn in), and turned about it (radians at its middle).</summary>
@@ -137,6 +148,19 @@ namespace PisAndDag.Content.NPCs.Empress
                 return;
 
             frame.Add(new Source { Kind = Kind.Lens, A = at, Wide = reach, Strength = strength, Turn = turn });
+        }
+
+        /// <summary>
+        /// The world cut along a line this frame: within <paramref name="wide"/> of it, the side on its left slid
+        /// <paramref name="strength"/> pixels along it one way and the side on its right the other, most at the cut, its
+        /// ends coming in soft.
+        /// </summary>
+        public static void Shear(Vector2 from, Vector2 to, float wide, float strength)
+        {
+            if (Main.dedServ || Math.Abs(strength) <= 0.05f || !CanBend)
+                return;
+
+            frame.Add(new Source { Kind = Kind.Shear, A = from, B = to, Wide = wide, Strength = strength });
         }
 
         /// <summary>
@@ -172,13 +196,16 @@ namespace PisAndDag.Content.NPCs.Empress
 
             ripples.RemoveAll(r => Main.GameUpdateCount - r.Born > (uint)r.Life);
 
+            if (wantedElsewhere > 0)
+                wantedElsewhere--;
+
             // A crack's shards need the capture whatever the waves; bends only where they can be drawn, and only for an
             // Empress near enough to be seen.
             bool want = EmpressMirror.Wanted;
 
             if (!want && Bendable)
             {
-                want = ripples.Count > 0;
+                want = ripples.Count > 0 || wantedElsewhere > 0;
 
                 for (int i = 0; i < Main.maxNPCs && !want; i++)
                     want = (EmpressOfLight.Of(i)?.Bending ?? false) && Main.npc[i].WithinRange(Main.LocalPlayer.Center, SeenFrom);
@@ -407,6 +434,7 @@ namespace PisAndDag.Content.NPCs.Empress
                     break;
 
                 case Kind.Haze:
+                case Kind.Shear:
                     reach = s.Wide * zoom;
                     low = Vector2.Min(a, b) - new Vector2(reach);
                     high = Vector2.Max(a, b) + new Vector2(reach);
@@ -430,7 +458,7 @@ namespace PisAndDag.Content.NPCs.Empress
                     break;
             }
 
-            if (strength <= 0.05f && s.Kind != Kind.Lens || reach <= 1f)
+            if (Math.Abs(strength) <= 0.05f && s.Kind != Kind.Lens || reach <= 1f)
                 return false;
 
             // Only the grid points it can reach, on the screen.
@@ -454,6 +482,10 @@ namespace PisAndDag.Content.NPCs.Empress
 
                 case Kind.Ripple:
                     AddRipple(s, a, b, zoom, strength, c0, c1, r0, r1);
+                    break;
+
+                case Kind.Shear:
+                    AddShear(s, a, b, zoom, strength, c0, c1, r0, r1);
                     break;
 
                 default:
@@ -533,6 +565,10 @@ namespace PisAndDag.Content.NPCs.Empress
                         continue;
 
                     float envelope = (1f - Smooth(d)) * (0.45f + 0.55f * Smooth(d * 6f)) * ends;
+
+                    // Held still at the line itself, if asked: easing in beyond it.
+                    if (s.Tall > 0f)
+                        envelope *= Smooth((Math.Abs(off) - s.Tall * zoom) / Math.Max(1f, s.Tall * zoom));
                     float phase = along * k + rise + s.Phase;
                     float across = (float)Math.Sin(phase) + 0.45f * (float)Math.Sin(phase * 2.3f - rise * 1.7f + off * 0.05f);
                     float lengthwise = 0.35f * (float)Math.Cos(phase * 0.7f + off * 0.03f);
@@ -541,6 +577,41 @@ namespace PisAndDag.Content.NPCs.Empress
                     float v = strength * envelope;
                     dx[i] += (n.X * across + u.X * lengthwise) * v;
                     dy[i] += (n.Y * across + u.Y * lengthwise) * v;
+                }
+            }
+        }
+
+        /// <summary>The shear: either side of the line slid along it its own way, most at the cut and gone by its width; soft at its ends.</summary>
+        private static void AddShear(Source s, Vector2 a, Vector2 b, float zoom, float strength, int c0, int c1, int r0, int r1)
+        {
+            Vector2 line = b - a;
+            float length = line.Length();
+
+            if (length < 1f)
+                return;
+
+            Vector2 u = line / length;
+            Vector2 n = new Vector2(-u.Y, u.X);
+            float wide = Math.Max(1f, s.Wide * zoom);
+            float soft = Math.Min(wide, length * 0.5f);
+
+            for (int r = r0; r <= r1; r++)
+            {
+                for (int c = c0; c <= c1; c++)
+                {
+                    Vector2 q = new Vector2(c * step, r * step) - a;
+                    float along = Vector2.Dot(q, u);
+                    float off = Vector2.Dot(q, n);
+                    float d = Math.Abs(off) / wide;
+
+                    if (d >= 1f || along <= -soft || along >= length + soft)
+                        continue;
+
+                    float ends = Smooth((along + soft) / (soft * 2f)) * Smooth((length + soft - along) / (soft * 2f));
+                    float v = strength * (off < 0f ? -1f : 1f) * (float)Math.Pow(1f - d, 2.2) * ends;
+                    int i = r * cols + c;
+                    dx[i] += u.X * v;
+                    dy[i] += u.Y * v;
                 }
             }
         }

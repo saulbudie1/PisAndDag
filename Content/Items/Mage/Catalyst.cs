@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using PisAndDag.Content.PADplayer;
 using Terraria;
+using Terraria.Audio;
 using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.Localization;
@@ -74,7 +75,11 @@ namespace PisAndDag.Content.Items.Mage
             Item.shoot = cast.Shot;
             Item.shootSpeed = cast.Speed;
             Item.knockBack = cast.Knockback;
+            Item.UseSound = cast.CastSound ?? Chime;
         }
+
+        /// <summary>The catalyst's own sound, a cast's unless it has its own (Castable.CastSound).</summary>
+        private static readonly SoundStyle Chime = SoundID.Item8;
 
         public override void HoldItem(Player player) => Apply(player);
 

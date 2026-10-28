@@ -1,4 +1,14 @@
 Items: {
+	GildedSpur: {
+		DisplayName: Gilded Spur
+		Tooltip:
+			'''
+			Summons the Gilded Knight of Grace on the willow field before the great wall
+			Not consumed
+			'It rings for one man, and he always comes.'
+			'''
+	}
+
 	Handswitch: {
 		DisplayName: Handswitch
 		Tooltip: Trades lifeforce for powerful shots
@@ -27,6 +37,15 @@ Items: {
 	LocketOfABookCrazedGirl: {
 		DisplayName: Locket Of A Book-Crazed Girl
 		Tooltip: "'It was opened more often than it was closed.'"
+	}
+
+	WeatheredLedger: {
+		DisplayName: Weathered Ledger
+		Tooltip:
+			'''
+			Bound in leather gone soft with damp.
+			Someone left it here on purpose.
+			'''
 	}
 
 	PieceOfPaper: {
@@ -276,6 +295,16 @@ Items: {
 			'''
 	}
 
+	DancingSand: {
+		DisplayName: Dancing Sand
+		Tooltip:
+			'''
+			Blows a spray of sand off the staff, up to 30 tiles
+			Hits again and again, faster the closer the enemy
+			'The desert has plenty. It will not miss a mouthful.'
+			'''
+	}
+
 	ForestNurtureMe: {
 		DisplayName: Forest, Nurture Me
 		Tooltip:
@@ -511,6 +540,105 @@ Items: {
 			'Red means come. Nobody came.'
 			'''
 	}
+
+	HarenaeumOre: {
+		DisplayName: Harenaeum Ore
+		Tooltip: "'The desert keeps its gold in the sandstone.'"
+	}
+
+	HarenaeumBar: {
+		DisplayName: Harenaeum Bar
+		Tooltip: "'Smelted with a handful of the sand it came from.'"
+	}
+
+	PocketSandstorm: {
+		DisplayName: Pocket Sandstorm
+		Tooltip:
+			'''
+			A whirl of sand goes round the yoyo, 3 tiles out
+			It flings needles of sand through whatever is caught in it
+			'A little weather, on a string.'
+			'''
+	}
+
+	Corosion: {
+		DisplayName: Corosion
+		Tooltip:
+			'''
+			Punches at the cursor: a jab, a cross, then an uppercut that throws enemies up
+			Standing, you step in with each blow and back out
+			What you are punching cannot hurt you by touch for a moment. Bosses, and anything that cannot be knocked back, touch for half
+			Right-click to scatter into sand and step back 10 tiles, untouchable (15 second cooldown)
+			'What the wind does in a thousand years, in three.'
+			'''
+	}
+
+	ScorpiusServus: {
+		DisplayName: Scorpius Servus
+		Tooltip:
+			'''
+			Grows a scorpion's tail from your back to fight for you
+			It strikes over your shoulder at enemies within 13 tiles, poisoning them
+			Each summon grows another tail
+			'It was someone else's tail, once.'
+			'''
+	}
+
+	JellesSableHelper: {
+		DisplayName: Jelle's Sable Helper
+		Tooltip:
+			'''
+			Lets out a ribbon of sand that goes round you
+			When 3 or more enemies, or a boss, come near, it stands up as a ballista
+			The ballista looses a bolt a second, as far as 60 tiles
+			After 5 seconds with nothing to shoot, it falls back to sand
+			'Jelle, the arch witch, lends it out. It comes back.'
+			'''
+	}
+
+	Sidewinder: {
+		DisplayName: Sidewinder
+		Tooltip:
+			'''
+			Arrows weave side to side as they fly
+			Arrows that land burrow to the nearest enemy within 25 tiles
+			and come up under it as a spike of sand, for 50% more damage
+			'It goes sideways. It gets there.'
+			'''
+	}
+
+	TheLastGrain: {
+		DisplayName: The Last Grain
+		Tooltip:
+			'''
+			Right-click to turn its hourglass over. It holds 10 seconds of sand
+			Turned before it runs out, only the sand that had fallen runs again
+			While sand falls, each shot blasts packed sand from the muzzle, hurting what is near it
+			Run out, its shots do almost nothing, and you move 30% slower holding it
+			'It stops when the sand stops. So do you.'
+			'''
+	}
+
+	ClayTurbah: {
+		DisplayName: Clay Turbah
+		Tooltip:
+			'''
+			[c/9e6fab:A Seal]
+			Earth incantations deal 15% more damage
+			'Fired clay, gold, and a place for your thumb.'
+			'''
+	}
+
+	MiniSandstorm: {
+		DisplayName: Mini Sandstorm
+		Tooltip:
+			'''
+			Calls a small tornado of sand up out of the ground under the cursor, for 6 seconds
+			It drifts after enemies, carries light ones up and throws them out to fall
+			The fall hurts them. Heavy and flying enemies are only hurt
+			'It is only small if you are not in it.'
+			'''
+	}
 }
 
 Buffs: {
@@ -669,6 +797,21 @@ Buffs: {
 		DisplayName: Visual Intoxication
 		Description: Losing 350 life a second
 	}
+
+	SandSettling: {
+		DisplayName: Sand Settling
+		Description: Cannot step through sand again yet
+	}
+
+	ScorpiusServusBuff: {
+		DisplayName: Scorpius Servus
+		Description: The tail will fight for you
+	}
+
+	JellesSableHelperBuff: {
+		DisplayName: Jelle's Sable Helper
+		Description: Jelle's sand will fight for you
+	}
 }
 
 DeathText: {
@@ -700,6 +843,17 @@ DeathText: {
 	Crushed3: "{0} was made very small by the sea."
 	Mantrap: "{0} stepped where they had set it."
 	VisualIntoxication: "{0} saw what lies outside."
+	GildedKnightBlade: "{0} came up the road, and got no further."
+	GildedKnightShock: "{0} was thrown down by the ground he struck."
+	GildedKnightCrescent: "{0} was cut by a sword swung a long way off."
+	GildedKnightLancet: "{0} was run through from the far end of the field."
+	GildedKnightVotive: "{0} was found by a blade nobody held."
+	GildedKnightPyre: "{0} stood where the ground was about to burn."
+	GildedKnightGreat: "{0} was inside the arc when it burst."
+	GildedKnightProcession: "{0} was in the way of the fire coming down the road."
+	GildedKnightLong: "{0} was under a blade as tall as the sky."
+	GildedKnightSun: "{0} saw the sun come down."
+	GildedKnightLight: "{0} was caught in the gold."
 }
 
 Tiles: {
@@ -724,6 +878,7 @@ Tiles: {
 	WhiteVentMouth.MapEntry: White Smoker
 	SeepVent.MapEntry: Seep
 	LighthouseLens.MapEntry: Lighthouse Lens
+	HarenaeumOre.MapEntry: Harenaeum Ore
 }
 
 Projectiles: {
@@ -743,10 +898,12 @@ Projectiles: {
 	EverHungerHead.DisplayName: Everhunger
 	ColdCallIcicle.DisplayName: Cold Call
 	ColdCallHold.DisplayName: Cold Call
+	DancingSandGust.DisplayName: Dancing Sand
 	NurtureCall.DisplayName: Forest, Nurture Me
 	AquaticFirearmsBattery.DisplayName: Aquatic Firearms
 	ArmMeCall.DisplayName: Chlorophyte, Arm Me
 	SkeletronBreathSkull.DisplayName: Skeletron Breath Skull
+	SkeletronBreath.DisplayName: Skeletron Breath
 	JointArmsOfTheDefiledProj.DisplayName: Joint Arms Of The Defiled
 	VisusThrust.DisplayName: Visus
 	VisusChop.DisplayName: Visus
@@ -799,6 +956,39 @@ Projectiles: {
 	ParadeSabreArc.DisplayName: Parade Sabre
 	SignalFlare.DisplayName: Signal Flare
 	EmpressHitbox.DisplayName: Elin
+	EmpressArrow.DisplayName: Empress Arrow
+	BoneBullet.DisplayName: Bone Bullet
+	BoneSpike.DisplayName: Bone Spike
+	JawBoomerang.DisplayName: Jaw Boomerang
+	PalmWave.DisplayName: Palm Wave
+	ShockColumn.DisplayName: Shock Column
+	SkeletronBlast.DisplayName: Skeletron Blast
+	SkeletronHitbox.DisplayName: Skeletron Hitbox
+	SkeletronSkull.DisplayName: Skeletron Skull
+	SkullBall.DisplayName: Skull Ball
+	SnipCut.DisplayName: Snip Cut
+	PocketSandstormYoyo.DisplayName: Pocket Sandstorm
+	PocketSandstormNeedle.DisplayName: Sand Needle
+	FistPunch.DisplayName: Fist
+	Sandstep.DisplayName: Sandstep
+	ScorpiusTail.DisplayName: Scorpius Servus
+	SableConstruct.DisplayName: Jelle's Sable Helper
+	SableBolt.DisplayName: Sable Bolt
+	SidewinderArrow.DisplayName: Sidewinder Arrow
+	SidewinderSpike.DisplayName: Sand Spike
+	LastGrainBlast.DisplayName: Compressed Sand
+	MiniSandstormTornado.DisplayName: Mini Sandstorm
+	KnightShock.DisplayName: Shockwave
+	KnightCrescent.DisplayName: Crescent
+	KnightLancet.DisplayName: Lancet
+	KnightVotive.DisplayName: Votive Blade
+	KnightPyre.DisplayName: Pyre
+	KnightGreat.DisplayName: Great Crescent
+	KnightProcession.DisplayName: Procession of Fire
+	KnightBurst.DisplayName: Procession of Fire
+	KnightPillar.DisplayName: Long Blade
+	KnightSweep.DisplayName: Long Blade
+	KnightSunOrb.DisplayName: Gilded Sun
 }
 
 NPCs: {
@@ -825,6 +1015,11 @@ NPCs: {
 	}
 
 	CreviceEelBody.DisplayName: Crevice Eel
+
+	GildedKnight: {
+		DisplayName: Gilded Knight of Grace
+		Bestiary: Plate gilded over, two swords as tall as he is, and a road before a wall that was never breached. He has been put down on that road more times than anyone has counted. He gets up.
+	}
 }
 
 Biomes: {
@@ -862,6 +1057,7 @@ Biomes: {
 BossLog: {
 	Megashark.SpawnInfo: Once the three machines have fallen, twenty rounds from a Minishark into the sea. It comes up under you.
 	Abomanation.SpawnInfo: Let small things run free on the Wasted Mile. Bunnies, squirrels, red squirrels. No rodent will get away, and the tenth brings them.
+	GildedKnight.SpawnInfo: Climb to the willows under the great white wall. He keeps the road before it. After, ring the spur he leaves on that same field.
 }
 
 Hints: {
@@ -1130,7 +1326,7 @@ Tips: {
 Keybinds: {
 	Reload.DisplayName: Reload
 	Lightning.DisplayName: Lightning
-	Wind.DisplayName: Wind
+	Wind.DisplayName: Use Off Hand
 	SpellUp.DisplayName: Next Spell or Incantation
 	SpellDown.DisplayName: Previous Spell or Incantation
 	Lantern.DisplayName: Switch the M.U.P.R.A.L's light
@@ -1207,4 +1403,9 @@ UI: {
 	WorldSizeExtraLarge: Grand
 	WorldDescriptionSizeExtraLarge: 1.5x the size of a large. New bosses and lore heaping structures [c/fcbd1c:(Recommended)]
 	WorldSizeNotFull: (does not include the Pistols and Daggers' full experience)
+
+	LastGrain: {
+		Empty: The sand has run out. Right-click to turn it over
+		Running: "{0} seconds of sand left"
+	}
 }

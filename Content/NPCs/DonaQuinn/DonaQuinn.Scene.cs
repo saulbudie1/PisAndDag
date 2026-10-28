@@ -20,7 +20,8 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
     /// two face each other.
     ///
     /// The lines are hers, the user's own words, kept as written (the bars in them are
-    /// Dialogue.Pause: she trails off).
+    /// Dialogue.Pause: she trails off): Q01 to Q10 of the script Amy Lam records from
+    /// (Claude input/AmyVoiceLines.docx).
     /// </summary>
     public partial class DonaQuinn
     {
@@ -30,8 +31,22 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
 
         private const string FearMe = "Fear me, you simpleton!";
         private const string ItIsI = "For it is I, Dame Quilt! Challenge me if you dare!";
-        private const string Coward = "Coward! Here comes my lance!";
-        private const string Mercy = "Please! I surrender! White flag! Me rindo!";
+        private const string Coward = "Coward!| Here comes my lance!";
+        private const string Mercy = "Please! Wait! Wait! I surrender!";
+
+        /// <summary>
+        /// Finished: her last words, as she lies cut (Q10), slow, a breath at each stop, the
+        /// panel going down by itself. Said <see cref="LastWordsAt"/> ticks into it; she dies
+        /// (DonaQuinn.Fall, FadeAt) once they are said.
+        /// </summary>
+        private const string LastWords = "I failed you.|.|.| dear.|.|.| father...";
+        private const float LastWordsPace = 0.6f;
+        private const int LastWordsAt = 40;
+
+        /// <summary>From her last words begun to all of them up: the panel's fade, 29 letters at LastWordsPace, and six stops.</summary>
+        private const int LastWordsTicks = Dialogue.FadeTicks + 49 + 6 * Dialogue.PauseTicks;
+
+        private bool saidLastWords;
 
         private const string Decline = "Decline";
         private const string Accept = "Accept";
@@ -41,17 +56,16 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         /// <summary>Spared, she talks: each line, then the answer that moves her on to the next. The last has none.</summary>
         private static string TalkLine(int i, bool male) => i switch
         {
-            0 => male ? "Thank you, kind sir!" : "Thank you, kind madam!",
-            1 => "I am but a lonesome knight.|.|.| that I'm trying to be.",
+            0 => "Thank you, kind stranger!",
+            1 => "I am but a lonesome knight.|.|.| that I strive to be.",
             2 => "I'm so sorry.|.|.| for the startle. I sure have caused you some damage.",
-            3 => "I thought you were a big bad bully monster!|.|.|. Honestly you are kind of knightsome and admirable overall.",
-            4 => "Oh I love knighthood but I can never join the kingdom's army|.|.|.",
-            _ => male ? "Oh sorry again. I hope to see you soon, Mr Warrior." : "Oh sorry again. I hope to see you soon, Mrs Warrior.",
+            3 => "O, I adore knighthood.|.|.| but I can never join the kingdom's army|.|.|.",
+            _ => "Huh! Sorry again for the trouble. I hope to see you soon, stranger!",
         };
 
-        private static readonly string[] TalkAnswers = { "...", "...", "Why did you do this", "Why the knight stuff?", "I am in a hurry" };
+        private static readonly string[] TalkAnswers = { "...", "...", "Why the knight stuff?", "I am in a hurry" };
 
-        private const int TalkLines = 6;
+        private const int TalkLines = 5;
 
         // ============================================================
         // THE CAMERA AND THE BARS
@@ -208,6 +222,12 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
                     DonaScenePlayer.FaceToward(NPC);
                     focus = NPC.Center;
                     wantShot = true;
+
+                    if (!saidLastWords && Timer >= LastWordsAt)
+                    {
+                        saidLastWords = true;
+                        Dialogue.Aside(NPC, LastWords, LastWordsPace, 50);
+                    }
                     break;
 
                 default:

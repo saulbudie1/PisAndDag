@@ -34,8 +34,10 @@ namespace PisAndDag.Content.NPCs.Empress
 
         public override bool AppliesToEntity(NPC entity, bool lateInstantiation) => entity.type == NPCID.Butterfly;
 
-        /// <summary>How many she bursts into.</summary>
+        /// <summary>How many she bursts into: a ring of them thrown far, and (by request: "add 20 more butterflies but they
+        /// have smaller velocity/radius smaller") as many again thrown softly, a nearer cloud inside it.</summary>
         public const int Count = 20;
+        public const int Near = 20;
 
         // The game's butterflies by their ai[2]: one more than their row on its sheet.
         private const int PurpleEmperor = 2;
@@ -55,6 +57,12 @@ namespace PisAndDag.Content.NPCs.Empress
         private const float FlutterLeast = 1.3f;
         private const float FlutterMost = 2.5f;
         private const float Settle = 0.035f;
+
+        /// <summary>The nearer cloud: thrown this fast, slowing to this (each about a third of the ring's).</summary>
+        private const float NearThrownLeast = 1.2f;
+        private const float NearThrownMost = 3.2f;
+        private const float NearFlutterLeast = 0.45f;
+        private const float NearFlutterMost = 1f;
 
         /// <summary>Ticks of her flight, the least and the most; then the game's own.</summary>
         private const int FlightLeast = 150;
@@ -85,15 +93,18 @@ namespace PisAndDag.Content.NPCs.Empress
         /// <summary>Its flight, before the bob of its wings.</summary>
         private Vector2 glide;
 
-        /// <summary>The server's: <see cref="Count"/> of them out of <paramref name="at"/>, every way, the first straight up and the rest round from it.</summary>
+        /// <summary>The server's: <see cref="Count"/> of them out of <paramref name="at"/>, every way, the first straight up and the rest round from it; and <see cref="Near"/> more, softly.</summary>
         public static void Burst(IEntitySource source, Vector2 at)
         {
             if (Main.netMode == NetmodeID.MultiplayerClient)
                 return;
 
-            for (int i = 0; i < Count; i++)
+            for (int n = 0; n < Count + Near; n++)
             {
-                float way = (i + Main.rand.NextFloat(-0.42f, 0.42f)) / Count * MathHelper.TwoPi - MathHelper.PiOver2;
+                // The ring first, then the nearer cloud, each round her colours; the cloud's ways between the ring's.
+                bool near = n >= Count;
+                int i = near ? n - Count : n;
+                float way = (i + (near ? 0.5f : 0f) + Main.rand.NextFloat(-0.42f, 0.42f)) / Count * MathHelper.TwoPi - MathHelper.PiOver2;
                 int kind = Kinds[Math.Min(Kinds.Length - 1, i * Kinds.Length / Count)];
                 Vector2 from = at + way.ToRotationVector2() * 6f;
 
@@ -111,9 +122,9 @@ namespace PisAndDag.Content.NPCs.Empress
                 flier.place = (byte)i;
                 flier.way = way;
                 flier.curl = Main.rand.NextFloat(0.0015f, 0.004f) * (Main.rand.NextBool() ? 1f : -1f);
-                flier.flutter = Main.rand.NextFloat(FlutterLeast, FlutterMost);
+                flier.flutter = near ? Main.rand.NextFloat(NearFlutterLeast, NearFlutterMost) : Main.rand.NextFloat(FlutterLeast, FlutterMost);
                 flier.sway = Main.rand.NextFloat(MathHelper.TwoPi);
-                flier.glide = way.ToRotationVector2() * Main.rand.NextFloat(ThrownLeast, ThrownMost);
+                flier.glide = way.ToRotationVector2() * (near ? Main.rand.NextFloat(NearThrownLeast, NearThrownMost) : Main.rand.NextFloat(ThrownLeast, ThrownMost));
 
                 butterfly.velocity = flier.glide;
                 Own(butterfly);

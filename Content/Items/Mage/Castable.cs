@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using PisAndDag.Content.PADplayer;
 using Terraria;
+using Terraria.Audio;
 using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.Localization;
@@ -56,6 +57,9 @@ namespace PisAndDag.Content.Items.Mage
         public virtual bool Channel => false;
 
         public virtual float Speed => 10f;
+
+        /// <summary>The sound each cast makes, in the place of the catalyst's own (the game's magic chime, SoundID.Item8). For casts that go off so often the chime would be a rattle.</summary>
+        public virtual SoundStyle? CastSound => null;
         public virtual float Knockback => 2f;
 
         /// <summary>

@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PisAndDag.Content.Graphics;
 using Terraria;
 using Terraria.Audio;
 using Terraria.ID;
@@ -18,7 +19,8 @@ namespace PisAndDag.Content.NPCs.Empress
     //     DRIVE     ...  vanilla fights on (its bolts, its lances, its sun dance, its rainbow) while she comes at the
     //                    player behind the saw (3.9 px a tick: half again as fast as at first, by request), turning it
     //                    after them; the blade grows out over the first two seconds from 14 tiles to its full reach,
-    //                    50 tiles (by request: "extend ... to max length of 50 tiles"), turning no faster at its tip
+    //                    37 and a half tiles (by request: "extend ... to max length of 50 tiles", then "maybe max length
+    //                    is only 9/12 of this"), turning no faster at its tip
     //                    than 14 px a tick; its dash is skipped for the next move of its cycle, and its dart to the
     //                    player between moves is not made. Two of vanilla's moves, or eleven seconds, whichever is
     //                    first. Heard as a chainsaw (the game's own): its motor, two notes high and low by turns,
@@ -33,6 +35,12 @@ namespace PisAndDag.Content.NPCs.Empress
     // effect"): the air along the blade shimmering and whirled at its tip (EmpressWarp); faint images of the blade where
     // it was a moment ago as it swings; a glint running out along it; built up to with the shimmer played backwards,
     // wavering in the air as it goes, glass flying as it goes out.
+    //
+    // As the Photon Ripper is made (by request: "check ... Photon Ripper code to see how to make a good chainsaw"): the
+    // whole saw shivering where it is drawn, a pixel or so every frame; its chain of teeth running round the bar fast,
+    // each tooth trailing a streak of its colour; prism teeth thrown out round it in a long squashed loop, out along one
+    // side and back along the other, each trailing a long rainbow ribbon; sparks of every colour streaming off it toward
+    // its tip.
 
     public partial class EmpressOfLight
     {
@@ -56,12 +64,12 @@ namespace PisAndDag.Content.NPCs.Empress
         private const int SawMoves = 2;
 
         /// <summary>
-        /// The blade: from the hands this long as it is conjured, this long at its full reach (50 tiles), grown out
+        /// The blade: from the hands this long as it is conjured, this long at its full reach (37.5 tiles), grown out
         /// over this long; this wide; how fast she comes; how fast it turns after the player (and how fast its tip
         /// may go round at the most, so the long blade sweeps no faster than the short one could be dodged).
         /// </summary>
         private const float SawLength = 230f;
-        private const float SawReach = 800f;
+        private const float SawReach = 600f;
         private const int SawExtendTicks = 120;
         private const float SawWidth = 36f;
         private const float SawPace = 3.9f;
@@ -183,6 +191,21 @@ namespace PisAndDag.Content.NPCs.Empress
             if (!Main.dedServ)
                 SawSounds(npc);
 
+            // Sparks of every colour streaming off it toward its tip (the Photon Ripper's).
+            if (!Main.dedServ)
+            {
+                SawBlade(npc, 1f, out Vector2 haft, out Vector2 point);
+                Vector2 way = sawAngle.ToRotationVector2();
+
+                for (int i = 0; i < 2; i++)
+                {
+                    Vector2 at = Vector2.Lerp(haft, point, Main.rand.NextFloat()) + way.RotatedBy(MathHelper.PiOver2) * Main.rand.NextFloat(-1f, 1f) * SawWidth * 0.6f;
+                    Dust spark = Dust.NewDustPerfect(at, DustID.RainbowMk2, way * Main.rand.NextFloat(4f, 9f) + Main.rand.NextVector2Circular(1.5f, 1.5f), 0,
+                        Main.hslToRgb((sawTimer / 40f + Main.rand.NextFloat(-0.1f, 0.1f)) % 1f, 0.95f, 0.8f), Main.rand.NextFloat(0.9f, 1.25f));
+                    spark.noGravity = true;
+                }
+            }
+
             if (!Main.dedServ && Main.rand.NextBool(2))
             {
                 SawBlade(npc, 1f, out _, out Vector2 tip);
@@ -299,7 +322,7 @@ namespace PisAndDag.Content.NPCs.Empress
             float grown = scene == Scene.Act && act == Act.Saw ? Ease(timer / (float)ConjureTicks) : 1f;
             float alpha = sawFade > 0 && !sawing ? sawFade / (float)SawFadeTicks : 1f;
 
-            SawBlade(npc, grown, out Vector2 from, out Vector2 to);
+            SawDrawn(npc, grown, out Vector2 from, out Vector2 to);
 
             float length = Vector2.Distance(from, to);
 
@@ -322,10 +345,13 @@ namespace PisAndDag.Content.NPCs.Empress
                 }
             }
 
-            // The blade: a glow of her colours, a band of light, a white heart.
-            EmpressArt.DrawLine(spriteBatch, from, to, SawWidth * 2.2f, EmpressArt.Additive(EmpressArt.Prism(time / 120f), 0.28f * alpha * hum));
-            EmpressArt.DrawLine(spriteBatch, from, to, SawWidth, EmpressArt.Additive(EmpressArt.Sky, 0.55f * alpha));
-            EmpressArt.DrawLine(spriteBatch, from, to, SawWidth * 0.42f, EmpressArt.Additive(Color.White, 0.95f * alpha));
+            // The blade: a glow of her colours, a band of light, two rails of white down its sides, a white heart; its
+            // ends rounded.
+            EmpressArt.DrawBeam(spriteBatch, from, to, SawWidth * 2.4f, EmpressArt.Additive(EmpressArt.Prism(time / 120f), 0.26f * alpha * hum));
+            EmpressArt.DrawBeam(spriteBatch, from, to, SawWidth * 1.05f, EmpressArt.Additive(EmpressArt.Sky, 0.5f * alpha));
+            EmpressArt.DrawBeam(spriteBatch, from + across * SawWidth * 0.3f, to + across * SawWidth * 0.3f, 3f, EmpressArt.Additive(Color.White, 0.6f * alpha));
+            EmpressArt.DrawBeam(spriteBatch, from - across * SawWidth * 0.3f, to - across * SawWidth * 0.3f, 3f, EmpressArt.Additive(Color.White, 0.6f * alpha));
+            EmpressArt.DrawBeam(spriteBatch, from, to, SawWidth * 0.36f, EmpressArt.Additive(Color.White, 0.95f * alpha));
 
             // A glint running out along it, again and again; the air along it shimmering, whirled at its tip.
             Vector2 glint = Vector2.Lerp(from, to, time * 0.025f % 1f);
@@ -355,8 +381,8 @@ namespace PisAndDag.Content.NPCs.Empress
                 // back along the other, each leaning back from the way it runs, as a chain's teeth do.
                 float half = SawWidth * 0.5f + 3f;
                 float perimeter = 2f * length + MathHelper.Pi * half;
-                int teeth = Math.Clamp((int)(perimeter / 24f), 24, 90);
-                float run = time * 9f;
+                int teeth = Math.Clamp((int)(perimeter / 30f), 20, 70);
+                float run = time * 13f;
 
                 for (int k = 0; k < teeth; k++)
                 {
@@ -364,11 +390,28 @@ namespace PisAndDag.Content.NPCs.Empress
                     Vector2 at = Around(from, along, across, length, half, s, out Vector2 travel, out Vector2 outward);
                     Vector2 tooth = (outward - travel * 0.55f).SafeNormalize(outward);
                     float way = tooth.ToRotation();
-                    Color colour = EmpressArt.Prism(k / (float)teeth + time / 90f);
+                    Color colour = Main.hslToRgb(((k / (float)teeth + time / 90f) % 1f + 1f) % 1f, 0.95f, 0.7f);
 
-                    EmpressArt.DrawRay(spriteBatch, at - tooth * 3f, way, 22f, 12f, EmpressArt.Additive(colour, 0.95f * alpha));
-                    EmpressArt.DrawRay(spriteBatch, at - tooth * 2f, way, 15f, 4f, EmpressArt.Additive(Color.White, 0.8f * alpha));
-                    EmpressArt.DrawBloom(spriteBatch, at, 9f, EmpressArt.Additive(Color.White, 0.45f * alpha));
+                    // A streak of its colour behind it, as it runs.
+                    EmpressArt.DrawLine(spriteBatch, at - travel * 26f, at, 5f, EmpressArt.Additive(colour, 0.45f * alpha));
+                    EmpressArt.DrawRay(spriteBatch, at - tooth * 3f, way, 26f, 13f, EmpressArt.Additive(colour, 0.95f * alpha));
+                    EmpressArt.DrawRay(spriteBatch, at - tooth * 2f, way, 17f, 4f, EmpressArt.Additive(Color.White, 0.85f * alpha));
+                    EmpressArt.DrawBloom(spriteBatch, at, 10f, EmpressArt.Additive(Color.White, 0.45f * alpha));
+                }
+
+                // The prism teeth thrown round it: their heads, turning as they go (their ribbons: DrawSawBands).
+                for (int k = 0; k < SawLoopers; k++)
+                {
+                    float u = time / SawLoopTicks + k / (float)SawLoopers;
+                    Vector2 at = SawLoop(from, along, across, length, u);
+                    Vector2 next = SawLoop(from, along, across, length, u + 0.002f);
+                    float turn = (next - at).ToRotation() + MathHelper.Pi * (u % 1f) * 2f;
+                    Color colour = Main.hslToRgb(((k / (float)SawLoopers + time / 160f) % 1f + 1f) % 1f, 0.95f, 0.75f);
+
+                    EmpressArt.DrawBloom(spriteBatch, at, 46f, EmpressArt.Additive(colour, 0.55f * alpha));
+                    EmpressArt.DrawRay(spriteBatch, at, turn, 22f, 14f, EmpressArt.Additive(Color.White, 0.95f * alpha));
+                    EmpressArt.DrawRay(spriteBatch, at, turn + MathHelper.Pi, 22f, 14f, EmpressArt.Additive(colour, 0.95f * alpha));
+                    EmpressArt.DrawStar(spriteBatch, at, 30f, turn, EmpressArt.Additive(Color.White, 0.8f * alpha));
                 }
             }
             else if (sawFade > 0)
@@ -392,6 +435,91 @@ namespace PisAndDag.Content.NPCs.Empress
 
             // The tip, where it bites.
             EmpressArt.DrawBloom(spriteBatch, to, 60f, EmpressArt.Additive(EmpressArt.Pink, 0.45f * alpha * hum));
+        }
+
+        /// <summary>The prism teeth thrown round the saw: how many, and ticks for one to go round.</summary>
+        private const int SawLoopers = 6;
+        private const float SawLoopTicks = 70f;
+
+        /// <summary>How far a prism tooth's loop goes out from the blade's line at the most (the Photon Ripper's 45).</summary>
+        private const float SawLoopWide = 46f;
+
+        /// <summary>
+        /// The blade as drawn: as it is, shivering a pixel or so where it is drawn, a little differently every frame (the
+        /// Photon Ripper's vibration; its hurting is where it is).
+        /// </summary>
+        private void SawDrawn(NPC npc, float grown, out Vector2 from, out Vector2 to)
+        {
+            SawBlade(npc, grown, out from, out to);
+            float time = (float)Main.timeForVisualEffects;
+            Vector2 shiver = new Vector2((float)Math.Sin(time * 7.31f), (float)Math.Cos(time * 9.17f + 1.3f)) * 1.4f;
+            from += shiver;
+            to += shiver;
+        }
+
+        /// <summary>
+        /// A prism tooth's place on its loop round the saw, <paramref name="u"/> of the way round (as the Photon Ripper's
+        /// teeth go): out along one side to the tip and back along the other, squashed to a long loop, never further from
+        /// the blade's line than SawLoopWide, never behind her hands.
+        /// </summary>
+        private static Vector2 SawLoop(Vector2 from, Vector2 along, Vector2 across, float length, float u)
+        {
+            float a = MathHelper.TwoPi * u - MathHelper.PiOver2;
+            float outward = ((float)Math.Sin(a) * 0.5f + 0.5f) * length;
+            float side = MathHelper.Clamp((float)Math.Cos(a) * 0.25f * length, -SawLoopWide, SawLoopWide);
+            return from + along * outward + across * side;
+        }
+
+        /// <summary>
+        /// The prism teeth's ribbons (no batch open): behind each, a long tapering ribbon of the rainbow along the way it
+        /// has come round the loop, white at its head.
+        /// </summary>
+        private void DrawSawBands(NPC npc)
+        {
+            if (!EmpressArt.Ready(EmpressArt.Line))
+                return;
+
+            float grown = scene == Scene.Act && act == Act.Saw ? Ease(timer / (float)ConjureTicks) : 1f;
+            float alpha = sawFade > 0 && !sawing ? sawFade / (float)SawFadeTicks : 1f;
+
+            if (!(sawing || grown > 0.99f && sawFade == 0))
+                return;
+
+            SawDrawn(npc, grown, out Vector2 from, out Vector2 to);
+            float length = Vector2.Distance(from, to);
+
+            if (length < 40f)
+                return;
+
+            Texture2D line = EmpressArt.Line.Value;
+            float time = (float)Main.timeForVisualEffects;
+            Vector2 along = sawAngle.ToRotationVector2();
+            Vector2 across = along.RotatedBy(MathHelper.PiOver2);
+            const int Trail = 24;
+
+            for (int k = 0; k < SawLoopers; k++)
+            {
+                float head = time / SawLoopTicks + k / (float)SawLoopers;
+                float hue = k / (float)SawLoopers;
+
+                Strip.Begin();
+
+                for (int j = Trail; j >= 0; j--)
+                {
+                    float u = head - j * 0.005f;
+                    Vector2 at = SawLoop(from, along, across, length, u);
+                    Vector2 ahead = SawLoop(from, along, across, length, u + 0.002f);
+                    Vector2 normal = (ahead - at).SafeNormalize(across).RotatedBy(MathHelper.PiOver2);
+                    float left = 1f - j / (float)Trail;
+                    float width = 24f * left + 1f;
+                    Color colour = Color.Lerp(Color.White, Main.hslToRgb(((hue + j * 0.03f + time / 160f) % 1f + 1f) % 1f, 0.95f, 0.55f), 0.35f + 0.5f * (1f - left));
+                    colour = EmpressArt.Additive(colour, 0.85f * left * alpha);
+
+                    Strip.Pair(at - normal * width * 0.5f, at + normal * width * 0.5f, colour, colour, left);
+                }
+
+                Strip.Draw(line, SamplerState.LinearClamp);
+            }
         }
 
         /// <summary>

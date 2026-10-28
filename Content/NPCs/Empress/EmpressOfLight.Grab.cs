@@ -88,21 +88,28 @@ namespace PisAndDag.Content.NPCs.Empress
         private const float HoldRaise = 0.42f;
         private const float WindBack = 2.15f;
 
+        /// <summary>How much further than her body her dash takes whoever it meets, each way.</summary>
+        private const int DashReach = 14;
+
         /// <summary>Her dash, in her Legends half (vanilla's ticks 40 to 90 of it): whoever it meets is taken. The server's.</summary>
         private void DashMeets(NPC npc)
         {
             if (npc.ai[1] < 40f || npc.ai[1] > 90f)
                 return;
 
+            // A little more than her body as she dashes (by request: "During her dash, her hitbox is slightly bigger"),
+            // and where she was half a tick ago too, so nobody slips between two of her ticks.
             Rectangle her = npc.Hitbox;
-            her.Inflate(-8, -8);
+            her.Inflate(DashReach, DashReach);
+            Rectangle before = her;
+            before.Offset((int)(-npc.velocity.X * 0.5f), (int)(-npc.velocity.Y * 0.5f));
 
             for (int i = 0; i < Main.maxPlayers; i++)
             {
                 Player p = Main.player[i];
 
                 // As her blow would: not through a player's moment of grace after a hit.
-                if (!p.active || p.dead || p.immune || !p.Hitbox.Intersects(her))
+                if (!p.active || p.dead || p.immune || !p.Hitbox.Intersects(her) && !p.Hitbox.Intersects(before))
                     continue;
 
                 BeginGrab(npc, p);

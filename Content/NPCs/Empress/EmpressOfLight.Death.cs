@@ -12,29 +12,36 @@ using Terraria.ModLoader;
 
 namespace PisAndDag.Content.NPCs.Empress
 {
-    // ---- her death --------------------------------------------------------------------------------
+    // ---- her fall (not her death) ----------------------------------------------------------------
+    //
+    // By the user's lore: she is not dead here, only not yet fallen; she is fought again after the
+    // Moon Lord. So nothing of this says she dies: she breaks into light and leaves as butterflies, and
+    // her last words are a promise to watch. ("Death" in the code below is the game's word for the
+    // blow that ends the fight, kept for the hooks it names.)
     //
     // By request ("Death Animation: Cinematic"), the blow that would kill her starts this instead
     // (CheckDead), in every world:
     //
     //     SLOW      80   she slows, over the player, who hangs still in the air; the camera goes to her
-    //     EYES     100   light comes out of her eyes; she speaks
-    //     CRACKS   ...   cracks run through her, body, arms and legs, here and there, with light
-    //                    shining out of them; she speaks again
-    //     CLOSE    180   the border closes in on her and the player under her, the camera on both,
-    //                    and the world shakes: three seconds of it (in from wherever it stood to
-    //                    the edges of the shot at once, unseen, then slowly, all of it seen)
+    //     EYES     100   light comes out of her eyes
+    //     CRACKS   150   cracks run through her, body, arms and legs, here and there, with light
+    //                    shining out of them
+    //     CLOSE    ...   the border closes in on her and the player under her, the camera on both,
+    //                    and the world shakes, as long as her first three lines take (in from
+    //                    wherever it stood to the edges of the shot at once, unseen, then slowly,
+    //                    all of it seen); she speaks
     //     BURST     30   it is thrown out, and gone
     //     SHRINK    70   she gets smaller and smaller, all light, and bursts into butterflies (by request:
     //                    "a clutter of 20 ish, flying in different directions, updown left right, sorta
-    //                    like malenia", and "butterfly critters not butterfly particles"): twenty of the
+    //                    like malenia", and "butterfly critters not butterfly particles"): forty of the
     //                    game's own, real ones a net can catch, round her colours as they go round the
     //                    ring, thrown out every way and fluttering off, her light on them for a while
     //                    (EmpressButterflies); her things fall where she was; the camera walks home
     //
-    // What she says (by request, the pauses as given): "Thy kind are exceptional toy|.|.|." and then
-    // "I shall observe thee |.|.|. every||where." Said, not answered (Dialogue.Aside): the panel comes up
-    // over the bars, and goes down by itself.
+    // What she says (by request, the user's own words): FallClosingWords as the border closes in, and
+    // FallFlownWords once she has burst into butterflies, a line at a time at the foot of the screen (Taunt),
+    // as her coming and her change speak. CLOSE lasts as long as its three lines take; the last three go on
+    // after she is gone, the one she fought let go ("Take flight, then").
     //
     // Untouchable throughout. The server stops her and ends her; every machine plays it.
 
@@ -49,7 +56,19 @@ namespace PisAndDag.Content.NPCs.Empress
 
         private const int SlowTicks = 80;
         private const int EyesTicks = 100;
-        private const int CloseTicks = 180;
+        private const int CracksTicks = 150;
+
+        /// <summary>The border closing: at least three seconds, and as long as her lines over it take (the burst as the last goes).</summary>
+        private static int closeTicks;
+
+        private static int CloseTicks => closeTicks > 0 ? closeTicks
+            : closeTicks = Math.Max(180, Taunt.TicksFor(FallClosingWords) - Taunt.FadeOut - 8);
+
+        /// <summary>Ticks after she bursts into butterflies that her last lines begin.</summary>
+        private const int FlownAfter = 10;
+
+        /// <summary>Her fall was skipped (CinematicSkip): her last lines are not said either.</summary>
+        private bool fallSkipped;
         private const int BurstTicks = 30;
         private const int ShrinkTicks = 70;
 
@@ -74,43 +93,6 @@ namespace PisAndDag.Content.NPCs.Empress
 
         /// <summary>What the border closes in on, and the camera with it: halfway between her and the player under her.</summary>
         private Vector2 CloseAt => deathAt + new Vector2(0f, DeathAbove * 0.5f);
-
-        /// <summary>By request, word for word.</summary>
-        private const string LineOne = "Thy kind are exceptional toy|.|.|.";
-        private const string LineTwo = "I shall observe thee |.|.|. every||where.";
-
-        /// <summary>How fast she speaks: slowly. Letters a tick.</summary>
-        private const float Letters = 0.5f;
-
-        /// <summary>Between her first line all said and her second begun.</summary>
-        private const int LineGap = 50;
-
-        /// <summary>
-        /// Ticks a line of hers takes to all arrive on the panel (Dialogue: a letter at a time at her
-        /// pace, a beat for every pause). The scene is timed by it, on the server too, which has no panel.
-        /// </summary>
-        private static int LineTicks(string text)
-        {
-            int letters = 0;
-            int pauses = 0;
-
-            foreach (char c in text)
-            {
-                if (c == Dialogue.Pause)
-                    pauses++;
-                else
-                    letters++;
-            }
-
-            return (int)Math.Ceiling(letters / Letters) + pauses * Dialogue.PauseTicks;
-        }
-
-        /// <summary>Her first line, all of it said, from when it starts: the panel's fade up and then the line.</summary>
-        private static readonly int LineOneTicks = Dialogue.FadeTicks + LineTicks(LineOne);
-
-        /// <summary>Ticks into CRACKS her second line starts, and the length of the cracking (her second line all said, and a breath).</summary>
-        private static readonly int LineTwoAt = LineOneTicks + LineGap - EyesTicks;
-        private static readonly int CracksTicks = LineTwoAt + LineTicks(LineTwo) + 30;
 
         /// <summary>Where she stops, over the player (and the border closes in on).</summary>
         private Vector2 deathAt;
@@ -183,6 +165,23 @@ namespace PisAndDag.Content.NPCs.Empress
             if (InDeath(npc))
                 EmpressArenaPlayer.Hover();
 
+            // E held in the corner: on to her bursting into butterflies (single player; CinematicSkip).
+            if (beat < DeathShrink && InDeath(npc))
+            {
+                CinematicSkip.Offer();
+
+                if (Authority && CinematicSkip.Take())
+                {
+                    fallSkipped = true;
+                    Taunt.Hush(npc);
+
+                    npc.velocity = Vector2.Zero;
+                    npc.Center = deathAt;
+                    Next(npc, DeathShrink);
+                    return;
+                }
+            }
+
             switch (beat)
             {
                 case DeathSlow:
@@ -231,9 +230,6 @@ namespace PisAndDag.Content.NPCs.Empress
                         EyesBurning(npc, t, 1f);
                         Cracking(npc, t / (float)CracksTicks);
 
-                        if (Crossed(LineTwoAt))
-                            Speak(npc, LineTwo, Dialogue.AsideLinger);
-
                         if (Authority && t >= CracksTicks)
                             Next(npc, DeathClose);
 
@@ -249,7 +245,10 @@ namespace PisAndDag.Content.NPCs.Empress
                         DeathShot(npc, 1f, MathHelper.Lerp(1.15f, 1f, Ease(t / 40f)), Vector2.Lerp(npc.Center, CloseAt, Ease(t / 40f)));
 
                         if (entered)
+                        {
                             ClosingIn(npc);
+                            Speak(npc, FallClosingWords);
+                        }
 
                         Closing(npc, t, p);
                         EyesBurning(npc, t, 1f + p);
@@ -287,6 +286,9 @@ namespace PisAndDag.Content.NPCs.Empress
 
                     if (Crossed(ButterflyAt))
                         Butterfly(npc);
+
+                    if (Crossed(ButterflyAt + FlownAfter) && !fallSkipped)
+                        Speak(npc, FallFlownWords);
 
                     if (Authority && t >= ShrinkTicks)
                         End(npc);
@@ -373,13 +375,13 @@ namespace PisAndDag.Content.NPCs.Empress
             deathWatching = false;
         }
 
-        /// <summary>A line of hers, on this machine's panel, for a player near enough to hear it.</summary>
-        private void Speak(NPC npc, string line, int linger)
+        /// <summary>Lines of hers, at the foot of the screen, for a player near enough to hear them (they go on after she is gone).</summary>
+        private void Speak(NPC npc, string[] lines)
         {
             if (!InDeath(npc))
                 return;
 
-            Dialogue.Aside(npc, line, Letters, linger);
+            Taunt.Speech(npc, lines, EmpressArt.Pink, EmpressArt.Sky, reach: 0f);
         }
 
         /// <summary>The blow that would have killed her: a sound gone wrong in her, her colours thrown off her; her bow, if she had it, broken in her hand.</summary>
@@ -409,7 +411,7 @@ namespace PisAndDag.Content.NPCs.Empress
             }
         }
 
-        /// <summary>Light comes out of her eyes: the sound of it, a flash at each, her first line.</summary>
+        /// <summary>Light comes out of her eyes: the sound of it, a flash at each.</summary>
         private void EyesOpen(NPC npc)
         {
             if (Main.dedServ)
@@ -422,7 +424,6 @@ namespace PisAndDag.Content.NPCs.Empress
             foreach (Vector2 eye in new[] { EmpressArt.LeftEye, EmpressArt.RightEye })
                 PADParticleHandler.SpawnParticle(new CrownGlint(npc.Center + eye * npc.scale, 70f, 34, Color.White));
 
-            Speak(npc, LineOne, 400);
         }
 
         /// <summary>The light in her eyes, held: a hum now and then, sparks off it.</summary>
@@ -601,7 +602,7 @@ namespace PisAndDag.Content.NPCs.Empress
         }
 
         /// <summary>
-        /// She is butterflies: twenty of the game's own, real ones (the server makes them; EmpressButterflies flies them
+        /// She is butterflies: forty of the game's own, real ones (the server makes them; EmpressButterflies flies them
         /// out every way, her light on them, and lets them go); a soft light where she was, a wave through the world, a
         /// rush of wings and a run of bells.
         /// </summary>

@@ -49,6 +49,8 @@ namespace PisAndDag.Content.Items.Mage
             ["Water"] = (new Color(0x0e, 0x3a, 0x52), new Color(0x3f, 0xb8, 0xd6)),
             // The mushroom caves': the dark under the ground, edged in the blue the caps give off.
             ["Fungal"] = (new Color(0x1b, 0x15, 0x54), new Color(0x6f, 0xb6, 0xff)),
+            // The desert's: sand in the sun, edged in the dark of the earth under it.
+            ["Earth"] = (new Color(0xe0, 0xb8, 0x6e), new Color(0x4a, 0x2e, 0x16)),
         };
 
         /// <summary>

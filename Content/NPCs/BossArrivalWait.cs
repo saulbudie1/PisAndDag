@@ -396,6 +396,18 @@ namespace PisAndDag.Content.NPCs
             holding = false;
             npc.dontTakeDamage = wasUntouchable;
         }
+
+        /// <summary>
+        /// Something else making this NPC untouchable or not, now (Skeletron's hands in his coming): straight onto it, or,
+        /// while a wait has borrowed its dontTakeDamage, onto what the wait will give back.
+        /// </summary>
+        internal static void SetUntouchable(NPC npc, bool untouchable)
+        {
+            if (npc.TryGetGlobalNPC(out BossArrivalWait wait) && wait.holding)
+                wait.wasUntouchable = untouchable;
+            else
+                npc.dontTakeDamage = untouchable;
+        }
     }
 
 

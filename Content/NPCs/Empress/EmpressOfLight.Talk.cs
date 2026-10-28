@@ -3,31 +3,7 @@ using PisAndDag.Content.UI;
 using Terraria;
 
 namespace PisAndDag.Content.NPCs.Empress
-{
-    // ---- her words (Legends, her first half) -------------------------------------------------------------------
-    //
-    // By request ("she should trash talk dialog (a system that is only a line and underlined like edlen ring and it
-    // auto skips after a while depending on the text) in phase 1 in legends. Look into trash talks from Elden ring and
-    // Dark Souls bosses"). Theirs say little, in an old way of speaking, to the player and of them, by a name of their
-    // own for them; mostly at the turns of the fight: as it begins, at a change, when the player dies. (Dark Souls'
-    // bosses hardly speak at all.) Hers is that, a little more often, at the foot of the screen (Taunt):
-    //
-    //   AS IT BEGINS    a little after her name has gone down to the bar: two lines
-    //   HER ACTS        one act in three, by request ("make it rare tho, like 1 in 3 attack have one"): of
-    //                   each three she plays, one begins with a line of that act's, which one by chance
-    //   HER HAND        whenever she has someone in it
-    //   A FALL          whenever anyone in her arena dies
-    //   ABOVE HER       once, when the one she fights keeps well over her a while
-    //   MARKED          once, when a fifth of her life is gone
-    //   HER CHANGE      at half her life, through her change (EmpressOfLight.Change): a line as it begins, another as
-    //                   the day stops; and then nothing more
-    //
-    // Her way of speaking is her death's (thee and thou, and "toy"): she does not threaten; she corrects, and she is
-    // amused. Each moment has a few lines, said in turn, so none comes twice before the rest have. After any of them
-    // she is quiet a while (TalkRest), but for her hand, a fall, her first words and her change, which she always
-    // remarks on. Each machine says them as its own copy of the fight comes to them (nothing is sent); which line it
-    // is, is the same on all of them that have seen the same.
-
+{ 
     public partial class EmpressOfLight
     {
         /// <summary>The moments she speaks at.</summary>
@@ -46,24 +22,82 @@ namespace PisAndDag.Content.NPCs.Empress
             Above,
             Marked,
             Change,
+
+            // Her second half's acts.
+            Moor,
+            Negative,
+            Cage,
+            Constellation,
+            Blink,
+            Shield,
+            Ricochet,
+            Heart,
+            Lightspeed,
+            Dawn,
+            Refraction,
+            Rain,
+            Blade,
         }
 
         // ---- what she says -----------------------------------------------------------------------------------------
         //
         // Each a speech: most of one line, a few of two.
 
-        private static readonly string[][] OpeningWords =
+        // Her three speeches (by request: "intro, transition and ending should be unique and long"), the user's own words,
+        // as recorded for her voice (Claude input/AmyVoiceLines.docx, E01 to E16, the script Amy Lam records from; proofread): the same every fight, a
+        // line at a time at the foot of the screen, each scene held until they are said.
+
+        /// <summary>Her coming (EmpressOfLight.Arrival): as soon as she appears, before she drags them up in her cage.</summary>
+        private static readonly string[] IntroWords =
         {
-            new[] { "A lacewing, for a toy.", "It is a fair price." },
-            new[] { "Thou didst break one of mine.", "Come. Let me see how thou art made." },
-            new[] { "So. This is what called me down.", "I expected more." },
+            "I was asleep.",
+            "Up there, the lacewings sing me to my slumber, every night, the same... soft... lullaby...",
+            "But tonight, one of them ceased.",
+            "And as I came down in search of the cause, I found thee... with its crushed wings still on thy hands.",
+            "Rotten mortal, thou couldst never know how rare such perfect little things are.",
+            "I shall not leave a flaw where I ferret one out.",
+            "Unsheathe thy steel, puny one. Cry me thy havoc ballads.",
         };
+
+        /// <summary>Her change (EmpressOfLight.Change): as the world starts to bend; the last of it just before she changes.</summary>
+        private static readonly string[] ChangeBendWords =
+        {
+            "Ugh.",
+            "This silk, this vain shroud, I have forgotten the unfettered wilderness.",
+            "Turn thy gaze upon me, fleshy mortal. No... not at the light. At me!",
+        };
+
+        /// <summary>
+        /// Her change: as time stops. Nothing now (cut from the script; "fleshy mortal" went into her last line as the world
+        /// bends): the stillness is held in silence instead (ChangeStillHold), her scream ending it. Lines put back here are
+        /// said there again, and the stillness held until they are.
+        /// </summary>
+        private static readonly string[] ChangeStillWords = { };
+
+        /// <summary>Her fall (EmpressOfLight.Death): as the border closes in; it is thrown out as the last of it goes.</summary>
+        private static readonly string[] FallClosingWords =
+        {
+            "Ah... so this is what it feels like. I had forgotten.",
+            "Thy kind are exceptional, filthy mortal...",
+            "Do not look so pleased. Light is not killed so easily...",
+        };
+
+        /// <summary>Her fall: once she has burst into butterflies, and the one she fought is let go.</summary>
+        private static readonly string[] FallFlownWords =
+        {
+            "Take flight, then.",
+            "I shall keep vigil over thee...",
+            "We shall... meet again.",
+        };
+
+        /// <summary>Her speeches as the remarks' pools would have them (never drawn from: each is said whole, in its scene).</summary>
+        private static readonly string[][] OpeningWords = { IntroWords };
 
         private static readonly string[][] CrackWords =
         {
-            new[] { "Hold still. There is a flaw." },
-            new[] { "It was always glass." },
-            new[] { "Thy world breaks so easily." },
+            new[] { "Hold still. There seems to be a flaw." },
+            new[] { "Reality is as fragile as glass!" },
+            new[] { "Thy world shatters as easily as a mirror." },
         };
 
         private static readonly string[][] PillarsWords =
@@ -75,29 +109,29 @@ namespace PisAndDag.Content.NPCs.Empress
 
         private static readonly string[][] PrismWords =
         {
-            new[] { "Seven, from one. As it should be." },
-            new[] { "See how the light obeys." },
-            new[] { "It only turns faster." },
+            new[] { "I granted this to a mortal once. Isaac, I recall..." },
+            new[] { "Absolute, stark raving madness!" },
+            new[] { "Why wilt thou not die?" },
         };
 
         private static readonly string[][] SawWords =
         {
-            new[] { "Come closer. I have made thee something." },
+            new[] { "The brightness shall gnaw thee in two with its roaring teeth." },
             new[] { "Light has an edge, too." },
             new[] { "Do not squirm. I am being careful." },
         };
 
         private static readonly string[][] MirageWords =
         {
-            new[] { "Look well. Only one of us looks back." },
-            new[] { "Choose. Thy kind always choose wrong." },
+            new[] { "Bare thy eyes onto us. Only one of us looks back." },
+            new[] { "Choose... Why bother? Thy kind always choose wrong." },
         };
 
         private static readonly string[][] EclipseWords =
         {
-            new[] { "Without me, there is no light at all." },
-            new[] { "Thou art very small, in the dark." },
-            new[] { "There is one way out. Find it." },
+            new[] { "Without me, only darkness awaits thee." },
+            new[] { "Darkness swallows thee. Let the night reign!" },
+            new[] { "Art thou coveting death? I shall deliver it unto thee." },
         };
 
         private static readonly string[][] AuroraWords =
@@ -132,14 +166,82 @@ namespace PisAndDag.Content.NPCs.Empress
             new[] { "A mark on me. It will be corrected." },
         };
 
-        /// <summary>
-        /// Her change (EmpressOfLight.Change), by request "something like malenia and morgott and godrick": the first line
-        /// as it begins, the second as the day stops. One of the two each fight, the same on every machine.
-        /// </summary>
-        private static readonly string[][] ChangeWords =
+        private static readonly string[][] ChangeWords = { ChangeBendWords, ChangeStillWords };
+
+        // Her second half: unveiled, the day held still. The same voice, nearer; she is no longer careful with the toy.
+
+        private static readonly string[][] MoorWords =
         {
-            new[] { "Look at me, toy. Not at the light.", "Be still. The hours are." },
-            new[] { "Thou hast only seen what I wear.", "The day will wait. It always has." },
+            new[] { "Insolent fool. Thou darest defy a demigod?" },
+            new[] { "Canst thou search out these arrows of mine?" }, 
+        };
+
+        private static readonly string[][] NegativeWords =
+        {
+            new[] { "Incessant, pestering mortal. I command all that thou seest." },
+            new[] { "Everything thou art not makes everything thou art." }, 
+        };
+
+        private static readonly string[][] CageWords =
+        {
+            new[] { "This cage befits vermin like thee." },
+            new[] { "Fret not, toy. It burns to thy touch." },
+        };
+
+        private static readonly string[][] ConstellationWords =
+        {
+            new[] { "Geometric excellence." },
+            new[] { "I gift unto thee the constellation of death!" },
+        };
+
+        private static readonly string[][] BlinkWords =
+        {
+            new[] { "Here. No, here. Thou hast missed me again!" },
+            new[] { "Thou lookest where I was. Such is the sluggishness of flesh." },
+        };
+
+        private static readonly string[][] ShieldWords =
+        {
+            new[] { "Fine! Thou shalt perform thy most grueling attacks." }, 
+        };
+
+        private static readonly string[][] RicochetWords =
+        { 
+            new[] { "I command thee to surrender." },
+        };
+
+        private static readonly string[][] HeartWords =
+        {
+            new[] { "..." }, 
+        };
+
+        private static readonly string[][] LightspeedWords =
+        {
+            new[] { "Blink and thou shalt miss it!" },
+            new[] { "Dost thou truly believe thou couldst escape light?" },
+        };
+
+        private static readonly string[][] DawnWords =
+        {
+            new[] { "O pestering mortal, thou dost seem a wee bit pale." },
+        };
+
+        private static readonly string[][] RefractionWords =
+        {
+            new[] { "One, added to half a dozen." },
+            new[] { "Thou art marked for death." },
+        };
+
+        private static readonly string[][] RainWords =
+        {
+            new[] { "Thou wouldst look up? Look at that! Whoa!" },
+            new[] { "Hast thou ever witnessed falling stars?" },
+        };
+
+        private static readonly string[][] BladeWords =
+        {
+            new[] { "I shall slice this mucus off the earth and rid it of sickness!" }, 
+            new[] { "Try to parry this incandescent blade, plague-bearing mortal." },
         };
 
         private static string[][] Pool(Words moment) => moment switch
@@ -156,6 +258,19 @@ namespace PisAndDag.Content.NPCs.Empress
             Words.Fell => FellWords,
             Words.Above => AboveWords,
             Words.Marked => MarkedWords,
+            Words.Moor => MoorWords,
+            Words.Negative => NegativeWords,
+            Words.Cage => CageWords,
+            Words.Constellation => ConstellationWords,
+            Words.Blink => BlinkWords,
+            Words.Shield => ShieldWords,
+            Words.Ricochet => RicochetWords,
+            Words.Heart => HeartWords,
+            Words.Lightspeed => LightspeedWords,
+            Words.Dawn => DawnWords,
+            Words.Refraction => RefractionWords,
+            Words.Rain => RainWords,
+            Words.Blade => BladeWords,
             _ => ChangeWords,
         };
 
@@ -167,8 +282,9 @@ namespace PisAndDag.Content.NPCs.Empress
         /// <summary>One act in this many begins with a line of its own: of each so many, one, which by chance.</summary>
         private const int ActsPerLine = 3;
 
-        /// <summary>Her first words, this long after her coming lets go (her name going down to the bar between).</summary>
-        private const int OpeningAfter = 90;
+        /// <summary>Her second half: of each so many acts, so many begin with a line of their own, which by chance.</summary>
+        private const int SecondActsGroup = 18;
+        private const int SecondActsSpoken = 7;
 
         /// <summary>How far over her the one she fights must keep, and for how long, for her to remark on it.</summary>
         private const float AboveBy = 320f;
@@ -179,15 +295,17 @@ namespace PisAndDag.Content.NPCs.Empress
 
         // ---- each machine's own ------------------------------------------------------------------------------------
 
-        /// <summary>Ticks before she may remark again; ticks to her first words (0: none to come).</summary>
+        /// <summary>Ticks before she may remark again.</summary>
         private int talkRest;
-        private int openingIn;
 
         /// <summary>Her acts this machine has seen begin, this fight (counted in threes: ActsPerLine).</summary>
         private int actsSeen;
 
         /// <summary>How many times each moment has had its say: the next of its lines is the next in turn.</summary>
-        private readonly int[] said = new int[(int)Words.Change + 1];
+        private readonly int[] said = new int[(int)Words.Blade + 1];
+
+        /// <summary>Her second half's acts this machine has seen begin, this fight (counted in eighteens).</summary>
+        private int secondActsSeen;
 
         /// <summary>Who was down last tick (a fall is seen as the change); and whether that has been looked at once yet.</summary>
         private readonly bool[] fallen = new bool[Main.maxPlayers];
@@ -201,7 +319,7 @@ namespace PisAndDag.Content.NPCs.Empress
         /// <summary>Her words taken down as her death began.</summary>
         private bool hushed;
 
-        /// <summary>Every tick, every machine (PostAI): her death hushes her; her first words come; a fall, the player over her, her first mark.</summary>
+        /// <summary>Every tick, every machine (PostAI): her death hushes her; a fall, the player over her, her first mark.</summary>
         private void Talk(NPC npc)
         {
             if (Main.dedServ || !PADWorld.Legends)
@@ -224,12 +342,12 @@ namespace PisAndDag.Content.NPCs.Empress
 
             if (!LegendsHalf(npc))
             {
-                openingIn = 0;
+                // Her second half: a fall still remarked on (her acts' lines come as they begin: ActWords).
+                if (LegendsSecond(npc))
+                    Falls(npc);
+
                 return;
             }
-
-            if (openingIn > 0 && --openingIn == 0)
-                Remark(npc, Words.Opening, always: true);
 
             Falls(npc);
 
@@ -286,6 +404,32 @@ namespace PisAndDag.Content.NPCs.Empress
             if (Main.dedServ)
                 return;
 
+            if (SecondWords(act, out Words second))
+            {
+                // Seven of each eighteen: those whose stirred numbers are the seven least of their eighteen.
+                int round = secondActsSeen / SecondActsGroup;
+                int at = secondActsSeen % SecondActsGroup;
+                secondActsSeen++;
+
+                int key = (int)(arenaCentre.X / 16f) ^ 0x2D1;
+                int mine = Stir(round * SecondActsGroup + at, key, 1 << 20);
+                int below = 0;
+
+                for (int q = 0; q < SecondActsGroup; q++)
+                {
+                    int theirs = Stir(round * SecondActsGroup + q, key, 1 << 20);
+
+                    if (theirs < mine || theirs == mine && q < at)
+                        below++;
+                }
+
+                // Said whenever it falls to be, once whatever she said last is done.
+                if (below < SecondActsSpoken)
+                    Remark(npc, second, always: talkRest <= TalkRest);
+
+                return;
+            }
+
             int group = actsSeen / ActsPerLine;
             int place = actsSeen % ActsPerLine;
             actsSeen++;
@@ -308,6 +452,30 @@ namespace PisAndDag.Content.NPCs.Empress
 
             if (moment != Words.Opening)
                 Remark(npc, moment);
+        }
+
+        /// <summary>Her second half's act's own lines, if it is one of hers.</summary>
+        private static bool SecondWords(Act which, out Words moment)
+        {
+            moment = which switch
+            {
+                Act.Moor => Words.Moor,
+                Act.Negative => Words.Negative,
+                Act.Cage => Words.Cage,
+                Act.Constellation => Words.Constellation,
+                Act.Blink => Words.Blink,
+                Act.Shield => Words.Shield,
+                Act.Ricochet => Words.Ricochet,
+                Act.Heart => Words.Heart,
+                Act.Lightspeed => Words.Lightspeed,
+                Act.Dawn => Words.Dawn,
+                Act.Refraction => Words.Refraction,
+                Act.Rain => Words.Rain,
+                Act.Blade => Words.Blade,
+                _ => Words.Opening,
+            };
+
+            return moment != Words.Opening;
         }
 
         /// <summary>A number below <paramref name="range"/> from two others, well stirred: the same for the same two, on every machine.</summary>

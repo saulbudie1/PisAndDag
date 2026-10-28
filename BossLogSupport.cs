@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
+using PisAndDag.Content.Items.Misc;
 using PisAndDag.Content.Items.Ranged;
 using PisAndDag.Content.NPCs.Abomanation_Small;
+using PisAndDag.Content.NPCs.GildedKnight;
 using PisAndDag.Content.NPCs.MegaShark;
 using Terraria.Localization;
 using Terraria.ModLoader;
@@ -29,6 +31,7 @@ namespace PisAndDag
     public class BossLogSupport : ModSystem
     {
         private const float AfterSkeletron = 5.5f;
+        private const float BeforeTheWall = 6.8f;
         private const float AfterTheMechs = 11.5f;
 
         public override void PostSetupContent()
@@ -65,6 +68,33 @@ namespace PisAndDag
                     ["spawnItems"] = new List<int>(AbomanationSummon.Offerings),
                     ["customPortrait"] = (Action<SpriteBatch, Rectangle, Color>)DrawAbomanation,
                 });
+
+            // Met before hardmode, before the Curtain in Grace: the first time anyone comes up
+            // its field, and after that called back with the spur he leaves.
+            log.Call(
+                "LogBoss",
+                Mod,
+                "GildedKnight",
+                BeforeTheWall,
+                (Func<bool>)(() => PADWorld.DownedGildedKnight),
+                ModContent.NPCType<GildedKnight>(),
+                new Dictionary<string, object>
+                {
+                    ["spawnInfo"] = Language.GetOrRegister("Mods.PisAndDag.BossLog.GildedKnight.SpawnInfo"),
+                    ["spawnItems"] = new List<int> { ModContent.ItemType<GildedSpur>() },
+                    ["customPortrait"] = (Action<SpriteBatch, Rectangle, Color>)DrawKnight,
+                });
+        }
+
+        /// <summary>The picture on the Gilded Knight's page: him standing, swords home (the bestiary's picture of him).</summary>
+        private static void DrawKnight(SpriteBatch spriteBatch, Rectangle area, Color colour)
+        {
+            Texture2D texture = ModContent.Request<Texture2D>(
+                "PisAndDag/Content/NPCs/GildedKnight/GildedKnight_Bestiary", AssetRequestMode.ImmediateLoad).Value;
+
+            Vector2 at = new Vector2(area.Center.X - texture.Width / 2, area.Center.Y - texture.Height / 2);
+
+            spriteBatch.Draw(texture, at, colour);
         }
 
         /// <summary>

@@ -174,6 +174,7 @@ namespace PisAndDag.Content.Subworlds
             new("Legends", () => PADWorld.Legends, v => PADWorld.Legends = v),
             new("DownedMegashark", () => PADWorld.DownedMegashark, v => PADWorld.DownedMegashark = v),
             new("DownedAbomanation", () => PADWorld.DownedAbomanation, v => PADWorld.DownedAbomanation = v),
+            new("DownedGildedKnight", () => PADWorld.DownedGildedKnight, v => PADWorld.DownedGildedKnight = v),
             new("ArchmageShimmer", () => PADWorld.ArchmageShimmer, v => PADWorld.ArchmageShimmer = v),
             new("GraceUnsealed", () => PADWorld.GraceUnsealed, v => PADWorld.GraceUnsealed = v),
             new("GuideSpokeOfLegends", () => PADWorld.GuideSpokeOfLegends, v => PADWorld.GuideSpokeOfLegends = v),

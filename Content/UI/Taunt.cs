@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PisAndDag.Content.Combat;
 using PisAndDag.Content.PADplayer;
 using ReLogic.Graphics;
 using Terraria;
@@ -397,6 +398,14 @@ namespace PisAndDag.Content.UI
     /// <summary>Ages the lines once a tick, clears them with the world, and hangs them off the interface ahead of the F11 toggle, as the boss bar is.</summary>
     public class TauntSystem : ModSystem
     {
+        // On a frame the bars are drawn over everything (her coming hides the interface), they would cover the words
+        // drawn by the layer below: those frames the words are drawn after the bars instead (Cinematic.OverBars).
+        public override void Load()
+        {
+            if (!Main.dedServ)
+                Cinematic.OverBars += Taunt.Draw;
+        }
+
         public override void PostUpdateEverything()
         {
             if (!Main.dedServ)
@@ -405,7 +414,11 @@ namespace PisAndDag.Content.UI
 
         public override void OnWorldUnload() => Taunt.Clear();
 
-        public override void Unload() => Taunt.Clear();
+        public override void Unload()
+        {
+            Cinematic.OverBars -= Taunt.Draw;
+            Taunt.Clear();
+        }
 
         public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
         {
@@ -422,7 +435,9 @@ namespace PisAndDag.Content.UI
                 "PisAndDag: Taunt",
                 () =>
                 {
-                    Taunt.Draw(Main.spriteBatch);
+                    if (!Cinematic.BarsOverEverything)
+                        Taunt.Draw(Main.spriteBatch);
+
                     return true;
                 },
                 InterfaceScaleType.UI));

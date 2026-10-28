@@ -22489,7 +22489,7 @@ the 5x5 block but change it ingame".
     some and missing others as they swept in; the blade's shown arc short of its reach, and her lunge carrying it past
     it; the veil remade every tick; fifteen hazes at once; a few things made every frame; other machines' numbers falling
     for a burned player; a batch begun twice should a draw fail); one left (a client may hear vanilla's own cry at the
-    change as well as hers: sound only). Delivered and checked file by file (the pictures' pixels; the copies here carry
+    change as well as hers: sound only). Found in the game after: unloading the mod failed (tModLoader makes its picture arrays anew as it loads mods, so the game's pictures were put back into the old arrays and the mod's, gone with it, stayed in the real ones); now put back into whichever arrays are the game's at the time, and put in again once every mod is set up. Delivered and checked file by file (the pictures' pixels; the copies here carry
     a note of where they came from, which the game does not read). **Never run in the game.**
 
 | File | |
@@ -22516,4 +22516,703 @@ the 5x5 block but change it ingame".
 | `Content/NPCs/Empress/EmpressSounds.cs` | the new sounds |
 | `Content/Sounds/Empress/*.ogg` | new: TimeStop, BowForm, Draw, Loose, Thunk, Tick1-2, Burst, Invert, Fold, Lock, Beam, Blink, Barrier, Crack1-3, Shatter, Ricochet, Charge, Lightspeed, Sunrise, Sear, Refract, Fall1-2, Blade, Slash |
 
-Open: RELEASE_TODO under §17.10.
+Later the same session:
+- **Her second body.** `BodyPhase2.png` (the user's) is her body under the veil: its second frame replaces Body.png's while the veil is on her. `HeadAndShoulderForPhase2.png` is laid back over it so her head, hair and shoulders are never taken. Pure red in BodyPhase2 marks where a streak must always lie (a chest bar and a hip square). The red is never drawn: each red pixel takes the nearest of her own colour in its column. The dress's skirt glow is not drawn over her second body. Without the two files she is drawn from Body.png as before (`EmpressTextures.BodySecond`, `HeadOver`; `EmpressVeil.PhaseTwoBody`).
+- **Five thin, slow streaks** (EmpressVeil). One is held over each red place (`Anchored`): turning and drifting about it, and widened on the spot if a turn would ever bring the place near its edge. Each of those has a thinner partner that parts from it and comes back; the hip one's partner slides down over her legs every 11 s. A broken streak crosses her waist. `Rag` tones down the torn edges of the thinner ones. Her dash images use the veiled body (`EmpressVeil.Current`).
+- **Negative heals.** While the colours are inverted, each hit on her heals her 1.5× its damage (`NegativeHealsBy`). HitEffect restores the life before the game checks her death, and the game's red number is hidden behind a green heal number. Damage-over-time is turned into regeneration at the same 1.5× (`UpdateLifeRegen`).
+- **Moored volley, one arrow at a time** (the user: "I didnt mean to shoot them all at once"). AIM 24, then for each arrow DRAW 30 and LOOSE 12 (the last 26). For each arrow, its way is fixed as the draw begins: at the player, turned to its place in a fan that sweeps across them. Only that arrow's way and burst ring are shown, so the bursts go off one after another. `actCount` is the arrow on the string (synced).
+- **Unload.** The crash seen again came from a build made before the earlier fix (tModLoader loaded the last .tmod built, 12:59 UTC; the fix landed 13:02 and was first built at 13:49). The fix also now sweeps the four texture arrays for any of the mod's own pictures left in them and puts the game's own back by name.
+
+Later again:
+- **Constellation.** Each laser is a full ray: the line through two marks runs on to the arena border both ways (`ConLine`, worked out with the marks). The guidelines, beams, ripples, hit test and haze all use it.
+- **Blade.** The blade is drawn with the game's Sun Dance petal (Projectile 923, its outline frame and glow frame, the base at 0.03 of its width), in two Everlasting Rainbow glows with a thin edge of other colours either side. While sweeping, 16 glow-only petals fan behind it and a Strip smear covers the swept arc (8 rainbow bands brighter toward the edge, a white edge band). Each sweep leaves a cut (`BladeCut`): a white arc of light along the tip's path, with the world sheared along it by `EmpressWarp.Shear` (new Kind: either side of a line slid along it, opposite ways), healing over 30 ticks (46 for the last). The world is also drawn in about her palm as she winds (Lens), and a Kink pushes it ahead of the blade as it sweeps. Each sweep ends with a line ripple off the blade; the last with a ring ripple, a shake and a flash. Hit sizes and timing unchanged.
+- **Mirror barrier.** The sphere is unseen (hit area unchanged). A crack (`EmpressBarrier.cs`, `BarrierNet` per act seed) stands 104 px in front of her, facing the player: a jagged 16-step spine and 14 forked branches leaning out from the middle. It grows outward with `ShieldStrain` (and a little with time) to a reach of 190, and moves to the sphere's front (`ShieldRadius - 8`) as it pushes. Its panes, bounded by the spine and each two branches on a side (plus an outer ring of panes), are shards drawn by `EmpressMirror.DrawBarrier` out of the capture: each holds the world shifted toward her and seen a little nearer, with two smaller copies inside it shifted and zoomed further (the repeating effect). A sheen goes over each, and they fly with the world in them on the burst. Each hit cracks it where the line from the hit's source to her meets the crack (`ModifyHitByProjectile`/`ModifyHitByItem` store the source), with a small ripple. With Retro/Trippy lighting, the lines alone.
+- **Death.** `EmpressButterflies.Near` = 20 more, thrown 1.2–3.2 and fluttering 0.45–1.0, aimed between the ring's.
+- **Phase-2 words.** Lines for all 13 second-half acts (`Words.Moor` … `Words.Blade`). In each group of 18 second-half acts, the 7 with the lowest `Stir` value speak, once her last line is done (`SecondActsGroup`, `SecondActsSpoken`). Falls are remarked on in phase 2 too.
+- **Veil tilt.** The streaks now tip up and down slowly within a fixed range: chest `TiltSway` 0.32 at 0.16 rad/s, hip 0.3 at 0.13, waist 0.28 at 0.14. The widening keeps the red covered; at the steepest tilt the chest band is up to about 6.8 px half-width.
+
+- **Veil, from the user's sketch.** Thin crossing lines at gentle slants, the red always under one; not steep, not all flat. Nine streaks now: the two held ones and their partners, a broken and a thin waist one, a slant across the thighs, and a pair low on the legs. `Rag` is cut to 0.12–0.18 so the edges are only a little ragged. Tilt sway is ±0.2 on the held ones, so the steepest tilt is about 0.67 rad.
+- **Barrier threshold.** `ShieldBreaks` is 2500 (the user: "after 2500 acumulative damage, it pushed towards the player at an increasingly fast speed, and breaks upon reaching the arena border"). `ShieldHoldMost` is now 600 ticks, so it still goes after 10 s if nobody hits it.
+
+- **Light chainsaw (first half).** `SawReach` is 600 (37.5 tiles; the user: "max length is only 9/12 of this"). It now follows how the Photon Ripper is built (read from Calamity's `PhotonRipperProjectile`/`PrismTooth`; nothing copied):
+  - The saw shivers about 1.4 px every frame where it is drawn (`SawDrawn`); the hit area doesn't move.
+  - The body has rounded ends, with two white rails down its sides.
+  - The chain teeth run faster and each trails a streak of its colour.
+  - Six prism teeth loop round it on a squashed loop (out along one side, back along the other, never more than 46 px off the blade's line), each with a 24-step tapering rainbow ribbon drawn as a Strip (`DrawSawBands`, hooked into `DrawLegendsBands`).
+  - Rainbow sparks stream off it toward the tip.
+
+- **Her change is 10 seconds now.** The user: "Her transition should last longer, like maybe slower animation, 10 seconds".
+  - The beats keep their old count (0–180), but each now takes `ChangeSlow` = 3.33 ticks (`At(beat)` gives the tick, `ChangeNow` the beat), so every ease and milestone is that much slower.
+  - The sounds whose own length sets the timing are still led in real ticks onto their beat: `TimeStopLead`, `BowFormLead`, and the backwards shimmer (`ChangeSwellTicks` 90, at its own pitch, ending on her change).
+  - The camera blend in and pan home are still in real ticks.
+- **Lore (the user's):** she does not die at the end of this fight; she is not yet fallen, and is fought again after the Moon Lord. Her fall already fits: she leaves as butterflies, saying "I shall observe thee ... everywhere". The Death.cs header now says so. Nothing in-game says she dies.
+
+- **Blade afterimages.** A ring of the blade's last 8 states (palm, angle, length), kept once per tick on each machine. Each is drawn as a glow-only petal, as strong as the blade has moved since (tip and palm travel / 60 px) and fainter the older it is. They show wherever it moves.
+- **Rain of light, second kind: the starfall.** The user: "kinda like radahn's great bow, 3 waves each last 2 seconds with 1 second interval".
+  - `PlanRain` picks `actN` 0 (columns) or 1 (starfall).
+  - Starfall beats 7–12, warning and fall in turn (`StarGap`/`StarFall`, `StarBeat`). Each warning is 60 ticks; the server sets `actAt` (the player) and `actSide` (the side she's on). Then 120 ticks of falling: the server makes one `EmpressArrow` of the new `Kind.Fall` every 2 ticks (55 a wave). Each aims at a random point in a band ±340 px about `actAt` (±140 up and down), slanted 0.33 rad from her side, starts up to 1150 px back, moves at 28 px/tick, and breaks on the border below. 40 damage (26 in expert).
+  - The warning band (`DrawStarfallOver`): two bright slanted edges, with light running down 12 lines inside; faint while falling.
+
+- **Starfall redone as columns** (the user: "for radahn style i mean the columns not arrows, slanted and shot one by one with ranging intervals within 2 seconds. (ofc have indicator before)"). `EmpressArrow.Kind.Fall` is removed again. Starfall beats are now 7–9, three waves of `StarWaveTicks` (36 + 120 + 24 = 180 ticks).
+  - Each wave has 9 columns (`StarColumn`, deterministic from the act seed, wave and index). Each one's fall time is uneven within roughly ticks 38–148, so the falls spread over about 2 s with about a second quiet before the next wave's first.
+  - The first column goes through the player's position at wave start (`actAt`); the rest go either side within 440 px. All slant 0.33 rad from her side and run border to border.
+  - Each column is shown as a thin flickering line for 36 ticks, then falls down it (6), stays (18) and fades, as the upright ones do. Hits use `RainHits` with `OnLine` from the top to the falling front.
+- **Dash catch area.** `DashMeets` uses her hitbox inflated by `DashReach` (14 px) instead of shrunk by 8, plus a copy offset half a tick back along her velocity.
+
+- **Starfall columns, again** (the user: "not parallel slanted, make it randomly slanted, sorta like daedalus storm bow. and it pulses right away not coming down"). Each column now has its own slant, random within ±0.6 rad of straight down, and they cross within ±300 px of the player's position at wave start. After its 36-tick warning line, the column fires all at once along its whole length: a 22-tick pulse (`StarPulse`) that swells, then thins and fades. It hurts for the first 8 ticks (`StarHurts`) along the full line. The sound is a zap plus a beam.
+
+- **Starfall faster, less slanted** (the user: "faster maybe the same amount for 1 second bit less slanted"): the 9 pulses of a wave spread over 1 s (`falls = RainShow + when*57`), slant ±0.35 rad, `StarWaveTicks` 120, so about 1 s of quiet before the next wave's first pulse.
+- **Her words, rewritten by the user and proofread.** Only spelling and the old grammar were fixed (thou art / thou shalt / dost thou / canst thou / unto thee, vermin, coveting, blade, defy, and the like); the lines stay the user's own.
+
+- **Prism less choppy** (the user's screenshot: "bit choppy here"). The kinks came from the world-bending, which also bent the beams themselves:
+  - Seven overlapping hazes were piled up where the rays leave the prism, plus the white ray's haze and a strong lens swell where the rays cross the prism's edge.
+  - `EmpressWarp.Haze` now takes `still`: within that distance of the line nothing moves, so the light stays straight and only the air beside it shimmers.
+  - The prism's white ray uses `still` = 0.8 × its width, and its haze is cut from 2.5 to 1.6.
+  - The seven rays use `still` = 0.9 × their width at 1.1, starting 160 px out so they don't pile up.
+  - The lens at the prism is cut from 0.26–0.42 to 0.12–0.18, halved again while firing.
+
+- **White streaks through the change** (the user: "it should have a white streak right away and slowly transparent cuz without streak it would look naked").
+  - `ChangeVeil()` is 1 from the moment she changes, so the streaks are whole at once rather than growing.
+  - `EmpressVeil` now also makes a texture of the streaks themselves (white where they took her: `BodyNow(..., out streaks)`).
+  - `EmpressArt` draws it over the veiled body at `Look.VeilWhite`. That's `ChangeVeilWhite()`: solid for 10 beats, then fading over 70 beats (about 4 s), and 0 outside the change.
+
+- **Rain of light's columns fill the screen** (the user's screenshot of her second half: "this should not only be 7 but all over the screen, without distance of 10 tiles exactly"). It was the rain's upright columns, not the first half's pillars: 8 a wave, about 170 px apart. Now 26 a wave (`RainColumns`), each gap its own, 96–176 px (`RainApartLeast`/`Most`), centred on the player as each wave begins, each wave's row laid out its own way (`RainX`, from the act seed and wave). Columns outside the arena aren't shown and don't hurt; the narrowest gap leaves 46 px of safe air. (A change made to the first half's laser pillars by mistake was put back.)
+
+- **Music not stopping on her arrival.**
+  - The hush pushed down only `curMusic` (and zeroed `newMusic`).
+  - The game fades an old track out only while the current one is audible (`isMainTrackAudible`, its fade above 0.25), or at once if `curMusic` is 0.
+  - So once her music became current and was silenced, the track before it (the night's) never faded and played on at full volume.
+  - The hush now pushes every track's `musicFade` down (zeroing the incoming one), so everything goes quiet and the old tracks are stopped. Her music fades in by itself once the hush ends.
+- **Transition bend off her centre.**
+  - The two lenses at her bust and hips turned opposite ways. Two opposite rotations about centres 37 px apart sum to a sideways slide of roughly turn × 37 px across the whole overlap (up to the 64 px clamp), so the bend sat left of her.
+  - They now turn the same way (the threads still spiral opposite ways).
+
+- **Her three speeches** (the user's own words, proofread: "intro, transition and ending should be unique and long").
+  - All in `EmpressOfLight.Talk.cs`: `IntroWords`, `ChangeBendWords`, `ChangeStillWords`, `FallClosingWords`, `FallFlownWords`. Each said whole at the foot of the screen (`Taunt.Speech`), the same every fight; the rotating opening pairs and change pairs are gone, and so is the remark after her arrival (`openingIn`).
+  - Coming: SPAWN starts the speech 40 ticks in and, in Legends, lasts until its last line has been read (`SpawnFor`, about 48 s), then the flash and cage.
+  - Change: the beats map to ticks piecewise (`ChangeKeys`/`ChangeKeyTicks`): 16→64 stretched to hold the first two bend lines plus 170 ticks of the third (she changes as "At me!" is read), 150→158 stretched to hold the two still lines; the rest at 3.33 ticks a beat. About 35 s in all.
+  - Fall: the panel lines (`Dialogue.Aside`) are gone. CRACKS is a fixed 150 ticks; CLOSE lasts as long as the three closing lines (`CloseTicks`, about 17 s); the last three start 10 ticks after the butterflies, on `Taunt`, which needs no living speaker, so they carry on after she is gone and the player is let go.
+  - Durations follow from `Taunt.TicksFor`, a pure count, so the server times the scenes identically to the clients.
+
+- **Her speech hidden in her coming; E to skip.**
+  - Her arrival hides the interface (`PisPlayer.HideUI`), so the cinematic bars are drawn after everything (`Main.OnPostDraw`) and covered the foot-of-screen line. Bars-over-everything frames now draw registered overlays after the bars, in interface space (`Cinematic.OverBars`, `Cinematic.BarsOverEverything`); `Taunt` draws there on those frames and through its own layer otherwise.
+  - `UI/CinematicSkip.cs`: "E Skip" in the bottom-right corner. A scene calls `CinematicSkip.Offer()` every tick and `Take()`; E held 24 ticks (the key face fills) skips, and a key already down when the offer appears must be released first. Single player only.
+  - Wired into her arrival (arena set, player put at the arena centre, her over them, name, fight), her change (her second half at once under a white flash, the camera home) and her fall (straight to the shrink and butterflies, her last lines not said).
+
+- **Her speeches, recording version.** The three speeches in `EmpressOfLight.Talk.cs` replaced with the user's script for the voice actress (`Claude input/EmpressVoiceLines.docx`, 181 words, three grammar fixes agreed). Scene lengths follow by themselves: coming about 49 s, change about 28 s (changes at 12.5, day stops at 17), border closing about 15 s.
+
+## 17.11 Session 8, later: Skeletron reworked: his coming out of the old man, his loss of his hands, a body of bones drawn by the mod in both his looks; in Legends fifteen moves of his hands and nine of his own
+
+Asked for (in the user's words): "Rework Skeletron's cinematics(invincible): I have added ...\Content\NPCs\Legends\Skeletron
+textures for the hands so it can have more dexterity and jaws and seperate upper skull for spitting skulls; remake for the
+counter part variation; also dissect the finger textures to use and rotate them for even better dexterity." Then his
+coming, step by step (the camera to the old man, his cough of blood, his hand bursting into two arms that hold him two
+seconds, the camera in and shaking, him torn in two down the middle, the skull popping up and the halves cast aside, the
+mouth opening and a big roar, the player free to move); his hands lost ("opens mouth, roars, breathes skulls upwards (not
+homing)", the homing skull's own picture, not the item's); "normal death"; twelve moves of his hands by number and "3 more
+of my own: cartoonish but epic, bone-related, with sounds"; nine of his own by number; "Just make it fun and beautiful. Im
+giving you Max to work with. Dont cheap out on the visual and sounds its what gets the people going." Answers: the coming
+in every world; his skull locked until both hands die; "LR hand use same texture js mirror so skeletron hands and red hat
+skeletron head"; multiplayer synced; "yeah use the new texture".
+
+1. **His body, drawn by the mod** (`SkeletronRig`), in every world: the user's skull (Skeletron_Upper, Skeletron_Jaw) and
+   hands (Red_Hat_Skeletron_HandBareNoFinger, _Fingers, _FullFingers), and their counterparts made from them (by the
+   reading of "remake for the counter part variation" and the answer above: the user's grey hands are the red hat's, so
+   his own green-bone hands were made from them; the user's skull is his own, so the red hat's grey skull was made from
+   it, the hat lifted off the game's own red-hat skull onto it): each recoloured colour for colour along the game's own
+   pairs of the two looks. One hand picture for both hands, the left the right mirrored.
+   - **The hand**: the palm with its knuckles, and five digits of three bones each, cut out of FullFingers
+     (SkeletronFingerAtlas, both looks; the first bone again as Fingers draws it). A digit is posed by its splay (turned
+     at the knuckle), its bend (folded toward the palm: its bones shortened as they turn away, the finger leaning in toward
+     the thumb as it folds; curled further, only its first bone as Fingers draws it, shorter, drawn back onto the knuckles
+     and slanted in, never gone: "the fist doesnt fully take away all the finger, it rotates them inwards and gives it a
+     slightly slanted effect", after the user's sketch of an open hand, a fist, the OK sign and the middle finger) and its
+     hook (each bone turned on from the last; the thumb in a fist down the side and wrapped in under the fingers). A pose
+     shows the hand's back, as he usually does, or its palm (by request, "it can even be mirror and fingers go infront to
+     imitate a raised pointer... so it imitate showing the palm"): the picture mirrored, a folding finger seen end on at
+     its knuckle and its middle bone folded back over the palm in front of it; turned over all at once. Rigid (by request,
+     "Why is the hand kinda liquidy? make it rigid"): no bone is ever shortened or squashed, a digit is posed only by
+     turning its three bones at their joints (its knuckle, the middle joint, the last), and seen end on as a swap of
+     picture; the pinch's thumb out and then up at a right angle, its forefinger curled round in three straight
+     sections. Twenty-two poses (the palm shown in Wag's raised pointer and Rps's paper; open, relaxed,
+     spread, fist, point, the middle finger, OK, pinch, a flick held and let go, a snap ready and done, a finger gun,
+     scissors open and shut, horns, grab, clutch, flat, strum); a hand eases from pose to pose.
+   - **The arms**: the game's own arm bone, one picture for the upper arm and one for the forearm as the game draws him
+     (SkeletronArmBone: Images/Arm_Bone copied; Red_Hat_SkeletronArmBone: Images/Arm_Bone_3, the red hat's in 1.4.5,
+     copied, since tModLoader 1.4.4.9 has no Arm_Bone_3), shoulder to elbow to wrist, each stretched along to its bone's
+     length (116 at scale 1) and as wide as the game's, the elbow found by the two bones' lengths. Only ever those two
+     bones (by request: "only 2 segments of arm, dont have to stay rigid to the body"): a hand further off than the arm
+     reaches takes its arm with it, off his body, its top in the air (the game's own arms never meet his skull either).
+     The arm's top is never pinned to his shoulder (by request: "why is the arms so rigorously attached to the
+     shoulder? is should fly freely but have a constraint to it... arm stays in place while head bounce like ball"): it
+     drifts after the shoulder on a loose spring (`LegendsSkeletronHand.FloatArm`, each machine's own look), never more
+     than 110 from it, and is pulled along by its hand past the arm's reach; when his skull bounces, darts or is
+     thrown, the arms lag and swing after it. A move that holds an arm by its top (the tear in his coming, the whip)
+     holds it exactly. At rest he has
+     his old shape: the hands at the game's own spot for them, the elbows up, forearms and hands hanging, fingers slowly
+     flexing.
+   - **The skull**: the jaw drops, the skull lifts off it (for spitting skulls), his mouth seen between (SkeletronMouth);
+     his eyes lit in a move's colour, or on fire (Blaze); cracks in it, one more for each dive that lands (three at most).
+   - **The red hat**: tModLoader 1.4.4.9 has no red-hat Skeletron of its own, so the mod gives it him when it was the
+     Clothier's death that brought him (the Clothier dying as he comes, wherever the game puts him: at the Clothier, or
+     at the old man, whichever the game's search met last).
+   - His hands are drawn by him (`SkeletronSystem` keeps the game from drawing them), arms, skull and hands in one order.
+2. **His coming** (`LegendsSkeletron.Arrival`), in every world, about eight seconds: LOOK 50 ticks (the camera to the old
+   man, leaning in), COUGH 100 (two coughs of blood, doubled over), BURST 30 (his hand bursts in blood and bone: two arms
+   out of it, hands on them), GRIP 120 (they hold him two seconds, crushing him, the camera further in and shaking harder),
+   SHRED 24 (torn in two down the middle), RISE 36 (the skull pops up out of him, growing, the halves cast aside to lie
+   where they fall and fade), ROAR 100 (his jaw drops and he roars, his name with it), HOME 40 (the camera back). The
+   player keeps moving and keeps their interface off; nothing hurts them and nothing of his hurts or is hurt
+   ("invincible"). Without the old man: up out of the ground, the ground cracking, bone gathered to the spot with a red
+   glow, two hands bursting up, the red hat coming down onto him as he rises. E held in the corner skips it (single
+   player). The old man is not killed by the game in its own spray of blood any more (`OldManCursed`).
+3. **His hands lost** (`LegendsSkeletron.Unhanded`), in every world, three seconds: he jerks back and his jaw snaps shut
+   (in Legends his ward shatters), the jaw drops and the skull lifts, he roars and breathes a stream of skulls up into the
+   sky that slow and fall back as a rain (the homing skull's picture; they hurt only in Legends), his mouth shuts, the
+   camera back.
+4. **His death**: as ever, in his new bones: the skull's two halves (and the hat), a hand's palm, fingers and thumb, its
+   arm's bones (13 gores in Content/Gores).
+5. **In Legends**: half again his life, a fifth again his damage; his skull warded (untouchable, a cold rim of light)
+   until both hands are gone. Vanilla runs him between moves; every 200 ticks or so a move of his hands (never one of
+   the last two), each with its own sounds; once his hands are gone, every 150 or so one of his own, the dive at most
+   once in 1500 ticks.
+   - A player he throws (the swoop, the purple grab) takes no fall damage until they are down again. His bowled skull
+     hurts only by the ball of it, so it can be jumped.
+   - **Hands** (the twelve asked for, then three of mine): BASKETBALL (his own skull the ball, by request: "use the head
+     itself not a seperate skull": palmed off the top by a hand, fingers spread over the crown, carried down to the floor,
+     both hands down there, dribbled three times on toward the player and crossed over from one hand to the other; a
+     fadeaway jump shot off the fingertips, the guide hand at its side, the wrist left hanging: his skull in a high arc
+     down onto the floor under them, a shock round it, and he bounces up off it back over them), CLAP (the hands either
+     side of the player, locked; they meet, and the shock of it goes up), TORNADO (both middle fingers up, a power chord;
+     then the arms spun round him like a propeller, and he comes), SOLO (the middle finger up close by him, the other hand
+     on an air guitar; his skull opens and spits a homing skull with every strum, to three riffs and a big finish; rock on),
+     COMBO (a punch, a backhand, and the fists bumped together where the player is), WAG (the forefinger up, wagging "no",
+     a tsk at each end, shots turned aside meanwhile; the other hand slaps), FLICK (a hand by the player, a finger held
+     back by the thumb, a line where it will go; yellow, crowd control does not stop it, and it throws them), WHIP (the
+     hands shake; the one lets go, goes up to the other arm's shoulder, takes hold of it there and tears it off, and
+     cracks it like a whip: its two bones dropping limp from the way it hung and swaying under the holder, swung back and up over his head with the forearm trailing, then driven over the top and down through the
+     player, the forearm lagging until it snaps straight; hard, not through crowd control; a kick back off them; it goes
+     back on), BOWLING (one hand's fingers hooked into an eye socket of his skull, the other steadying it then out for
+     balance; swung back and up and down to the floor, let go, along the ground at them: a strike; the hands stay at the
+     line following through, the bowler's high and pointing after him, as he rolls away from them),
+     SEALS (five hand signs, quick; smoke round the player and skulls out of it that come for them), SWOOP (a hand comes
+     down round in a curve; caught, it pinches them by the head, thumb and finger, throws them up, and the other hand
+     tries to punch them on the way), PURPLE (open hands raised high either side, glowing purple, then down from both
+     sides; caught, brought to his mouth and burned point blank with the Diabolist's fire, held through its burst); GUNS (finger guns, pew, bones
+     out of the fingertips; the smoke blown off and a twirl), SNAP (a snap of the fingers: bone spikes burst up in a line
+     along to the player), RPS (jan, ken, pon: rock comes down on them, paper pushes a wall of air at them, scissors snips
+     where they stand).
+   - His homing skulls (Volley, Solo, Seals) turn wider the faster they go, and give up and fly on straight once
+     they have gone past the player or the player cuts more than about 65 degrees off their nose at speed (by request:
+     "if i break their ankle they better stopp following me"); the game's own homing skulls he shoots between moves
+     (Projectile_270, `SkeletronSkullTracking`) likewise, in Legends, their homing ended where they lose you. His hands' blows hurt three fifths of what they did (by
+     request, "hands only deal 3/5 damage"): a hand's own damage in Legends is the game's times 1.2 times 0.6; and they
+     have a fifth again more life (by request: "for legends buff hands health by 20%"): the game's times 1.5 times 1.2.
+     Every move of his plays at four fifths of the game's speed (by request: "its better if all attacks are slowed down a
+     bit cuz afterall we are in prehm"; `LegendsSkeletron.Pace`, 0.8): the move's clock (`moveClock`) goes on 0.8 a tick,
+     so every telegraph, wind-up, swing and gap within a move lasts a quarter longer and every hand on a path moves at
+     four fifths; the ticks between his moves, the game's own attacks between them and his shots' speeds are as before.
+   - Seen in the move previews (GIFs from the Python stand-in, sent in the chat) and changed: the tornado spun above them, not
+     down at their middle (half its circle was in the floor); the solo's head-bang a real drop on each strum (his hover
+     undid a push); the combo's punch stopped above the floor and the backhand's sweep through them, not under the floor;
+     the flick's hand at their head's height and its finger out 70; the seals' skulls round over the top only (half came
+     out of the floor); the swoop's throw a little away and the puncher home under him; the purple grab held at his
+     mouth, thrown up and away (not into the floor) and his eyes' fire out as he lets go; rock-paper-scissors with his
+     skull higher than the count (the fist was in front of his face).
+   - **His own**: DIVE (his head-smash, reworked: he circles out to where he can come down cleanly through the player
+     (from open air, nothing between, onto something solid after a clear stretch: never along the floor they stand on or
+     up out of the ground), the path marked all the way, spins up, and comes; whoever is in his way dies; what he hits
+     cracks him and takes a fifteenth of his life, never the last of it), BREATH (the indicated skulls, reworked: up over the player, skull lifted, six
+     breathed up, each drawing its line then taking it), CHOMP (after them, jaws snapping, at a quarter again their
+     speed), INFERNO (up over them, five bursts of the Diabolist's fire round them), RAISE (a roar, four skeletons up out
+     of the ground round them, platforms too, six of his at most), BLAZE (eyes on fire; a breath purple at his mouth going
+     red, fifty tiles at most, turned slowly after them as he comes slowly), SPIN (vanilla's own), VOLLEY (three spits of
+     four homing skulls), JAW (he spins and throws his jaw out past them and back, a boomerang).
+6. **Multiplayer**: the server decides each move, where it is aimed and who is caught, and sends them with its clock;
+   every machine plays the move from them; a caught player is held on every machine, and thrown by their own.
+7. **Sounds** (Content/Sounds/Skeletron, 62, made by formula): coughs, the bone bursting, the tearing, the pop, his roar;
+   rattles, clacks, chomps, thuds, his skull cracking; a dribble, a fadeaway, punches, a whack, a bump, tsks, the flick,
+   a snap, a handshake, a whip crack, swoops, a pinch, the tornado, a cackle, five seals, a poof, a summoning, pews, smoke
+   blown, ground cracking, spikes rising, jan-ken-pon, a snip, a bowling roll and strike, the purple charge, ignition,
+   the flame breath, the jaw's whir, three riffs, power-chord stabs and a big finish.
+8. **/skeletron** (`SkeletronCommand`, a World command): what the nearest Skeletron is doing; `/skeletron <move>` that
+   move next (Legends); `/skeletron hands` both hands killed; `/skeletron red` the red hat on or off.
+9. **Not run in the game.** Built clean against tModLoader 1.4.4.9 (0 errors). Read through by three independent
+   reviews (the core and scenes, the hand moves, the head moves), their findings fixed, and the fixes read through again.
+   Among what they caught: the Blaze's breath killed itself on its first tick; dives skimming the floor; the flick aimed
+   from the wrong spot; the purple grab's hands stopping short; the tornado's arms going harmless a second in; the
+   Diabolist's bolts never bursting when shot straight down; clients never ending his coming (unchaseable all fight,
+   no name or bar for some); both hands swinging in step; a client's guess of a move's aim overwriting the server's.
+   Previews of the hand poses and the body were drawn from the rig's own numbers. Nothing of it has run in a world.
+   The old Content/NPCs/Legends/SkeletronHead.png and SkeletronJaw.png are used by nothing now.
+
+Also: the Piece of Paper outside a Grand world had its fourth verse ("shielding a colossal kingdom prosperous,")
+replaced with "..." (since 4fb24ed); put back as the user wrote it, so every world reads the user's five verses.
+
+## 17.12 Session 8, later: the off hand, and the Guide's quest that opens it
+
+Asked for: "Create an OffHand Slot with its own frame, around here, next to trash can, unlocked during game Guide's
+Main Quest (think about one and until that quest is done you voodoo demons does not spawn) replace keybind to use
+offhand's primary with whichever mouse is using to change wind. cannot use alt function with of for offhand items."
+Answers: the quest is the hut, then his book; the world's, for every player.
+
+1. **The Guide's quest** (`Content/NPCs/GuideQuest.cs`): the little hut seawards he already asks about (his first
+   words, Hints.GuideHut: "tell me what is inside"). In the Blood Shrine's chest is his family's **Weathered Ledger**
+   (`Content/Items/LoreItem/WeatheredLedger.cs`, a lore item; put there with the chest's things,
+   `PADStructureSystem.FillShrineChest`; in a world made before it, put into the shrine's chest when the world loads:
+   the Living Wood Chest on the surface nearest the spawn, one still holding the Ominous Orb first). A talk option
+   on the Guide, "The little hut", while it is owed: without the ledger he says where the hut is; with it he reads it
+   (his family's hands, a face at the foot of every page, his) and it is done. A world with no shrine chest to be
+   found takes the player's word for it. Done: "Your other hand is free." World state, saved and sent.
+2. **Voodoo Demons** (`GuideQuestVoodoo`): until the quest is done, one that would come of itself comes as a plain
+   Demon (summoned ones left alone). After it, as the game has them. (He has read his face; whoever else has seen it
+   starts carrying it.)
+3. **The off hand** (`Content/PADplayer/OffHandPlayer.cs`): one more item, saved with the player, used where the world
+   has it open. Weapons, tools and fishing rods (`Fits`). Its key is the bind that was the wind's test key (still
+   named "Wind" inside, shown as "Use Off Hand"), so the button set for that carries over; the wind is stepped by
+   "/wind" now. Held: the off hand's item is swapped into the selected hotbar slot and used as the held item is,
+   its primary use only (no right click, ever); let go and the use over, it is swapped back. Undone too when the
+   hotbar moves, before saving and before dying, so nothing is lost or doubled.
+4. **Its slot** (`Content/UI/OffHandSlot.cs`, `OffHandSlot.png`, `OffHandSlotHand.png`): its own frame (a bone rim on
+   a plum ground, an open hand faint in it while empty) just left of the trash, moving with the trash when a chest
+   or a shop is open; only where the off hand is open. Takes only what fits; nothing can be taken out while its item
+   is being used.
+5. `/guidequest [done|reset]` (`GuideQuestCommand.cs`).
+
+Not run in the game. Built clean (0 errors).
+
+Open: RELEASE_TODO under §17.10 and §17.11 and §17.12.
+
+## 17.13 Session 8, later: schools of fish in the Vast Ocean, and pseudo-NPCs
+
+Asked: "Added 3 schoolers fishes in NPCs/VastOcean (one has 2 variants): Create Pseudo NPC class that behaves like
+NPCs but doesnt affect max NPC; somewhat like ambiance ... school of 35-60 tries to dodge player use 2d gaussian or
+whatever that is it curls and moves in masses where the invisible point shifts within the school size make it
+beautifuul and magical and optimize it so it aint crash my game think of them as little dots You can make their size
+0.5x with +- 0.05 size diff", then "they can also have color variations and yeah make it magical and sparkly and
+everything you can think of a beautiful ocean".
+
+1. **Pseudo-NPCs** (`Content/NPCs/Pseudo/PseudoNPC.cs`): a creature kept, moved and drawn as the game keeps its own
+   (a kind, ai and localAI slots, a place, a speed, a turn, a scale, an opacity, an age, a group), in one pool of
+   1600 (`PseudoNPCs.Pool`), never in `Main.npc`: not counted in the game's 200, nor against spawn rates, nothing can
+   hit or catch them; on each player's own machine only, nothing sent, none on a server. Kinds are `ModPseudoNPC`s,
+   loaded as ModNPCs are (`Texture` by namespace, `AI`, `OnSpawn`, `CheckActive`, `Draw`, `DrawGlow`, `Most`,
+   `Smooth`, `DespawnDistance`). Moved in `PostUpdateEverything` (AI, then speed added), taken away past their
+   distance from the local player; drawn after the tiles and creatures, before the players and the water over
+   everything; their own light (`DrawGlow`) drawn by the place's light layer (the Vast Ocean's, over its water).
+2. **The fish** (`Content/NPCs/VastOcean/SchoolFish.cs`; namespace `PisAndDag.Content.NPCs.Ocean`, since one named
+   `...NPCs.VastOcean` would shadow the place itself for everything under `NPCs`): the **Anthias** (your two pictures
+   and four more: golden, coral red, magenta, violet; slow, high, three times as likely by the rock), the
+   **Fusiliers** (yours and red-tailed, indigo, lagoon, silver; quick, the commonest, to the 6th section), the
+   **Pacific Creolefish** (yours and silver-blue with its fins still red, salmon, wine, dusk; deeper). The colours are
+   made from your files when first drawn (hue turns by rule, `Variant` / `Recolour`), all into one picture, so a sea of
+   them is one draw: redraw a fish and its colours follow. Each at half its picture's size, a twentieth either way;
+   most of a school in one or two colours, a few of the others.
+3. **How they swim**: each to a distance of its own from the point its school gathers on, which shifts about inside
+   the school every second or few; round it as the school curls (how much and which way changing every few seconds:
+   now milling like a bait ball, now hardly); along with the school; apart from its neighbours; and away from every
+   player, creature bigger than a critter and fast shot by a 2D gaussian of the distance from its body (spread 34
+   pixels): the school opens round you and closes behind; frightened ones faster. Off the rock and under the surface by
+   looking ahead. Tilted as they swim, wiggling; turning round they go edge on, narrowing to nothing and back.
+4. **Schools** (`VastOceanSchools.cs`): 35 to 60 fish; from six rows under the surface to the end of the 6th section;
+   five about you in the upper four sections, four in the 5th, three in the 6th, never more than six (360 fish); each
+   comes from out of sight (120 to 700 pixels past the screen's half diagonal), where it has room, heading in across
+   the screen, mostly sideways; and is let go once 1000 pixels past it. A school's middle wanders, turns off the rock
+   ahead, keeps off rock about it, out of the top six rows and the black, apart from other schools, and leans a little
+   from what comes near.
+5. **The magic**: by day a flash of silver and a star where a fish turns through edge on (its flank catching the
+   sun), scales glittering now and then (more when frightened). In the dark (by night, and deeper by day) each fish
+   gives its own light in its own colours, a wave of it rolling through the school, a soft glow about it and a trail
+   of small lights left behind, drifting and going out; the school lights the water about it (`Lighting.AddLight`).
+   Flashes and stars warm white in the sun, the fish's colour in the dark.
+6. Cost: about 360 fish each doing a neighbour pass over its school (cut off at 7 pixels), at most the ten nearest
+   threats (only those that can reach a school are gathered: players, then fast shots, then creatures), two tile
+   looks a tick; one texture for all of them, their glow in two runs (bodies, then halos); glints at most 700, made
+   only by fish on or near the screen.
+7. Read through by an independent review: no crash paths; its four findings fixed (schools heading away and holding
+   their places off screen, so the screen was often empty; the glow switching texture every fish; threats taken in
+   index order, so in a busy fight far creatures crowded out your shots; fish off screen using up the glints).
+
+Seen only through a Python stand-in using the same rules and numbers (`Claude outputs\VastOcean_schools_day_1025.gif`,
+`VastOcean_schools_night_1025.gif`). Not run in the game. Built clean (0 errors).
+
+Open: RELEASE_TODO under §17.13.
+
+## 17.14 Session 8, later: the schools only in the Vast Ocean and the Schooler Zone, 40 to 80 each
+
+Asked: "make it schooler exist in vast ocean and schooler zone; change max per school to 40-80".
+
+The schools (§17.13) now keep to the 1st and 2nd sections (the Depth Meter's Vast Ocean and Schooler Zone,
+`VastOceanSchools.Sections`): from six rows under the surface to eight rows over the end of the 2nd section. Five
+about you at a time wherever you are in those two, never more than six (480 fish). 40 to 80 fish a school (radius
+6.5 times the square root of the count: about 41 to 58 pixels). Each kind's `Depths` is now two numbers, the 1st
+section and the 2nd: Anthias 3 and 2 (and three times by the rock), Fusiliers 4 and 4, Creolefish 1 and 3 (mostly
+the Schooler Zone). By day the lower part of the Schooler Zone is dim enough that they glow a little there.
+
+Built clean (0 errors). Not run in the game.
+
+## 17.15 Session 8, later: the schools looser
+
+Asked: "dont have too much overlapping within the fishes tho so the school can be big; it can over lap but not like
+squeezed together and cramp".
+
+Each fish keeps 12 pixels of room about it, middle to middle (`SchoolFish.Room`: about its length), pushed off another
+the harder the closer (0.22 pixels a tick at the middle, `KeepApart`), where it was 7 pixels and gently. A school's
+width grows with it: 9 pixels for each fish's square root (`VastOceanSchools.Spacing`; 40 fish 57 pixels across its
+radius, 80 fish 80), where it was 6.5. Seen in the stand-in (`Claude outputs\VastOcean_school_player_spaced_1025.gif`):
+the fish each seen, touching and over one another a little at the edges, none crammed. Built clean. Not run in the game.
+
+## 17.16 Session 8, later: the fish at their own size, shapeless crowds, more schools in the Schooler Zone
+
+Asked: "keep their original size; make it +- 0.1x size too", "more schools spawning but they gonna be in a amorphous
+crowd not rotating in a circle", "schooler zone got 1.5x many more schools than vast ocean".
+
+1. **Size**: each fish at its picture's own size, 0.9 to 1.1. Everything that went with the half size doubled: a fish's
+   room 24 pixels (`SchoolFish.Room`), a school's width 18 pixels for each fish's square root
+   (`VastOceanSchools.Spacing`: 40 fish 114 pixels from middle to edge, 80 fish 161), the glow about each 22 pixels,
+   the glints half as big again; a school comes in 260 to 700 pixels past the screen's half diagonal.
+2. **Shapeless crowds**: no more curling round (§17.13's milling, its `Curl` and its changes, gone). Each fish has a
+   place of its own in an oval about the school's gathering point, half as long again as the school is wide along the
+   way it goes and three quarters as wide across it; that place drifts about by itself (two slow waves of its own), so
+   the crowd churns and changes shape; the gathering point shifts more often and further (every 40 to 120 ticks,
+   anywhere within nine tenths of the school), the crowd bulging after it. The oval turns with the school slowly
+   (`School.Way`).
+3. **More schools**: six about you with the screen's middle in the Vast Ocean (the 1st section), nine in the Schooler
+   Zone (the 2nd), at most ten (800 fish).
+
+Seen in the stand-in (`Claude outputs\VastOcean_crowds_fullsize_1025.gif`). Built clean. Not run in the game.
+
+## 17.17 Session 8, later: a vortex one school in three
+
+Asked: "for now schoolers love to swim in vortex, make it only 1 in 3 chance a school does that; most of the time they
+swim normally with variations withitn the school."
+
+Each school is told as it comes (`VastOceanSchools.VortexChance`, a third) whether it is a vortex: its fish each keep
+a distance of their own from the gathering point (their place in the oval's distance from its middle) and mill round
+it one way (`School.Spin`), so hard (`School.Curl`, 0.8 to 1.3 for the school), as §17.13 had every school do. The
+other two in three swim as §17.16's crowds: each fish at its own drifting place in an oval along the way the school
+goes, the crowd churning and bulging after the gathering point. Built clean. Not run in the game.
+
+## 17.18 Session 8, later: the voice script's words in the game
+
+Asked: "implement the new script in". The script Amy Lam records from (`Claude input/AmyVoiceLines.docx`, E01 to E16
+and Q01 to Q10) is now what is shown in the game, word for word but for its dots made even.
+
+1. **Elin** (`EmpressOfLight.Talk.cs`): her coming seven lines (E01 to E07: the false mercy and the Garden of Lucidity
+   cut; "Rotten mortal, thou couldst never know...", "I shall not leave a flaw..."), about 39 seconds read where it was
+   49 (her SPAWN lasts as long as they take, as before). As the world bends, E08 to E10 ("I have forgotten the unfettered
+   wilderness", "Turn thy gaze upon me, fleshy mortal..."); her change still lands as "At me!" is read (`ChangeAtMe`
+   208 ticks into the line, the same share of it as before, where it was 170). As time stops: nothing (cut from the
+   script); the stillness held two and a half seconds in silence (`ChangeStillHold`), her scream ending it, so the change
+   now lands at about 13.3 seconds, the day stops at about 18, she screams at about 20.6, and it ends at about 22 (was
+   12.5, 17, 27 and 28). Lines put back in `ChangeStillWords` are said there again and held for. Her fall the same,
+   but "We shall... meet again."
+2. **Dame Quilt** (`DonaQuinn.Scene.cs`): "Coward!| Here comes my lance!" (a beat between), "Please! Wait! Wait! I
+   surrender!", and "Huh! Sorry again for the trouble. I hope to see you soon, stranger!". **Her last words**, new (Q10):
+   finished, she lifts her head and says "I failed you... dear... father...", slowly, a breath at each stop, in a panel
+   that goes down by itself; then her head drops and she fades (`DonaQuinn.Fall.FadeAt` now waits for them: about five
+   and a half seconds from the cut to her gone, where it was under three; the player held through it as before).
+
+Built clean (0 errors). Not run in the game. When her recordings come, the line timings will want setting to them.
+
+## 17.19 Session 8, later: Dancing Sand
+
+Asked: "Add a Dancing Sand spell, the staff to mouth and blows a spray of high vel sand with an angle of 15 degrees,
+distance of up to 30 tiles, dealing consecutive damage, localhit ... is 7-40 the closer you are (1-5 tle is 7 and lerp
+til 30), but damage is low, supposed to be dropped by Antlion, Antlion charger or giant antlion charger with a chace
+of 1/50 roughly 150 dps at 20 tiles is perfect", and "its element is Earth".
+
+1. **The spell** (`Content/Items/Mage/Spell/DancingSand.cs`): a spell (cast with a staff), Evocation, Earth (a new
+   element: `MagicColours`, sand on dark earth). 67 damage a hit, 2 mana a cast, a cast every 10 ticks while the button
+   is held (12 mana a second). Each cast keeps the staff at the mouth (`ColdCallHold.Keep`, Cold Call's hold, now for
+   any spell, its light warm for this one) and the spray going.
+2. **The spray** (`Content/Projectiles/Magic/DancingSandGust.cs`): one for each caster, off the staff's head toward the
+   cursor (turned to it quickly, the caster facing it), a cone 15 degrees wide and 30 tiles long, cut short down its
+   middle by the ground. Whatever is in it and in the open from the mouth is hurt again and again, each on a count of
+   its own, set at every hit by how near it is: every 7 ticks within 5 tiles, out to 40 at 30, evenly between
+   (`Cooldown`). At 67: 574 a second within 5 tiles, about 150 at 20 (a hit every 26.8 ticks), 100 at 30, to no
+   defence. A small shove away from the caster.
+3. **What is seen**: six grains of sand a tick thrown off the head along the cone at 20 to 26 pixels a tick
+   (`Content/Particles/SandGrain.cs`, streaks the longer the faster, the game's white pixel), slowing and wavering as
+   they go, and where they give out turning about in little loops and settling (the dance); off the ground they bounce
+   back weak and lie there; a few thrown back off what is hit; a little of the game's sand dust at the mouth. Its sound:
+   a low rush (the game's flamethrower, quiet, pitched up) in the place of the catalyst's chime, by a new
+   `Castable.CastSound`.
+4. **Where from**: the Antlion, the Antlion Charger and the Giant Antlion Charger, one time in fifty each
+   (`VanillaLoot`).
+5. Its picture: placeholder (PlaceholderTextures.md). Preview of the spray: `Claude outputs\DancingSand_spray_1027.gif`.
+
+Built clean (0 errors). Not run in the game.
+
+## 17.20 Session 8, later: the Harenaeum set
+
+Asked: "Add an ore named Harenaeum Ore, generated on harden sandstone tiles in underground desert, that is used to make
+Harenaeum Bars in pre hardmode", "can be picked up with 65 pick power", and from its bars a yoyo (Pocket Sandstorm), a
+fist (Corosion, and a system for fists), two summons (Scorpius Servus; Jelle's Fleshless Helper, renamed Jelle's Sable
+Helper), two ranged weapons and a mage one (suggested; taken: the Sidewinder; The Last Grain as rewritten; Clay Turbah
+and Mini Sandstorm as asked), "make it pretty and cool and action heavy", "Put a Lot of effort in". Answered: a real
+hourglass; the compressed sand a blast from the muzzle; the ore in both rocks; placeholder pictures drawn by code;
+bolts at 60 tiles a second; a horde three enemies or a boss; the tornado goes after enemies; new worlds only. Mine where
+nothing was said: "Corosion" spelled as written; Jelle left to her name; no armour, no tools.
+
+1. **The ore and the bars** (`Content/Tiles/HarenaeumOre.cs`, `Content/Items/Misc/HarenaeumOre.cs`,
+   `Content/Structures/HarenaeumPass.cs`, colours and shared effects in `Content/Items/Misc/Harenaeum.cs`). Sun-gold
+   nuggets and turquoise flecks in sandstone: an ore as the game's are (Spelunker, metal detector over Demonite and
+   Crimtane, under Hellstone; glitters in light), 65 pickaxe power, sits flush in sand and sandstone. Veins in every
+   new world, in the underground desert's hardened sand and sandstone only, under the surface, a vein for every 2000
+   tiles of it (some twenty in a small world, sixty in a large), 5 to 14 ore each, thicker deeper. Bars: 3 ore and a block of sand at a Furnace. Everything below at
+   an Anvil but Mini Sandstorm (the Makeshift Altar). Hellstone's rank, Orange.
+2. **Pocket Sandstorm**, a yoyo (`Content/Items/Melee/PocketSandstorm.cs`, `Content/Projectiles/Melee/PocketSandstormYoyo.cs`,
+   `PocketSandstormNeedle.cs`): the game's yoyo, 15 tiles, 20 seconds (asked), 22 damage. Round it a whirl of sand
+   3 tiles out (asked): grains drawn in from the edge on a spiral, faster further in, dust hanging round it, a pale
+   eye, glints; it opens as the yoyo goes out and closes as it comes back. Every 10 ticks it flings a needle of sand
+   from its far edge through something in it, round and round what is there: a third of the damage, through three,
+   past 10 defence.
+3. **The fist system** (`Content/Items/Melee/Fists/FistWeapon.cs`, `FistPlayer.cs`, `Content/Projectiles/Melee/FistPunch.cs`),
+   asked for "with range, combos (default js a punch), and something that doesnt make it damage the player if they
+   are too close": a `FistWeapon` sets its `Reach`, its `Combo` (a single punch unless it says), its combo window, its
+   fist and forearm pictures; each use throws the next blow at the cursor with the whole arm (asked: "move the whole
+   arm not js the fist as a projectile"): the player's own arm turned to it and straightened, and past the hand the
+   weapon's forearm running on unbroken to the fist at the end of the reach; pulled back, out fast, held, drawn back
+   in; each blow its own length (melee speed counts). Asked next, "smaller range, maybe to compensate, make him walk
+   forward and back, (doesnt affect movement when running or flying)": each blow walks the player in as it strikes and
+   back out as it is drawn in (`FistMove.Step`), their legs walking it, walls and slopes stopping it; only from
+   standing on the ground (not moving, no way held), and running, jumping or a mount ends it where it is. The guard: while a blow is
+   out, what is ahead within the reach cannot touch the player, nor what a fist has hit for half a second after; a
+   boss (or part of one) or anything that will not be knocked back is not turned away but touches for half (mine).
+   Shots are never turned away.
+   Then asked: "look thru arm map: figure out what arm pos do what like bent, extend, you can rotate them and stretch
+   and warp them to give a dynamic effect" (`Content/Items/Melee/Fists/FistArms.cs`, `FistArmLayers.cs`). The game's
+   player sheets were read cell by cell (`Claude outputs\Corosion_armmap_1028.png`): row 0 the arm held out (hanging,
+   raised behind, up and out, straight out, down and out), row 1 the walk's bent arms (at the hip, behind, forward, a
+   guard), column 7 the arm the game turns for items (shorter each row), rows 2 and 3 the back arm's slivers. A blow
+   now poses the player's own arm, every piece the game lays down for it (skin, shirt, armour, glove, dyes, glow):
+   another cell, turned about the shoulder, stretched, laid over the game's between two marks round its arm layers.
+   A straight blow from the guard (the forward-bent arm turned up, the fist before the chest), cocked and squashed,
+   thrown straight out 1.32 long and 0.86 thin, springing back to its length as it lands (0.9, then 1), folded back
+   to the guard. The back arm stays the game's, behind the body (asked: "bottom arm doesnt have to show"), and comes
+   out only to throw the cross while the front arm keeps the guard. The uppercut drops the arm down and out and sweeps
+   it up through straight out to up and out, longest at the middle. While an arm strikes, two faint copies of it part
+   way back to where it was a tick ago trail it, adding light in the weapon's colour; the fist leaves two of itself
+   too. The fist grows from the hand (a little over half size) as it goes out. The blow's stop on a hit and its time
+   are told to the other machines now, and it is drawn once, with its player.
+4. **Corosion** (`Content/Items/Melee/Corosion.cs`, `Content/Projectiles/Melee/Sandstep.cs`, `Content/Buffs/SandSettling.cs`):
+   jab (0.8 of 18), cross with the other hand (all of it), uppercut (2.4 of it) that throws what it hits up, by how
+   far it can be pushed (nothing for a boss); the forearm sand packed hard and bound in gold; a blow reaches 2.75
+   tiles from the shoulder, the steps 10, 16 and 12 pixels; the jab and cross barely push, so the uppercut lands (a
+   preview showed it swinging at air). Right-click: the player comes apart into sand, goes 10 tiles back the way they
+   face in 9 ticks, untouchable, and is put back together (half a second more untouchable, blinking); then Sand
+   Settling, 15 seconds (asked).
+5. **Scorpius Servus** (`Content/Items/Summoner/ScorpiusServus.cs`, `Content/Projectiles/Summoner/ScorpiusTail.cs`,
+   `Content/Buffs/ScorpiusServusBuff.cs`): a tail of nine plates on a turquoise sinew from the small of the back, up
+   over the shoulder, its sting hanging over the head and dripping venom; each summon another, fanned (asked). At
+   what is within 13 tiles of its root and in sight: drawn back tight, thrown over in an arc onto it (the sinew
+   stretching, the plates spreading), held in it, back; poisons for 5 seconds. A shine runs up the plates now and
+   then. 18 damage, one slot each; tails take different targets and strike in turn.
+6. **Jelle's Sable Helper** (`Content/Items/Summoner/JellesSableHelper.cs`, `Content/Projectiles/Summoner/SableConstruct.cs`,
+   `SableBolt.cs`, `Content/Buffs/JellesSableHelperBuff.cs`): a vial of the arch witch Jelle's sand; let out, a ribbon
+   of it goes round the player. Three enemies or a boss within 60 tiles that the player can see: it pours itself onto the ground behind them
+   and rises as a ballista, turns to the nearest (or the marked one) and looses a bolt a second at where it will be,
+   60 tiles a second, as far as 60 tiles, through three, a new bolt growing on the rail. Five seconds with nothing to
+   shoot (or the player 75 tiles off): it slumps back into sand and goes round them again, and rests five seconds
+   before it will form again. 26 damage, one slot each.
+7. **Sidewinder** (`Content/Items/Ranged/Sidewinder.cs`, `Content/Projectiles/Ranged/SidewinderArrow.cs`, `SidewinderSpike.cs`):
+   every arrow it shoots is its own, going side to side as a sidewinder goes (10 pixels each way), falling as an
+   arrow. One that lands goes under the ground, a furrow thrown up over it, to the nearest enemy within 25 tiles with
+   ground within 12 tiles of its feet, and comes up under it as a spike of sand (half as much damage again) that
+   throws it up off its feet. 24 damage.
+8. **The Last Grain** (`Content/Items/Ranged/TheLastGrain.cs`, `LastGrainPlayer.cs`, `Content/Projectiles/Ranged/LastGrainBlast.cs`,
+   `Content/UI/LastGrainUI.cs` and `LastGrainGlass.png`): a revolver with an hourglass in its frame. Right-click turns
+   the glass (a quicker use of its own; the gun's prefix counts for both): 10 seconds of sand; turned early, only what
+   had fallen runs again (asked). Sand falling: 30 damage a
+   shot and a blast of packed sand off the muzzle, 3.5 tiles, 80 degrees, half the damage, pushing back. Run out:
+   a tenth of the damage, no blast, and holding it the player walks, runs and flies at seven tenths (jumping and
+   falling as ever; slowed on their own machine, whose movement the others are told). Every shot's sound and flash
+   come from the muzzle's own projectile, so everyone near hears them. The glass runs whether the gun is held or not, starts empty, and shows bottom right while it is
+   held: the sand falling through the neck, the upper face dipping, the heap below peaking; it turns over when turned;
+   empty, its frame glows red now and then; hovered, it says how long is left.
+9. **Clay Turbah** (`Content/Items/Mage/Seals/ClayTurbah.cs`): a seal; an Earth incantation cast with it does 15% more
+   (asked). The second seal.
+10. **Mini Sandstorm** (`Content/Items/Mage/Incantation/MiniSandstorm.cs`, `Content/Projectiles/Magic/MiniSandstormTornado.cs`,
+    `Content/NPCs/MiniSandstormFall.cs`): an Earth incantation, Conjuration. The game's sandnado (its picture, drawn
+    as the game draws it) smaller and stood on the ground under the cursor, 12 tiles high at most, 6 seconds; it goes
+    after the nearest enemy, easing off over it. What is in it is hurt every 24 ticks and, where the world is run,
+    pulled in, carried up (lighter, faster: how far the game would knock it back, less for the bigger) and thrown out
+    of its top; landing, the fall hurts it (from 4 tiles, a quarter of the damage, more the further, up to two and a
+    half times). Bosses, worms, flying and wall-passing things, and what will not be knocked back: only hurt (asked).
+    18 damage, 30 mana (given back, as the seal spent it, if there is no ground under the cursor). One at a time.
+11. **Text**: names, tooltips and flavour (pad-lore-voice), the buffs, the map entry, the glass's hover text, in
+    `Localization/en-US_Mods.PisAndDag.hjson`. **Network**: an NPC thrown from a client (the uppercut, the spike) is
+    asked of the server (a new `PADPacket.Launch`).
+12. **Pictures**: all placeholders, drawn by code (PlaceholderTextures.md). **Previews** (`Claude outputs\`, all
+    worked out from the code's numbers): `Harenaeum_ore_1028.gif`, `PocketSandstorm_whirl_1028.gif`,
+    `Corosion_arms_1028.gif` (on the game's own player, the arms posed as the code poses them; `Corosion_combo_1028.gif`
+    is the earlier one with a stand-in figure), `Corosion_armmap_1028.png`, `ScorpiusServus_tails_1028.gif`,
+    `JellesSableHelper_1028.gif`, `Sidewinder_1028.gif`, `TheLastGrain_1028.gif`, `TheLastGrain_glass_1028.gif`,
+    `MiniSandstorm_tornado_1028.gif`, and the sprites, `Harenaeum_sprites_1028.png`.
+13. **Read through** by an independent review, its 13 findings fixed: the fist guard's test for a boss's parts, the
+    right-click taken straight from the mouse (so it works while a blow is out), the step walked to where it should be (it
+    drifted), the blow told to the other machines and drawn once; the Last Grain's turn keeping its prefix, its
+    sounds heard by all, its slow on its holder's machine only (and not twice on wings); Jelle's horde counted in sight
+    and a rest after slumping; the tails' reach for a marked enemy; Mini Sandstorm's mana given back as spent, and a
+    thing caught again on its way down falling from the new height; the ore's veins fewer and under the surface; a
+    needle's life (an eighth of a second, some 11 tiles).
+
+Built clean (0 errors). Not run in the game.
+
+## 17.21 Session 8, later: the Gilded Knight of Grace
+
+Asked: "Create a pre hardmode boss: Guilded Knight Of Grace, Spawns before the gate, lore wise, resummon with an item
+dropped from him. 5 tiles tall use double swords also 5 tiles tall. When encounter, you cannot leave him, cannot enter
+nor leave the plaeteuu, use dame quilt's system. When you encounter him cinematics: fades to him from afar zoomed, walks
+slowly with his 2 swords in his sheathes. Each walk he takes makes a metal warngling armor sound ykwim. Unsheathes from
+side to side in x formation (left to right), Points one blade slowly at player, pans and unzoom to player. and
+uncinematic: Attack move: Watch and learn and research from Rellana twin moon knight move set. Makesure have good
+choreography. Intended to be prehardmode, 9780 in normal and scales up and x1.5 in legends Damage appropriate. [the
+video] Upon killing: Falls down knees first and perish into light. You have full creativity only request is use a lot of
+effects, blooms and choreography to make it interesting and beautiful, his theme is yellowish js like the kingdom so
+some magic attacks will have golden pallete and blooms gold." Then: "Put much effort into the knight and do not spare
+any token", "All blade melee attacks can be parried too, parried makes him step back with invincibility for 1 sec before
+continuing", and, of the pictures, "make textures for parts js like Foigh but maybe have textures for arms, arms bent,
+leg, leg bent all with top and bottom". Answered: his place "Before the Curtain", his name "Gilded Knight of Grace".
+Mine where nothing was said: everything of his look, his moves past what the video shows, his sounds, his words.
+
+1. **The video, watched** (`Claude outputs\GildedKnight_rellana_notes_1028.md`): Rellana's moves read frame by frame and
+   brought over as his, not copied: the twin cut (her blades in turn, a step with each, a held last blow brought down
+   together), the leap down onto you with a wave either way, her moon crescents along the ground and rising, the spin,
+   the thrust, blades of light called up and loosed; and, for his second half as hers, fire on the one blade and light on
+   the other: the great crescent, a line of fire along the ground, a crown of blades, a blade as tall as the sky, and her
+   full moon as a sun.
+2. **His pictures** (`Content/NPCs/GildedKnight/`, drawn by code, PlaceholderTextures.md): as Foigh's, a picture for each
+   piece, both sides of him: the torso, the helm, a pauldron, an arm and an arm bent, a leg and a leg bent, near and far;
+   two swords as tall as he is (the Sun, warm, and the Grace, pale), each with a picture of its light; two scabbards; and
+   cloth laid as strips along chains (the cape, the tabard's flaps, the plume). Plate gilded over, the kingdom's gold.
+   He is five tiles tall; so are the swords.
+3. **His rig and his moves** (`KnightRig.cs`, `KnightTrack.cs`, `KnightMoves.cs`, `KnightMoves.Fight.cs`,
+   `KnightMoves.More.cs`, `KnightCloth.cs`): every movement written as poses at moments, sampled for the fight, the
+   drawing and the trails alike, so the blade that is drawn is the blade that cuts. Nothing of it touches the game: a
+   harness ran the same code outside it for the previews.
+4. **His scene** (`GildedKnight.Scene.cs`): standing at his post as he is found; when you come up the field, the picture
+   fades to black and comes back on him far off, the camera leaned in close; he walks at you slowly, swords home at his
+   hips, his armour ringing at every step (seven steps, fewer if you are nearer); stops; both hands across to the hilts
+   at the opposite hips, a breath, both swords drawn together and swept up to cross before his face, left over right
+   (asked: "side to side in x formation"), the light gathering where they cross; parted, the Sun over the top and down
+   ahead, the Grace over the top and down behind; the Sun pointed at you slowly on a straight arm, a glint run to its
+   point; his name ("Who Held the Wall" under it) up and to the bar; the camera back to you and out, your feet yours
+   again half way. About ten seconds. No music through it: only his armour. E skips it in a world of one.
+5. **His field** (`KnightEncounter.cs`; `Content/Combat/BossArena.cs`): asked "you cannot leave him, cannot enter nor
+   leave the plateau, use dame quilt's system": 'Dame' Quilt's box, with a new way of asking for it, sealed
+   (`BossArena.Keep(left, right, true, top, bottom)`): whoever is in it as it stands up is held in it, and whoever is
+   outside is put back outside at the wall they walk into, or where they were if they come in any other way (a rod, a
+   potion, up out of the ground; down out of the sky, past the nearer wall). It has a height: whoever is far over or
+   under the flat as it stands up (in a cave under it) has nothing to do with it. Only whoever is in it is in the fight:
+   nothing of his reaches anyone outside it, and nothing of theirs hurts him. The field: from the bore's mouth out along
+   the flat of the plateau to where the ground falls away into the way up, 70 to 124 tiles; found again in each world
+   from the watch tower's trapdoor (its place on the Curtain is fixed) and the ground itself. Not saved anywhere.
+6. **His post** ("spawns before the gate, lore wise"): thirty tiles out from the Curtain's face, on the road before the
+   bore (the only way in; there is no gate). Within 112 tiles of it, he is standing there, swords home, as he has stood;
+   within 44 tiles along the field, his scene. Nobody within 150, and he is not there. Once he has been beaten the post
+   stands empty: he perished into light.
+7. **What calls him back** (`Content/Items/Misc/GildedSpur.cs`): the Gilded Spur, which he leaves every time. Rung on his
+   field it calls him to his post again under the black of his scene, and he comes at you as he did. Not used up (a lost
+   fight would otherwise leave no way to try again). Rung anywhere else: "It rings, and nothing answers here." In a world
+   with no kingdom (a spur brought from another) it calls him over the ground to a field about you. Asked of the server
+   from a client (a new `PADPacket.GildedKnight`).
+8. **His first half** (`GildedKnight.Fight.cs`): between moves he stalks you to a few tiles off, easing back if you are on
+   top of him, and turns about to face you (seen narrowing edge on and opening again). Near: the twin cut (three blows, or
+   four with both blades raised and brought down together into the ground, sometimes held), the wheel (blades out level,
+   twice round at you, a leap back, a rising crescent off the Sun), a hop back. Further: the leap (down onto where you
+   will be, aimed by how you are going, as high as it needs; both blades into the ground and a wave of gold running out
+   along it either way: jump it), crescents of light along the ground (one off the Grace, or that and a rising one off the
+   Sun), the lancet (the Grace drawn back, a line of light following you, then still, then the thrust: a lance of light
+   down the line to the first wall, a hundred tiles at most), votive blades (three to five blades of light standing in a
+   row over him, turning to point at you, loosed one after another; each stands in what it strikes), a dash at you. Never
+   the same move as either of the last two if there is anything else.
+9. **His change** at half his life: rocked back; the blades lowered, a breath; raised and crossed before his face as in
+   his scene; a roar of gold (the mod's roar, rimmed gold); the Sun takes fire and the Grace light; round once with fire
+   and light wheeling after them; both into the ground and fire bursting up out of it about him, outward in turn. Nothing
+   lands on him through it.
+10. **His second half**: shorter rests, his blades alight (embers off the Sun, motes off the Grace), the wave from his leap
+    bigger with fire either side of it, two more lancets beside the first, a second crescent; and five moves of its own:
+    the great crescent (the Sun filled with fire behind him and swept up through the whole front of him: an arc of fire
+    the size of the sweep, held a breath, and burst), the procession of fire (the Sun driven into the ground and fire
+    running out along it at you, burst after burst, while he stays down behind it), the crown of blades (seven in a ring
+    over his head, loosed one after another, then a dash and four cuts), the long blade (the Grace raised and light grown
+    out of it 35 tiles tall, brought down ahead onto you, cutting its whole length, a pillar of light where its point lands;
+    then swept along the ground the length of the field: jump it), and the gilded sun (the Sun raised, a sun of fire forming
+    over its point with two rings round it, light drawn up into it out of the field, the screen dimming about it; brought
+    down at you: where you stand then, a pillar of fire to the sky).
+11. **The parry** ("All blade melee attacks can be parried too, parried makes him step back with invincibility for 1 sec
+    before continuing"): every cut of a blade in his hand, in every move, the long blade's whole length too; met, the
+    blade is thrown back, he rocks back and slides a step and a half away with a ward of gold about him (a ring turning,
+    gold over all of him), and for that second (60 ticks) nothing lands on him; then his guard and his next move. His
+    crescents and his blades of light are turned aside by a parry as well (they are gone).
+12. **His end** ("Falls down knees first and perish into light"): rocked by the last blow; the Sun falls from his hand,
+    turning, and lies where it lands; he stumbles and drives the Grace into the ground before him; one knee, then the
+    other, both hands on its hilt; his head bows; then, from the top of him down, he comes apart into light (his picture
+    in squares that warm to gold and white and lift away), gold leaf and motes going up, the Sun on the ground going a
+    little after him; a flash, rays, a ring. About five and a half seconds, the camera leaning in on him. No music.
+13. **His numbers**: life 9780 in a normal world (asked), 15648 expert and 23472 master as the game scales a boss, half as
+    much again in Legends; defence 16. A cut 46 (expert 70, master 88), a heavy blow 56, the wave 34, a crescent 36,
+    the lancet 44, a blade of light 30, a pyre 40, the great crescent 60, the procession 38, the long blade 50, the sun
+    70 (each with its expert and master numbers in `GildedKnight.cs`); a quarter more in Legends. Nothing hurts by touch:
+    every hit is worked out on each machine for its own player, as Foigh's. Drops the Gilded Spur and Healing Potions.
+14. **How he is drawn** (`KnightCanvas.cs`, `GildedKnight.Draw.cs`): painted into a picture of his own each frame before
+    anything is on the screen (as the honeyed Queen Bee's glint is): every piece in its order, his cloth between them,
+    and under each near piece a shadow that falls only on him; and a second picture of only his blades' light, the pieces
+    in front of a blade hiding its light. Laid on the world in the light where he stands, narrowed as he turns, cut off at
+    the ground so a blade driven in goes into it. Round him: trails off each blade only where it goes fast (a breath of
+    shade under the blade's light, a bright line along its point's way), afterimages in the dash, the leap and the wheel,
+    gleams running up a blade, the light in his visor, the lancet's line, the long blade, the ward. No shaders.
+15. **His sounds** (`Content/Sounds/Knight/`, 35 of them, made by formula as before): his steps (a boot on stone and the
+    plates ringing after it, three of them), the swords drawn, the point, swings (and in his second half swings of fire),
+    the clash and the ward, the slam, the wave, the crescent, the lancet's charge and its firing, the blades of light called,
+    loosed and striking, the ignition, the pyres, the great crescent, the procession, the long blade growing, slamming and
+    sweeping, the sun forming, falling and bursting, his kneeling, his dissolving, the flash.
+16. **Text** (pad-lore-voice): his name and title, his bestiary line, the spur's name and lines, eleven death lines, the Boss
+    Checklist line, in `Localization/en-US_Mods.PisAndDag.hjson`. His fight in Boss Checklist (`BossLogSupport.cs`, after
+    Deerclops and before the Wall), its picture him standing; his helm on the map; his beaten flag carried into places
+    (`SubworldFlags`). `/knight`, `/knight summon`, `/knight reset` (`KnightCommand.cs`).
+17. **Previews** (`Claude outputs\`, all worked out from the code's numbers by the same rig run outside the game):
+    `GildedKnight_parts_1028.png`, `GildedKnight_poses_1028.png`, `GildedKnight_intro_1028.gif`,
+    `GildedKnight_fight_1028.gif` (the twin cut, the crescents, the leap), `GildedKnight_wheel_1028.png`,
+    `GildedKnight_change_1028.gif`, `GildedKnight_great_1028.png`, `GildedKnight_longblade_1028.gif`,
+    `GildedKnight_death_1028.gif`, and the spur, `GildedSpur_1028.png`. The light the game adds with particles
+    (motes, embers, sparks) is only sketched in them.
+18. **Read through** by an independent review before delivery (every file of his, the box, the encounter, the spur,
+    checked against the game's own code); what it found and what was done about it is item 19.
+19. **Fixed from the review**: on a client nothing could hurt him (the game's sync of an NPC does not carry whether it
+    can be hurt; it is now worked out every tick on every machine from his state); a parry made a round trip behind the
+    server mostly did not turn him (the server now believes one up to sixteen ticks late, and one of a move he has just
+    come out of); the arm he points with, in his scene and in the lancet, lay mirrored from the blade (a limb's angle is
+    from straight down, a blade's from straight ahead: now 90 - the blade's); his dissolve never finished (a fifth of him
+    froze half lit: it now runs from over his crown down, every square gone as the flash comes); who is in his field is
+    who his box holds, on the flat (not a watcher at the wall, not someone in a cave under it); what he has called up and
+    not let go (the votive blades, the crown's, the gilded sun, the great crescent before it bursts) goes when his end
+    comes; the leap's afterimages on the clock the leap uses; the great crescent bursts on the move's own tick; the cape
+    and the flaps keep to his back as he is seen while he turns past edge on; the scene holds you until the camera is
+    half way home and his first move waits until it is home; the reel plays its clash and its step; the scene's moments
+    (the draw, the cross, the point, the pan home, the flash) cannot be skipped or doubled by the server putting a client
+    right; a client coming back to him plays what is happening, not every cue it missed; he walks up a step of ground,
+    nothing carries him past his walls, and a leap cut short inside a bank lifts him out of it; a picture of his that is
+    missing is drawn as nothing rather than stopping his drawing; a client's spur reads only ground the server has sent
+    it, and looks again each time; called where there is no kingdom, he comes only onto ground about as high as yours.
+    And, seen during the review: a turn about the server makes is seen turning on every machine.
+20. **Checked again**, twice more (an independent pass over those fixes, then one over the fixes to them): once his box
+    stands it alone says who is in his field (however high you go; a hill no longer counts you out, nor does flying);
+    it puts every machine's copy of every player back as their own machine puts them back, as the open box always did
+    (the server moves its copies of players between their machines' word of them: a copy let walk through a wall had him
+    leave in the middle of a fight); taken into it by a Rod of Discord, a potion or a pylon, or up into it out of the
+    ground under it, you are put back where you last stood outside it (the game moves a player's last position with a
+    teleport, so the box keeps its own); down onto it out of the sky, it bears you, a floor at its top, until you walk
+    off past a wall; back from death at a bed inside it, you are in it; he meets you only four tiles or more inside his
+    walls, and the spur answers only there, so the server and your machine both have you in his box as it stands up; a
+    parry of his long blade far out from him is believed by the server (`Parry.AddNPC` takes a reach); the procession of
+    fire stops at his end, and nothing of his hurts anyone once he is leaving; his leap comes down on top of a bank with
+    room for all of him, never in it (and where there is nowhere to come down near them, half way, or a hop where he
+    stands), and called where there is no kingdom he comes onto ground with room to stand; everything drawn of him
+    settles with him up a step; a turn about he had not finished is let go when he starts something else; a spur rung by
+    a client away from his field is answered from the server, "It rings, and nothing answers here."; the blade he is
+    thrown back on is the cut nearest the parry.
+
+Built clean (0 errors). Not run in the game.

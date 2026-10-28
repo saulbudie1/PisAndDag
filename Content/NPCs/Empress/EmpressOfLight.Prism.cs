@@ -409,7 +409,7 @@ namespace PisAndDag.Content.NPCs.Empress
                 EmpressArt.DrawBloom(spriteBatch, hands, 70f + 40f * lit, EmpressArt.Additive(Color.White, 0.7f * on));
 
                 DrawHelix(spriteBatch, hands, prism, width * 0.9f + 10f, time, Math.Max(lit, 0.35f) * on);
-                EmpressWarp.Haze(hands, prism, 70f, 2.5f * lit, 110f, 0.7f);
+                EmpressWarp.Haze(hands, prism, 70f, 1.6f * lit, 110f, 0.7f, WhiteWidth * 0.8f);
             }
 
             // The seven, out of the far side.
@@ -442,7 +442,9 @@ namespace PisAndDag.Content.NPCs.Empress
                         EmpressArt.DrawBloom(spriteBatch, spark, 24f, EmpressArt.Additive(Spectrum[k], 0.6f * fade));
                     }
 
-                    EmpressWarp.Haze(from, from + outward * 1500f, 56f, 1.6f * fade, 160f, k * 0.9f);
+                    // (Beyond the prism's own reach, so the seven's shimmers do not pile up where they start; the rays
+                    // themselves held straight.)
+                    EmpressWarp.Haze(from + outward * 160f, from + outward * 1500f, 56f, 1.1f * fade, 160f, k * 0.9f, RayWidth * 0.9f);
                 }
             }
 
@@ -451,7 +453,8 @@ namespace PisAndDag.Content.NPCs.Empress
                 DrawPrism(spriteBatch, prism, turn, lit);
 
                 // The world seen through the glass: swollen in it, more as it fills with light.
-                EmpressWarp.Lens(prism, PrismHeight * 0.95f, 0.26f + 0.16f * lit, 0.12f * (float)Math.Sin(time * 0.02f));
+                // (Gently, now the rays go through it: a strong swell bent them where they cross its edge.)
+                EmpressWarp.Lens(prism, PrismHeight * 0.95f, (0.12f + 0.06f * lit) * (beat == PrismFire ? 0.5f : 1f), 0.06f * (float)Math.Sin(time * 0.02f));
             }
             else
                 DrawPrismShards(spriteBatch, actAt, timer / (float)PrismBreakTicks);

@@ -34,6 +34,12 @@
 | Signal Pistol | Ranged | built; never run in game (below) |
 | Defacer | Melee | built; never run in game (below) |
 | Parade Sabre | Melee | built; never run in game (below) |
+| Pocket Sandstorm | Melee | built; never run in game (the Harenaeum set, below) |
+| Corosion | Melee | built; never run in game (the Harenaeum set, below) |
+| Scorpius Servus | Summoner | built; never run in game (the Harenaeum set, below) |
+| Jelle's Sable Helper | Summoner | built; never run in game (the Harenaeum set, below) |
+| Sidewinder | Ranged | built; never run in game (the Harenaeum set, below) |
+| The Last Grain | Ranged | built; never run in game (the Harenaeum set, below) |
 
 ---
 
@@ -972,6 +978,55 @@ pictures are mine.
 
 ---
 
+## The Harenaeum set
+
+Sun-gold flecked with turquoise, in the underground desert's sandstone and hardened sand, by request (PADWorkFlow
+§17.20): an ore at Hellstone's rank (65 pickaxe power), its bars, and eight things made of them. Colours and the sand
+they throw are kept in one place (`Content/Items/Misc/Harenaeum.cs`). All pictures mine, drawn by code
+(PlaceholderTextures.md).
+
+### Files
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Misc/Harenaeum.cs` | `Harenaeum` | The set's colours; a burst of sand, a glint; `Launch` (an NPC thrown, from a client asked of the server: `PADPacket.Launch`) |
+| `Content/Tiles/HarenaeumOre.cs`, `Content/Items/Misc/HarenaeumOre.cs` | `HarenaeumOre` (tile, item), `HarenaeumBar` | The ore and the bar |
+| `Content/Structures/HarenaeumPass.cs` | `HarenaeumSystem`, `HarenaeumPass` | Its veins in a new world |
+| `Content/Items/Melee/PocketSandstorm.cs`; `Content/Projectiles/Melee/PocketSandstormYoyo.cs`, `PocketSandstormNeedle.cs` | | The yoyo, its whirl, its needles |
+| `Content/Items/Melee/Fists/FistWeapon.cs`, `FistPlayer.cs`, `FistArms.cs`, `FistArmLayers.cs`; `Content/Projectiles/Melee/FistPunch.cs` | `FistWeapon`, `FistMove`, `FistArc`, `FistPlayer`, `ArmFrame`, `ArmPose`, `FistArms`, `FistArmLayers` (and four draw layers), `FistPunch` | The fist system: reach, combos, the guard, the step, the player's own arm posed from the arm map |
+| `Content/Items/Melee/Corosion.cs`; `Content/Projectiles/Melee/Sandstep.cs`; `Content/Buffs/SandSettling.cs` | `Corosion`, `Sandstep`, `SandstepPlayer`, `SandSettling` | The first fist, its sandstep and its cooldown |
+| `Content/Items/Summoner/ScorpiusServus.cs`; `Content/Projectiles/Summoner/ScorpiusTail.cs`; `Content/Buffs/ScorpiusServusBuff.cs` | | The tails |
+| `Content/Items/Summoner/JellesSableHelper.cs`; `Content/Projectiles/Summoner/SableConstruct.cs`, `SableBolt.cs`; `Content/Buffs/JellesSableHelperBuff.cs` | | Jelle's sand and ballista |
+| `Content/Items/Ranged/Sidewinder.cs`; `Content/Projectiles/Ranged/SidewinderArrow.cs`, `SidewinderSpike.cs` | | The bow, its arrow, its spike |
+| `Content/Items/Ranged/TheLastGrain.cs`, `LastGrainPlayer.cs`; `Content/Projectiles/Ranged/LastGrainBlast.cs`; `Content/UI/LastGrainUI.cs` | `TheLastGrain`, `LastGrainPlayer`, `LastGrainWings`, `LastGrainBlast`, `LastGrainUI` | The revolver, its hourglass, its slow, its blast, the glass on the screen |
+| `Content/Items/Mage/Seals/ClayTurbah.cs` | `ClayTurbah` | The seal |
+| `Content/Items/Mage/Incantation/MiniSandstorm.cs`; `Content/Projectiles/Magic/MiniSandstormTornado.cs`; `Content/NPCs/MiniSandstormFall.cs` | | The incantation, its tornado, the fall it throws things into |
+
+### The items
+
+| Item | What | Numbers (mine unless asked) | Recipe |
+|---|---|---|---|
+| Harenaeum Ore | 65 pickaxe power (asked); a vein for every 2000 tiles of the underground desert under the surface, 5 to 14 ore, new worlds only (asked) | Green, 15 silver | |
+| Harenaeum Bar | | Green, 50 silver | 3 ore, a Sand Block; Furnace |
+| Pocket Sandstorm | Yoyo, 15 tiles, 20 s (asked); a whirl 3 tiles round it (asked) flinging needles through what is in it | 22 damage, knockback 3.5, top speed 14; a needle every 10 ticks, a third of the damage, through 3, past 10 defence | 12 bars; Anvil |
+| Corosion | Fist: jab, cross, uppercut that throws up (asked); the whole arm thrown (asked), the player's own, posed from the arm map, stretched and smeared (asked); the back arm only for the cross (asked); a short reach and a step in and out with each blow, from standing only (asked); right-click a sandstep back, untouchable, 15 s cooldown (asked) | 18 damage (0.8, 1, 2.4), 12, 14 and 24 ticks, 2.75 tiles' reach, steps of 10, 16 and 12 px, 36 ticks' combo window; 10 tiles in 9 ticks, 30 ticks untouchable after | 14 bars; Anvil |
+| Scorpius Servus | A 9-plate tail from the back that strikes within 13 tiles and poisons (asked); a tail a summon (asked) | 18 damage, one slot; Poisoned 5 s; a strike about every 64 ticks a tail | 12 bars, 3 Antlion Mandibles; Anvil |
+| Jelle's Sable Helper | A ribbon of sand round you; a ballista for a horde (3+ enemies or a boss, asked), 60 tiles, 60 tiles a second, a bolt a second (asked); back to sand after 5 quiet seconds (asked) | 26 damage a bolt, through 3, one slot | 12 bars, 15 Sand Blocks, 5 Glass; Anvil |
+| Sidewinder | Bow (suggested, taken): weaving arrows; one that lands burrows to the nearest enemy within 25 tiles and comes up as a spike | 24 damage, 24 ticks; the spike 1.5x | 12 bars; Anvil |
+| The Last Grain | Revolver with an hourglass: right-click turns it (a real one, asked), 10 s; running: full shots and a muzzle blast (asked); out: shots almost nothing, 30% slower walking, running and flying while held (asked) | 30 damage (3 out), 22 ticks; the blast half, 3.5 tiles, 80 degrees; starts empty | 14 bars, 5 Glass; Anvil |
+| Clay Turbah | Seal; Earth incantations 15% more (asked) | Orange | 8 bars, 20 Clay Blocks; Anvil |
+| Mini Sandstorm | Earth incantation: a small sandnado on the ground (asked) going after enemies (asked), carrying light ones up to fall (asked); heavy and flying ones only hurt (asked) | 18 damage every 24 ticks, 30 mana, 40 ticks and 20; 12 tiles high, 6 s; the fall from 4 tiles, a quarter to 2.5x | 10 bars, 25 Sand Blocks; Makeshift Altar |
+
+Everything but the ore and bars: Orange. Weapons sell for 2 gold 40 to 2 gold 70.
+
+### Open
+
+- Never run in the game, never tried with a second player.
+- The numbers are mine: RELEASE_TODO.
+- No armour and no tools of it (nothing was asked).
+
+---
+
 ## The game's own items
 
 `Content/Items/VanillaBalance.cs`: the game's items with this mod's numbers, put on after the
@@ -1232,8 +1287,9 @@ whether an element can only be learned in its own biome.
 |---|---|---|---|
 | Branch Staff | `Staves/TreeBranchStaff` | Spell | Dryad's shop |
 | Clothier's Chatelaine | `Seals/SealOfAClothier` | Incantation | Clothier's shop; Skeletron (classic drop, bag in expert and master) |
+| Clay Turbah | `Seals/ClayTurbah` | Incantation | Anvil: 8 Harenaeum Bars, 20 Clay Blocks. Earth incantations 15% more |
 
-The only seal comes after Skeletron, so no incantation can be cast before him.
+The Chatelaine comes after Skeletron and Clay Turbah after the world's evil (its ore wants a 65 pickaxe), so no incantation can be cast before one of them.
 
 ### Casts
 
@@ -1249,9 +1305,11 @@ The only seal comes after Skeletron, so no incantation can be cast before him.
 | Rage! Sweet Fire | `Incantation/RageSweetFire` | Incantation | Enchantment | Flame | 0 | 40 | 30 | Pink | Altar: Lava Bucket, 15 Soul of Fright, 50 Living Fire Block, Book |
 | Betsy's Flames | `Incantation/BetsysFlames` | Incantation | Transmutation | Draconic | 84, to each thing in the breath every 5 ticks | 30, then 30/s after 1 s | 20 | Yellow | Betsy, 1 in 20 (classic); her bag, 1 in 20 |
 | Water! Resuscitate Me! | `Incantation/WaterResuscitateMe` | Incantation | Abjuration | Water | 0 | 30 | 30 | Blue | Fishing crates: Wooden 1 in 20, Iron 1 in 10, Golden 1 in 5, Ocean 1 in 4, and their hard mode kinds the same |
-| Mycelium, Finish Them | `Incantation/MyceliumFinishThem` | Incantation | Conjuration | Fungal | 14, to each thing in the ring every 30 ticks | 24 | 40, then 10 reuse delay | Blue | The Fairy Ring's chest (a new world, `/struct update`); Spore Zombies, 1 in 25 |
+| Mycelium, Finish Them | `Incantation/MyceliumFinishThem` | Incantation | Conjuration | Fungal | 14, to each thing in the ring every 30 ticks | 24 | 40, then 10 reuse delay | Blue | The Fairy Ring's chest (a new world, `/struct update`); anything killed in the mushroom caves underground, 1 in 8 |
+| Dancing Sand | `Spell/DancingSand` | Spell | Evocation | Earth | 67, to each thing in the cone every 7 ticks (within 5 tiles) to 40 (at 30) | 2 | 10 | Green | Antlion, Antlion Charger, Giant Antlion Charger, 1 in 50 each |
+| Mini Sandstorm | `Incantation/MiniSandstorm` | Incantation | Conjuration | Earth | 18, to each thing in it every 24 ticks, and its fall | 30 | 40, then 20 reuse delay | Orange | Altar: 10 Harenaeum Bars, 25 Sand Blocks |
 
-All under `Content/Items/Mage/`. Eleven casts against ten slots: §4.2 wants twenty to thirty.
+All under `Content/Items/Mage/`. Thirteen casts against ten slots: §4.2 wants twenty to thirty.
 
 ### Element colours (`MagicColours`)
 
@@ -1418,7 +1476,7 @@ into the ground and comes up as a cap. Its pictures are mine.
 - **Found**: the Fairy Ring (`FairyRingPass`): a mushroom chest on the floor of the glowing
   mushroom caves, ringed by small glowing mushrooms, with the incantation, Glowing Mushrooms
   and a few spares; one a world, outside Grace's country; new worlds and `/struct update`. And
-  the Spore Zombies (both kinds), 1 in 25 (`VanillaLoot`).
+  anything killed in the mushroom caves underground, 1 in 8 (`VanillaLoot`, by request; it was the Spore Zombies', 1 in 25).
 - Never run in the game. The Fairy Ring run in the rig on Huh: found at once.
 
 ---
@@ -1747,6 +1805,28 @@ Held and played (`Content/Items/Instrument/Trumpet.cs`). Its recipe, by request 
 ### Open
 
 - The recipe never made in the game.
+
+---
+
+# 7 · Boss summons
+
+## Gilded Spur
+
+What calls the Gilded Knight of Grace back to his post (`Content/Items/Misc/GildedSpur.cs`; PADWorkFlow §17.21),
+by request: *"resummon with an item dropped from him"*.
+
+| What | How |
+|---|---|
+| Source | Dropped by him every time he is beaten, with Healing Potions |
+| Use | Held up and rung on his field before the Curtain: he is at his post again under the black of his scene, and comes at you as he did the first time. Not while he is about; off his field it says *"It rings, and nothing answers here."* and does nothing. In a world with no kingdom, he comes over the ground to a field about you |
+| Kept | Not used up (a lost fight would otherwise leave no way to try again); stacks to 20 |
+| Rarity, value | Orange; sells for 1 gold |
+| Text | *Summons the Gilded Knight of Grace on the willow field before the great wall* / *Not consumed* / *'It rings for one man, and he always comes.'* |
+
+### Open
+
+- Never rung in the game.
+- Whether he should leave anything else (a weapon of his, a trophy, a mask): not asked.
 
 ---
 

@@ -61,6 +61,14 @@ namespace PisAndDag
         public static bool DownedAbomanation;
 
         /// <summary>
+        /// Whether the Gilded Knight of Grace has been beaten in this world. Set by GildedKnight.OnKill
+        /// on the side that decides kills, saved, and sent to joining clients. His post before the
+        /// Curtain stands empty from then on; the Gilded Spur calls him back (KnightEncounter).
+        /// Boss Checklist reads it (BossLogSupport).
+        /// </summary>
+        public static bool DownedGildedKnight;
+
+        /// <summary>
         /// Small animals let go on the Wasted Mile and not seen again. The Abomanation
         /// comes when this reaches Abomanation.Offerings, and it goes back to zero. World
         /// state like the downed flags: kept across sessions, sent to joining clients,
@@ -133,6 +141,7 @@ namespace PisAndDag
             FlightAnnounced = false;
             DownedMegashark = false;
             DownedAbomanation = false;
+            DownedGildedKnight = false;
             MileOfferings = 0;
             ArchmageShimmer = false;
             GraceUnsealed = false;
@@ -164,6 +173,9 @@ namespace PisAndDag
             if (DownedAbomanation)
                 tag["DownedAbomanation"] = true;
 
+            if (DownedGildedKnight)
+                tag["DownedGildedKnight"] = true;
+
             if (MileOfferings > 0)
                 tag["MileOfferings"] = MileOfferings;
 
@@ -188,6 +200,7 @@ namespace PisAndDag
             Legends = tag.ContainsKey("Legends");
             DownedMegashark = tag.ContainsKey("DownedMegashark");
             DownedAbomanation = tag.ContainsKey("DownedAbomanation");
+            DownedGildedKnight = tag.ContainsKey("DownedGildedKnight");
             MileOfferings = tag.ContainsKey("MileOfferings") ? tag.GetInt("MileOfferings") : 0;
             ArchmageShimmer = tag.ContainsKey("ArchmageShimmer");
             GraceUnsealed = tag.ContainsKey("GraceUnsealed");
@@ -213,6 +226,7 @@ namespace PisAndDag
             writer.Write(GuideSpokeOfLegends);
             writer.Write(CalmGround);
             writer.Write(CalmFlat);
+            writer.Write(DownedGildedKnight);
         }
 
         public override void NetReceive(BinaryReader reader)
@@ -226,6 +240,7 @@ namespace PisAndDag
             GuideSpokeOfLegends = reader.ReadBoolean();
             CalmGround = reader.ReadBoolean();
             CalmFlat = reader.ReadInt32();
+            DownedGildedKnight = reader.ReadBoolean();
         }
     }
 }
