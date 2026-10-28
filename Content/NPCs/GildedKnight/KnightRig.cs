@@ -14,12 +14,15 @@ namespace PisAndDag.Content.NPCs.GildedKnight
     /// (9, 4)" is the middle of that pixel, (9.5, 4.5) as SpriteBatch counts an origin.
     ///
     ///   Torso           26x34   the cuirass, faulds and belt; turns about the hips
+    ///   TorsoFront/Back 30x34   the same turned three quarters toward the eye, or away (Pose.Twist)
     ///   Helm            22x25   about the neck
     ///   Top/BotPauldron 20x17   about the shoulder, turning a third as far as the arm under it
     ///   Top/BotArm      18x42   straight, about the shoulder: the fist 29.2 below it
     ///   Top/BotArmBent  32x28   the elbow at a right angle, the forearm forward
     ///   Top/BotLeg      26x46   straight, about the hip
     ///   Top/BotLegBent  38x34   the thigh forward, the shin down
+    ///   ...Toward/Away          each leg, straight and bent, its knee and foot turned toward the
+    ///                           eye or away from it (Pose.NearToe, FarToe): the joints the same
     ///   Sun/GraceBlade  17x84   upright, the point up, about the middle of the grip
     ///   Sun/GraceScabbard 11x73 upright, the mouth up, about the mouth
     ///   Cape, FrontFlap, BackFlap, Plume: cloth, laid along chains (KnightCloth) as strips,
@@ -65,7 +68,17 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         public const int GraceBlade = 13;
         public const int SunScabbard = 14;
         public const int GraceScabbard = 15;
-        public const int Pieces = 16;
+        public const int TorsoFront = 16;
+        public const int TorsoBack = 17;
+        public const int TopLegToward = 18;
+        public const int TopLegAway = 19;
+        public const int TopLegBentToward = 20;
+        public const int TopLegBentAway = 21;
+        public const int BotLegToward = 22;
+        public const int BotLegAway = 23;
+        public const int BotLegBentToward = 24;
+        public const int BotLegBentAway = 25;
+        public const int Pieces = 26;
 
         public static readonly string[] Names =
         {
@@ -73,6 +86,9 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             "TopArm", "TopArmBent", "BotArm", "BotArmBent",
             "TopLeg", "TopLegBent", "BotLeg", "BotLegBent",
             "SunBlade", "GraceBlade", "SunScabbard", "GraceScabbard",
+            "TorsoFront", "TorsoBack",
+            "TopLegToward", "TopLegAway", "TopLegBentToward", "TopLegBentAway",
+            "BotLegToward", "BotLegAway", "BotLegBentToward", "BotLegBentAway",
         };
 
         public static readonly Point[] Sizes =
@@ -81,6 +97,9 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             new Point(18, 42), new Point(32, 28), new Point(18, 42), new Point(32, 28),
             new Point(26, 46), new Point(38, 34), new Point(26, 46), new Point(38, 34),
             new Point(17, 84), new Point(17, 84), new Point(11, 73), new Point(11, 73),
+            new Point(30, 34), new Point(30, 34),
+            new Point(26, 46), new Point(26, 46), new Point(38, 34), new Point(38, 34),
+            new Point(26, 46), new Point(26, 46), new Point(38, 34), new Point(38, 34),
         };
 
         /// <summary>What each piece turns about, on its own picture (facing right, as drawn).</summary>
@@ -102,6 +121,16 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             new Vector2(8.5f, 74.5f),
             new Vector2(5.5f, 1.5f),    // the mouth
             new Vector2(5.5f, 1.5f),
+            new Vector2(14.5f, 30.5f),  // the hips, turned
+            new Vector2(14.5f, 30.5f),
+            new Vector2(9.5f, 4.5f),    // the hip, the leg turned
+            new Vector2(9.5f, 4.5f),
+            new Vector2(7.5f, 6.5f),
+            new Vector2(7.5f, 6.5f),
+            new Vector2(9.5f, 4.5f),
+            new Vector2(9.5f, 4.5f),
+            new Vector2(7.5f, 6.5f),
+            new Vector2(7.5f, 6.5f),
         };
 
         /// <summary>The cloth's pictures: laid along their chains as strips (KnightCloth).</summary>
@@ -188,6 +217,39 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         /// <summary>The narrowest he is ever seen, turning about: edge on, a man is still this share of his width.</summary>
         public const float Thin = 0.3f;
 
+        // ---- turning at the waist (Pose.Twist) -------------------------------------------------
+
+        /// <summary>
+        /// Half the width across his shoulders and across his hips: turned at the waist, each
+        /// shoulder goes this far round, forward or back, as the sine of the turn. Turned three
+        /// quarters to the eye (Twist 1, 45 degrees) the near shoulder is 8.5 back and the far 8.5
+        /// forward: his shoulders 20 apart across the turned picture (3 side on), and the far arm
+        /// reaching 17 further ahead than the near; turned away, the other way. (Wider by request:
+        /// "when slanted his shoulder should be further from each other too".)
+        /// </summary>
+        public const float ShoulderSwing = 12f;
+        public const float HipSwing = 4f;
+
+        /// <summary>The cape's root, along his back, turned: toward the eye's side of his back as it turns away.</summary>
+        public const float CapeSwing = 5f;
+
+        /// <summary>The most he turns at the waist, at Twist 1: three quarters.</summary>
+        public const float TwistMost = MathHelper.PiOver4;
+
+        /// <summary>From Twist (and Toe) this far either way, the turned picture is the one drawn.</summary>
+        public const float TurnedFrom = 0.5f;
+
+        /// <summary>An upper arm this far forward of straight down (the sine of its angle) comes across his front, turned to the eye; this far back, behind his back turned away.</summary>
+        public const float ArmAcross = 0.35f;
+
+        /// <summary>How far round a shoulder or hip goes for this twist (the sine of the turn).</summary>
+        public static float Swing(float twist) => (float)Math.Sin(MathHelper.Clamp(twist, -1f, 1f) * TwistMost);
+
+        public static Vector2 NearShoulderAt(float twist) => NearShoulder - new Vector2(ShoulderSwing * Swing(twist), 0f);
+        public static Vector2 FarShoulderAt(float twist) => FarShoulder + new Vector2(ShoulderSwing * Swing(twist), 0f);
+        public static Vector2 NearHipAt(float twist) => NearHip - new Vector2(HipSwing * Swing(twist), 0f);
+        public static Vector2 FarHipAt(float twist) => FarHip + new Vector2(HipSwing * Swing(twist), 0f);
+
         // ============================================================
         // THE POSE
         // ============================================================
@@ -255,6 +317,18 @@ namespace PisAndDag.Content.NPCs.GildedKnight
 
             /// <summary>The whole of him seen turning about his own middle: 1 side on, toward 0 edge on, past it negative and mirrored.</summary>
             public float Turn;
+
+            /// <summary>
+            /// Turned at the waist, the legs staying as they are: 1 three quarters toward the eye
+            /// (the breast seen, the far shoulder forward: the far arm reaches further), 0 side on,
+            /// -1 three quarters away (the back seen, the near shoulder forward: the near arm
+            /// reaches further). Past <see cref="TurnedFrom"/> either way, the turned picture.
+            /// </summary>
+            public float Twist;
+
+            /// <summary>Each leg's knee and foot turned: 1 toward the eye, 0 side on, -1 away from it.</summary>
+            public float NearToe;
+            public float FarToe;
 
             public static Pose Standing => new Pose
             {
@@ -386,7 +460,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         /// <summary>The pose with a hand on this point: its fist put there (the arm bends, stretches or shortens to it).</summary>
         public static void Reach(ref Pose pose, bool near, Vector2 target, Vector2 hips)
         {
-            Vector2 shoulder = hips + Turned(near ? NearShoulder : FarShoulder, pose.Lean);
+            Vector2 shoulder = hips + Turned(near ? NearShoulderAt(pose.Twist) : FarShoulderAt(pose.Twist), pose.Lean);
             Vector2 way = target - shoulder;
             float dist = way.Length();
 
@@ -424,7 +498,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             // Both hands on the Grace: the near one on its grip above the far one, toward the pommel.
             if (pose.NearOn == Grace && pose.GraceIn == InFar)
             {
-                Vector2 farFist = hips + Turned(FarShoulder, pose.Lean) + FistFrom(pose.FarArm, pose.FarReach);
+                Vector2 farFist = hips + Turned(FarShoulderAt(pose.Twist), pose.Lean) + FistFrom(pose.FarArm, pose.FarReach);
                 Reach(ref pose, true, farFist - Along(pose.GraceAngle) * 6f, hips);
                 return;
             }
@@ -470,9 +544,12 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             sunMouth += hips;
             graceMouth += hips;
 
-            Vector2 nearShoulder = hips + Turned(NearShoulder, pose.Lean);
-            Vector2 farShoulder = hips + Turned(FarShoulder, pose.Lean);
+            Vector2 nearShoulder = hips + Turned(NearShoulderAt(pose.Twist), pose.Lean);
+            Vector2 farShoulder = hips + Turned(FarShoulderAt(pose.Twist), pose.Lean);
             Vector2 neck = hips + Turned(Neck, pose.Lean);
+            Vector2 nearHip = NearHipAt(pose.Twist);
+            Vector2 farHip = FarHipAt(pose.Twist);
+            Vector2 capeAt = CapeAt - new Vector2(CapeSwing * Swing(pose.Twist), 0f);
 
             Vector2 farFist = farShoulder + FistFrom(pose.FarArm, pose.FarReach);
             Vector2 nearFist = nearShoulder + FistFrom(pose.NearArm, pose.NearReach);
@@ -511,8 +588,8 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             Vector2 sunAlong = Along(sunBlade);
             Vector2 graceAlong = Along(graceBlade);
 
-            Vector2 nearSole = hips + NearHip + SoleFrom(pose.NearLeg, pose.NearStep);
-            Vector2 farSole = hips + FarHip + SoleFrom(pose.FarLeg, pose.FarStep);
+            Vector2 nearSole = hips + nearHip + SoleFrom(pose.NearLeg, pose.NearStep);
+            Vector2 farSole = hips + farHip + SoleFrom(pose.FarLeg, pose.FarStep);
 
             Frame frame = new Frame
             {
@@ -526,7 +603,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
                 FarFist = Seen(farFist, feet, d, wide),
                 NearSole = Seen(nearSole, feet, d, wide),
                 FarSole = Seen(farSole, feet, d, wide),
-                CapeRoot = Seen(hips + Turned(CapeAt, pose.Lean), feet, d, wide),
+                CapeRoot = Seen(hips + Turned(capeAt, pose.Lean), feet, d, wide),
                 FrontRoot = Seen(hips + Turned(BeltFront, pose.Lean), feet, d, wide),
                 BackRoot = Seen(hips + Turned(BeltBack, pose.Lean), feet, d, wide),
                 PlumeRoot = Seen(neck + Turned(PlumeAt, head), feet, d, wide),
@@ -556,19 +633,48 @@ namespace PisAndDag.Content.NPCs.GildedKnight
 
             parts.Add(Piece(SunScabbard, World(sunMouth, feet, d), sunHang - MathHelper.PiOver2, d, Vector2.One, false));
 
-            // A sword in the far hand, behind the far arm.
-            if (pose.GraceIn == InFar)
-                parts.Add(SwordPart(GraceBlade, World(graceGrip, feet, d), graceBlade, graceReach, d, false));
+            // Which arm goes where (front and back placement): turned to the eye, the far arm
+            // brought forward goes across in front of his breast; turned away, the near arm
+            // brought back goes behind his back. Otherwise the far arm is behind him and the near
+            // in front, as side on. Each arm takes its sword with it (under the fist that holds it).
+            bool farInFront = pose.Twist >= TurnedFrom && Math.Sin(UpperArm(pose.FarArm, pose.FarReach)) > ArmAcross;
+            bool nearBehind = pose.Twist <= -TurnedFrom && Math.Sin(UpperArm(pose.NearArm, pose.NearReach)) < -ArmAcross;
 
-            if (pose.SunIn == InFar)
-                parts.Add(SwordPart(SunBlade, World(sunGrip, feet, d), sunBlade, sunReach, d, false));
+            void FarArm(bool shadow)
+            {
+                if (pose.GraceIn == InFar)
+                    parts.Add(SwordPart(GraceBlade, World(graceGrip, feet, d), graceBlade, graceReach, d, shadow));
 
-            parts.Add(Arm(false, farShoulder, pose.FarArm, pose.FarReach, feet, d));
+                if (pose.SunIn == InFar)
+                    parts.Add(SwordPart(SunBlade, World(sunGrip, feet, d), sunBlade, sunReach, d, shadow));
+
+                Part arm = Arm(false, farShoulder, pose.FarArm, pose.FarReach, feet, d);
+                arm.Shadow = shadow;
+                parts.Add(arm);
+            }
+
+            void NearArm(bool shadow)
+            {
+                if (pose.SunIn == InNear)
+                    parts.Add(SwordPart(SunBlade, World(sunGrip, feet, d), sunBlade, sunReach, d, shadow));
+
+                if (pose.GraceIn == InNear)
+                    parts.Add(SwordPart(GraceBlade, World(graceGrip, feet, d), graceBlade, graceReach, d, shadow));
+
+                Part arm = Arm(true, nearShoulder, pose.NearArm, pose.NearReach, feet, d);
+                arm.Shadow = shadow;
+                parts.Add(arm);
+            }
+
+            // The far arm behind him, its sword behind it.
+            if (!farInFront)
+                FarArm(false);
+
             parts.Add(Piece(BotPauldron, World(farShoulder, feet, d), pose.Lean * 0.7f - UpperArm(pose.FarArm, pose.FarReach) * PauldronFollows, d, Vector2.One, false));
 
             // (the back flap)
-            parts.Add(Leg(false, hips + FarHip, pose.FarLeg, pose.FarStep, feet, d));
-            parts.Add(Leg(true, hips + NearHip, pose.NearLeg, pose.NearStep, feet, d));
+            parts.Add(Leg(false, hips + farHip, pose.FarLeg, pose.FarStep, pose.FarToe, feet, d));
+            parts.Add(Leg(true, hips + nearHip, pose.NearLeg, pose.NearStep, pose.NearToe, feet, d));
 
             // The Grace's scabbard at the near hip, over the near leg, with the Grace in it if it is home.
             if (pose.GraceIn == Sheathed)
@@ -576,19 +682,23 @@ namespace PisAndDag.Content.NPCs.GildedKnight
 
             parts.Add(Piece(GraceScabbard, World(graceMouth, feet, d), graceHang - MathHelper.PiOver2, d, Vector2.One, false));
 
-            parts.Add(Piece(Torso, World(hips, feet, d), pose.Lean, d, Vector2.One, false));
+            // The near arm swung back behind his back turned to the eye.
+            if (nearBehind)
+                NearArm(false);
+
+            parts.Add(Piece(TorsoFor(pose.Twist), World(hips, feet, d), pose.Lean, d, Vector2.One, false));
+
+            // The far arm across in front of his breast turned to the eye.
+            if (farInFront)
+                FarArm(true);
 
             // (the front flap, the plume)
             parts.Add(Piece(Helm, World(neck, feet, d), head, d, Vector2.One, true));
 
-            // A sword in the near hand, under the near fist that holds it.
-            if (pose.SunIn == InNear)
-                parts.Add(SwordPart(SunBlade, World(sunGrip, feet, d), sunBlade, sunReach, d, true));
+            // The near arm in front, its sword under the fist that holds it.
+            if (!nearBehind)
+                NearArm(true);
 
-            if (pose.GraceIn == InNear)
-                parts.Add(SwordPart(GraceBlade, World(graceGrip, feet, d), graceBlade, graceReach, d, true));
-
-            parts.Add(Arm(true, nearShoulder, pose.NearArm, pose.NearReach, feet, d));
             parts.Add(Piece(TopPauldron, World(nearShoulder, feet, d), pose.Lean * 0.7f - UpperArm(pose.NearArm, pose.NearReach) * PauldronFollows, d, Vector2.One, true));
 
             return frame;
@@ -602,8 +712,11 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         /// </summary>
         public static void Layer(List<Part> parts, out int cape, out int backFlap, out int frontFlap)
         {
-            cape = 0;
-            backFlap = parts.FindIndex(p => p.Piece == BotLeg || p.Piece == BotLegBent);
+            // The cape behind everything; but with his back turned to the eye (TorsoBack), over his
+            // back, just after it.
+            int back = parts.FindIndex(p => p.Piece == TorsoBack);
+            cape = back >= 0 ? back + 1 : 0;
+            backFlap = parts.FindIndex(p => IsFarLeg(p.Piece));
             frontFlap = parts.FindIndex(p => p.Piece == Helm);
 
             if (backFlap < 0)
@@ -614,6 +727,12 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         }
 
         private static Vector2 World(Vector2 local, Vector2 feet, int d) => feet + new Vector2(d * local.X, local.Y);
+
+        /// <summary>The cuirass's picture for this twist.</summary>
+        public static int TorsoFor(float twist) => twist >= TurnedFrom ? TorsoFront : twist <= -TurnedFrom ? TorsoBack : Torso;
+
+        /// <summary>One of the far leg's pictures, however it is turned.</summary>
+        public static bool IsFarLeg(int piece) => piece == BotLeg || piece == BotLegBent || (piece >= BotLegToward && piece <= BotLegBentAway);
 
         /// <summary>Where a point of him is seen, turning: that much nearer the line through his feet.</summary>
         private static Vector2 Seen(Vector2 local, Vector2 feet, int d, float wide) => feet + new Vector2(d * local.X * wide, local.Y);
@@ -657,13 +776,13 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             return Piece(piece, World(shoulder, feet, d), -(UpperArm(angle, reach) - ArmRest), d, scale, near);
         }
 
-        private static Part Leg(bool near, Vector2 hip, float angle, float step, Vector2 feet, int d)
+        private static Part Leg(bool near, Vector2 hip, float angle, float step, float toe, Vector2 feet, int d)
         {
             if (step <= 0f)
                 step = LegLong;
 
             bool bent = step < KneeBelow;
-            int piece = near ? (bent ? TopLegBent : TopLeg) : (bent ? BotLegBent : BotLeg);
+            int piece = LegPiece(near, bent, toe);
             float stretch = step / (bent ? LegBent : LegLong);
 
             // A bent leg's thigh is forward of the way to its sole by its bend.
@@ -672,6 +791,18 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             Vector2 scale = bent ? new Vector2(stretch, stretch) : new Vector2(1f, stretch);
 
             return Piece(piece, World(hip, feet, d), -(thigh - rest), d, scale, near);
+        }
+
+        /// <summary>A leg's picture: near or far, straight or bent, and its knee and foot turned toward the eye, away, or side on.</summary>
+        public static int LegPiece(bool near, bool bent, float toe)
+        {
+            if (toe >= TurnedFrom)
+                return near ? (bent ? TopLegBentToward : TopLegToward) : (bent ? BotLegBentToward : BotLegToward);
+
+            if (toe <= -TurnedFrom)
+                return near ? (bent ? TopLegBentAway : TopLegAway) : (bent ? BotLegBentAway : BotLegAway);
+
+            return near ? (bent ? TopLegBent : TopLeg) : (bent ? BotLegBent : BotLeg);
         }
 
         /// <summary>

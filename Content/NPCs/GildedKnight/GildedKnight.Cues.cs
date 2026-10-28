@@ -523,7 +523,8 @@ namespace PisAndDag.Content.NPCs.GildedKnight
                 return;
 
             float which = MoveId == Moves.Crown ? 100f + index : index;
-            float loose = looseAt - Timer + 1;
+            // Ticks until its moment in the move, as the move's clock goes (MovePace).
+            float loose = (looseAt - Clock) / Pace + 1;
 
             Projectile.NewProjectile(NPC.GetSource_FromAI(), f.GraceTip, Vector2.Zero, ModContent.ProjectileType<KnightVotive>(), 0, 0f, Main.myPlayer,
                 which, loose, NPC.whoAmI);
@@ -532,7 +533,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         /// <summary>The wheel begins: a ring of light off him, the leaves going up, afterimages through it.</summary>
         private void Wheeled(KnightRig.Frame f)
         {
-            ghostTicks = Math.Max(ghostTicks, State == Act.Change ? 48 : KnightMoves.WheelSpun - KnightMoves.WheelWind + 4);
+            ghostTicks = Math.Max(ghostTicks, (int)((State == Act.Change ? 48 : KnightMoves.WheelSpun - KnightMoves.WheelWind + 4) / MovePace));
 
             if (Main.dedServ)
                 return;

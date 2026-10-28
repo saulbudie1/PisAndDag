@@ -24,7 +24,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         public static Move Wheel()
         {
             KnightTrack t = new KnightTrack(Guard)
-                .At(WheelWind, Ease.SineOut).Near(80f, 31f).Far(-80f, 31f).SunTo(14f, 1).GraceTo(166f, 1).Lean(10f).Nod(4f).Legs(28f, -30f, 34f, 35f);
+                .At(WheelWind, Ease.SineOut).Twist(0.8f).Toes(1f, 0f).Near(80f, 31f).Far(-80f, 31f).SunTo(14f, 1).GraceTo(166f, 1).Lean(10f).Nod(4f).Legs(28f, -30f, 34f, 35f);
 
             // Twice round: the whole of him seen turning, eight steps of the turn.
             for (int k = 1; k <= 8; k++)
@@ -35,10 +35,10 @@ namespace PisAndDag.Content.NPCs.GildedKnight
                  .Legs(28f + 6f * (float)Math.Sin(share * MathHelper.TwoPi * 4f), -30f, 34f, 35f);
             }
 
-            t.At(WheelSpun + 6f, Ease.PolyOut, 2).SwitchAt(0f).Air(true).Turn(1f).Near(40f, 28f).Far(-60f, 30f).SunTo(60f, 1).GraceTo(150f, -1)
+            t.At(WheelSpun + 6f, Ease.PolyOut, 2).Twist(0.6f).Toes(0f, 1f).SwitchAt(0f).Air(true).Turn(1f).Near(40f, 28f).Far(-60f, 30f).SunTo(60f, 1).GraceTo(150f, -1)
                  .Lean(-12f).Nod(-6f).Legs(40f, -20f, 30f, 34f).Rise(10f).Go(140f)
-             .At(WheelLanded, Ease.PolyIn, 2).SwitchAt(1f).Air(false).Near(-40f, 27f).SunTo(150f, 1).Lean(10f).Legs(24f, -26f, 32f, 35f).Rise(-2f).Go(96f)
-             .At(WheelCut, Ease.PolyIn, 2).Near(150f, 31f).SunTo(-64f, -1).Lean(-2f).Nod(-6f).Legs(26f, -22f, KnightRig.LegLong, KnightRig.LegLong).Rise(0f).Go(108f)
+             .At(WheelLanded, Ease.PolyIn, 2).Twist(1f).Toes(0f, 1f).SwitchAt(1f).Air(false).Near(-40f, 27f).SunTo(150f, 1).Lean(10f).Legs(24f, -26f, 32f, 35f).Rise(-2f).Go(96f)
+             .At(WheelCut, Ease.PolyIn, 2).Twist(-1f).Toes(0f, -1f).Near(150f, 31f).SunTo(-64f, -1).Lean(-2f).Nod(-6f).Legs(26f, -22f, KnightRig.LegLong, KnightRig.LegLong).Rise(0f).Go(108f)
              .At(WheelCut + 6, Ease.ExpOut).Near(156f).SunTurn(-6f).Go(110f)
              .ToGuard(WheelCut + 30);
 
@@ -72,10 +72,10 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             float deg = MathHelper.Clamp(aim, -0.6f, 0.45f) / Rad;
 
             KnightTrack t = new KnightTrack(Guard)
-                .At(16f, Ease.SineOut).Far(-62f, 22f).GraceTo(deg, 0).Near(60f, 20f).SunTo(-70f, 0).Lean(-8f).Nod(-2f).Legs(26f, -22f, KnightRig.LegLong, 35f).Rise(-1f)
+                .At(16f, Ease.SineOut).Twist(-1f).Toes(0f, -1f).Far(-62f, 22f).GraceTo(deg, 0).Near(60f, 20f).SunTo(-70f, 0).Lean(-8f).Nod(-2f).Legs(26f, -22f, KnightRig.LegLong, 35f).Rise(-1f)
                 .At(LancetThrust - 4f, Ease.SineInOut).Far(-66f, 21f).Grace(deg).Lean(-10f).Rise(-2f)
                 // The arm thrust out along the blade (a limb's angle along a blade at deg is 90 - deg).
-                .At(LancetThrust, Ease.PolyIn, 3).Far(92f - deg, 33f).Lean(18f).Nod(6f).Legs(34f, -30f, 33f, KnightRig.LegLong).Rise(-3f).Go(40f)
+                .At(LancetThrust, Ease.PolyIn, 3).Twist(1f).Toes(1f, 1f).Far(92f - deg, 33f).Lean(18f).Nod(6f).Legs(34f, -30f, 33f, KnightRig.LegLong).Rise(-3f).Go(40f)
                 .At(LancetThrust + 4, Ease.ExpOut).Far(93f - deg, 34f).Go(44f)
                 .At(LancetThrust + 24, Ease.SineInOut).Far(90f - deg, 31f).Lean(14f)
                 .ToGuard(LancetThrust + 50);
@@ -107,9 +107,9 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             int last = loose + VotiveSpacing * (count - 1);
 
             KnightTrack t = new KnightTrack(Guard)
-                .At(22f, Ease.SineOut).Far(178f, 27f).GraceTo(-90f, -1).Near(70f, 20f).SunTo(-40f, 0).Lean(-5f).Nod(-8f).Legs(14f, -14f)
-                .At(loose - 6f, Ease.SineInOut).Far(180f, 28f).Grace(-92f).Lean(-6f).Nod(-10f)
-                .At(loose, Ease.PolyIn, 2).Far(96f, 31f).GraceTo(6f, 1).Lean(10f).Nod(4f).Legs(20f, -18f).Go(10f)
+                .At(22f, Ease.SineOut).Twist(1f).Toes(1f, 0f).Far(178f, 27f).GraceTo(-90f, -1).Near(70f, 20f).SunTo(-40f, 0).Lean(-11f).Nod(-8f).Legs(-18f, 18f, 38f, 37f).Go(-8f)
+                .At(loose - 6f, Ease.SineInOut).Far(180f, 28f).Grace(-92f).Lean(-12f).Nod(-10f)
+                .At(loose, Ease.PolyIn, 2).Twist(1f).Toes(0f, 1f).Far(96f, 31f).GraceTo(6f, 1).Lean(10f).Nod(4f).Legs(20f, -18f).Go(10f)
                 .At(loose + 6, Ease.ExpOut).Far(100f).GraceTurn(6f).Go(12f)
                 .ToGuard(last + 24);
 
@@ -140,11 +140,11 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             KnightTrack t = new KnightTrack(Guard);
 
             if (blade == KnightRig.Sun)
-                t.At(7f, Ease.ExpOut).Near(150f, 30f).SunTo(-130f, -1).Far(-40f, 30f).Lean(-16f).Nod(-14f).Legs(30f, -6f, 34f, KnightRig.LegLong).Go(-30f);
+                t.At(7f, Ease.ExpOut).Twist(0.8f).Toes(0f, 1f).Near(150f, 30f).SunTo(-130f, -1).Far(-40f, 30f).Lean(-16f).Nod(-14f).Legs(30f, -6f, 34f, KnightRig.LegLong).Go(-30f);
             else
-                t.At(7f, Ease.ExpOut).Far(150f, 30f).GraceTo(-140f, -1).Near(60f, 22f).Lean(-16f).Nod(-14f).Legs(30f, -6f, 34f, KnightRig.LegLong).Go(-30f);
+                t.At(7f, Ease.ExpOut).Twist(-0.8f).Toes(0f, -1f).Far(150f, 30f).GraceTo(-140f, -1).Near(60f, 22f).Lean(-16f).Nod(-14f).Legs(30f, -6f, 34f, KnightRig.LegLong).Go(-30f);
 
-            t.At(22f, Ease.SineOut).Lean(-8f).Nod(-6f).Legs(20f, -12f).Go(-44f)
+            t.At(22f, Ease.SineOut).Twist(0.5f).Toes(0f, 1f).Lean(-8f).Nod(-6f).Legs(20f, -12f).Go(-44f)
              .ToGuard(ReelTicks);
 
             return new Move("Reel", t, null, new[] { (0, Cue.Reel), (14, Cue.Step) }, ReelTicks);
@@ -164,8 +164,8 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         /// (GildedKnight.StunnedTick), until it wears off or the riposte wakes him.
         /// </summary>
         public static KnightTrack Stun => stun ??= new KnightTrack(Guard)
-            .At(8f, Ease.ExpOut).Near(140f, 30f).SunTo(-120f, -1).Far(-60f, 29f).GraceTo(200f, 1).Lean(-16f).Nod(-16f).Legs(28f, -8f, 35f, KnightRig.LegLong).Go(-22f)
-            .At(StunDown, Ease.SineInOut).Near(28f, 29f).SunTo(74f, 1).Far(-24f, 29f).GraceTo(108f, -1).Lean(18f).Nod(26f).Legs(37f, -53f, 30f, KnightRig.LegBent).Rise(0f).Go(-30f)
+            .At(8f, Ease.ExpOut).Twist(0.8f).Toes(0f, 1f).Near(140f, 30f).SunTo(-120f, -1).Far(-60f, 29f).GraceTo(200f, 1).Lean(-16f).Nod(-16f).Legs(28f, -8f, 35f, KnightRig.LegLong).Go(-22f)
+            .At(StunDown, Ease.SineInOut).Twist(0.6f).Toes(1f, 0f).Near(28f, 29f).SunTo(74f, 1).Far(-24f, 29f).GraceTo(108f, -1).Lean(18f).Nod(26f).Legs(37f, -53f, 30f, KnightRig.LegBent).Rise(0f).Go(-30f)
             .At(StunTicks, Ease.SineInOut).Lean(20f).Nod(30f);
 
         private static KnightTrack stun;
@@ -178,9 +178,9 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         public static Move BackStep()
         {
             KnightTrack t = new KnightTrack(Guard)
-                .At(6f, Ease.SineOut).Legs(20f, -10f, 33f, 34f).Lean(12f).Rise(-2f)
-                .At(10f, Ease.PolyOut, 2).SwitchAt(0f).Air(true).Legs(30f, -14f, 33f, 36f).Lean(-6f).Rise(12f).Go(-50f)
-                .At(20f, Ease.PolyIn, 2).SwitchAt(1f).Air(false).Legs(10f, -26f, 34f, 33f).Lean(4f).Rise(-2f).Go(-92f)
+                .At(6f, Ease.SineOut).Twist(0.7f).Toes(1f, 0f).Legs(20f, -10f, 33f, 34f).Lean(12f).Rise(-2f)
+                .At(10f, Ease.PolyOut, 2).Twist(0.8f).SwitchAt(0f).Air(true).Legs(30f, -14f, 33f, 36f).Lean(-6f).Rise(12f).Go(-50f)
+                .At(20f, Ease.PolyIn, 2).Twist(0.6f).Toes(1f, 1f).SwitchAt(1f).Air(false).Legs(10f, -26f, 34f, 33f).Lean(4f).Rise(-2f).Go(-92f)
                 .ToGuard(BackStepTicks);
 
             return new Move("BackStep", t, null, new[] { (8, Cue.Leap), (20, Cue.Step) }, BackStepTicks);
@@ -192,9 +192,9 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         public static Move Dash(float distance)
         {
             KnightTrack t = new KnightTrack(Guard)
-                .At(5f, Ease.SineIn).Near(-30f, 26f).SunTo(160f, 1).Far(-50f, 29f).GraceTo(170f, 1).Lean(26f).Nod(10f).Legs(34f, -36f, 35f, 37f).Rise(-2f).Go(8f)
+                .At(5f, Ease.SineIn).Twist(0.8f).Toes(0f, 1f).Near(-30f, 26f).SunTo(160f, 1).Far(-50f, 29f).GraceTo(170f, 1).Lean(26f).Nod(10f).Legs(34f, -36f, 35f, 37f).Rise(-2f).Go(8f)
                 .At(16f, Ease.PolyOut, 2).Lean(24f).Go(distance * 0.9f)
-                .At(DashTicks, Ease.SineOut).Near(40f, 24f).SunTo(60f, -1).Far(-30f, 29f).Lean(14f).Nod(6f).Legs(24f, -20f, KnightRig.LegLong, KnightRig.LegLong).Rise(0f).Go(distance);
+                .At(DashTicks, Ease.SineOut).Twist(-0.7f).Toes(0f, -1f).Near(40f, 24f).SunTo(60f, -1).Far(-30f, 29f).Lean(14f).Nod(6f).Legs(24f, -20f, KnightRig.LegLong, KnightRig.LegLong).Rise(0f).Go(distance);
 
             return new Move("Dash", t, null, new[] { (4, Cue.Dash), (DashTicks - 2, Cue.Step) }, DashTicks);
         }
@@ -234,9 +234,9 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             // The Sun wound back over the top of him to lie low behind (not down through his front: that
             // would read as a blow), the Grace kept low behind him out of its way.
             KnightTrack t = new KnightTrack(Guard)
-                .At(20f, Ease.SineInOut).Near(-64f, 27f).SunTo(160f, -1).Far(-30f, 28f).GraceTo(150f, 0).Lean(20f).Nod(8f).Legs(30f, -30f, 31f, 36f).Rise(0f)
+                .At(20f, Ease.SineInOut).Twist(1f).Toes(0f, 1f).Near(-64f, 27f).SunTo(160f, -1).Far(-30f, 28f).GraceTo(150f, 0).Lean(20f).Nod(8f).Legs(30f, -30f, 31f, 36f).Rise(0f)
                 .At(GreatCharge, Ease.SineInOut).Near(-70f, 28f).Sun(-194f).Grace(148f).Lean(24f).Nod(10f).Rise(-3f)
-                .At(GreatSwept, Ease.PolyIn, 2).Near(176f, 31f).SunTurn(-304f).Lean(-10f).Nod(-12f).Legs(24f, -24f, KnightRig.LegLong, KnightRig.LegLong).Rise(2f).Go(24f)
+                .At(GreatSwept, Ease.PolyIn, 2).Twist(-1f).Toes(0f, -1f).Near(176f, 31f).SunTurn(-304f).Lean(-10f).Nod(-12f).Legs(24f, -24f, KnightRig.LegLong, KnightRig.LegLong).Rise(2f).Go(24f)
                 .At(GreatSwept + 6, Ease.ExpOut).Near(180f).SunTurn(-10f).Lean(-12f).Go(26f)
                 .At(GreatBurst, Ease.SineInOut).Near(170f, 29f).Lean(-8f)
                 .ToGuard(GreatBurst + 42);
@@ -258,11 +258,11 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         public static Move Procession()
         {
             KnightTrack t = new KnightTrack(Guard)
-                .At(22f, Ease.SineOut).Near(176f, 24f).SunTo(-92f, -1).Far(170f, 22f).GraceTo(-80f, -1).Lean(-6f).Nod(-10f).Legs(16f, -16f).Rise(2f)
-                .At(ProcessionPlunge, Ease.PolyIn, 3).Near(80f, 25f).SunTo(92f, 1).Far(84f, 22f).GraceTo(100f, 1).Lean(26f).Nod(16f).Legs(56f, -60f, 29f, 30f).Rise(-2f).Go(10f)
+                .At(22f, Ease.SineOut).Twist(0.8f).Toes(1f, 0f).Near(176f, 24f).SunTo(-92f, -1).Far(170f, 22f).GraceTo(-80f, -1).Lean(-12f).Nod(-10f).Legs(-18f, 18f, 38f, 37f).Rise(1f)
+                .At(ProcessionPlunge, Ease.PolyIn, 3).Twist(0.3f).Toes(1f, -1f).Near(80f, 25f).SunTo(92f, 1).Far(84f, 22f).GraceTo(100f, 1).Lean(26f).Nod(16f).Legs(56f, -60f, 29f, 30f).Rise(-2f).Go(10f)
                 .At(ProcessionPlunge + 6, Ease.ExpOut).Lean(28f).Nod(18f)
                 .At(ProcessionHold, Ease.SineInOut).Lean(26f).Nod(14f)
-                .At(ProcessionHold + 16, Ease.SineOut).Near(110f, 28f).SunTo(-30f, -1).Lean(10f).Legs(24f, -24f, KnightRig.LegLong, KnightRig.LegLong).Rise(0f)
+                .At(ProcessionHold + 16, Ease.SineOut).Twist(0.2f).Toes(0f, 1f).Near(110f, 28f).SunTo(-30f, -1).Lean(10f).Legs(24f, -24f, KnightRig.LegLong, KnightRig.LegLong).Rise(0f)
                 .ToGuard(ProcessionHold + 40);
 
             return new Move("Procession", t,
@@ -286,9 +286,9 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             int last = CrownLoose + CrownSpacing * (count - 1);
 
             KnightTrack t = new KnightTrack(Guard)
-                .At(26f, Ease.SineOut).Far(178f, 27f).GraceTo(-90f, -1).Near(40f, 22f).SunTo(60f, 1).Lean(-6f).Nod(-12f).Legs(14f, -14f)
-                .At(CrownLoose - 8f, Ease.SineInOut).Far(180f, 28f).Grace(-92f).Lean(-8f).Nod(-14f)
-                .At(CrownLoose, Ease.PolyIn, 2).Far(100f, 31f).GraceTo(10f, 1).Lean(12f).Nod(4f).Legs(22f, -20f).Go(10f)
+                .At(26f, Ease.SineOut).Twist(1f).Toes(1f, 0f).Far(178f, 27f).GraceTo(-90f, -1).Near(40f, 22f).SunTo(60f, 1).Lean(-12f).Nod(-12f).Legs(-18f, 18f, 38f, 37f).Go(-8f)
+                .At(CrownLoose - 8f, Ease.SineInOut).Far(180f, 28f).Grace(-92f).Lean(-14f).Nod(-14f)
+                .At(CrownLoose, Ease.PolyIn, 2).Twist(1f).Toes(0f, 1f).Far(100f, 31f).GraceTo(10f, 1).Lean(12f).Nod(4f).Legs(22f, -20f).Go(10f)
                 .At(CrownLoose + 6, Ease.ExpOut).Far(104f).GraceTurn(6f).Go(12f)
                 .ToGuard(last + 14);
 
@@ -318,13 +318,13 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         public static Move LongBlade()
         {
             KnightTrack t = new KnightTrack(Guard)
-                .At(LongGrow, Ease.SineOut).Far(178f, 27f).GraceTo(-90f, -1).Near(60f, 20f).SunTo(-30f, 0).Lean(-4f).Nod(-10f).Legs(18f, -18f)
-                .At(LongRaised, Ease.SineInOut).Far(180f, 28f).Grace(-91f).Lean(-8f).Nod(-12f).Rise(2f)
-                .At(LongSlam, Ease.PolyIn, 3).Far(96f, 31f).GraceTo(12f, 1).Lean(24f).Nod(12f).Legs(34f, -30f, 32f, KnightRig.LegLong).Rise(-2f).Go(14f)
+                .At(LongGrow, Ease.SineOut).Twist(1f).Toes(1f, 0f).Far(178f, 27f).GraceTo(-90f, -1).Near(60f, 20f).SunTo(-30f, 0).Lean(-10f).Nod(-10f).Legs(-18f, 18f, 38f, 37f)
+                .At(LongRaised, Ease.SineInOut).Far(180f, 28f).Grace(-91f).Lean(-14f).Nod(-12f).Rise(2f)
+                .At(LongSlam, Ease.PolyIn, 3).Twist(1f).Toes(1f, 1f).Far(96f, 31f).GraceTo(12f, 1).Lean(24f).Nod(12f).Legs(34f, -30f, 32f, KnightRig.LegLong).Rise(-2f).Go(14f)
                 .At(LongSlam + 6, Ease.ExpOut).Far(98f).Grace(14f).Lean(26f).Nod(14f)
                 .At(LongSweepFrom, Ease.SineInOut).Far(90f, 30f).Grace(16f).Lean(20f)
-                .At(LongSweepFrom + 4, Ease.SineIn).Far(-40f, 30f).GraceTo(168f, 1).Lean(4f).Legs(26f, -26f, 34f, 36f)
-                .At(LongSweepTo, Ease.PolyIn, 2).Far(100f, 32f).GraceTo(-4f, -1).Lean(16f).Nod(6f).Go(30f)
+                .At(LongSweepFrom + 4, Ease.SineIn).Twist(-1f).Toes(0f, -1f).Far(-40f, 30f).GraceTo(168f, 1).Lean(4f).Legs(26f, -26f, 34f, 36f)
+                .At(LongSweepTo, Ease.PolyIn, 2).Twist(1f).Toes(0f, 1f).Far(100f, 32f).GraceTo(-4f, -1).Lean(16f).Nod(6f).Go(30f)
                 .At(LongSweepTo + 6, Ease.ExpOut).Far(104f).GraceTurn(-4f).Go(32f)
                 .ToGuard(LongSweepTo + 40);
 
@@ -348,9 +348,9 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         public static Move GildedSun()
         {
             KnightTrack t = new KnightTrack(Guard)
-                .At(SunRaise, Ease.SineInOut).Near(180f, 28f).SunTo(-90f, -1).Far(-30f, 29f).GraceTo(170f, 0).Lean(-6f).Nod(-16f).Legs(16f, -16f).Rise(2f)
-                .At(SunHold, Ease.SineInOut).Near(181f, 29f).Sun(-91f).Lean(-8f).Nod(-18f).Rise(3f)
-                .At(SunDown, Ease.PolyIn, 2).Near(100f, 32f).SunTo(8f, 1).Lean(16f).Nod(6f).Legs(26f, -22f).Rise(0f).Go(12f)
+                .At(SunRaise, Ease.SineInOut).Twist(1f).Toes(1f, 0f).Near(180f, 28f).SunTo(-90f, -1).Far(-30f, 29f).GraceTo(170f, 0).Lean(-12f).Nod(-16f).Legs(-18f, 18f, 38f, 37f).Rise(1f).Go(-8f)
+                .At(SunHold, Ease.SineInOut).Near(181f, 29f).Sun(-91f).Lean(-14f).Nod(-18f).Rise(2f)
+                .At(SunDown, Ease.PolyIn, 2).Twist(-1f).Toes(0f, -1f).Near(100f, 32f).SunTo(8f, 1).Lean(16f).Nod(6f).Legs(26f, -22f).Rise(0f).Go(12f)
                 .At(SunDown + 8, Ease.ExpOut).Near(104f).SunTurn(6f).Go(14f)
                 .ToGuard(SunDown + 50);
 
@@ -382,18 +382,18 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         // Built on first use, not as a field's first value: Guard is another file's field, and the
         // order the files' fields are given their values in is not the language's to promise.
         private static KnightTrack BuildChange() => new KnightTrack(Guard)
-            .At(10f, Ease.ExpOut).Near(50f, 28f).SunTo(70f, 1).Far(-40f, 29f).GraceTo(130f, -1).Lean(-12f).Nod(-12f).Legs(26f, -4f, 35f, KnightRig.LegLong).Go(-24f)
-            .At(40f, Ease.SineInOut).Near(20f, 28f).Sun(80f).Far(-10f, 29f).Grace(100f).Lean(14f).Nod(22f).Legs(18f, -14f).Rise(-3f).Go(-30f)
-            .At(ChangeCross, Ease.PolyOut, 3).Near(72f, 31f).Far(64f, 22f).SunTo(-124f, -1).GraceTo(-57f, -1).Lean(-3f).Nod(-8f).Legs(16f, -14f).Rise(0f)
+            .At(10f, Ease.ExpOut).Twist(0.8f).Toes(0f, 1f).Near(50f, 28f).SunTo(70f, 1).Far(-40f, 29f).GraceTo(130f, -1).Lean(-12f).Nod(-12f).Legs(26f, -4f, 35f, KnightRig.LegLong).Go(-24f)
+            .At(40f, Ease.SineInOut).Twist(0.3f).Toes(0f, 1f).Near(20f, 28f).Sun(80f).Far(-10f, 29f).Grace(100f).Lean(14f).Nod(22f).Legs(18f, -14f).Rise(-3f).Go(-30f)
+            .At(ChangeCross, Ease.PolyOut, 3).Twist(1f).Toes(0f, 1f).Near(72f, 31f).Far(64f, 22f).SunTo(-124f, -1).GraceTo(-57f, -1).Lean(-3f).Nod(-8f).Legs(16f, -14f).Rise(0f)
             .At(ChangeRoar, Ease.SineInOut).Near(74f).Blades(-122f, -59f).Lean(-6f).Nod(-12f)
-            .At(ChangeRoar + 10, Ease.ExpOut).Near(130f, 31f).Far(-130f, 31f).SunTo(-60f, 1).GraceTo(-120f, -1).Lean(-12f).Nod(-20f).Rise(2f)
+            .At(ChangeRoar + 10, Ease.ExpOut).Twist(0f).Toes(0f, 1f).Near(130f, 31f).Far(-130f, 31f).SunTo(-60f, 1).GraceTo(-120f, -1).Lean(-12f).Nod(-20f).Rise(2f)
             .At(ChangeSpin, Ease.SineInOut).Near(132f).Far(-132f).Lean(-10f).Nod(-16f)
             .At(ChangeSpin + 6, Ease.SineIn).Near(96f, 31f).Far(-96f, 31f).SunTo(4f, 1).GraceTo(176f, -1).Lean(6f).Nod(2f).Legs(26f, -26f, 34f, 35f).Rise(0f)
             .At(ChangeSpin + 12, Ease.Linear).Turn(0f)
             .At(ChangeSpin + 24, Ease.Linear).Turn(-1f)
             .At(ChangeSpin + 36, Ease.Linear).Turn(0f)
             .At(ChangeSpin + 48, Ease.SineOut).Turn(1f)
-            .At(ChangePyres, Ease.PolyIn, 2).Near(70f, 30f).Far(60f, 30f).SunTo(84f, 1).GraceTo(80f, 1).Lean(24f).Nod(12f).Legs(40f, -44f, 30f, 34f).Rise(-2f)
+            .At(ChangePyres, Ease.PolyIn, 2).Twist(0.3f).Toes(1f, -1f).Near(70f, 30f).Far(60f, 30f).SunTo(84f, 1).GraceTo(80f, 1).Lean(24f).Nod(12f).Legs(40f, -44f, 30f, 34f).Rise(-2f)
             .At(ChangePyres + 8, Ease.ExpOut).Lean(26f)
             .ToGuard(ChangeTicks);
 
@@ -429,11 +429,11 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         private static KnightTrack end;
 
         private static KnightTrack BuildEnd() => new KnightTrack(Guard)
-            .At(30f, Ease.ExpOut).Near(40f, 28f).SunTo(70f, 1).Far(-50f, 29f).GraceTo(140f, -1).Lean(-14f).Nod(-16f).Legs(26f, -6f, 35f, KnightRig.LegLong).Go(-18f)
+            .At(30f, Ease.ExpOut).Twist(0.8f).Toes(0f, 1f).Near(40f, 28f).SunTo(70f, 1).Far(-50f, 29f).GraceTo(140f, -1).Lean(-14f).Nod(-16f).Legs(26f, -6f, 35f, KnightRig.LegLong).Go(-18f)
             // The Sun let fall (the fight lays it on the ground and draws it there).
             .At(84f, Ease.SineInOut).Hold(KnightRig.Dropped, KnightRig.InFar).Near(10f, 29f).Far(80f, 24f).GraceTo(-70f, -1).Lean(10f).Nod(14f).Legs(16f, -18f).Go(-20f)
             // The Grace driven into the ground before him.
-            .At(EndPlant, Ease.PolyIn, 2).Near(20f, 29f).Far(90f, 26f).GraceTo(88f, 1).Lean(20f).Nod(18f).Legs(30f, -20f, 34f, KnightRig.LegLong).Rise(-4f).Go(-14f)
+            .At(EndPlant, Ease.PolyIn, 2).Twist(1f).Toes(1f, 0f).Near(20f, 29f).Far(90f, 26f).GraceTo(88f, 1).Lean(20f).Nod(18f).Legs(30f, -20f, 34f, KnightRig.LegLong).Rise(-4f).Go(-14f)
             // One knee, then the other, both hands on its hilt.
             .At(EndKnees - 48, Ease.SineIn).Far(84f, 24f).Grace(90f).On(KnightRig.Grace, -1).Lean(14f).Nod(20f).Legs(37f, -53f, 30f, KnightRig.LegBent).Rise(0f)
             .At(EndKnees, Ease.SineOut).Far(80f, 22f).Lean(10f).Nod(24f).Legs(-50f, -53f, KnightRig.LegBent, KnightRig.LegBent)

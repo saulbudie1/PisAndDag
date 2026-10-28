@@ -31,10 +31,10 @@ namespace PisAndDag.Content.UI
 
         /// <summary>The picture's size, and how big it is drawn.</summary>
         private const int Width = 22, Height = 36;
-        private const float Scale = 2f;
+        private const float Scale = 1.25f;
 
         /// <summary>From the bottom right corner of the screen to the glass's middle, in screen pixels.</summary>
-        private static readonly Vector2 FromCorner = new Vector2(-64f, -104f);
+        private static readonly Vector2 FromCorner = new Vector2(-34f, -52f);
 
         private const string GlassTexture = "PisAndDag/Content/UI/LastGrainGlass";
 
@@ -63,7 +63,9 @@ namespace PisAndDag.Content.UI
             Texture2D frame = ModContent.Request<Texture2D>(GlassTexture).Value;
             Texture2D pixel = TextureAssets.MagicPixel.Value;
 
-            Vector2 centre = new Vector2(Main.screenWidth / Main.UIScale, Main.screenHeight / Main.UIScale) + FromCorner;
+            // Main.screenWidth and Height are already the UI's own here (PlayerInput.SetZoom_UI divides them by the UI scale
+            // for a layer drawn at it): the corner as the UI counts it.
+            Vector2 centre = new Vector2(Main.screenWidth, Main.screenHeight) + FromCorner;
 
             // Turning: the glass as it was before it was turned, turned by up to half a turn.
             float turn = 0f;
@@ -78,7 +80,7 @@ namespace PisAndDag.Content.UI
 
             // A shadow behind it, so it reads on any ground.
             Texture2D soft = ModContent.Request<Texture2D>("PisAndDag/Content/Graphics/GlowSoft").Value;
-            spriteBatch.Draw(soft, centre, null, Color.Black * 0.35f, 0f, soft.Size() * 0.5f, 0.42f, SpriteEffects.None, 0f);
+            spriteBatch.Draw(soft, centre, null, Color.Black * 0.35f, 0f, soft.Size() * 0.5f, 0.42f * Scale / 2f, SpriteEffects.None, 0f);
 
             DrawSand(spriteBatch, pixel, centre, turn, top, glass.Turning <= 0);
 
@@ -93,7 +95,7 @@ namespace PisAndDag.Content.UI
             spriteBatch.Draw(frame, centre, null, tint, turn, new Vector2(Width * 0.5f, Height * 0.5f), Scale, SpriteEffects.None, 0f);
 
             // Hovered, it says what it is.
-            Rectangle hover = new Rectangle((int)(centre.X - Width), (int)(centre.Y - Height), Width * 2, Height * 2);
+            Rectangle hover = new Rectangle((int)(centre.X - Width * Scale * 0.5f), (int)(centre.Y - Height * Scale * 0.5f), (int)(Width * Scale), (int)(Height * Scale));
 
             if (hover.Contains(Main.MouseScreen.ToPoint()))
             {

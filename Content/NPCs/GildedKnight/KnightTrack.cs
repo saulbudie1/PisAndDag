@@ -189,6 +189,12 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         public KnightTrack Air(bool air) { now.Pose.Air = air; return this; }
         public KnightTrack Turn(float share) { now.Pose.Turn = share; return this; }
 
+        /// <summary>Turned at the waist: 1 three quarters toward the eye (the far arm reaching further), -1 away (the near arm further), 0 side on (KnightRig.Pose.Twist).</summary>
+        public KnightTrack Twist(float share) { now.Pose.Twist = share; return this; }
+
+        /// <summary>Each foot and knee turned: 1 toward the eye, -1 away, 0 side on (KnightRig.Pose.NearToe, FarToe).</summary>
+        public KnightTrack Toes(float near, float far) { now.Pose.NearToe = near; now.Pose.FarToe = far; return this; }
+
         /// <summary>The pose at this time, in ticks: before the first pose it is the first, after the last the last.</summary>
         public KnightRig.Pose Sample(float tick)
         {
@@ -283,6 +289,9 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             pose.SunReach = MathHelper.Lerp(Or1(a.SunReach), Or1(b.SunReach), t);
             pose.GraceReach = MathHelper.Lerp(Or1(a.GraceReach), Or1(b.GraceReach), t);
             pose.Turn = MathHelper.Lerp(a.Turn, b.Turn, t);
+            pose.Twist = MathHelper.Lerp(a.Twist, b.Twist, t);
+            pose.NearToe = MathHelper.Lerp(a.NearToe, b.NearToe, t);
+            pose.FarToe = MathHelper.Lerp(a.FarToe, b.FarToe, t);
 
             return pose;
         }

@@ -23272,3 +23272,202 @@ stunts for 5 seconds like normal parry system."
    anyone standing, so its two turns never landed (lowered a little: now they meet you).
 
 Built clean (0 errors). Not run in the game.
+
+## 17.23 Session 8, later: the Gilded Knight's sword and sun
+
+Asked: "He drops Sunburst Talisman: An accessory that makes the increase generation by 10HP/s in the sun (above ground +
+daytime) and increase all damage by 7.3%. during the day and 4.5% at night. and Sword Of A Gilded Knight; normal chain of
+attacks: up down; alternative: Focus into a big light beam and smash down, like one of his attacks with devastating
+damage. Dps normal attack should be 300 dps ish, and the smack down does 500 damage."
+
+1. **His drops** (`GildedKnight.cs` ModifyNPCLoot): the Sword Of A Gilded Knight and the Sunburst Talisman, every kill,
+   with the Gilded Spur, the Healing Potions and the coins as before (one of each per kill, not one per player).
+2. **Sword Of A Gilded Knight** (`Content/Items/Melee/SwordOfAGildedKnight.cs`, `GildedSwordPlayer`;
+   `Content/Projectiles/Melee/GildedSwordSwing.cs`, `GildedSwordPose`, `GildedSwordLayer`): the Grace, his pale sword,
+   at a player's size. 100 melee damage, knockback 6, 20 ticks a cut, held to go on: three cuts a second, 300 damage a
+   second against one thing before crits and the rest. Left click cuts up (from low in front to high behind), then
+   down (back the other way), in turn; left three quarters of a second, it starts again with the cut up. Each cut
+   strikes along the blade over its whole way, everything once a cut, in its fast part only, only what the wielder can
+   see; a gold trail behind it with a pale thread along the point's path; his own swing sound. Right click is his long
+   blade: the sword raised over the head, light growing out of its point over a second into a blade 24 tiles long
+   (his own growing sound, motes rising off it), then brought down in front faster and faster to lie along the ground:
+   everything under it on the way down struck once for five times the damage (500), through walls (it is light); where
+   its point lands, his slam, a flash, a shake, a ring, a pillar of light going up and fading. A second and a half from
+   the click to the end (so about 330 a second against one thing, held at it). The sword is drawn in the hand between
+   the body and the front arm (the Iron Flow's way), and shines while its light is out. Orange, sells for 4 gold.
+3. **Sunburst Talisman** (`Content/Items/Accessories/SunburstTalisman.cs`): in the sun (day, and above the surface of
+   the world, the sky included) 10 life a second more regeneration (whatever stops regeneration stops it too); all
+   damage 7.3% higher by day, 4.5% by night. Shown, a mote of gold now and then off the wearer in the sun. Orange,
+   sells for 3 gold.
+4. **Pictures** (mine, drawn by code: PlaceholderTextures): the sword 58x58 on the diagonal (pale steel, a gilt fuller,
+   a gilt guard with its horns turned up toward the point and a pearl at its heart, a dark wrapped grip, a gilt
+   pommel); the talisman 28x32 (a domed gilt sun, an amber heart, eleven rays, a bail and its cord where the twelfth
+   would be). The sounds are the knight's own.
+5. **Words** (`Localization`, by `Claude outputs\GildedKnight_r73\hjson_r73.py`): the sword *Cuts up, then down* /
+   *Right click to raise a blade of light and bring it down for five times the damage* / *'It has been dropped on that
+   road before.'*; the talisman *Above ground in the day, regenerates 10 life per second* / *7.3% increased damage in
+   the day, 4.5% at night* / *'He knelt to it each morning, on the road.'*
+6. **Previews** (`Claude outputs\`): `GildedKnight_sword_r73.gif` (two cuts up and two down, then the long blade, the
+   player a stand-in), `GildedKnight_sword_r73.png`, `GildedKnight_items_r73.png` (both pictures enlarged).
+7. **Read through** by an independent review before delivery; what it found and what was done is item 8.
+8. **Fixed from the review**: under reversed gravity the arm pointed one way and the sword the other (the arm's turn
+   was flipped twice: `VisusGrip.ArmRotation` multiplies by gravDir and the game flips it again; the Visus, the
+   Defacer and the fists call the same and look to have the same fault, left as they are); at any attack speed but
+   the plain one the long blade's use outlasted the sword by a few ticks, and every cut after it was late (now the
+   Rust Side Sword's sums: the long blade is always its own ticks, the use and the sword the same length); the long
+   blade's sweep was checked every 8 degrees, which left gaps at its far end a bat could sit in (now as close as its
+   width needs); under reversed gravity the pillar and its sparks went into the ceiling. Also: the sword goes if it is
+   put away; held, the right button goes on into the next long blade; flasks' and imbues' dust only while it strikes.
+
+Built clean (0 errors). Not run in the game.
+
+## 17.24 Session 8, later: Corosion's sandstep
+
+Asked: "the flash step back from corosion is drawing a line for some reason", and "Make that debuff lasts 10 sec only".
+
+1. **The line** (`Sandstep.cs`): the sandstep's projectile has no picture of its own (`MagicPixel`) and did not say it
+   draws nothing, so the game drew that texture, a strip one pixel wide and a thousand high, at the player for the
+   whole step. It draws nothing now (`PreDraw` false); the sand is all particles, as it was meant to be.
+2. **Sand Settling** (`SandSettling.cs`, Corosion's tooltip): ten seconds, not fifteen.
+
+Built clean (0 errors). Not run in the game. (Made in place by `Claude outputs\GildedKnight_r73\corosion_fix_r74.py`.)
+
+## 17.25 Session 8, later: the Gilded Knight turning at the waist
+
+Asked: "Re choreograph the guy so he has front and back placement, add the textures. so he can turn to the his torso and
+give his left or right hand more reach; hence more realistic.(only slanted front and slanted back and side view torso
+tho); also give him his legs so its either point to us or away from us so its even more realistic", with a sketch: the
+torso turned three quarters to the front or the back, one arm reaching far out to one side while the other is low on
+the other, the legs in a wide stance.
+
+1. **Pictures** (`Content/NPCs/GildedKnight`, mine, drawn by code like the rest of him; PlaceholderTextures):
+   `TorsoFront.png` (30x34: the breast toward the eye, its ridge and sun, the near flank lit, the far side turning into
+   shade, the buckle in front) and `TorsoBack.png` (30x34: the backplate, its spine and shoulder blades, the strap's
+   end); each leg, near and far, straight and bent, with its knee and foot turned toward the eye (`...Toward`: the
+   knee's cop face on, the foot short and broad) or away (`...Away`: the back of the knee, the heel toward us with a
+   gilt spur on it): `TopLegToward`, `TopLegAway`, `TopLegBentToward`, `TopLegBentAway`, and the same `BotLeg...`
+   (26x46 and 38x34, the joints exactly where the side-on legs have them).
+2. **The rig** (`KnightRig.cs`, `KnightTrack.cs`): a pose has a waist turn, `Twist` (1 three quarters to the eye, 0 side
+   on, -1 three quarters away), and each foot's, `NearToe` and `FarToe` (1 toward the eye, -1 away). The shoulders go
+   round with the waist (`ShoulderSwing`, 8 pixels as the sine of the turn: at a full turn one shoulder is 5.7 forward and
+   the other 5.7 back), the hips a little (`HipSwing`, 3), the cape's root along his back (`CapeSwing`); so turned to the
+   eye the far arm reaches 11 pixels further ahead than the near, turned away the near one does, and the blade that is
+   drawn is the blade that cuts, as before. Past half a turn either way the turned picture is drawn. **Front and back
+   placement**: turned to the eye, the far arm brought forward goes across in front of his breast (its sword with it);
+   turned away, the near arm brought back goes behind his back; and with his back to the eye the cape hangs over it.
+   Tracks: `.Twist(x)`, `.Toes(near, far)`, eased between keyframes like everything else.
+3. **His moves, again** (`KnightMoves*.cs`): every cut winds up with the waist turned from it and strikes with it turned
+   into it, the striking arm's shoulder thrown forward: the Sun (near hand) wound with his breast to the eye, cut with
+   his back turned; the Grace (far hand) the other way, coming across his breast. So in the twin cut, the crescents, the
+   rising crescent, the lancet's thrust, the votive blades and the crown, the long blade (down and swept), the great
+   crescent, the gilded sun and the wheel's last cut. The back foot pivots with the waist (toward the eye as he opens,
+   away as he closes); the lunges (the twin cut's last blow, the lancet, the long blade's slam, the procession, his
+   change's plunge) put the front knee toward the eye. His guard: a little open, side on, the back foot turned out
+   toward the eye. His scene's X and his change's X: the far arm across his breast. Rocked: the struck side thrown back,
+   the breast opened. Stunned and at his end: down on a knee with his breast to the eye, the front knee toward us. The
+   wheel's spin is his whole body (`Turn`) as before.
+4. Nothing of the fight's numbers changed; a cut reaches a little further ahead than it did (his first cut already
+   reached them where he stops).
+5. **Previews** (`Claude outputs\`): `GildedKnight_turns_r75.png` (his guard turned each way, and the arm each turn
+   favours straight out), `GildedKnight_twincut_r75.gif`, `GildedKnight_newparts_r75.png`.
+
+Built clean (0 errors). Not run in the game.
+
+## 17.26 Session 8, later: the Gilded Knight, every move turned
+
+Asked: "All must use these new textures, like the summoning thing, he raise up but he step his left foot back and slant
+back and raise arm(given player is to the right of him)".
+
+1. **Raising, summoning** (`KnightMoves.More.cs`, `.Fight.cs`): the gilded sun, the crown, the votive blades, the long
+   blade's growing, the procession and the twin cut's last blow are all raised the same way now: his left foot (the
+   near one, facing them on his right) stepped back and turned out toward the eye, his waist open (the breast seen,
+   `TorsoFront`), leaning back as the arm goes up; and a step in as it comes down.
+2. **Everything else turned far enough to show the turned pictures**: the leap (crouched open, up open, landing
+   closed), the dash (trailed open, through closed), the back step (opening as he hops back, the front knee toward the
+   eye as he lands), the wheel (wound with the arms wide and his breast open; out of the spin open), getting up from
+   being rocked (open), his scene (both hands across to the opposite hips with his breast to the eye; parted, open).
+   His guard and his walk in it keep the back foot turned out toward the eye. Only his first walk to his post, his
+   arms at rest, is side on.
+3. **Fixed**: five of §17.25's turns had gone to the keyframe before the one meant (`choreo.py` found a keyframe written
+   `t.At(` one place early): the twin cut's raise and blow, the rising crescent's wind-up, being rocked (the Sun's and
+   the Grace's) and getting up from it. Each is where it was meant to be now.
+4. **Previews** (`Claude outputs\`): `GildedKnight_sun_r76.gif` (the gilded sun: the step back, the lean, the raise, the
+   step in), `GildedKnight_twincut_r76.gif`.
+
+Built clean (0 errors). Not run in the game.
+
+## 17.27 Session 8, later: The Last Grain's hourglass
+
+Asked, with a screenshot (the glass big, in the middle of the screen): "this ui is supposed to be smaller, around here"
+(the bottom right corner).
+
+1. **Where** (`Content/UI/LastGrainUI.cs`): the glass is drawn in an interface layer at the UI's scale, where the game
+   has already divided `Main.screenWidth`/`Height` by the UI scale (`PlayerInput.SetZoom_UI`); it was divided again, so
+   at any UI scale over 100% the corner it measured from was toward the middle of the screen. Now the bottom right
+   corner at any UI scale.
+2. **Size**: drawn at 1.25 times its picture (it was 2), 34 by 52 pixels in from the corner to its middle; its shadow
+   and the place that shows its words when hovered go with it.
+
+Built clean (0 errors). Not run in the game. (Made in place by `Claude outputs\GildedKnight_r76\lastgrain_glass_fix_r77.py`.)
+
+## 17.28 Session 8, later: the Gilded Knight, slower, his shoulders wider when turned
+
+Asked: "Make every of his move slower by 20% so people can see the moves he make", and "when slanted his shoulder should
+be further from each other too" (with a picture: the two arms coming out of nearly the same place).
+
+1. **Slower** (`GildedKnight.cs` Clock, MovePace; `.Fight.cs`, `.Scene.cs`, `.Cues.cs`, `.Draw.cs`): in his moves and his
+   change the clock runs at eight tenths of a tick a tick, so each takes a quarter as long again, and every pose, cut,
+   cue and blade of light in it comes that much later; the tracks are sampled between their ticks, so the slower
+   moves are as smooth. The votive blades and the crown's wait for their moment by the same clock; the wheel's
+   afterimages last as long as the slower spin. His walking at you, his scene, being rocked after a parry, the stun and
+   his end keep their own times. (A cut is live a quarter longer: a little easier to parry and to see coming.)
+2. **His shoulders, turned** (`KnightRig.ShoulderSwing` 12, was 8; `HipSwing` 4, was 3; `TorsoFront.png`,
+   `TorsoBack.png` broader across the shoulders): turned three quarters, each shoulder now goes 8.5 forward or back, so
+   his shoulders are 20 pixels apart across the turned picture (3 side on), and the arm the turn favours reaches 17
+   further than the other.
+3. **Previews**: every move again, on the gallery page of his moves, and `Claude outputs\GildedKnight_twincut_r77.gif`.
+
+Built clean (0 errors). Not run in the game.
+
+## 17.29 Session 8, later: the Gilded Knight drawn again in 2x2 pixels
+
+Asked: "Redraw the Sprites the same way you should draw it (each pixel is doubled in width and height) so within the
+same 32x32 canvas, theres only 16x16 squares to draw; re draw everything from this knight. Dont change sizes, check out
+how calaimty draws theirs and redraw".
+
+1. **Read as**: the standing rule of §16.93 ("all of it is 2x2 pixel ... use less drawing use more shading. like how
+   calamity do it"), which the knight had been drawn against at one texel a pixel. Every picture of his drawn again with
+   each pixel of the art a 2x2 block of the texture, the blocks whole from the top left corner (Calamity's, measured:
+   every block of their sprites whole from (0, 0)), every picture the size it was. Not redrawn: his light
+   (`KnightCrescent`, `KnightRing`, `KnightPillar`, `KnightFlame`), smooth as the game's own effects are (§16.93); the
+   bestiary picture is made from the new pieces on the rig, the one place mixed pixels are allowed.
+2. **How**: each picture is a map at half its size, one character a pixel, in the knight's ramps (gold dark to light,
+   leather, the blades' steel, amber and gilt, the cloth's wool and trim), doubled and cut to the picture's own size
+   (odd sizes keep a half block at the right or bottom edge, as before). Drawn by hand, a pixel at a time, lit from the
+   upper left, outlined in his dark bronze; less line, more shading. Every joint stays where `KnightRig` has it: the
+   shoulder, elbow and fist; the hip, knee, ankle and sole; the neck and hips on the cuirass; nothing in the code moved.
+3. **The pieces** (`Content/NPCs/GildedKnight/`, 32 pictures):
+   - the cuirass side on, turned toward and away: the sun on the breast (a dark boss, eight points), the ridge down the
+     turned breast, the spine and shoulder blades on the back; the belt, faulds and its buckle;
+   - the helm: a round crowned helm, three pearl points, a T sight with a glint of light behind it, a turned cheek;
+   - the pauldrons: a shell with a rolled rim and a lame under it;
+   - the arms, straight and bent: plates, a round couter with its rivet, a gauntlet with its cuff and knuckles;
+   - the legs, straight and bent, toward and away: cuisses, a knee cop, greaves, and sabatons with their lames and a
+     pointed toe (toward: the toe cap to the eye; away: the heel and its gilt spur);
+   - the Sun and the Grace: a broad blade with a fuller that stops short of the point and the guard, a crescent guard
+     whose horns turn up beside the blade, a corded grip, a round pommel with its stone. The hand holds them at
+     (8.5, 74.5) as before, the guard 10 above it; on the 2x2 grid the grip's middle is half a texel right of and
+     below that (not seen). Their light: the fuller full, the edges dim, the point; nothing on the hilt;
+   - the scabbards: leather, gilt locket, band and chape;
+   - the cloth: the cape's wool in long folds down its length between gold borders, its clasp and patterned hem; the
+     tabard's flaps (the front with the sun); the plume, horsehair thinning to a tail.
+4. **His things**: `SwordOfAGildedKnight.png` (on the diagonal; four pixels across the blade, its fuller gold; the
+   crescent guard across it at the 9 the swing counts; the grip's middle on the line through texel (7.9, 49.1), the
+   point at 68: `GildedSwordSwing` unchanged), `GildedSpur.png` (the heel band, buckles, the rowel a star of eight round
+   a dark hub), `SunburstTalisman.png` (a gilt sun with a darker rim, eight rays, the amber stone, on its cord). These
+   keep the house style for items: the dark rim on the shadow side only.
+5. **His head and his bestiary**: `GildedKnight_Head_Boss.png` is the new helm on the 2x2 grid with its outline round
+   it; `GildedKnight_Bestiary.png` him standing on guard, made by the rig from the new pieces (84x113 as before).
+6. **Checked**: every picture its old size; every 2x2 block whole in all 36 drawn pictures (measured; the bestiary, made by the rig, is the exception); the previews of
+   every move made again from the new pieces (the gallery page of his moves) and `Claude outputs\GildedKnight_2x_r78.png`
+   (each picture before and now). No code changed; nothing to build. Not run in the game.

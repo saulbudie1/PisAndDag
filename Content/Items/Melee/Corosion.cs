@@ -19,7 +19,7 @@ namespace PisAndDag.Content.Items.Melee
     /// what it hits into the air, the whole arm thrown with each, grown out past the hand into a forearm of packed
     /// sand bound in gold as far as the blow reaches. Right-click scatters the player into
     /// sand and puts them back down ten tiles behind, untouchable while they are sand and for half a second after
-    /// (Sandstep); then the sand has to settle, fifteen seconds (SandSettling).
+    /// (Sandstep); then the sand has to settle, ten seconds (SandSettling).
     ///
     /// Mine: its numbers. 18 damage, the jab 0.8 of it, the cross all of it, the uppercut 2.4; a blow reaches 2.75
     /// tiles from the shoulder (asked: a smaller reach), the player stepping 10, 16 and 12 pixels in with them and back

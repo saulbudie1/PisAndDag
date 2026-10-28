@@ -248,7 +248,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         private float LongLength(float clock = -1f)
         {
             if (clock < 0f)
-                clock = Timer - 1f;
+                clock = Clock - Pace;
 
             if (State != Act.Move || MoveId != Moves.Long || clock < KnightMoves.LongGrow)
                 return 0f;
@@ -781,7 +781,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         /// <summary>The trail's points for a blade, newest first; false when there is nothing of it to draw.</summary>
         private bool TrailPoints(int blade, float shown)
         {
-            float clock = Timer - 1;
+            float clock = Clock - Pace;
             bool any = false;
             Vector2 lastTip = Vector2.Zero;
 
@@ -860,7 +860,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             if (clock < 0f)
                 return false;
 
-            float now = Timer - 1;
+            float now = Clock - Pace;
 
             switch (State)
             {

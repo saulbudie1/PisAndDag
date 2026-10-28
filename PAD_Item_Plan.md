@@ -1027,6 +1027,37 @@ Everything but the ore and bars: Orange. Weapons sell for 2 gold 40 to 2 gold 70
 
 ---
 
+## Sword Of A Gilded Knight
+
+The Gilded Knight of Grace's pale sword, the Grace, at a player's size (PADWorkFlow §17.23), by request: *"normal
+chain of attacks: up down; alternative: Focus into a big light beam and smash down, like one of his attacks with
+devastating damage. Dps normal attack should be 300 dps ish, and the smack down does 500 damage."* Its picture is mine.
+
+### Files
+
+| File | Class | Does |
+|---|---|---|
+| `Content/Items/Melee/SwordOfAGildedKnight.cs` + `.png` (58 by 58) | `SwordOfAGildedKnight`, `GildedSwordPlayer` | The item; which cut is next |
+| `Content/Projectiles/Melee/GildedSwordSwing.cs` | `GildedSwordSwing`, `GildedSwordPose`, `GildedSwordLayer`, `SwordMove` | The sword in the hand for each use: the cuts, the long blade, their trail and light |
+
+### The item
+
+| What | How |
+|---|---|
+| Damage | 100 melee; knockback 6; 20 ticks a cut, held to go on (300 a second against one thing) |
+| Left click | cut up, then cut down, in turn; back to up after three quarters of a second's rest |
+| Right click | the long blade: raised, a blade of light 24 tiles long grows out of it over a second, brought down to lie along the ground; 5 times the damage (500) to everything under it, once, through walls; a pillar of light where its point lands. A second and a half in all |
+| Drop | the Gilded Knight of Grace, every kill |
+| Worth | Orange, sells for 4 gold |
+| Text | *Cuts up, then down* / *Right click to raise a blade of light and bring it down for five times the damage* / *'It has been dropped on that road before.'* |
+
+### Open
+
+- Never run in the game, never tried with a second player. 300 a second is far past anything else before the Wall:
+  by request.
+
+---
+
 ## The game's own items
 
 `Content/Items/VanillaBalance.cs`: the game's items with this mod's numbers, put on after the
@@ -1790,6 +1821,27 @@ foot 15 mph to 13; Hermes Boots 31 to 26; Lightning Boots 35 to 30.
 
 ---
 
+## Sunburst Talisman
+
+A gilt sun on a cord, from the Gilded Knight of Grace (PADWorkFlow §17.23), by request: *"An accessory that makes the
+increase generation by 10HP/s in the sun (above ground + daytime) and increase all damage by 7.3%. during the day and
+4.5% at night."* Its picture is mine.
+
+| What | How |
+|---|---|
+| File | `Content/Items/Accessories/SunburstTalisman.cs` + `.png` (28 by 32) |
+| In the sun | day, and above the surface of the world (the sky too): 10 life a second more regeneration |
+| Damage | all of it 7.3% higher by day, 4.5% by night |
+| Seen | a mote of gold now and then off the wearer in the sun, unless hidden |
+| Drop | the Gilded Knight of Grace, every kill |
+| Worth | Orange, sells for 3 gold |
+| Text | *Above ground in the day, regenerates 10 life per second* / *7.3% increased damage in the day, 4.5% at night* / *'He knelt to it each morning, on the road.'* |
+
+### Open
+
+- Never worn in the game.
+
+
 # 6 · Instruments
 
 ## Trumpet
@@ -1826,7 +1878,7 @@ by request: *"resummon with an item dropped from him"*.
 ### Open
 
 - Never rung in the game.
-- Whether he should leave anything else (a weapon of his, a trophy, a mask): not asked.
+- He leaves his sword and his sun as well (Sword Of A Gilded Knight, Sunburst Talisman: PADWorkFlow §17.23); a trophy or a mask: not asked.
 
 ---
 

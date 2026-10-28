@@ -62,13 +62,16 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         /// <summary>The ticks into a step at which the foot comes down (the jangle and the dust): at each whole step.</summary>
         public static bool Footfall(float gaitBefore, float gaitNow) => Math.Floor(gaitBefore) != Math.Floor(gaitNow);
 
+        /// <summary>His waist in his guard: a little open to the eye, side on (the side picture), the back foot turned out toward the eye.</summary>
+        public const float GuardTwist = 0.2f;
+
         /// <summary>
         /// The guard, both swords out: the Sun high and forward in the near hand, the Grace low and
         /// back in the far one, the feet apart, the weight on the front one.
         /// </summary>
         public static readonly KnightRig.Pose Guard = new KnightTrack().At(0f)
             .Lean(7f).Nod(3f)
-            .Near(89f, 21f).Far(-18f, KnightRig.ArmLong)
+            .Near(89f, 21f).Far(-18f, KnightRig.ArmLong).Twist(GuardTwist).Toes(0f, 1f)
             .Legs(16f, -15f)
             .Drawn().Blades(-52f, 158f)
             .Sample(0f);
@@ -127,21 +130,21 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         /// </summary>
         public static readonly KnightTrack Draw = new KnightTrack(Rest)
             // Both hands to the hilts: the far hand across to the Grace at the near hip.
-            .At(DrawHands).Lean(5f).Nod(10f).On(KnightRig.Sun, KnightRig.Grace).Legs(9f, -8f).Home()
+            .At(DrawHands).Twist(0.8f).Toes(0f, 1f).Lean(5f).Nod(10f).On(KnightRig.Sun, KnightRig.Grace).Legs(9f, -8f).Home()
             // A breath: he sinks a little, the head comes up.
             .At(DrawHold, Ease.SineInOut).Lean(7f).Nod(-4f).Rise(-2f).Legs(14f, -12f).Home()
             // Drawn, together: each grip forward along its scabbard as far as an arm goes.
             .At(DrawPulled, Ease.PolyIn, 2).Out(26f, 25f).Lean(4f).Nod(-6f).Home()
             // Free the moment the arms go on, and swept up through the front to cross before his face.
             .At(DrawFree, Ease.Linear).SwitchAt(0f).Drawn().Near(70f, 31f).Far(62f, 23f).Blades(-20f, -35f).Rise(-1f)
-            .At(DrawCrossed, Ease.ExpOut).Near(72f, 31f).Far(64f, 22f).Blades(-124f, -57f).Lean(-3f).Nod(-8f).Rise(0f).Legs(16f, -14f)
+            .At(DrawCrossed, Ease.ExpOut).Twist(1f).Toes(0f, 1f).Near(72f, 31f).Far(64f, 22f).Blades(-124f, -57f).Lean(-3f).Nod(-8f).Rise(0f).Legs(16f, -14f)
             .At(DrawShine, Ease.SineOut).Near(73f).Blades(-123f, -58f)
             // Held while the light gathers at the crossing.
             .At(DrawParting, Ease.SineInOut).Near(75f).Blades(-121f, -59f).Lean(-4f).Nod(-10f)
             // Parted: the Sun over the top and down ahead, the Grace over the top and down behind.
-            .At(DrawParted, Ease.PolyOut, 3).Near(50f, 32f).Far(-40f, 31f).Blades(30f, -200f).Lean(9f).Nod(4f).Legs(18f, -16f).Rise(-3f)
+            .At(DrawParted, Ease.PolyOut, 3).Twist(0.6f).Toes(0f, 1f).Near(50f, 32f).Far(-40f, 31f).Blades(30f, -200f).Lean(9f).Nod(4f).Legs(18f, -16f).Rise(-3f)
             // Into the guard.
-            .At(DrawTicks, Ease.SineInOut).Near(89f, 21f).Far(-18f, KnightRig.ArmLong).Blades(-52f, -202f).Lean(7f).Nod(3f).Legs(16f, -15f).Rise(0f);
+            .At(DrawTicks, Ease.SineInOut).Near(89f, 21f).Far(-18f, KnightRig.ArmLong).Twist(GuardTwist).Toes(0f, 1f).Blades(-52f, -202f).Lean(7f).Nod(3f).Legs(16f, -15f).Rise(0f);
 
         /// <summary>The ticks of the point: the near arm comes up slowly, straight, until the Sun points at them; held.</summary>
         public const int PointRise = 70;
@@ -160,7 +163,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             // ahead turning down, so the arm that lies along a blade at deg is at 90 - deg.
             return new KnightTrack(Guard)
                 .At(20f).Near(95f, 23f).Blades(-40f, 160f).Lean(5f).Nod(0f)
-                .At(PointRise, Ease.SineInOut).Near(90f - deg, 31f).Sun(deg).Lean(2f).Nod(-2f).Legs(18f, -16f)
+                .At(PointRise, Ease.SineInOut).Twist(-0.8f).Toes(0f, -1f).Near(90f - deg, 31f).Sun(deg).Lean(2f).Nod(-2f).Legs(18f, -16f)
                 .At(PointTicks, Ease.SineInOut).Near(90.5f - deg, 31.5f).Sun(deg).Lean(2.5f).Nod(-1f);
         }
     }

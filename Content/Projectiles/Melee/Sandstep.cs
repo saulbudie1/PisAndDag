@@ -53,6 +53,12 @@ namespace PisAndDag.Content.Projectiles.Melee
 
         public override bool? CanDamage() => false;
 
+        /// <summary>
+        /// Nothing of its own to draw: the sand is particles, the player is hidden (SandstepPlayer). Without this the game
+        /// drew its texture, MagicPixel, a strip one pixel wide and a thousand high: a line down the screen.
+        /// </summary>
+        public override bool PreDraw(ref Color lightColor) => false;
+
         public override void AI()
         {
             Player player = Main.player[Projectile.owner];

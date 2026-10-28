@@ -171,12 +171,29 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             set => NPC.ai[0] = (float)value;
         }
 
-        /// <summary>Ticks in the state (and in a move, its clock).</summary>
+        /// <summary>Ticks in the state (and in a move, its clock, whole ticks of it).</summary>
         public int Timer
         {
             get => (int)NPC.ai[1];
             set => NPC.ai[1] = value;
         }
+
+        /// <summary>
+        /// The clock itself, with what is between its ticks: in his moves and his change it runs at
+        /// <see cref="MovePace"/>, so every pose, cut and cue of them comes that much later and the
+        /// tracks are sampled smoothly between their ticks.
+        /// </summary>
+        public float Clock => NPC.ai[1];
+
+        /// <summary>
+        /// How fast his moves and his change play: eight tenths, by request ("Make every of his move
+        /// slower by 20% so people can see the moves he make"): each a quarter as long again. His
+        /// walking, his scene, being rocked, the stun and his end keep their own times.
+        /// </summary>
+        public const float MovePace = 0.8f;
+
+        /// <summary>How far the clock goes in a tick in what he is doing now.</summary>
+        private float Pace => State == Act.Move || State == Act.Change ? MovePace : 1f;
 
         public Moves MoveId
         {
@@ -434,6 +451,11 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         {
             // What calls him back, every time (by request: "resummon with an item dropped from him").
             npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<GildedSpur>()));
+
+            // His sword and his sun, every time (by request: "He drops Sunburst Talisman ... and
+            // Sword Of A Gilded Knight").
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.Melee.SwordOfAGildedKnight>()));
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.Accessories.SunburstTalisman>()));
         }
 
         public override void BossLoot(ref int potionType)
@@ -655,7 +677,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             Looks();
 
             was = Math.Max(was, Timer);
-            Timer++;
+            NPC.ai[1] += Pace;
         }
 
         /// <summary>

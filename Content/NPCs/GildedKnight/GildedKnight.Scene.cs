@@ -278,7 +278,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             NPC.noTileCollide = false;
 
             KnightTrack track = KnightMoves.Change;
-            float clock = Timer;
+            float clock = Clock;
             KnightRig.Pose p = track.Sample(clock);
 
             Pose = clock < 6f ? KnightTrack.Between(from, p, clock / 6f) : p;

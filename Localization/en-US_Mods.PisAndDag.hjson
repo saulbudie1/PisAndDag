@@ -9,6 +9,26 @@ Items: {
 			'''
 	}
 
+	SwordOfAGildedKnight: {
+		DisplayName: Sword Of A Gilded Knight
+		Tooltip:
+			'''
+			Cuts up, then down
+			Right click to raise a blade of light and bring it down for five times the damage
+			'It has been dropped on that road before.'
+			'''
+	}
+
+	SunburstTalisman: {
+		DisplayName: Sunburst Talisman
+		Tooltip:
+			'''
+			Above ground in the day, regenerates 10 life per second
+			7.3% increased damage in the day, 4.5% at night
+			'He knelt to it each morning, on the road.'
+			'''
+	}
+
 	Handswitch: {
 		DisplayName: Handswitch
 		Tooltip: Trades lifeforce for powerful shots
@@ -568,7 +588,7 @@ Items: {
 			Punches at the cursor: a jab, a cross, then an uppercut that throws enemies up
 			Standing, you step in with each blow and back out
 			What you are punching cannot hurt you by touch for a moment. Bosses, and anything that cannot be knocked back, touch for half
-			Right-click to scatter into sand and step back 10 tiles, untouchable (15 second cooldown)
+			Right-click to scatter into sand and step back 10 tiles, untouchable (10 second cooldown)
 			'What the wind does in a thousand years, in three.'
 			'''
 	}
@@ -989,6 +1009,7 @@ Projectiles: {
 	KnightPillar.DisplayName: Long Blade
 	KnightSweep.DisplayName: Long Blade
 	KnightSunOrb.DisplayName: Gilded Sun
+	GildedSwordSwing.DisplayName: Sword Of A Gilded Knight
 }
 
 NPCs: {

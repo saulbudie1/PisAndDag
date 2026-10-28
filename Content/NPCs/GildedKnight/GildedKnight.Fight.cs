@@ -521,7 +521,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         private void MoveTick(Player target)
         {
             Move m = Current();
-            float clock = Timer;
+            float clock = Clock;
 
             Pose = PoseAt(clock);
 
@@ -682,7 +682,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
                 if (parry.Spares(NPC))
                     return;
 
-                float before = Math.Max(s.From, clock - 1f);
+                float before = Math.Max(s.From, clock - Pace);
                 KnightRig.Pose first = PoseAt(before);
                 KnightRig.Pose final = PoseAt(clock);
 
