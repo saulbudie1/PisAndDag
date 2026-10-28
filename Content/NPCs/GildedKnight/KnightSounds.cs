@@ -15,7 +15,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
     ///   his light       Crescent, LancetCharge, LancetFire, Votive, VotiveLoose, VotiveHit, Ignite,
     ///                   Pyre, PyreMark, GreatCrescent, Procession, GrowBlade, BladeSlam, BladeSweep,
     ///                   SunForm, SunFall, SunBurst
-    ///   his end         Dissolve, Flash
+    ///   his end         nothing (by request: it is silent)
     /// </summary>
     internal static class KnightSounds
     {
@@ -52,8 +52,6 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         public static readonly SoundStyle SunFall = new SoundStyle(Folder + "SunFall");
         public static readonly SoundStyle SunBurst = new SoundStyle(Folder + "SunBurst");
 
-        public static readonly SoundStyle Dissolve = new SoundStyle(Folder + "Dissolve");
-        public static readonly SoundStyle Flash = new SoundStyle(Folder + "Flash");
 
         /// <summary>A footfall: the boot and the plates ringing after it.</summary>
         public static void Step(Vector2 at) => SoundEngine.PlaySound(StepSound, at);

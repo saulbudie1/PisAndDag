@@ -106,8 +106,11 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         /// <summary>He drops to a knee (his end).</summary>
         Kneel,
 
-        /// <summary>Light begins to lift off him (his end).</summary>
+        /// <summary>The gold begins to smoulder off him (his end).</summary>
         Fade,
+
+        /// <summary>He comes apart into golden grains (his end).</summary>
+        Apart,
     }
 
     /// <summary>A blade's cut within a move: which blade, the ticks it can hit in, and whether it is a heavy one.</summary>

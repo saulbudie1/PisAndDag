@@ -74,18 +74,21 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         /// <summary>Everything he does, a quarter harder in Legends.</summary>
         public const float LegendsDamage = 1.25f;
 
-        /// <summary>What each kind of blow does, in a Classic, an Expert and a Master world, before the game's variation.</summary>
-        public static readonly int[] BladeDamage = { 46, 70, 88 };
-        public static readonly int[] HeavyDamage = { 56, 84, 104 };
-        public static readonly int[] ShockDamage = { 34, 50, 62 };
-        public static readonly int[] CrescentDamage = { 36, 54, 66 };
-        public static readonly int[] LancetDamage = { 44, 66, 82 };
-        public static readonly int[] VotiveDamage = { 30, 46, 56 };
-        public static readonly int[] PyreDamage = { 40, 60, 74 };
-        public static readonly int[] GreatDamage = { 60, 90, 110 };
-        public static readonly int[] ProcessionDamage = { 38, 56, 70 };
-        public static readonly int[] LongDamage = { 50, 76, 94 };
-        public static readonly int[] SunDamage = { 70, 105, 130 };
+        /// <summary>
+        /// What each kind of blow does, in a Classic, an Expert and a Master world, before the game's
+        /// variation. (Fifteen in a hundred less than they were first, by request: a cut was 46.)
+        /// </summary>
+        public static readonly int[] BladeDamage = { 39, 60, 75 };
+        public static readonly int[] HeavyDamage = { 48, 71, 88 };
+        public static readonly int[] ShockDamage = { 29, 43, 53 };
+        public static readonly int[] CrescentDamage = { 31, 46, 56 };
+        public static readonly int[] LancetDamage = { 37, 56, 70 };
+        public static readonly int[] VotiveDamage = { 26, 39, 48 };
+        public static readonly int[] PyreDamage = { 34, 51, 63 };
+        public static readonly int[] GreatDamage = { 51, 77, 94 };
+        public static readonly int[] ProcessionDamage = { 32, 48, 60 };
+        public static readonly int[] LongDamage = { 43, 65, 80 };
+        public static readonly int[] SunDamage = { 60, 89, 111 };
 
         /// <summary>The damage from one of the tables above, for the world as it is.</summary>
         public static int Damage(int[] table)
@@ -133,6 +136,9 @@ namespace PisAndDag.Content.NPCs.GildedKnight
 
             /// <summary>Nobody left in his field: back to his post, and gone.</summary>
             Leave,
+
+            /// <summary>Every third parry: down on a knee for five seconds, open to the riposte.</summary>
+            Stunned,
         }
 
         /// <summary>The moves, by number (sent).</summary>
@@ -234,6 +240,9 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         private Act wasState;
         private Moves wasMove;
 
+        /// <summary>The state he was in before this one, on this machine (how he comes into it).</summary>
+        private Act cameFrom;
+
         /// <summary>The move being played, made on this machine from its number and its arg.</summary>
         private Move move;
         private Moves moveMade;
@@ -278,7 +287,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         public bool Second => second;
 
         /// <summary>He is fighting: from the end of his scene to his end.</summary>
-        public bool Fighting => State == Act.Stance || State == Act.Move || State == Act.Reel || State == Act.Change;
+        public bool Fighting => State == Act.Stance || State == Act.Move || State == Act.Reel || State == Act.Change || State == Act.Stunned;
 
         /// <summary>Whether this tick of the state has just been reached, on this machine.</summary>
         private bool At(int tick) => was < tick && Timer >= tick;
@@ -311,14 +320,16 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             BossPlate.Colours(Type, new Color(255, 214, 120), new Color(236, 226, 200));
 
             // His blades can be turned aside, every cut of them (by request); what that does to
-            // him is his own (Turned). His hits are worked out here, not by the game's touch,
-            // so each asks the parry itself before it lands (Strike).
+            // him is his own (Turned): a step back with a ward of gold, or, every third time by
+            // the parry's own count for anything on the ground, down on a knee for five seconds,
+            // open to the riposte (by request: "like normal parry system"). His hits are worked
+            // out here, not by the game's touch, so each asks the parry itself before it lands
+            // (Strike).
             Parry.AddNPC(Type,
                 npc => npc.ModNPC is GildedKnight knight && knight.CanBeTurned,
-                (npc, by, away, staggers) => (npc.ModNPC as GildedKnight)?.Turned(),
+                (npc, by, away, staggers) => (npc.ModNPC as GildedKnight)?.Turned(staggers),
                 flies: false,
-                reels: false,
-                told: "Every cut of his blades is turned aside: he rocks back a step and a half with a ward of gold about him, and for that second nothing lands on him.",
+                told: "Every cut of his blades is turned aside: he rocks back a step and a half with a ward of gold about him, and for that second nothing lands on him. Every third time he is down on a knee for five seconds, open to the riposte.",
                 reach: LongReach + 160f);
         }
 
@@ -552,7 +563,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             // The bar is the fight's. The music too: the world's own while he stands his watch,
             // nothing but his armour through his scene, his theme through the fight, and quiet as
             // he kneels and goes.
-            NPC.boss = State != Act.Post && State != Act.Leave;
+            NPC.boss = State != Act.Post && State != Act.Leave && !Apart;
             Music = State == Act.Post || State == Act.Leave ? -1 : State == Act.Scene || State == Act.End ? 0 : MusicID.OtherworldlyBoss1;
 
             // Whether anything lands on him, every tick on every machine: the game's sync of an NPC
@@ -565,6 +576,13 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             // puts back a few ticks is the same move: nothing in it is played again.)
             if (State != wasState || MoveId != wasMove || Timer < was - 8)
             {
+                if (State != wasState)
+                    cameFrom = wasState;
+
+                // His end from where a stun left him: kneeling already, it goes on from its first knee.
+                if (State == Act.End)
+                    endFrom = cameFrom == Act.Stunned ? KnightMoves.EndKnees - 60 : 0;
+
                 was = -1;
                 wasState = State;
                 wasMove = MoveId;
@@ -618,6 +636,10 @@ namespace PisAndDag.Content.NPCs.GildedKnight
                 case Act.Leave:
                     LeaveTick();
                     break;
+
+                case Act.Stunned:
+                    StunnedTick(target);
+                    break;
             }
 
             seenFacing = facing;
@@ -636,11 +658,43 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             Timer++;
         }
 
+        /// <summary>
+        /// After his AI, whether or not it ran: a stagger that stops it (the Greatbow's) does not stop
+        /// this, so his box stands through it.
+        /// </summary>
+        public override void PostAI()
+        {
+            if (fieldRight > fieldLeft && State != Act.Post && State != Act.Leave && !gone)
+                BossArena.Keep(fieldLeft, fieldRight, true, post.Y - FieldAbove, post.Y + FieldBelow);
+        }
+
+        /// <summary>His head off the map and the bar once he has come apart.</summary>
+        public override void BossHeadSlot(ref int index)
+        {
+            if (Apart || gone)
+                index = -1;
+        }
+
         /// <summary>Moves on to another state (or a move), where the world is decided.</summary>
         private void Go(Act act, Moves which = Moves.None, float with = 0f)
         {
             if (!Authority)
                 return;
+
+            // Stunned no longer, whatever he goes on to: nothing is open to a riposte at his end.
+            if (State == Act.Stunned && act != Act.Stunned)
+                NPC.GetGlobalNPC<PADStaggerNPC>().Wake(NPC);
+
+            // His end is silent and his own (by request): what he let go of that is still about goes with
+            // it, quietly (their ends are light, not sound).
+            if (act == Act.End && State != Act.End)
+            {
+                foreach (Projectile projectile in Main.ActiveProjectiles)
+                {
+                    if (projectile.ModProjectile is KnightShot || projectile.ModProjectile is KnightProcession)
+                        projectile.Kill();
+                }
+            }
 
             State = act;
             MoveId = which;
@@ -651,8 +705,8 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             NPC.netUpdate = true;
         }
 
-        /// <summary>Nothing lands on him at his post, in his scene, turned aside, in his change, at his end, leaving.</summary>
-        private static bool Untouchable(Act act) => act != Act.Stance && act != Act.Move;
+        /// <summary>Nothing lands on him at his post, in his scene, turned aside, in his change, at his end, leaving. (Stunned, everything does: the riposte above all.)</summary>
+        private static bool Untouchable(Act act) => act != Act.Stance && act != Act.Move && act != Act.Stunned;
 
         /// <summary>The most ticks a client plays at once of what it has missed of him.</summary>
         private const int CatchUp = 6;
@@ -882,7 +936,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         /// <summary>He gives off a little gold light of his own, more in his second half.</summary>
         private void Glow()
         {
-            if (State == Act.Post || gone)
+            if (State == Act.Post || gone || Apart)
                 return;
 
             Vector3 gold = new Vector3(1f, 0.78f, 0.36f) * (second ? 0.75f : 0.45f);

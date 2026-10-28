@@ -23216,3 +23216,59 @@ Mine where nothing was said: everything of his look, his moves past what the vid
     thrown back on is the cut nearest the parry.
 
 Built clean (0 errors). Not run in the game.
+
+## 17.22 Session 8, later: the Gilded Knight, slower
+
+Asked, of the knight as r71 left him: "Why is his everything so fast and rapid, leave some walking time for him to
+approach between attacks 1-3 secs; him death animation must be slower like last 3x, and doesnt need sound; also what i
+had in mind was him using the guide's perish but with golden grains. Reduce his damage by 15%. Parry him 3 times and he
+stunts for 5 seconds like normal parry system."
+
+1. **Walking time between his moves** (`GildedKnight.Fight.cs`): one to three seconds between one move and the next (60
+   to 180 ticks; in his second half 60 to 150; they were 26 to 56, and 12 to 34), walking at you in his guard, his armour
+   ringing at each step, until he is within reach of his first cut (he stops 120 pixels off, its reach is 129; he used
+   to stop at 260), and standing, not walking on the spot, if his own wall is in the way; he still eases back if you
+   are on top of him. After his scene a second and a half; after his change a second; after a parry's step back half a
+   second; after a stun most of a second. The moves themselves are unchanged (but for the wheel, item 8); the crown's
+   dash and cuts still follow it at once.
+2. **Damage** (`GildedKnight.cs`): every number fifteen in a hundred lower. A cut 39 (expert 60, master 75; it was 46),
+   a heavy blow 48, the wave 29, a crescent 31, the lancet 37, a blade of light 26, a pyre 34, the great crescent 51, the
+   procession 32, the long blade 43, the sun 60; a quarter more in Legends, as before.
+3. **Parried three times, stunned for five seconds** (`GildedKnight.Fight.cs` Turned, StunnedTick; `KnightMoves.More.cs`
+   Stun): the parry's own count now runs for him, as for anything that stands on the ground (every third:
+   `Parry.GroundParries`), and goes on across the whole fight. The first and second parry: his step back and the ward,
+   as before. The third: rocked back, he goes down on one knee, his blades hanging with their points in the turf, his
+   head hanging, swaying, for five seconds, with the parry's own stagger on him (`PADStaggerNPC.Reel`, as Foigh has it:
+   his AI is not stopped, his own state shows it): the stars over him, the tint, and the first hit on him a riposte,
+   three times the damage, which wakes him. Then up into his guard, slowly, and on. Nothing of his can be parried while
+   he kneels (nothing of his cuts).
+4. **His end, three times as long and without a sound** (`KnightMoves.More.cs` End, `GildedKnight.Scene.cs` EndTick):
+   rocked; the Sun falls from his hand, slowly, and lies in the grass; the Grace driven in at two seconds; one knee, then
+   the other, by four; his head bowed by six. No sound at all (the clash, the step, the slam, the knee, the fall of the
+   Sun are silent now), the music already gone. Sixteen and a half seconds; it was five and a half.
+5. **The Guide's perish, in gold** (`KnightGrain.cs`, new; `GildedKnight.Cues.cs` CameApart, SunComesApart;
+   `KnightFx.Smouldering`): as the Guide smoulders before he comes apart (`GuideSacrifice`), the gold smoulders off the
+   knight from seven and a half seconds: golden smoke building on him from a wisp to a pour, motes and gold leaf lifting
+   off, his plate warming to gold and pale. At twelve seconds he comes apart as the Guide does (`AshDissolve`): his
+   picture as it was last painted, every filled pixel of it a grain where it was drawn, but in gold (its brightness laid
+   on deep old gold, gold and pale gold), so for a moment the cloud is still him kneeling over his sword; then the grains
+   rise and the air takes them, slowly (twice as long as the Guide's ash, and shrinking a third as fast), the dark edges
+   of him first and his lit plate last. The Sun in the grass goes the same way half a second after him. Gone at sixteen
+   and a half seconds; the spur and the potions where he knelt. The square-by-square dissolve, its flash, rays and ring
+   are gone; so are the sounds Dissolve and Flash (their files are still in `Content/Sounds/Knight` and can go).
+6. **Previews** (`Claude outputs\`, from the code as the r71 ones were): `GildedKnight_death_r72.gif`,
+   `GildedKnight_stun_r72.gif`, `GildedKnight_stun_r72.png`.
+7. **Read through** by an independent review before delivery, as r71 was; what it found and what was done is item 8.
+8. **Fixed from the review**: he stopped 180 pixels off, out of reach of most of his twin cuts (now 120, inside the
+   first cut's 129); the grains of him and the Sun together went past the particles' limit and shut everything else out
+   for four seconds (now at most 600 and 220); killed while stunned he stood up only to kneel again (his end now goes
+   on from its first knee); the boss bar and his head on the map stayed four seconds after he had come apart (gone with
+   him now; he is a boss again for the moment of his death, for the potions and the word that he is beaten); his light
+   stayed after him; a client the server put a long way forward could miss his coming apart (now once, whenever it gets
+   there); his blades' embers rose out of the ground while he knelt stunned; his trails at the start of his end used
+   the old blend; he walked on the spot against his own wall. Also: what he has let go of that is still about goes
+   with his end, quietly (a pyre or a lance could still be heard as he fell); his box stands through the Greatbow's
+   stagger (it stops his AI; the box is now asked after it as well); and the wheel's level blades passed a pixel over
+   anyone standing, so its two turns never landed (lowered a little: now they meet you).
+
+Built clean (0 errors). Not run in the game.

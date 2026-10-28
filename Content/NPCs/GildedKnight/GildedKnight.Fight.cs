@@ -25,17 +25,24 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         private const float Near = 190f;
         private const float Far = 520f;
 
-        /// <summary>The way he likes to stand from them, between moves: walks in from further, eases back from nearer.</summary>
-        private const float Keep = 230f;
+        /// <summary>
+        /// The way he likes to stand from them, between moves: walks in from further until Keep + 30,
+        /// inside the reach of the first cut of his twin cuts (129 pixels), and eases back from
+        /// nearer than TooClose.
+        /// </summary>
+        private const float Keep = 90f;
         private const float TooClose = 70f;
 
         /// <summary>His stalk, pixels a tick; and a step back.</summary>
         private const float StalkSpeed = 1.35f;
         private const float BackSpeed = 0.8f;
 
-        /// <summary>Ticks between moves, first half and second.</summary>
-        private const int RestLeast = 26, RestMost = 56;
-        private const int SecondRestLeast = 12, SecondRestMost = 34;
+        /// <summary>
+        /// Ticks between moves, first half and second: one to three seconds of walking at them in his
+        /// guard (by request: "leave some walking time for him to approach between attacks").
+        /// </summary>
+        private const int RestLeast = 60, RestMost = 180;
+        private const int SecondRestLeast = 60, SecondRestMost = 150;
 
         /// <summary>A blade is this thick where it cuts.</summary>
         private const float BladeWidth = 14f;
@@ -158,6 +165,15 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             else if (dx < TooClose)
                 speed = -BackSpeed * facing;
 
+            // Against his own wall he stands, rather than walking on the spot.
+            if (speed != 0f && fieldRight > fieldLeft)
+            {
+                float x = Feet.X + speed;
+
+                if ((x < fieldLeft + WallMargin && speed < 0f) || (x > fieldRight - WallMargin && speed > 0f))
+                    speed = 0f;
+            }
+
             NPC.velocity.X = speed;
 
             if (Math.Abs(speed) > 0.01f)
@@ -170,7 +186,10 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             }
 
             KnightRig.Pose stance = Math.Abs(speed) > 0.01f ? KnightMoves.GuardWalk(gait) : Breathing();
-            Pose = Timer < 10 ? KnightTrack.Between(from, stance, Timer / 10f) : stance;
+
+            // Into it from what he was doing: up off his knee after a stun more slowly.
+            float into = cameFrom == Act.Stunned ? 28f : 10f;
+            Pose = Timer < into ? KnightTrack.Between(from, stance, Timer / into) : stance;
 
             if (turning > 0)
             {
@@ -739,7 +758,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         /// for a second nothing lands on him (by request: "parried makes him step back with
         /// invincibility for 1 sec before continuing").
         /// </summary>
-        public void Turned()
+        public void Turned(bool staggers)
         {
             if (!Authority)
                 return;
@@ -751,7 +770,63 @@ namespace PisAndDag.Content.NPCs.GildedKnight
 
             reelBlade = blade;
             queued = Moves.None;
+
+            if (staggers)
+            {
+                // Every third parry (the parry's count, kept where the world is decided): stunned,
+                // open to the riposte for as long. His own state shows it; his AI is not stopped.
+                NPC.GetGlobalNPC<PADStaggerNPC>().Reel(NPC, KnightMoves.StunTicks, false);
+                Go(Act.Stunned);
+                return;
+            }
+
             Go(Act.Reel);
+        }
+
+        /// <summary>
+        /// Stunned: rocked back and down on a knee, swaying, for five seconds, or until the riposte
+        /// wakes him (PADStaggerNPC: the first hit on him is three times as hard and ends it). Then
+        /// up into his guard, slowly, and on.
+        /// </summary>
+        private void StunnedTick(Player target)
+        {
+            NPC.noGravity = false;
+            NPC.noTileCollide = false;
+            OutOfTheGround();
+
+            KnightTrack track = KnightMoves.Stun;
+            float clock = Timer;
+            KnightRig.Pose p = track.Sample(clock);
+
+            // Swaying where he kneels.
+            if (clock > KnightMoves.StunDown)
+            {
+                float s = (float)Math.Sin((clock - KnightMoves.StunDown) * 0.05f + NPC.whoAmI);
+                p.Lean += 0.035f * s;
+                p.Nod += 0.045f * s;
+            }
+
+            Pose = clock < 3f ? KnightTrack.Between(from, p, clock / 3f) : p;
+
+            Vector2 go = track.Travel(clock);
+            NPC.velocity.X = (go.X - travelled.X) * facing;
+            travelled = go;
+
+            foreach ((int Tick, Cue What) cue in KnightMoves.StunCues)
+            {
+                if (At(cue.Tick))
+                    Cued(cue.What, target);
+            }
+
+            if (!Authority || Timer < 4)
+                return;
+
+            // Up when it wears off, or at the riposte, which wakes him.
+            if (!NPC.GetGlobalNPC<PADStaggerNPC>().Reeling || Timer >= KnightMoves.StunTicks + 4)
+            {
+                rest = 50;
+                Go(Act.Stance);
+            }
         }
 
         /// <summary>The reel: the step back off the parried blade, the ward of gold, then his guard again.</summary>
@@ -789,7 +864,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
 
             if (Authority && Timer >= KnightMoves.ReelTicks)
             {
-                rest = 8;
+                rest = 30;
                 Go(Act.Stance);
             }
         }
@@ -828,7 +903,10 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             if (Main.dedServ)
                 return;
 
-            KnightSounds.Step(Feet);
+            // (His end is without a sound: by request.)
+            if (State != Act.End)
+                KnightSounds.Step(Feet);
+
             KnightFx.Dust(Feet, 0.6f);
         }
     }

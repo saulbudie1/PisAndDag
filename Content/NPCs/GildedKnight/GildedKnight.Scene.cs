@@ -171,7 +171,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             if (!Authority)
                 return;
 
-            rest = 50;
+            rest = 90;
             Go(Act.Stance);
         }
 
@@ -313,7 +313,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             if (Timer >= KnightMoves.ChangeTicks)
             {
                 second = true;
-                rest = 20;
+                rest = 60;
                 Go(Act.Stance);
             }
         }
@@ -321,9 +321,6 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         // ============================================================
         // HIS END
         // ============================================================
-
-        /// <summary>The ticks of his dissolving: from the fade cue to nothing left of him.</summary>
-        public const int DissolveTicks = 150;
 
         /// <summary>The Sun, let fall: where its grip is, the way it points, how fast it falls and turns, and whether it is down.</summary>
         internal Vector2 droppedGrip;
@@ -333,14 +330,30 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         internal bool dropped;
         private bool droppedDown;
 
-        /// <summary>How far through his dissolving he is, 0 to 1 (drawing).</summary>
-        public float Dissolve => State == Act.End && Timer > KnightMoves.EndFade ? MathHelper.Clamp((Timer - KnightMoves.EndFade) / (float)DissolveTicks, 0f, 1f) : 0f;
+        /// <summary>How far the gold has smouldered off him, 0 to 1, from the fade cue to his coming apart (drawing and its effects).</summary>
+        public float Smoulder => State == Act.End && Timer > KnightMoves.EndFade
+            ? MathHelper.Clamp((Timer - KnightMoves.EndFade) / (float)(KnightMoves.EndApart - KnightMoves.EndFade), 0f, 1f) : 0f;
+
+        /// <summary>Come apart: nothing of him is drawn now but the golden grains it made of him.</summary>
+        public bool Apart => State == Act.End && Timer >= KnightMoves.EndApart;
+
+        /// <summary>The Sun where it fell, gone after him into grains.</summary>
+        public bool SunApart => State == Act.End && Timer >= KnightMoves.EndSunApart;
+
+        /// <summary>This machine has made the grains of him, and of the Sun.</summary>
+        private bool cameApart;
+        private bool sunCameApart;
+
+        /// <summary>How far into his end's pose he starts: its first knee if a stun had him kneeling already.</summary>
+        private int endFrom;
 
         /// <summary>
-        /// His end, by request: falls to his knees first and perishes into light. Rocked by the
-        /// last blow; the Sun falls from his hand; he stumbles and drives the Grace into the ground
-        /// before him; one knee, then the other, both hands on its hilt; his head bows; and the
-        /// light lifts off him until nothing of him is left but light, and a flash.
+        /// His end, by request: falls to his knees first and perishes, slowly (three times as long
+        /// as it first was) and without a sound. Rocked by the last blow; the Sun falls from his
+        /// hand; he stumbles and drives the Grace into the ground before him; one knee, then the
+        /// other, both hands on its hilt; his head bows; then, as the Guide perishes but in gold
+        /// (by request), the gold smoulders off him, more and more, and he comes apart into golden
+        /// grains that hold his shape a moment and drift away; the Sun in the grass after him.
         /// </summary>
         private void EndTick()
         {
@@ -349,13 +362,15 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             NPC.dontTakeDamage = true;
             OutOfTheGround();
 
+            // Killed kneeling in a stun, he does not get up to fall again: his end goes on from its
+            // first knee (endFrom ticks into it); its moments after that keep their times.
             KnightTrack track = KnightMoves.End;
-            float clock = Timer;
+            float clock = Timer + endFrom;
             KnightRig.Pose p = track.Sample(clock);
 
-            Pose = clock < 4f ? KnightTrack.Between(from, p, clock / 4f) : p;
+            Pose = Timer < 12 ? KnightTrack.Between(from, p, Timer / 12f) : p;
 
-            Vector2 go = track.Travel(clock);
+            Vector2 go = track.Travel(clock) - track.Travel(endFrom);
             NPC.velocity.X = (go.X - travelled.X) * facing;
             travelled = go;
 
@@ -367,13 +382,15 @@ namespace PisAndDag.Content.NPCs.GildedKnight
                 dropped = true;
                 droppedGrip = frame.SunGrip;
                 droppedAngle = frame.SunBlade;
-                droppedVelocity = new Vector2(facing * 1.2f, -1.5f);
-                droppedSpin = facing * 0.12f;
+
+                // As slowly as the rest of his end goes.
+                droppedVelocity = new Vector2(facing * 0.5f, -0.6f);
+                droppedSpin = facing * 0.045f;
             }
 
             if (dropped && !droppedDown)
             {
-                droppedVelocity.Y += 0.3f;
+                droppedVelocity.Y += 0.1f;
                 droppedGrip += droppedVelocity;
                 droppedAngle += droppedSpin;
 
@@ -391,34 +408,48 @@ namespace PisAndDag.Content.NPCs.GildedKnight
 
             foreach ((int Tick, Cue What) cue in KnightMoves.EndCues)
             {
-                if (At(cue.Tick))
+                // The pose's moments by the pose's clock (from where a stun left him); the gold's by his own.
+                int at = cue.Tick < KnightMoves.EndFade ? cue.Tick - endFrom : cue.Tick;
+
+                if (at >= 0 && At(at))
                     Cued(cue.What, null);
             }
 
             if (!Main.dedServ)
             {
-                float fade = Dissolve;
+                float smoulder = Smoulder;
 
-                if (fade > 0f)
-                    KnightFx.Dissolving(this, fade);
+                if (smoulder > 0f && !Apart)
+                    KnightFx.Smouldering(this, smoulder);
 
                 if (InField(Main.LocalPlayer) || Vector2.Distance(Main.LocalPlayer.Center, NPC.Center) < 1400f)
                 {
                     // The camera goes to him and leans in as he kneels and comes apart.
-                    if (Timer > KnightMoves.EndPlant && Timer < KnightMoves.EndTicks - 10)
+                    if (Timer > KnightMoves.EndPlant && Timer < KnightMoves.EndTicks - 30)
                     {
-                        float w = Smooth((Timer - KnightMoves.EndPlant) / 60f) * 0.7f;
+                        float w = Smooth((Timer - KnightMoves.EndPlant) / 180f) * 0.7f;
                         PisPlayer.BlendCamera(Feet + new Vector2(0f, -30f), w);
-                        Cinematic.Lean(1.2f, 0.03f);
+                        Cinematic.Lean(1.2f, 0.012f);
                         Cinematic.Frame();
                     }
 
-                    if (At(KnightMoves.EndTicks - 10))
-                        PisPlayer.PanHome(Feet + new Vector2(0f, -30f), 70);
+                    if (At(KnightMoves.EndTicks - 30))
+                        PisPlayer.PanHome(Feet + new Vector2(0f, -30f), 120);
                 }
 
-                if (At(KnightMoves.EndFade + DissolveTicks - 4))
-                    KnightFx.Perished(this);
+                // Once each on this machine, whenever it gets there (a client put a long way forward
+                // by the server still sees him come apart).
+                if (Timer >= KnightMoves.EndApart && !cameApart)
+                {
+                    cameApart = true;
+                    CameApart();
+                }
+
+                if (Timer >= KnightMoves.EndSunApart && !sunCameApart)
+                {
+                    sunCameApart = true;
+                    SunComesApart();
+                }
             }
 
             if (Authority && Timer >= KnightMoves.EndTicks)
@@ -428,6 +459,8 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         /// <summary>Gone, where the world is decided: the kill counted, his loot dropped, the world told.</summary>
         private void Perish()
         {
+            // A boss as he dies (the bar went when he came apart): the game's potions and its word that he is beaten.
+            NPC.boss = true;
             gone = true;
             NPC.dontTakeDamage = false;
             NPC.life = 0;

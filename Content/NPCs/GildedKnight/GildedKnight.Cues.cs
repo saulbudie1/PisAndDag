@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using PisAndDag.Content.Combat;
 using PisAndDag.Content.PADplayer;
 using PisAndDag.Content.Particles;
@@ -167,6 +168,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
                 case Cue.Fade:
                     Fading();
                     break;
+
             }
         }
 
@@ -230,8 +232,8 @@ namespace PisAndDag.Content.NPCs.GildedKnight
 
             if (State == Act.End)
             {
+                // The Grace driven in at his end: seen, not heard.
                 Vector2 at = new Vector2(f.GraceTip.X, ground);
-                KnightSounds.Play(KnightSounds.Slam with { Volume = 0.55f, Pitch = 0.1f }, at);
                 KnightFx.Sparks(at + new Vector2(0f, -4f), new Vector2(-facing * 0.3f, -1f), 10, KnightFx.Gold, 4.5f, 0.9f);
                 KnightFx.Dust(at, 1f);
                 GroundWave.Slam(at, 10f, 2, 5f, 14);
@@ -554,7 +556,10 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             if (Main.dedServ)
                 return;
 
-            KnightSounds.Play(KnightSounds.Clash with { Pitch = -0.3f }, Chest);
+            // (His end is without a sound: by request.)
+            if (State != Act.End)
+                KnightSounds.Play(KnightSounds.Clash with { Pitch = -0.3f }, Chest);
+
             KnightFx.Gilt(Chest + new Vector2(0f, -8f), State == Act.End ? 9 : 6, 12f, new Vector2(-facing * 1.6f, -1.2f));
             KnightFx.Sparks(Chest, new Vector2(-facing, -0.4f), 8, KnightFx.Gold, 5f, 0.9f);
             KnightFx.Shake(Chest, State == Act.End ? 6f : 4f, 14);
@@ -775,21 +780,79 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             if (Main.dedServ)
                 return;
 
-            KnightSounds.Play(KnightSounds.Kneel, Feet);
+            // His end is without a sound (by request); the stun's knee has one.
+            if (State != Act.End)
+                KnightSounds.Play(KnightSounds.Kneel, Feet);
+
             KnightFx.Dust(Feet + new Vector2(-facing * 8f, 0f), 0.9f);
             KnightFx.Gilt(Chest, 3, 10f, new Vector2(0f, -1f));
             KnightFx.Shake(Feet, 3f, 10);
         }
 
-        /// <summary>The light begins to lift off him (the drawing takes him apart from here: Dissolve).</summary>
+        /// <summary>The gold begins to smoulder off him (Smoulder, and KnightFx.Smouldering every tick from here). No sound.</summary>
         private void Fading()
         {
             if (Main.dedServ)
                 return;
 
-            KnightSounds.Play(KnightSounds.Dissolve, Chest);
-            KnightFx.Bloom(Chest, KnightFx.Pale, 1.2f, 60);
-            KnightFx.Flash(Chest, new Color(255, 236, 190), 0.08f);
+            KnightFx.Bloom(Chest + new Vector2(0f, 14f), KnightFx.Gold * 0.6f, 0.9f, 90);
+        }
+
+        /// <summary>
+        /// He comes apart, as the Guide does but in gold (by request): his picture as it was last
+        /// painted, every filled pixel of it a golden grain where it was drawn (KnightGrain); from
+        /// now nothing of him is drawn but those (Apart). On every machine that draws him; no sound.
+        /// </summary>
+        private void CameApart()
+        {
+            if (Main.dedServ)
+                return;
+
+            Texture2D body = KnightCanvas.Body(NPC.whoAmI);
+            Color[] pixels = KnightGrain.Read(body);
+
+            if (pixels != null)
+            {
+                // Where SpriteBatch put each of its pixels: his feet at the picture's origin, side on
+                // (he is still), cut off at the ground as he is drawn.
+                Vector2 feet = Feet;
+                KnightGrain.FromPixels(pixels, body.Width, body.Height, 0, CanvasBottom(),
+                    (x, y) => feet + new Vector2(x - KnightCanvas.Origin.X, y - KnightCanvas.Origin.Y), new Vector2(0f, -0.2f));
+            }
+
+            KnightFx.Apart(this);
+        }
+
+        /// <summary>The Sun's picture's pixels, read once (it never changes).</summary>
+        private static Color[] sunPixels;
+
+        /// <summary>The Sun where it fell goes after him: its picture as it lies, into golden grains.</summary>
+        private void SunComesApart()
+        {
+            if (Main.dedServ || !dropped)
+                return;
+
+            Texture2D tex = KnightCanvas.Piece(KnightRig.SunBlade);
+
+            if (tex == null)
+                return;
+
+            sunPixels ??= KnightGrain.Read(tex);
+
+            if (sunPixels == null)
+                return;
+
+            // As DrawDropped lays it: SpriteBatch mirrors the picture inside its quad, not the quad.
+            KnightRig.Part p = KnightRig.LooseSword(KnightRig.Sun, droppedGrip, droppedAngle);
+            int width = tex.Width;
+
+            KnightGrain.FromPixels(sunPixels, width, tex.Height, 0, tex.Height, (x, y) =>
+            {
+                Vector2 local = (new Vector2(p.FlipX ? width - x : x, y) - p.Origin) * p.Scale;
+                return p.At + local.RotatedBy(p.Rotation);
+            }, new Vector2(0f, -0.15f), KnightGrain.SunGrains);
+
+            KnightFx.Bloom(droppedGrip + droppedAngle.ToRotationVector2() * 30f, KnightFx.Gold * 0.5f, 0.7f, 50);
         }
     }
 }

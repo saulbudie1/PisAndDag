@@ -17,7 +17,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
     /// narrowed as he turns, cut off at the ground a driven blade goes into; the light over it,
     /// as light; and, round them, what his blades leave in the air behind them, the shapes he
     /// leaves when he moves fast, the long blade, the lancet's line, the ward of gold, the Sun
-    /// lying where it fell, and at his end the body coming apart into light, the highest of him first.
+    /// lying where it fell; and at his end, until he comes apart into golden grains (KnightGrain), the gold warming on him.
     /// </summary>
     public partial class GildedKnight
     {
@@ -144,7 +144,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             if (State == Act.End)
             {
                 sunWant = 0f;
-                graceWant = second ? 0.5f * (1f - Dissolve) : 0f;
+                graceWant = second ? 0.5f * (1f - Smoulder) : 0f;
             }
 
             sunLit = sunLit < sunWant ? Math.Min(sunWant, sunLit + 0.06f) : Math.Max(sunWant, sunLit - 0.035f);
@@ -194,19 +194,24 @@ namespace PisAndDag.Content.NPCs.GildedKnight
                 if (f.SunOut && Main.rand.NextBool(2))
                 {
                     Vector2 at = Vector2.Lerp(f.SunGuard, f.SunTip, Main.rand.NextFloat(0.15f, 1f));
-                    PADParticleHandler.SpawnParticle(new Particles.Ember(at, new Vector2(Main.rand.NextFloat(-0.4f, 0.4f), -Main.rand.NextFloat(0.6f, 1.6f)),
+
+                    // Not out of the ground a blade is in (his stun's, the plunge's).
+                    if (at.Y < Feet.Y - 2f)
+                        PADParticleHandler.SpawnParticle(new Particles.Ember(at, new Vector2(Main.rand.NextFloat(-0.4f, 0.4f), -Main.rand.NextFloat(0.6f, 1.6f)),
                         Main.rand.NextBool(3) ? KnightFx.Fire : KnightFx.Ember, Main.rand.NextFloat(0.4f, 0.8f), Main.rand.Next(20, 40), 0.06f));
                 }
 
                 if (f.GraceOut && Main.rand.NextBool(5))
                 {
                     Vector2 at = Vector2.Lerp(f.GraceGuard, f.GraceTip, Main.rand.NextFloat(0.15f, 1f));
-                    PADParticleHandler.SpawnParticle(new GraceMote(at, KnightFx.White, Main.rand.Next(30, 60)));
+
+                    if (at.Y < Feet.Y - 2f)
+                        PADParticleHandler.SpawnParticle(new GraceMote(at, KnightFx.White, Main.rand.Next(30, 60)));
                 }
             }
 
-            // ---- the Sun where it fell, going into light with him
-            if (dropped && State == Act.End && Dissolve > 0.5f && Dissolve < 0.98f && Main.rand.NextBool(2))
+            // ---- the Sun where it fell, smouldering with him
+            if (dropped && State == Act.End && Smoulder > 0.3f && !SunApart && Main.rand.NextBool(3))
             {
                 Vector2 along = droppedAngle.ToRotationVector2();
                 Vector2 at = droppedGrip + along * Main.rand.NextFloat(0f, KnightRig.GripToTip);
@@ -336,6 +341,15 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             if (shown <= 0.01f)
                 return false;
 
+            // Come apart: he is the golden grains now (KnightGrain); only the Sun in the grass is left, until it goes after him.
+            if (Apart)
+            {
+                if (dropped && !SunApart)
+                    DrawDropped(spriteBatch, screenPos, shown);
+
+                return false;
+            }
+
             KnightRig.Frame f = KnightRig.Build(Pose, Feet + Lift, facing, null, SunSwing, GraceSwing);
             Color light = drawColor * shown;
 
@@ -353,7 +367,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             // What the blades leave behind them, the long blade, the ward: light, over him.
             spriteBatch.End();
 
-            if (Dissolve < 0.5f)
+            if (Smoulder < 0.5f)
             {
                 DrawTrail(KnightRig.Sun, shown);
                 DrawTrail(KnightRig.Grace, shown);
@@ -381,7 +395,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         /// <summary>
         /// His picture laid on the world: the body in the light where he stands, its light over it
         /// as light; narrowed about the line through his feet as he turns; cut off at the ground
-        /// under him. At his end, in squares that lift off as light, the highest first.
+        /// under him. At his end, warming to gold as the gold smoulders off him.
         /// </summary>
         private void DrawBody(SpriteBatch spriteBatch, Vector2 screenPos, KnightRig.Frame f, Color light, float shown)
         {
@@ -394,122 +408,37 @@ namespace PisAndDag.Content.NPCs.GildedKnight
                 return;
             }
 
-            // Down to the ground under him and two rows into it; in the air, all of it.
-            float ground = GroundUnder(new Vector2(Feet.X, Feet.Y - 8f), out bool found);
-            int below = found ? (int)Math.Round(ground - Feet.Y) + 2 : KnightCanvas.Below;
-            below = Math.Clamp(below, 0, KnightCanvas.Below);
-
-            Rectangle source = new Rectangle(0, 0, KnightCanvas.Width, (int)KnightCanvas.Origin.Y + below);
+            Rectangle source = new Rectangle(0, 0, KnightCanvas.Width, CanvasBottom());
             Vector2 at = Feet - screenPos;
             Vector2 scale = new Vector2(Math.Max(KnightRig.Thin, f.Turn), 1f);
 
-            float dissolve = Dissolve;
+            spriteBatch.Draw(body, at, source, light, 0f, KnightCanvas.Origin, scale, SpriteEffects.None, 0f);
 
-            if (dissolve <= 0f)
-            {
-                spriteBatch.Draw(body, at, source, light, 0f, KnightCanvas.Origin, scale, SpriteEffects.None, 0f);
+            if (glow != null)
+                spriteBatch.Draw(glow, at, source, new Color(255, 255, 255, 0) * shown, 0f, KnightCanvas.Origin, scale, SpriteEffects.None, 0f);
 
-                if (glow != null)
-                    spriteBatch.Draw(glow, at, source, new Color(255, 255, 255, 0) * shown, 0f, KnightCanvas.Origin, scale, SpriteEffects.None, 0f);
+            // The ward: a sheen of gold over all of him while it holds.
+            if (wardShown > 0.01f)
+                spriteBatch.Draw(body, at, source, Lit(KnightFx.Gold, 0.45f * wardShown * shown), 0f, KnightCanvas.Origin, scale, SpriteEffects.None, 0f);
 
-                // The ward: a sheen of gold over all of him while it holds.
-                if (wardShown > 0.01f)
-                    spriteBatch.Draw(body, at, source, Lit(KnightFx.Gold, 0.45f * wardShown * shown), 0f, KnightCanvas.Origin, scale, SpriteEffects.None, 0f);
+            // His end: warming to gold as the gold smoulders off him, before he comes apart into it.
+            float warm = Smoulder;
 
-                return;
-            }
+            if (warm > 0.01f)
+                spriteBatch.Draw(body, at, source, Lit(Color.Lerp(KnightFx.Gold, KnightFx.Pale, warm), 0.6f * warm * shown), 0f, KnightCanvas.Origin, scale, SpriteEffects.None, 0f);
+        }
 
-            // From the top of him (his plume over his crown) down: his kneeling height, not the canvas's.
-            float top = KnightCanvas.Origin.Y + (f.CrownAt.Y - (Feet.Y + Lift.Y)) - 24f;
-
-            DrawDissolving(spriteBatch, body, glow, at, source, scale, light, shown, dissolve, top);
+        /// <summary>The rows of his picture that are drawn: down to the ground under him and two rows into it; in the air, all of it.</summary>
+        private int CanvasBottom()
+        {
+            float ground = GroundUnder(new Vector2(Feet.X, Feet.Y - 8f), out bool found);
+            int below = found ? (int)Math.Round(ground - Feet.Y) + 2 : KnightCanvas.Below;
+            below = Math.Clamp(below, 0, KnightCanvas.Below);
+            return (int)KnightCanvas.Origin.Y + below;
         }
 
         /// <summary>How far under where he stands he is drawn, settling up a step he has just walked up (the game's gfxOffY).</summary>
         private Vector2 Lift => new Vector2(0f, NPC.gfxOffY);
-
-        /// <summary>The size of the squares he comes apart in, in pixels of his picture.</summary>
-        private const int Bit = 4;
-
-        /// <summary>
-        /// When each square goes, on the dissolve's way from 0 to 1: the top of him at once, the
-        /// soles last, with chance in it; each lifting off over Lifts. The latest is gone at
-        /// DissolveFirst + DissolveDown + DissolveChance + Lifts, which is under 1.
-        /// </summary>
-        private const float DissolveFirst = 0.03f;
-        private const float DissolveDown = 0.5f;
-        private const float DissolveChance = 0.22f;
-        private const float Lifts = 0.22f;
-
-        /// <summary>
-        /// Coming apart into light: his picture in small squares; each, at its moment (the higher
-        /// on him the sooner, with chance in it), first brightens to gold, then lifts off drifting
-        /// up and sideways as light and fades; what is still on him glows more and more, gold
-        /// going to white.
-        /// </summary>
-        private void DrawDissolving(SpriteBatch spriteBatch, Texture2D body, Texture2D glow, Vector2 at, Rectangle source, Vector2 scale, Color light, float shown, float dissolve, float top)
-        {
-            // Only the squares about him: from over his head to his feet, a body's width either side.
-            // (Anything of the picture over the top of him goes with the top of him.)
-            int x0 = (int)KnightCanvas.Origin.X - 90, x1 = (int)KnightCanvas.Origin.X + 90;
-            int y1 = source.Bottom;
-            int y0 = (int)MathHelper.Clamp(top, 0f, y1 - 24f);
-            int yStart = Math.Max(0, y0 - 40);
-            float span = Math.Max(1f, y1 - y0);
-
-            for (int y = yStart; y < y1; y += Bit)
-            {
-                for (int x = x0; x < x1; x += Bit)
-                {
-                    // The highest first: the share of the way up him, and a little chance. The last
-                    // square has lifted off (when + Lifts) just as the dissolve comes to its end.
-                    float high = MathHelper.Clamp(1f - (y - y0) / span, 0f, 1f);
-                    float rnd = Hash(x, y);
-                    float when = DissolveFirst + DissolveDown * (1f - high) + DissolveChance * rnd;
-
-                    Rectangle bit = new Rectangle(x, y, Bit, Math.Min(Bit, y1 - y));
-                    Vector2 local = new Vector2(x - KnightCanvas.Origin.X, y - KnightCanvas.Origin.Y) * scale;
-                    Vector2 place = at + local;
-
-                    float into = (dissolve - when) / Lifts;
-
-                    if (into <= 0f)
-                    {
-                        // Still on him, warming to gold as his end comes.
-                        float warm = MathHelper.Clamp(dissolve * 1.6f, 0f, 1f);
-                        spriteBatch.Draw(body, place, bit, light, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
-                        spriteBatch.Draw(body, place, bit, Lit(Color.Lerp(KnightFx.Gold, KnightFx.White, warm), 0.55f * warm * shown), 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
-
-                        if (glow != null)
-                            spriteBatch.Draw(glow, place, bit, new Color(255, 255, 255, 0) * shown, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
-
-                        continue;
-                    }
-
-                    if (into >= 1f)
-                        continue;
-
-                    // Lifting off: up, drifting, light only, fading.
-                    float lift = into * into * 46f + into * 10f;
-                    float drift = (rnd - 0.5f) * 30f * into + (float)Math.Sin(rnd * 40f + into * 6f) * 3f;
-                    Color c = Lit(Color.Lerp(KnightFx.Gold, KnightFx.White, into), (1f - into) * 1.2f * shown);
-
-                    spriteBatch.Draw(body, place + new Vector2(drift, -lift), bit, c, 0f, Vector2.Zero, scale * (1f - 0.4f * into), SpriteEffects.None, 0f);
-                }
-            }
-        }
-
-        /// <summary>A number from 0 to 1 for a square of his picture, the same every frame.</summary>
-        private static float Hash(int x, int y)
-        {
-            unchecked
-            {
-                uint h = (uint)(x * 374761393 + y * 668265263);
-                h = (h ^ (h >> 13)) * 1274126177u;
-                h ^= h >> 16;
-                return (h & 0xFFFF) / 65535f;
-            }
-        }
 
         /// <summary>His pieces drawn straight on the world, in order, with nothing more: for a frame his own picture is not ready for (his first).</summary>
         private void DrawPlain(SpriteBatch spriteBatch, Vector2 screenPos, Color light)
@@ -601,11 +530,8 @@ namespace PisAndDag.Content.NPCs.GildedKnight
 
             KnightRig.Part p = KnightRig.LooseSword(KnightRig.Sun, droppedGrip, droppedAngle);
 
-            // It goes into light with him, a little after the rest of him.
-            float left = 1f - MathHelper.Clamp((Dissolve - 0.55f) / 0.4f, 0f, 1f);
-            shown *= left;
-
-            if (shown <= 0.01f)
+            // It smoulders with him, and goes into grains a little after him (SunComesApart).
+            if (SunApart)
                 return;
 
             Color light = Lighting.GetColor(droppedGrip.ToTileCoordinates()) * shown;
@@ -613,18 +539,20 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             // Down, its point in the turf: cut off at the ground as he is.
             spriteBatch.Draw(tex, p.At - screenPos, null, light, p.Rotation, p.Origin, p.Scale, p.FlipX ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0f);
 
-            float ember = second ? 0.5f * (1f - Dissolve) : 0f;
+            float ember = second ? 0.5f * (1f - Smoulder) : 0f;
 
             if (glow != null && ember > 0.01f)
                 spriteBatch.Draw(glow, p.At - screenPos, null, Lit(KnightFx.Fire, ember * shown), p.Rotation, p.Origin, p.Scale, p.FlipX ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0f);
 
-            // Going: white light over it as it goes.
-            float going = 1f - left;
+            // Warming to gold with him.
+            float going = Smoulder * 0.7f;
 
-            if (glow != null && going > 0.01f)
+            if (going > 0.01f)
             {
-                spriteBatch.Draw(tex, p.At - screenPos, null, Lit(KnightFx.Pale, going * 1.4f * shown), p.Rotation, p.Origin, p.Scale, p.FlipX ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0f);
-                spriteBatch.Draw(glow, p.At - screenPos, null, Lit(KnightFx.White, going * shown), p.Rotation, p.Origin, p.Scale, p.FlipX ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0f);
+                spriteBatch.Draw(tex, p.At - screenPos, null, Lit(Color.Lerp(KnightFx.Gold, KnightFx.Pale, Smoulder), going * shown), p.Rotation, p.Origin, p.Scale, p.FlipX ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0f);
+
+                if (glow != null)
+                    spriteBatch.Draw(glow, p.At - screenPos, null, Lit(KnightFx.Gold, 0.6f * going * shown), p.Rotation, p.Origin, p.Scale, p.FlipX ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0f);
             }
         }
 
@@ -753,7 +681,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         /// <summary>The light in the slit of his visor: gold, brighter and paler in his second half; going out at his end.</summary>
         private void DrawEye(SpriteBatch spriteBatch, KnightRig.Frame f, float shown)
         {
-            float a = (second ? 0.95f : 0.6f) * shown * (State == Act.End ? Math.Max(0f, 1f - (Timer - KnightMoves.EndKnees) / 60f) : 1f);
+            float a = (second ? 0.95f : 0.6f) * shown * (State == Act.End ? Math.Max(0f, 1f - (Timer - KnightMoves.EndKnees) / 180f) : 1f);
             a *= 0.85f + 0.15f * (float)Math.Sin(Main.GlobalTimeWrappedHourly * 5f + NPC.whoAmI);
 
             if (a <= 0.01f)
@@ -958,7 +886,16 @@ namespace PisAndDag.Content.NPCs.GildedKnight
                 {
                     KnightTrack track = State == Act.Change ? KnightMoves.Change : KnightMoves.End;
                     KnightRig.Pose p = track.Sample(clock);
-                    pose = clock < (State == Act.End ? 4f : 6f) ? KnightTrack.Between(from, p, clock / (State == Act.End ? 4f : 6f)) : p;
+                    if (State == Act.End)
+                    {
+                        // As EndTick has it: its pose clock endFrom ahead, gone into over twelve ticks.
+                        KnightRig.Pose q = track.Sample(clock + endFrom);
+                        pose = clock < 12f ? KnightTrack.Between(from, q, clock / 12f) : q;
+                        feet = Feet + new Vector2((track.Travel(clock + endFrom).X - track.Travel(now + endFrom).X) * facing, 0f);
+                        return true;
+                    }
+
+                    pose = clock < 6f ? KnightTrack.Between(from, p, clock / 6f) : p;
                     feet = Feet + new Vector2((track.Travel(clock).X - track.Travel(now).X) * facing, 0f);
                     return true;
                 }

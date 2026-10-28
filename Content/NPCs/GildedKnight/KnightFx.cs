@@ -326,60 +326,62 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             if (Off)
                 return;
 
-            KnightSounds.Play(KnightSounds.Clash with { Volume = 0.5f, Pitch = -0.2f }, grip);
+            // Only at his end, which is without a sound (by request).
             Sparks(grip + new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle)) * 40f, -Vector2.UnitY, 6, Gold, 3f, 1.2f);
             Dust(grip + new Vector2((float)Math.Cos(angle) * 30f, 4f), 0.5f);
         }
 
-        /// <summary>A tick of his coming apart into light: gold motes and leaf lifting off him, light about him.</summary>
-        public static void Dissolving(GildedKnight knight, float fade)
+        /// <summary>
+        /// A tick of the gold smouldering off him at his end, as the Guide smoulders before he comes
+        /// apart but in gold: smoke of gold building on him, a wisp at first and pouring by the end
+        /// (<paramref name="smoulder"/>, 0 to 1), gold motes and leaf lifting off, his light rising.
+        /// </summary>
+        public static void Smouldering(GildedKnight knight, float smoulder)
         {
             if (Off)
                 return;
 
-            NPC npc = knight.NPC;
-            float rate = 0.3f + 1.4f * (float)Math.Sin(fade * MathHelper.Pi);
+            Vector2 middle = knight.Feet + new Vector2(0f, -30f);
 
-            if (Main.rand.NextFloat() < rate)
-                Spawn(new GraceMote(npc.Center + new Vector2(Main.rand.NextFloat(-18f, 18f), Main.rand.NextFloat(-36f, 30f)), Pale, Main.rand.Next(70, 130)));
+            // The ramp is the whole point: a steady plume would say nothing of what is coming. The
+            // fraction of a puff a tick is spent as a chance (GuideSacrifice's way).
+            float rate = MathHelper.Lerp(0.04f, 0.55f, smoulder * smoulder);
+            int puffs = (int)rate;
 
-            if (Main.rand.NextFloat() < rate * 0.5f)
-                Gilt(npc.Center + new Vector2(0f, -10f), 1, 16f, new Vector2(0f, -1.6f));
+            if (Main.rand.NextFloat() < rate - puffs)
+                puffs++;
 
-            if (Main.rand.NextFloat() < rate * 0.6f)
-                Spawn(new SparkShard(npc.Center + new Vector2(Main.rand.NextFloat(-16f, 16f), Main.rand.NextFloat(-30f, 30f)), new Vector2(0f, -Main.rand.NextFloat(1.5f, 3.5f)),
-                    Pale, 6f, 1.3f, 18f, Main.rand.Next(20, 40), false));
-
-            Lighting.AddLight(npc.Center, new Vector3(1f, 0.86f, 0.55f) * (0.6f + 1.2f * fade));
-        }
-
-        /// <summary>Nothing of him left but light: a flash, a pillar of it, rays, a ring, motes rising.</summary>
-        public static void Perished(GildedKnight knight)
-        {
-            if (Off)
-                return;
-
-            NPC npc = knight.NPC;
-            Vector2 at = npc.Center;
-
-            KnightSounds.Play(KnightSounds.Flash, at);
-            KnightFx.Flash(at, new Color(255, 230, 170), 0.32f);
-            Bloom(at, White, 2.2f, 70);
-            Bloom(at, Gold, 1.4f, 90);
-            Glint(at, 90f, 60, White);
-            Ring(at, 20f, 260f, 50, Gold);
-            Ring(at, 10f, 160f, 40, White * 0.7f);
-
-            for (int i = 0; i < 40; i++)
-                Spawn(new GraceMote(at + Rand(30f), i % 3 == 0 ? White : Gold, Main.rand.Next(90, 180)));
-
-            for (int i = 0; i < 18; i++)
+            for (int i = 0; i < puffs; i++)
             {
-                Vector2 v = new Vector2(0f, -1f).RotatedBy(Main.rand.NextFloat(-1.2f, 1.2f)) * Main.rand.NextFloat(3f, 9f);
-                Spawn(new SparkShard(at, v, Pale, 10f, 2f, 40f, Main.rand.Next(30, 60), false));
+                Vector2 at = middle + new Vector2(Main.rand.NextFloat(-18f, 18f), Main.rand.NextFloat(-28f, 26f));
+                Vector2 drift = new Vector2(Main.rand.NextFloat(-0.3f, 0.3f), -Main.rand.NextFloat(0.5f, 1.4f) * (0.6f + smoulder));
+                Spawn(new FlameSmoke(at, drift, new Color(255, 206, 120), Main.rand.Next(70, 110), 8f, Main.rand.NextFloat(24f, 36f), 0.16f + 0.2f * smoulder));
             }
 
-            KnightFx.Shake(at, 6f, 30);
+            if (Main.rand.NextFloat() < 0.1f + 0.6f * smoulder)
+                Spawn(new GraceMote(middle + new Vector2(Main.rand.NextFloat(-20f, 20f), Main.rand.NextFloat(-32f, 28f)), Main.rand.NextBool(3) ? Pale : Gold, Main.rand.Next(80, 140)));
+
+            if (Main.rand.NextFloat() < 0.03f + 0.15f * smoulder)
+                Gilt(middle + new Vector2(0f, -12f), 1, 16f, new Vector2(0f, -0.8f));
+
+            Lighting.AddLight(middle, new Vector3(1f, 0.8f, 0.45f) * (0.4f + 0.8f * smoulder));
+        }
+
+        /// <summary>He comes apart into golden grains (the grains are KnightGrain): a soft gold light where he knelt, a breath of motes. No flash, no sound.</summary>
+        public static void Apart(GildedKnight knight)
+        {
+            if (Off)
+                return;
+
+            Vector2 middle = knight.Feet + new Vector2(0f, -30f);
+
+            Bloom(middle, Gold * 0.7f, 1.6f, 90);
+            Bloom(middle, Pale * 0.5f, 0.9f, 60);
+
+            for (int i = 0; i < 16; i++)
+                Spawn(new GraceMote(middle + Rand(26f), i % 3 == 0 ? Pale : Gold, Main.rand.Next(100, 180)));
+
+            KnightFx.Shake(middle, 2.5f, 20);
         }
     }
 }

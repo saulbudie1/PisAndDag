@@ -24,7 +24,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         public static Move Wheel()
         {
             KnightTrack t = new KnightTrack(Guard)
-                .At(WheelWind, Ease.SineOut).Near(96f, 31f).Far(-96f, 31f).SunTo(4f, 1).GraceTo(176f, 1).Lean(10f).Nod(4f).Legs(28f, -30f, 34f, 35f);
+                .At(WheelWind, Ease.SineOut).Near(80f, 31f).Far(-80f, 31f).SunTo(14f, 1).GraceTo(166f, 1).Lean(10f).Nod(4f).Legs(28f, -30f, 34f, 35f);
 
             // Twice round: the whole of him seen turning, eight steps of the turn.
             for (int k = 1; k <= 8; k++)
@@ -149,6 +149,28 @@ namespace PisAndDag.Content.NPCs.GildedKnight
 
             return new Move("Reel", t, null, new[] { (0, Cue.Reel), (14, Cue.Step) }, ReelTicks);
         }
+
+        /// <summary>
+        /// Every third parry (the parry's own count, as for anything that stands on the ground): down
+        /// on a knee for five seconds (by request), open to the riposte (PADStaggerNPC), the stun's
+        /// stars over him. StunDown: down by then.
+        /// </summary>
+        public const int StunTicks = 300;
+        public const int StunDown = 26;
+
+        /// <summary>
+        /// The stun: rocked back off the parry with both blades flung out, then down on one knee, the
+        /// blades let hang with their points in the turf, his head hanging; held, swaying a little
+        /// (GildedKnight.StunnedTick), until it wears off or the riposte wakes him.
+        /// </summary>
+        public static KnightTrack Stun => stun ??= new KnightTrack(Guard)
+            .At(8f, Ease.ExpOut).Near(140f, 30f).SunTo(-120f, -1).Far(-60f, 29f).GraceTo(200f, 1).Lean(-16f).Nod(-16f).Legs(28f, -8f, 35f, KnightRig.LegLong).Go(-22f)
+            .At(StunDown, Ease.SineInOut).Near(28f, 29f).SunTo(74f, 1).Far(-24f, 29f).GraceTo(108f, -1).Lean(18f).Nod(26f).Legs(37f, -53f, 30f, KnightRig.LegBent).Rise(0f).Go(-30f)
+            .At(StunTicks, Ease.SineInOut).Lean(20f).Nod(30f);
+
+        private static KnightTrack stun;
+
+        public static readonly (int Tick, Cue What)[] StunCues = { (0, Cue.Reel), (StunDown - 4, Cue.Kneel) };
 
         public const int BackStepTicks = 34;
 
@@ -381,38 +403,48 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             (ChangeSpin + 6, Cue.Wheel), (ChangePyres - 4, Cue.HeavySwing), (ChangePyres, Cue.Pyres),
         };
 
-        public const int EndPlant = 40;
-        public const int EndKnees = 80;
-        public const int EndBow = 120;
-        public const int EndFade = 150;
-        public const int EndTicks = 330;
+        /// <summary>
+        /// His end's moments: three times as long as they first were (by request: "slower, like last
+        /// three times"). The Grace planted, both knees down, his head bowed; the gold smouldering off
+        /// him (EndFade); come apart into golden grains (EndApart), the Sun on the ground after him
+        /// (EndSunApart); gone (EndTicks), the grains drifting off.
+        /// </summary>
+        public const int EndPlant = 120;
+        public const int EndKnees = 240;
+        public const int EndBow = 360;
+        public const int EndFade = 450;
+        public const int EndApart = 720;
+        public const int EndSunApart = 750;
+        public const int EndTicks = 990;
 
         /// <summary>
         /// His end, by request "falls down knees first and perish into light": the last blow rocks
         /// him; the Sun falls from his hand; he stumbles and drives the Grace into the ground before
-        /// him; sinks onto it, both knees down, both hands on its hilt; his head bows; and the light
-        /// lifts off him until there is nothing left of him but light (the fight's).
+        /// him; sinks onto it, both knees down, both hands on its hilt; his head bows; then, as the
+        /// Guide perishes but in gold (by request), the gold smoulders off him and he comes apart
+        /// into golden grains that hold his shape a moment and drift away (the fight's).
         /// </summary>
         public static KnightTrack End => end ??= BuildEnd();
 
         private static KnightTrack end;
 
         private static KnightTrack BuildEnd() => new KnightTrack(Guard)
-            .At(10f, Ease.ExpOut).Near(40f, 28f).SunTo(70f, 1).Far(-50f, 29f).GraceTo(140f, -1).Lean(-14f).Nod(-16f).Legs(26f, -6f, 35f, KnightRig.LegLong).Go(-18f)
+            .At(30f, Ease.ExpOut).Near(40f, 28f).SunTo(70f, 1).Far(-50f, 29f).GraceTo(140f, -1).Lean(-14f).Nod(-16f).Legs(26f, -6f, 35f, KnightRig.LegLong).Go(-18f)
             // The Sun let fall (the fight lays it on the ground and draws it there).
-            .At(28f, Ease.SineInOut).Hold(KnightRig.Dropped, KnightRig.InFar).Near(10f, 29f).Far(80f, 24f).GraceTo(-70f, -1).Lean(10f).Nod(14f).Legs(16f, -18f).Go(-20f)
+            .At(84f, Ease.SineInOut).Hold(KnightRig.Dropped, KnightRig.InFar).Near(10f, 29f).Far(80f, 24f).GraceTo(-70f, -1).Lean(10f).Nod(14f).Legs(16f, -18f).Go(-20f)
             // The Grace driven into the ground before him.
             .At(EndPlant, Ease.PolyIn, 2).Near(20f, 29f).Far(90f, 26f).GraceTo(88f, 1).Lean(20f).Nod(18f).Legs(30f, -20f, 34f, KnightRig.LegLong).Rise(-4f).Go(-14f)
             // One knee, then the other, both hands on its hilt.
-            .At(EndKnees - 16, Ease.SineIn).Far(84f, 24f).Grace(90f).On(KnightRig.Grace, -1).Lean(14f).Nod(20f).Legs(37f, -53f, 30f, KnightRig.LegBent).Rise(0f)
+            .At(EndKnees - 48, Ease.SineIn).Far(84f, 24f).Grace(90f).On(KnightRig.Grace, -1).Lean(14f).Nod(20f).Legs(37f, -53f, 30f, KnightRig.LegBent).Rise(0f)
             .At(EndKnees, Ease.SineOut).Far(80f, 22f).Lean(10f).Nod(24f).Legs(-50f, -53f, KnightRig.LegBent, KnightRig.LegBent)
             // His head bowed over it.
             .At(EndBow, Ease.SineInOut).Far(82f, 21f).Lean(14f).Nod(34f)
             .At(EndTicks, Ease.SineInOut).Lean(16f).Nod(38f);
 
+        /// <summary>His end's moments, all without a sound (by request): only the sight of it.</summary>
         public static readonly (int Tick, Cue What)[] EndCues =
         {
-            (0, Cue.Reel), (24, Cue.Step), (EndPlant, Cue.Slam), (EndKnees - 10, Cue.Kneel), (EndFade, Cue.Fade),
+            (0, Cue.Reel), (72, Cue.Step), (EndPlant, Cue.Slam), (EndKnees - 30, Cue.Kneel), (EndFade, Cue.Fade),
         };
     }
 }
