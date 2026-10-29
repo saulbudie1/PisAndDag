@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Microsoft.Xna.Framework;
 using PisAndDag.Content.Combat;
+using PisAndDag.Content.Mimic;
 using PisAndDag.Content.UI;
 using Terraria;
 using Terraria.DataStructures;
@@ -1222,8 +1223,14 @@ namespace PisAndDag.Content.NPCs.Foigh
                 Tow();
                 LeanIn();
 
+                // His hook pulls in the Everclear Mirror's copy as it would a second player, if it is the one it bit.
+                MimicSystem.AlsoOnCopy(Tow);
+
                 if (liftedMe > 0)
                     liftedMe--;
+
+                if (liftedCopy > 0)
+                    liftedCopy--;
             }
 
             if (TargetIsHere && (State <= Move.Begin || Passing || Ending))

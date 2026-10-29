@@ -685,17 +685,19 @@ namespace PisAndDag.Content.Combat
 
         /// <summary>
         /// The giants this parry's blow has already landed on: once each. One for the machine,
-        /// like the spared below: only its own player's parry ever lands a blow.
+        /// like the spared below, kept by player: only its own player's parry ever lands a blow,
+        /// and the Everclear Mirror's copy's (MimicSystem), which parries as that player.
         /// </summary>
-        private static readonly HashSet<int> struck = new HashSet<int>();
+        private static readonly HashSet<(int Player, int NPC)> struck = new HashSet<(int Player, int NPC)>();
 
         private int punch;
 
         /// <summary>
         /// The NPCs this machine's player has parried: which they were, and the update they may
-        /// touch them again on. One for the machine: only its own player is ever asked.
+        /// touch them again on. One for the machine, kept by player: only its own player is ever
+        /// asked, and the Everclear Mirror's copy, which is asked as that player.
         /// </summary>
-        private static readonly Dictionary<int, (int Type, uint Until)> spared = new Dictionary<int, (int Type, uint Until)>();
+        private static readonly Dictionary<(int Player, int NPC), (int Type, uint Until)> spared = new Dictionary<(int Player, int NPC), (int Type, uint Until)>();
 
         /// <summary>A parry is under way: winding, active or recovering.</summary>
         public bool Busy => elapsed >= 0;
@@ -724,7 +726,7 @@ namespace PisAndDag.Content.Combat
             this.weapon = weapon;
             elapsed = 0;
             Landed = 0;
-            struck.Clear();
+            struck.RemoveWhere(blow => blow.Player == Player.whoAmI);
         }
 
         /// <summary>Ends it where it is: whatever started it is gone.</summary>
@@ -736,7 +738,8 @@ namespace PisAndDag.Content.Combat
         /// <summary>A riposte of this player's has landed: the camera leans in, the screen shakes, a breath of light. Their own machine's.</summary>
         public void Punch()
         {
-            if (Main.dedServ || Player.whoAmI != Main.myPlayer)
+            // Not the Everclear Mirror's copy's: the camera is its owner's.
+            if (Main.dedServ || Player.whoAmI != Main.myPlayer || Mimic.MimicSystem.Is(Player))
                 return;
 
             punch = PunchTicks;
@@ -897,16 +900,16 @@ namespace PisAndDag.Content.Combat
             return far > Reach ? middle + new Vector2(x, y) * (Reach / far) : met;
         }
 
-        private static bool Spared(NPC npc)
+        private bool Spared(NPC npc)
         {
-            if (spared.Count == 0 || !spared.TryGetValue(npc.whoAmI, out (int Type, uint Until) spare))
+            if (spared.Count == 0 || !spared.TryGetValue((Player.whoAmI, npc.whoAmI), out (int Type, uint Until) spare))
                 return false;
 
             // Still the one that was parried, and still within its ticks.
             if (spare.Type == npc.type && Main.GameUpdateCount < spare.Until)
                 return true;
 
-            spared.Remove(npc.whoAmI);
+            spared.Remove((Player.whoAmI, npc.whoAmI));
             return false;
         }
 
@@ -920,7 +923,7 @@ namespace PisAndDag.Content.Combat
         private void Turn(NPC npc, Vector2 at)
         {
             Landed++;
-            spared[npc.whoAmI] = (npc.type, Main.GameUpdateCount + (uint)Spare);
+            spared[(Player.whoAmI, npc.whoAmI)] = (npc.type, Main.GameUpdateCount + (uint)Spare);
             Player.PIS().BumpScreenShake(4.5f, 9);
 
             // The blow first, then what the parry does to it: the blow is no riposte.
@@ -931,7 +934,7 @@ namespace PisAndDag.Content.Combat
         /// <summary>A giant met by the parry: not turned aside, but the blow lands, once a parry.</summary>
         private void Blow(NPC npc)
         {
-            if (struck.Add(npc.whoAmI))
+            if (struck.Add((Player.whoAmI, npc.whoAmI)))
                 Strike(npc);
         }
 

@@ -2,6 +2,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PisAndDag.Content.Combat;
+using PisAndDag.Content.Mimic;
 using PisAndDag.Content.PADplayer;
 using PisAndDag.Content.Particles;
 using Terraria;
@@ -34,6 +35,9 @@ namespace PisAndDag.Content.NPCs.GildedKnight
 
         private int age;
         private bool burstLanded;
+
+        /// <summary>The burst has landed on the Everclear Mirror's copy (a second player on this machine: each is burned once).</summary>
+        private bool burstLandedCopy;
 
         private int Way => Projectile.ai[0] >= 0f ? 1 : -1;
 
@@ -99,22 +103,39 @@ namespace PisAndDag.Content.NPCs.GildedKnight
                 KnightFx.Ring(Projectile.Center + new Vector2(Way * Radius * 0.5f, 0f), 30f, Radius * 1.3f, 30, KnightFx.Fire);
             }
 
-            // The burst: whoever is within the half-circle he swept round, once.
-            if (age >= BurstAt && age <= BurstAt + 6 && !burstLanded)
+            // The burst: whoever is within the half-circle he swept round, once; the Everclear
+            // Mirror's copy too, as a second player (MimicSystem.AlsoOnCopy).
+            if (age >= BurstAt && age <= BurstAt + 6)
             {
-                Player me = Main.LocalPlayer;
+                Burst();
+                MimicSystem.AlsoOnCopy(Burst);
+            }
+        }
 
-                if (me.active && !me.dead && !me.immune && GildedKnight.Fights(me))
+        /// <summary>The burst on whoever is this machine's player for the moment (the copy, under MimicSystem.AlsoOnCopy), once each.</summary>
+        private void Burst()
+        {
+            Player me = Main.LocalPlayer;
+            bool copy = MimicSystem.Is(me);
+
+            if (copy ? burstLandedCopy : burstLanded)
+                return;
+
+            if (me.active && !me.dead && !me.immune && GildedKnight.Fights(me))
+            {
+                Vector2 d = me.Center - Projectile.Center;
+
+                if (d.Length() <= Radius && d.X * Way >= -30f)
                 {
-                    Vector2 d = me.Center - Projectile.Center;
+                    int damage = Main.DamageVar(GildedKnight.Damage(GildedKnight.GreatDamage), -me.luck);
+                    var reason = Terraria.DataStructures.PlayerDeathReason.ByCustomReason(
+                        Terraria.Localization.NetworkText.FromKey("Mods.PisAndDag.DeathText.GildedKnightGreat", me.name));
 
-                    if (d.Length() <= Radius && d.X * Way >= -30f)
+                    if (me.Hurt(reason, damage, Way, false, false, ImmunityCooldownID.General, true, 0f, 0f, 9f) > 0)
                     {
-                        int damage = Main.DamageVar(GildedKnight.Damage(GildedKnight.GreatDamage), -me.luck);
-                        var reason = Terraria.DataStructures.PlayerDeathReason.ByCustomReason(
-                            Terraria.Localization.NetworkText.FromKey("Mods.PisAndDag.DeathText.GildedKnightGreat", me.name));
-
-                        if (me.Hurt(reason, damage, Way, false, false, ImmunityCooldownID.General, true, 0f, 0f, 9f) > 0)
+                        if (copy)
+                            burstLandedCopy = true;
+                        else
                             burstLanded = true;
                     }
                 }

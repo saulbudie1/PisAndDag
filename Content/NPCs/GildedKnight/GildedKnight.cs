@@ -278,6 +278,9 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         /// <summary>The cuts he has already landed on this machine's player in this move, one bit each (so a blade lands once a cut).</summary>
         private int struck;
 
+        /// <summary>The same for the Everclear Mirror's copy, a second player on this machine: a cut lands once on each of them.</summary>
+        private int struckCopy;
+
         /// <summary>Gone for good: the end is over.</summary>
         private bool gone;
 
@@ -609,6 +612,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
                 wasState = State;
                 wasMove = MoveId;
                 struck = 0;
+                struckCopy = 0;
                 from = Pose;
                 travelled = Vector2.Zero;
 

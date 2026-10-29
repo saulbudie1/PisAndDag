@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PisAndDag.Content.Mimic;
 using PisAndDag.Content.PADplayer;
 using PisAndDag.Content.Particles;
 using ReLogic.Content;
@@ -4048,13 +4049,23 @@ namespace PisAndDag.Content.NPCs.Legends
             // The local player's own hit, the way vanilla deals contact damage; Hurt
             // tells the others. Through armour entirely: this is not a blow to be
             // shrugged off with defence, and at twenty a second a suit of anything
-            // turned it into one point, which read as nothing happening at all.
+            // turned it into one point, which read as nothing happening at all. The
+            // Everclear Mirror's copy is its owner's machine's, and is drained there as
+            // if it were the one at the keyboard (MimicSystem.AlsoOnCopy).
             if (Player.whoAmI == Main.myPlayer)
-                Player.Hurt(PlayerDeathReason.ByNPC(HeldBy), DrainPerSecond, 0, dodgeable: false, scalingArmorPenetration: 1f);
+                Drained();
+            else if (MimicSystem.Is(Player))
+                MimicSystem.AlsoOnCopy(Drained);
 
             // Stolen, not merely spent.
             king.life = Math.Min(king.lifeMax, king.life + DrainPerSecond);
             king.HealEffect(DrainPerSecond);
+        }
+
+        /// <summary>A second of it out of them, through armour.</summary>
+        private void Drained()
+        {
+            Player.Hurt(PlayerDeathReason.ByNPC(HeldBy), DrainPerSecond, 0, dodgeable: false, scalingArmorPenetration: 1f);
         }
     }
 

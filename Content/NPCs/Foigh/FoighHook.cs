@@ -2,6 +2,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PisAndDag.Content.Combat;
+using PisAndDag.Content.Mimic;
 using PisAndDag.Content.Particles;
 using Terraria;
 using Terraria.Audio;
@@ -107,9 +108,14 @@ namespace PisAndDag.Content.NPCs.Foigh
             Lighting.AddLight(Projectile.Center, 0.2f, 0.17f, 0.12f);
 
             Strike(foigh);
+
+            // Or the Everclear Mirror's copy, as a second player: it bites whichever of them it reaches
+            // first, and he winches that one in (Foigh.Tow).
+            if (Projectile.active)
+                MimicSystem.AlsoOnCopy(() => Strike(foigh));
         }
 
-        /// <summary>Against this machine's own player: it bites, once, and the server is told where they were.</summary>
+        /// <summary>Against this machine's own player (or the copy, under MimicSystem.AlsoOnCopy): it bites, once, and the server is told where they were.</summary>
         private void Strike(Foigh foigh)
         {
             if (Main.dedServ || Projectile.localAI[0] != 0f || Projectile.alpha >= 255)

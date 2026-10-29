@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PisAndDag.Content.Buffs;
 using PisAndDag.Content.Combat;
+using PisAndDag.Content.Mimic;
 using PisAndDag.Content.PADplayer;
 using PisAndDag.Content.Particles;
 using ReLogic.Content;
@@ -63,6 +64,9 @@ namespace PisAndDag.Content.NPCs.Foigh
 
         // ai[0] his whoAmI · ai[1] 0 in the air, 1 in the ground
         // localAI[0] 1 once it has hit this machine's player
+
+        /// <summary>It has hit the Everclear Mirror's copy, a second player on this machine: as localAI[0] is for this machine's player.</summary>
+        private bool throughCopy;
 
         /// <summary>Whether this one is in the ground.</summary>
         public static bool InGround(Projectile projectile) => projectile.ai[1] == 1f;
@@ -176,15 +180,25 @@ namespace PisAndDag.Content.NPCs.Foigh
             }
 
             Strike();
+
+            // And the Everclear Mirror's copy, as a second player.
+            MimicSystem.AlsoOnCopy(Strike);
         }
 
-        /// <summary>Its blade against this machine's own player: the sword's damage through armour, and thrown down for a second. Once.</summary>
+        /// <summary>
+        /// Its blade against this machine's own player (or the copy, under MimicSystem.AlsoOnCopy): the
+        /// sword's damage through armour, and thrown down for a second. Once each.
+        /// </summary>
         private void Strike()
         {
-            if (Main.dedServ || Projectile.localAI[0] != 0f || Projectile.alpha > 0)
+            if (Main.dedServ || Projectile.alpha > 0)
                 return;
 
             Player me = Main.LocalPlayer;
+            bool copy = MimicSystem.Is(me);
+
+            if (copy ? throughCopy : Projectile.localAI[0] != 0f)
+                return;
 
             if (me == null || !me.active || me.dead)
                 return;
@@ -208,7 +222,10 @@ namespace PisAndDag.Content.NPCs.Foigh
             int damage = Main.DamageVar(foigh.SwordDamage(), -me.luck);
             int direction = Projectile.velocity.X >= 0f ? 1 : -1;
 
-            Projectile.localAI[0] = 1f;
+            if (copy)
+                throughCopy = true;
+            else
+                Projectile.localAI[0] = 1f;
 
             // A blow that killed them throws nothing.
             if (!Foigh.Pierce(me, "FoighSwordThrown", damage, direction, 0f) || me.dead)

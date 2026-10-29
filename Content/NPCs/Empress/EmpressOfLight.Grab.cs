@@ -2,6 +2,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PisAndDag.Content.Combat;
+using PisAndDag.Content.Mimic;
 using PisAndDag.Content.PADplayer;
 using PisAndDag.Content.Particles;
 using Terraria;
@@ -261,9 +262,13 @@ namespace PisAndDag.Content.NPCs.Empress
 
                 case GrabBurn:
                     // Burned through, on their own machine only (their life is theirs to lose: another machine's copy of
-                    // them would show the numbers falling too); seen by all.
-                    if (!Main.dedServ && held.whoAmI == Main.myPlayer)
-                        held.GetModPlayer<EmpressHeld>().Burn(npc.whoAmI, NPC.ShouldEmpressBeEnraged());
+                    // them would show the numbers falling too); seen by all. The Everclear Mirror's copy, if it is the
+                    // one she holds, on its owner's, as if it were the one at the keyboard (MimicSystem.AlsoOnCopy).
+                    if (!Main.dedServ)
+                    {
+                        BurnHeld(npc, held);
+                        MimicSystem.AlsoOnCopy(() => BurnHeld(npc, held));
+                    }
 
                     Burning(npc, held, t, entered);
 
@@ -324,6 +329,13 @@ namespace PisAndDag.Content.NPCs.Empress
             }
         }
 
+        /// <summary>The burn on the one she holds, if they are this machine's player for the moment.</summary>
+        private static void BurnHeld(NPC npc, Player held)
+        {
+            if (held.whoAmI == Main.myPlayer)
+                held.GetModPlayer<EmpressHeld>().Burn(npc.whoAmI, NPC.ShouldEmpressBeEnraged());
+        }
+
         /// <summary>The holding arm's angle this tick.</summary>
         private float HoldAngle()
         {
@@ -375,12 +387,9 @@ namespace PisAndDag.Content.NPCs.Empress
             Vector2 palm = Palm(npc, holdLeft, HoldAngle());
             Vector2 away = (held.Center - npc.Center).SafeNormalize(new Vector2(holdLeft ? -1f : 1f, 0f));
 
-            if (held.whoAmI == Main.myPlayer)
-            {
-                float spin = (holdLeft ? -1f : 1f) * CastSpin;
-                held.GetModPlayer<EmpressHeld>().Throw(away * CastSpeed + new Vector2(0f, -6f), spin, EmpressHeld.RagdollTicks);
-                held.PIS().BumpScreenShake(10f, 20);
-            }
+            // (The Everclear Mirror's copy, if it is the one she holds, on its owner's machine: MimicSystem.AlsoOnCopy.)
+            CastOut(held, away);
+            MimicSystem.AlsoOnCopy(() => CastOut(held, away));
 
             if (Main.dedServ)
                 return;
@@ -389,6 +398,17 @@ namespace PisAndDag.Content.NPCs.Empress
             Sound(EmpressSounds.WhooshDown, palm, -0.2f, 0.8f, 2);
             Scream(npc, 0.15f, 0.8f);
             EmpressWarp.Ripple(palm, 16f, 50f, 10f, 22);
+        }
+
+        /// <summary>Cast aside: the one she held thrown limp and turning, if they are this machine's player for the moment.</summary>
+        private void CastOut(Player held, Vector2 away)
+        {
+            if (held.whoAmI != Main.myPlayer)
+                return;
+
+            float spin = (holdLeft ? -1f : 1f) * CastSpin;
+            held.GetModPlayer<EmpressHeld>().Throw(away * CastSpeed + new Vector2(0f, -6f), spin, EmpressHeld.RagdollTicks);
+            held.PIS().BumpScreenShake(10f, 20);
         }
 
         /// <summary>The catch: a ring of light off her, a crack of her voice, the world jolted.</summary>
@@ -438,12 +458,9 @@ namespace PisAndDag.Content.NPCs.Empress
 
             Hitbox(npc, EmpressHitbox.Shape.Circle, at, BlastRadius, Hurt(npc, BlastNormal, BlastExpert), 4);
 
-            if (held.whoAmI == Main.myPlayer)
-            {
-                Vector2 away = (at - npc.Center).SafeNormalize(new Vector2(holdLeft ? -1f : 1f, 0f));
-                held.GetModPlayer<EmpressHeld>().Throw(away * 13f + new Vector2(0f, -4f));
-                held.PIS().BumpScreenShake(14f, 26);
-            }
+            // (The Everclear Mirror's copy, if it is the one she holds, on its owner's machine: MimicSystem.AlsoOnCopy.)
+            BlastOut(npc, held, at);
+            MimicSystem.AlsoOnCopy(() => BlastOut(npc, held, at));
 
             if (Main.dedServ)
                 return;
@@ -471,6 +488,17 @@ namespace PisAndDag.Content.NPCs.Empress
 
             blastAt = at;
             blastTick = Main.GameUpdateCount;
+        }
+
+        /// <summary>The blast throws the one she held clear, if they are this machine's player for the moment.</summary>
+        private void BlastOut(NPC npc, Player held, Vector2 at)
+        {
+            if (held.whoAmI != Main.myPlayer)
+                return;
+
+            Vector2 away = (at - npc.Center).SafeNormalize(new Vector2(holdLeft ? -1f : 1f, 0f));
+            held.GetModPlayer<EmpressHeld>().Throw(away * 13f + new Vector2(0f, -4f));
+            held.PIS().BumpScreenShake(14f, 26);
         }
 
         /// <summary>Where the blast was, and when (for its rings and its glass, drawn over the players).</summary>

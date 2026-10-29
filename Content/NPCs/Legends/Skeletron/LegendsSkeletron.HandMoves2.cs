@@ -2,6 +2,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PisAndDag.Content.Combat;
+using PisAndDag.Content.Mimic;
 using PisAndDag.Content.NPCs.Empress;
 using PisAndDag.Content.PADplayer;
 using PisAndDag.Content.Particles;
@@ -62,8 +63,18 @@ namespace PisAndDag.Content.NPCs.Legends
             }
         }
 
-        /// <summary>The held player let go, thrown (on their own machine).</summary>
+        /// <summary>
+        /// The held player let go, thrown (on their own machine). The Everclear Mirror's copy, if it is
+        /// the one held, on its owner's, as if it were the one at the keyboard (MimicSystem.AlsoOnCopy).
+        /// </summary>
         private void LetGo(Vector2 velocity)
+        {
+            ThrowHeld(velocity);
+            MimicSystem.AlsoOnCopy(() => ThrowHeld(velocity));
+        }
+
+        /// <summary><see cref="LetGo"/>, for whoever is this machine's player for the moment.</summary>
+        private void ThrowHeld(Vector2 velocity)
         {
             if (grabbed == Main.myPlayer && grabbed >= 0)
                 Main.LocalPlayer.GetModPlayer<SkeletronPlayer>().Throw(velocity);

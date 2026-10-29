@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
 using PisAndDag.Content.Combat;
+using PisAndDag.Content.Mimic;
 using PisAndDag.Content.NPCs.DonaQuinn;
 using PisAndDag.Content.PADplayer;
 using PisAndDag.Content.Projectiles.Base;
@@ -343,6 +344,14 @@ namespace PisAndDag.Content.NPCs.Foigh
 
         /// <summary>Ticks left in which this machine's player, thrown up by his cut, is still his to strike down: his blow in the air lands on them whatever grace the cut left them.</summary>
         private int liftedMe;
+
+        /// <summary>
+        /// The same two for the Everclear Mirror's copy, a second player on this machine (MimicSystem):
+        /// the cut of his that has landed on it or been turned aside by it, and the ticks it is still
+        /// his to strike down, apart from this machine's player's, so that a cut lands once on each.
+        /// </summary>
+        private int struckCopy;
+        private int liftedCopy;
 
         /// <summary>
         /// This machine's player, caught out of the air: where their middle was as the hand
@@ -1810,9 +1819,17 @@ namespace PisAndDag.Content.NPCs.Foigh
         /// <summary>
         /// This machine's player, if it is them he has: put where he has them, every tick
         /// (FoighGripPlayer), and at the tick he lets go of them, thrown the way the sword is
-        /// swung.
+        /// swung. The Everclear Mirror's copy, if it is the one he has, the same
+        /// (MimicSystem.AlsoOnCopy: it is this machine's player for the moment).
         /// </summary>
         private void Carry()
+        {
+            CarryHeld();
+            MimicSystem.AlsoOnCopy(CarryHeld);
+        }
+
+        /// <summary><see cref="Carry"/>, for whoever is this machine's player for the moment.</summary>
+        private void CarryHeld()
         {
             if (Main.dedServ || held != Main.myPlayer)
                 return;
@@ -1839,8 +1856,18 @@ namespace PisAndDag.Content.NPCs.Foigh
             }
         }
 
-        /// <summary>The sword through this machine's player: once, through armour, whatever they had just been hit by.</summary>
+        /// <summary>
+        /// The sword through this machine's player: once, through armour, whatever they had just been hit by.
+        /// Through the Everclear Mirror's copy the same, if it is the one he has (MimicSystem.AlsoOnCopy).
+        /// </summary>
         private void Impale(string death = "FoighSpitted")
+        {
+            ImpaleHeld(death);
+            MimicSystem.AlsoOnCopy(() => ImpaleHeld(death));
+        }
+
+        /// <summary><see cref="Impale"/>, for whoever is this machine's player for the moment.</summary>
+        private void ImpaleHeld(string death)
         {
             if (Main.dedServ || held != Main.myPlayer)
                 return;
@@ -1856,7 +1883,10 @@ namespace PisAndDag.Content.NPCs.Foigh
             Wound(me);
 
             me.PIS().BumpScreenShake(9f, 16);
-            Cinematic.Flash(new Color(255, 232, 220), 0.12f);
+
+            // (The flash is the screen's, the player's: not for the copy.)
+            if (!MimicSystem.Is(me))
+                Cinematic.Flash(new Color(255, 232, 220), 0.12f);
         }
 
         // ============================================================
@@ -3503,13 +3533,22 @@ namespace PisAndDag.Content.NPCs.Foigh
         /// The sword against this machine's own player: only while it cuts, the blade from
         /// just past the guard to a little past the point, checked at every few degrees of
         /// the way it moved this tick so a fast blade cannot pass over anyone between two
-        /// ticks. The parry first; then the hit, through armour, once a cut.
+        /// ticks. The parry first; then the hit, through armour, once a cut. And the same against
+        /// the Everclear Mirror's copy, if there is one (MimicSystem.AlsoOnCopy), as against a
+        /// second player: once a cut on each.
         /// </summary>
         private void Strike()
         {
             if (!hasSword || !Cuts(clock, out float power, out int cut))
                 return;
 
+            StrikeOn(power, cut);
+            MimicSystem.AlsoOnCopy(() => StrikeOn(power, cut));
+        }
+
+        /// <summary><see cref="Strike"/>, against whoever is this machine's player for the moment.</summary>
+        private void StrikeOn(float power, int cut)
+        {
             Player me = Main.LocalPlayer;
 
             if (me == null || !me.active || me.dead)
@@ -3517,7 +3556,7 @@ namespace PisAndDag.Content.NPCs.Foigh
 
             int key = (int)State * 16 + cut;
 
-            if (struck == key)
+            if ((MimicSystem.Is(me) ? struckCopy : struck) == key)
                 return;
 
             ParryPlayer parry = me.GetModPlayer<ParryPlayer>();
@@ -3550,12 +3589,12 @@ namespace PisAndDag.Content.NPCs.Foigh
                 // The parry first: the blade met at their arc is turned aside and he with it.
                 if (parry.MeetsLine(NPC, blade.Grip, to, BladeWidth))
                 {
-                    struck = key;
+                    Struck(me, key);
                     return;
                 }
 
                 // (One his cut up threw into the air is his to strike down, whatever grace that cut left them.)
-                if (me.immune && !Taken)
+                if (me.immune && !Taken(me))
                     continue;
 
                 float point = 0f;
@@ -3571,9 +3610,28 @@ namespace PisAndDag.Content.NPCs.Foigh
         /// <summary>
         /// Whether this machine's player is his to strike down: thrown up into the air by
         /// his cut a moment ago, and this the blow that follows it (the one in the air; or,
-        /// too near the ground for that, the one that ends on it).
+        /// too near the ground for that, the one that ends on it). The copy's own, for the copy.
         /// </summary>
-        private bool Taken => liftedMe > 0 && ((State == Move.Smite && Arg > 0.5f) || (State == Move.MillEnd && Arg > 1.5f));
+        private bool Taken(Player me) => (MimicSystem.Is(me) ? liftedCopy : liftedMe) > 0
+            && ((State == Move.Smite && Arg > 0.5f) || (State == Move.MillEnd && Arg > 1.5f));
+
+        /// <summary>This cut of his is through with this player (this machine's, or the copy): landed, or turned aside.</summary>
+        private void Struck(Player me, int key)
+        {
+            if (MimicSystem.Is(me))
+                struckCopy = key;
+            else
+                struck = key;
+        }
+
+        /// <summary>This player (this machine's, or the copy) is his to strike down for so many ticks more; none, at 0.</summary>
+        private void Lifted(Player me, int ticks)
+        {
+            if (MimicSystem.Is(me))
+                liftedCopy = ticks;
+            else
+                liftedMe = ticks;
+        }
 
         /// <summary>Whether the blow he is in sends whoever it lands on down: the one in the air, and the one that is begun there and ends on the ground.</summary>
         private bool Spikes => State == Move.Smite || (State == Move.MillEnd && Arg > 0.5f);
@@ -3590,7 +3648,7 @@ namespace PisAndDag.Content.NPCs.Foigh
             // Up into the air, or down out of it: thrown (RagdollPlayer), not knocked.
             float knock = up || down ? 0f : power > 1f ? KnockHard : thrust ? KnockThrust : KnockCut;
 
-            if (Taken)
+            if (Taken(me))
             {
                 // It lands, whatever they had just been hit by (FoighGripPlayer.Through).
                 FoighGripPlayer.Through(me, "FoighSmite", damage, facing);
@@ -3600,7 +3658,7 @@ namespace PisAndDag.Content.NPCs.Foigh
                 return;
             }
 
-            struck = key;
+            Struck(me, key);
 
             Wound(me);
 
@@ -3613,7 +3671,7 @@ namespace PisAndDag.Content.NPCs.Foigh
                 me.GetModPlayer<RagdollPlayer>().Throw(new Vector2(facing * LaunchAlong, -LaunchUp), RagdollStyle.Spin, LaunchLie);
 
                 // His, now, to go up after: the server is told, and this machine remembers whose they are.
-                liftedMe = LiftedTicks;
+                Lifted(me, LiftedTicks);
                 Tell(Word.Lifted);
 
                 LiftLooks(me);
@@ -3623,7 +3681,7 @@ namespace PisAndDag.Content.NPCs.Foigh
                 if (!me.dead)
                     me.GetModPlayer<RagdollPlayer>().Throw(new Vector2(facing * SpikeAlong, SpikeDown), RagdollStyle.Spin, SpikeLie);
 
-                liftedMe = 0;
+                Lifted(me, 0);
 
                 SpikeLooks(me);
             }

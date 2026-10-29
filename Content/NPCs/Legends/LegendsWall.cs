@@ -4,6 +4,7 @@ using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PisAndDag.Content.Combat;
+using PisAndDag.Content.Mimic;
 using ReLogic.Content;
 using Terraria;
 using Terraria.Audio;
@@ -429,7 +430,12 @@ namespace PisAndDag.Content.NPCs.Legends
                 }
 
                 if (lashTimer >= TellTicks && lashTimer < TellTicks + StrikeTicks + HoldOutTicks)
+                {
                     TryTake(npc);
+
+                    // Or the Everclear Mirror's copy, as a second player: one lash takes whichever of them it touches first.
+                    MimicSystem.AlsoOnCopy(() => TryTake(npc));
+                }
             }
 
             if (lashTimer >= LashTicks)
@@ -437,8 +443,8 @@ namespace PisAndDag.Content.NPCs.Legends
         }
 
         /// <summary>
-        /// This machine's own player, touched by the lash on its way out or while it is
-        /// held there: taken, and everyone told.
+        /// This machine's own player (or the copy, under MimicSystem.AlsoOnCopy), touched by the
+        /// lash on its way out or while it is held there: taken, and everyone told.
         /// </summary>
         private void TryTake(NPC npc)
         {
@@ -1174,23 +1180,32 @@ namespace PisAndDag.Content.NPCs.Legends
             drain = 0;
 
             // Their own machine takes the life, as vanilla deals contact damage, and Hurt
-            // tells the others. Exactly 45 (ModifyHurt): no armour, no resistance, no
-            // share taken by anything. On its own cooldown slot, cleared again at once, so
-            // nothing else's immunity skips a second of it and it gives none to anything else.
+            // tells the others. The Everclear Mirror's copy is its owner's machine's, and is
+            // drained there as if it were the one at the keyboard (MimicSystem.AlsoOnCopy).
             if (Player.whoAmI == Main.myPlayer)
-            {
-                draining = true;
-
-                Player.Hurt(PlayerDeathReason.ByNPC(HeldBy), LifePerSecond, 0, cooldownCounter: ImmunityCooldownID.WrongBugNet,
-                    dodgeable: false, scalingArmorPenetration: 1f, knockback: 0f);
-
-                draining = false;
-                Player.hurtCooldowns[ImmunityCooldownID.WrongBugNet] = 0;
-            }
+                Drain();
+            else if (MimicSystem.Is(Player))
+                MimicSystem.AlsoOnCopy(Drain);
 
             // The server's, and one player's alone: the Wall's life is the server's to keep.
             if (Main.netMode != NetmodeID.MultiplayerClient)
                 Feed(wall);
+        }
+
+        /// <summary>
+        /// A second of it out of them. Exactly 45 (ModifyHurt): no armour, no resistance, no
+        /// share taken by anything. On its own cooldown slot, cleared again at once, so
+        /// nothing else's immunity skips a second of it and it gives none to anything else.
+        /// </summary>
+        private void Drain()
+        {
+            draining = true;
+
+            Player.Hurt(PlayerDeathReason.ByNPC(HeldBy), LifePerSecond, 0, cooldownCounter: ImmunityCooldownID.WrongBugNet,
+                dodgeable: false, scalingArmorPenetration: 1f, knockback: 0f);
+
+            draining = false;
+            Player.hurtCooldowns[ImmunityCooldownID.WrongBugNet] = 0;
         }
 
         /// <summary>The Wall gains, never past four tenths of its life.</summary>
@@ -1207,10 +1222,22 @@ namespace PisAndDag.Content.NPCs.Legends
             wall.netUpdate = true;
         }
 
-        /// <summary>Behind the Wall, in Legends, is death, on the player's own machine.</summary>
+        /// <summary>
+        /// Behind the Wall, in Legends, is death, on the player's own machine; for the Everclear
+        /// Mirror's copy, on its owner's, as if it were the one at the keyboard (MimicSystem.AlsoOnCopy).
+        /// </summary>
         public override void PreUpdate()
         {
-            if (Player.whoAmI != Main.myPlayer || !PADWorld.Legends || Player.dead || Player.ghost || Held)
+            if (Player.whoAmI == Main.myPlayer)
+                KeptBehind();
+            else if (MimicSystem.Is(Player))
+                MimicSystem.AlsoOnCopy(KeptBehind);
+        }
+
+        /// <summary>This player, if they are behind the Wall past its grace: dead.</summary>
+        private void KeptBehind()
+        {
+            if (!PADWorld.Legends || Player.dead || Player.ghost || Held)
                 return;
 
             int index = Main.wofNPCIndex;

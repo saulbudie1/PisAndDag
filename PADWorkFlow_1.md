@@ -23471,3 +23471,179 @@ how calaimty draws theirs and redraw".
 6. **Checked**: every picture its old size; every 2x2 block whole in all 36 drawn pictures (measured; the bestiary, made by the rig, is the exception); the previews of
    every move made again from the new pieces (the gallery page of his moves) and `Claude outputs\GildedKnight_2x_r78.png`
    (each picture before and now). No code changed; nothing to build. Not run in the game.
+
+## 17.30 Session 8, later: Green Candiez, Queen Slime's Wings, two spells, the Dryad's roots, the Everclear Mirror
+
+Asked: "Recipe to combine triple fart in a jar thing with Terraspark: "Green Candiez" Have the attributes of the 2
+accessories; the rocket boots gonna have farts out with the trail, it sparks red and green in the rocket boot trail. and
+add 6 mph on top of that; make sure it doesnt stack with terraspark. Also add Queen Slime's Wings; flight stuff equal
+that of empress of light's wings. Add a spell: Boulder Catapult: throw boulder at cursor with gravity and once it hits a
+gorund, it acts like a normal boulder; prehardmode, slow use time. Deep Roots: Roots pierce the ground and to the
+cursor; can go from the wall (Like blood thorn https://terraria.wiki.gg/wiki/Blood_Thorn); maybe js recolor the
+projectiles. take the numbers from the item and make it less so its weaker. Dropped by Finishing Dryad's Quest; this
+one you think of yourself. Add an end game Summoner weapon: Everclear Mirror; 15 minion slot. Summons a copy of the
+player with the weapon in the offhand (make it so lore weapons can also go offhand) This summon is basically a mimic
+tear (eldenring). With player's life with 30 Super Healing potions and mirror whatever effect/buff the player is having.
+Train this AI so it can have the best summoner skills, mix of dodging, parry (this train less) and dealing damage. It
+also mirror player's accessory; it can also use every alt of an item. Sad thing is that it is killable, its HP is
+Triple player's HP tho. So train it very well to make it last long in the fight."
+
+Answered when asked: the copy uses its weapon through the game's own code ("Real item use"); the 15 is what it costs
+("Costs 15 slots"); the Dryad's quest is a new one, after the Bezoar ("A new quest you design after bezoar quest").
+Later, while it was being built: "Why dont create pseudo player, doesnt count towards scaling; but still attracts the
+boss." / "either that or the copy only has the same amt of life as players". The first: the copy is a player the
+enemies choose between, and keeps its three lives' worth.
+
+1. **Green Candiez** (`Content/Items/Accessories/GreenCandiez.cs`). Worn, it is both: the game's own Terraspark Boots
+   (`Player.ApplyEquipFunctional` with the game's boots: rocket flight, the run, 8% movement, ice, water, honey and lava
+   walking, fire blocks and 7 seconds of lava, less from touching it) and the Triple Fart In A Horse Shoe Adorned
+   Bottle (its own `UpdateAccessory`: three of the jar's jumps, no fall damage). On top, 6 mph on the top speed
+   (`GreenCandiezPlayer.PostUpdateRunSpeeds`, by `TopSpeed.MphPerPixelTick`, not on a mount). "doesnt stack with
+   terraspark": it cannot be worn with the Terraspark Boots nor with the bottle, either way round
+   (`CanAccessoryBeEquippedWith`). While the rockets burn, every foot puffs the jar's gas and a red or green spark
+   (the Terraspark's own spark, `DustID.FireworksRGB`, coloured), and every half second or so a fart: the jar's
+   sound and one of its clouds. The recipe is live, as asked: the bottle and the boots at a Tinkerer's Workshop. The
+   bottle itself still has no recipe (RELEASE_TODO). Lime, 19 gold. Worn, the Terraspark Boots' and the jar's pictures.
+2. **Queen Slime's Wings** (`Content/Items/Accessories/QueenSlimesWings.cs`). The Empress Wings' flight, number for
+   number (1.4.4, wing 44): 150 ticks, 8 across at twice the acceleration (`WingStats`), the same climb
+   (`VerticalWingSpeeds`: 0.85 / 0.15 / 1 / 2.75 / 0.125), and holding UP boosts as hers do; a glint of pink and blue
+   crystal off them while they beat. From the Queen Slime: one in 15 outside Expert, one in 10 from her bag, as the
+   Empress Wings come from the Empress. As every pair of wings in this world they carry no one until the Empress has
+   fallen (`PisPlayer.AllowedWings`); `PSItem` is untouched. Pink, 8 gold.
+3. **Boulder Catapult** (`Content/Items/Mage/Spell/BoulderCatapult.cs`, `Content/Projectiles/Magic/CatapultBoulder.cs`).
+   A spell: each cast throws a boulder on an arc that comes down on the cursor (the flight longer the further the
+   throw: a lob near, a high arc far; never further than the game lets a cursor reach), hurting what it hits in the
+   air; where it first lands it rolls on as the game's boulders roll (aiStyle 25: gathers to 7 a tick, bounces off a
+   drop, steers off a wall it stops against, sets off pressure plates, breaks on a wall it runs into), hurting what it
+   rolls over, never its caster. Slow: 55 ticks a cast. 58 damage, 20 mana, knockback 8. Conjuration, Earth. Orange,
+   1 gold 50. Written at the Makeshift Altar like the others (Boulder, 25 Stone, a Book, 5 Topaz), the recipe
+   commented out as the mod's own are.
+4. **Deep Roots and the Dryad's roots** (`Content/Items/Mage/Spell/DeepRoots.cs`, `Content/Projectiles/Magic/DeepRoot.cs`,
+   `Content/NPCs/DryadRoots.cs`, `Content/Items/Misc/OvergrownRoot.cs`).
+   - The spell: three roots a cast, 12 ticks apart, each coming up out of the ground near the cursor as the Blood
+     Thorn's thorns do (`Player.FindSharpTearsSpot`: the blocks within 200 pixels of where a line from the caster meets
+     something on the way to the cursor), and where there is no ground out of the background walls ("can go from the
+     wall"), pointed at the cursor; each hurts along its length through 3 enemies. The Blood Thorn's numbers made less:
+     22 damage (34), 15 mana (20), 36 ticks (33), through 3 (4), 0.5 to 0.85 of the length (0.6 to 1.1). Conjuration,
+     Flora and Fauna. Orange, 2 gold. Not "recoloured": its own picture of the thorn's shape, in bark and moss.
+   - The quest, mine: once a player has given the Dryad the Bezoar, one chat in four is the roots
+     (`Mods.PisAndDag.Hints.DryadRoots`): she can hear them again; some have not stopped growing; things with mouths
+     come up out of them. While she is asking, Man Eaters, Snatchers and Angry Trappers drop an Overgrown Root one time
+     in two for that player. With six, "The roots" is offered under her dialogue: she takes them, thanks them
+     (`DryadRootsThanks`) and gives Deep Roots. Once for each player, saved with the player.
+5. **The Everclear Mirror** (`Content/Items/Summoner/EverclearMirror.cs`, `Content/Mimic/`,
+   `Content/Buffs/EverclearMirrorBuff.cs`, `Content/Projectiles/Summoner/MimicAnchor.cs`). Red, 20 gold, 80 mana; no
+   recipe yet (one written out, commented: a Magic or Ice Mirror, 10 Luminite, 18 Stardust, 10 Crystal Shards at the
+   Ancient Manipulator).
+   - **What it calls**: a copy of its owner (`MimicSystem`): their look, armour, accessories, vanity and dyes, kept
+     up as they change; every buff of theirs that is a buff (not debuffs, pets, lights, mounts or minions'); their
+     crystals and fruit; their spells, if it holds a staff. It fights with a copy of what is in their off hand, or
+     with nothing fighting there the best weapon on their hotbar (most damage a second); their ammunition, never
+     spent from them; 30 Super Healing Potions of its own; life three times theirs, full when it comes
+     (`MimicPlayer`). Its weapon is used by the game's own code (`Scope`: for the moments it uses it, and everything
+     its shots do, it is the player at the keyboard, the cursor where it aims, the mouse what it presses): every
+     weapon swings, shoots, channels, throws and holds out as it does in a hand, and its right click too.
+   - **Costs 15 minion slots**: the anchor it leaves with its owner (`MimicAnchor`, never drawn) is a minion of 15. Only
+     someone with room for 15 can call it; calling it sends older minions away to make the room, as any minion does
+     (`ItemID.Sets.StaffMinionSlotsRequired`); calling more than there is room for later sends it away. One at a
+     time, a world of one only. Cancelling the buff sends it away.
+   - **A player to the game** (by the later request): it stands in a player slot no one uses alone (254) and is in the
+     game's list of players: enemies and bosses choose between it and its owner as between any two players
+     (`NPC.TargetClosest`, the nearer), their bodies and shots hurt it (the game hurts only the player at the keyboard
+     with those, so the copy is put through the same: `Player.Update_NPCCollision`; enemy shots as `Projectile.Damage`
+     lands them, twice their damage, their cooldown and debuffs), and it is drawn as any other player, its life under
+     it when hurt and its potions beside that. It counts for nothing else a second player would: in a world of one the
+     game sizes every enemy for one player whoever is there (`NPC.GetActivePlayerCount`); it is out of the list while
+     enemies are spawned (`NPC.SpawnNPC`) and while the clock runs (invasions sized by players, bosses that come at
+     night choosing one); it is not counted among the players who must be asleep for the night to pass; loot is the
+     owner's (`LootAsOwner`: the game gives a kill's loot to the nearest player; the copy is out of the list and the
+     owner the player at the keyboard while it is made) and every hit of the copy's marks its owner too
+     (`MimicCredit`). When it goes, whatever was after it looks again.
+   - **How it fights** (`MimicBrain`, game-free, `MimicSense` reads the world into it): it takes its owner's minion
+     target, else the enemy nearest its owner (a boss first); stands at its weapon's distance on the quieter side,
+     further off when that enemy is after it, above if it can fly, never more than its leash from its owner; plans its
+     keys every few ticks by trying each way it could hold them (left, right, jump, drop, a dash) a short while ahead
+     with the game's movement and every shot and body on its way, weighing the danger met against getting where it
+     wants; attacks whatever is in reach and sight, leading a moving target, right clicking now and then; parries now
+     and then (`ParryPlayer`, less than it does anything else, as asked); drinks a potion as soon as none of it would be
+     wasted, or at once when low. Brought back to its owner if it is more than 80 tiles off or stuck in blocks a second.
+   - **Trained** (`Claude outputs\MimicTrainer_r79`, outside the mod): 25 numbers found by an evolution strategy over
+     fights in a small world with the game's movement in it, against seven kinds of boss (a dasher, a shooter, a rain,
+     rings, a slammer with shockwaves, a swarm, two at once) that go for whichever of owner and copy is nearer, with six
+     kinds of weapon and three kinds of kit; scored by damage dealt, less life lost, less a great deal for dying. Four
+     runs; the last two with the bosses after the nearer. What it came to is under 9.
+   - **The off hand and lore weapons**: lore weapons may now go in the off hand (`OffHandPlayer.Fits`); `LoreLock`
+     counts the off hand as one of the places a lore item may be, and keeps it the only one (against the codex it gives
+     way; against a loose copy in the pack it is kept). `OffHandPlayer.Held`: what the off hand holds wherever it is.
+   - **The parry**: `ParryPlayer` kept its "spared" and "struck" per player (they were one for the machine), so the
+     copy's parries and its owner's do not answer for each other, and the camera lean of a riposte is not the copy's.
+   - At no life it breaks (`MimicPlayer.PreKill`: it never dies as a player dies): glass, the sound of it, and the
+     mirror clouds for a minute (the tooltip says how long, or that there is not room for 15).
+6. **Pictures** (2x2 pixels, §16.93; drawn by code): `EverclearMirror.png` (a hand mirror, pearl silver, a blue
+   stone at its crown, a figure in the glass), `EverclearMirrorBuff.png`, `GreenCandiez.png` (a green boot with red candy
+   stripes, a rocket at its heel and the bottle tied to it), `QueenSlimesWings.png` and `QueenSlimesWings_Wings.png`
+   (four frames as the game's wings: folded, up, spread, down; pink gel going to blue at the tips, a crystal where
+   they meet), `BoulderCatapult.png` and `DeepRoots.png` (on the spell parchment), `DeepRoot.png` (six frames of
+   200x32 as the Blood Thorn's sheet: a clod and a root out of it, bark, grooves and moss), `OvergrownRoot.png`.
+7. **Words** (`Localization/en-US_Mods.PisAndDag.hjson`): every item's name and tooltip, the buff, the three
+   projectiles' names, and the Dryad's two lines (in her voice, Lore Bible §VI: nothing prunes; that some roots do not
+   stop is said, why is not).
+8. **Checked**: built against the mod as it is on the computer (591 files, no errors; the ten warnings are old); every
+   picture 2x2 (measured) and no half-clear pixels; the brain run in the trainer for the numbers below. Not run in the
+   game.
+9. **The training, in numbers** (60 fights of half a minute that neither set had seen; bosses after the nearer of owner
+   and copy; the copy's life 1,500):
+
+   |                 | damage landed | life lost | hits taken | died in | potions |
+   |---|---|---|---|---|---|
+   | the first guess | 33% | 71% | 15.7 | 20% | 1.0 |
+   | trained         | 40% | 53% | 11.9 | 18% | 0.8 |
+
+   By weapon, life lost: blade 62% to 43%, spear 94% to 78%, yoyo 47% to 29%, whip 67% to 48%, gun 66% to 61%, spell
+   87% to 58%. Hardest: a swarm that all goes for it (90% lost, dead in nearly half of them). The 25 numbers are
+   `MimicGenes.TrainedShares`; the trainer (C#, its own small world, `MimicBrain.cs` compiled into it unchanged) is in
+   `Claude outputs\MimicTrainer_r79` with every run's log.
+   Trained again with the trainer's ground put right; the numbers now in the mod are in §17.31.
+
+## 17.31 Session 8, later: r79 seen moving, and the copy trained again
+
+Asked: "generate preview".
+
+1. **The previews** (a page of moving pictures, https://claude.ai/artifact/AuEfAKGsAWVY1kRqD5oq8c, private until
+   shared): each drawn outside the game a tick at a time from what the code does, with the game's own pictures (player
+   sheets, tiles, walls, dust, the jar's fart clouds, the boulder, the S.D.M.G.) and the mod's new ones, the dust
+   coloured and blended as `Main.DrawDust` does (`Dust.GetAlpha`, then `Dust.GetColor` for a dust given a colour). Green
+   Candiez by day and by night; Queen Slime's Wings; Boulder Catapult (a far throw, a near lob, one off a ledge); Deep
+   Roots (from the ground, from the caster under an open sky, from the walls of a cave, from a ledge); the Everclear
+   Mirror (used, followed, sent away) and a fight replayed from the trainer. Not run in Terraria.
+2. **What drawing them showed.**
+   - **The trainer put the copy inside a hill.** It stood the copy at the flat floor's height, 60 pixels from the middle
+     of the arena; where the hills are (two fights in five), the ground there is a block higher, so the copy began 15
+     pixels inside it and could not move all fight (its every step was "blocked"). Runs 1 to 4 trained and judged with
+     that in two fights of five. Now both owner and copy stand on whatever is under them (`Arena.OnGround`).
+   - **Trained again** with the ground fixed: run 5 (120 generations from run 3's numbers) and run 6 (160 generations
+     from run 5's, 20 sets a generation, 16 fights each). Run 6 dropped parrying altogether (the trainer counts a parry
+     only as a shot not taken, and it costs most of a second of not attacking); parrying was asked for, trained less, so
+     the mod has run 6's numbers with the two of parrying (`ParryRate`, `ParryLook`) kept at run 5's. On 600 fights of
+     half a minute that no run had seen (bosses after the nearer of owner and copy, the copy's life 1,500):
+
+     |                         | damage landed | life lost | hits taken | died in | potions | parries |
+     |---|---|---|---|---|---|---|
+     | the first guess         | 41.6% | 62.5% | 12.9 | 7.5% | 0.94 | 2.6 |
+     | r79 as sent (run 3)     | 48.5% | 33.4% | 6.8 | 3.0% | 0.63 | 1.2 |
+     | now                     | 45.9% | 26.7% | 5.5 | 2.5% | 0.49 | 2.0 |
+
+     By boss, life lost, r79 against now: the dasher 85% and 76% (dead in 20% and 15% of those fights), the shooter 19%
+     and 10%, rings 7% and 2%, the slammer 30% and 23%, a swarm 56% and 51%, two at once 24% and 12%; the rain hardly
+     touches it either way. Every row: `Claude outputs\MimicTrainer_r79\logs\eval_final.txt`.
+   - **The boulder leaves from the caster's middle**, where the game puts the shot of every staff
+     (`Player.ItemCheck_Shoot`), not from the staff's head as `BoulderCatapult`'s comments said. The comments now say
+     so; the code is as it was.
+   - **Green Candiez's red sparks read pink by day.** The game adds a `FireworksRGB` spark onto what is behind it (drawn
+     with an alpha of 25, and again in its own colour), so against a noon sky red turns pink; at night and underground
+     it is red. Left as it is.
+3. **Changed**: `Content/Mimic/MimicBrain.cs` (`MimicGenes.TrainedShares` and the lines over it);
+   `Content/Items/Mage/Spell/BoulderCatapult.cs` (two comments); `Claude outputs\MimicTrainer_r79` (`Trainer.cs`: the
+   ground; `README.md`: runs 5 and 6; `logs/`: their logs).
+4. **Checked**: built against the mod as it is on the computer (591 files, no errors; the warnings are the old ten); the
+   trainer built and run; every file on the computer compared with what was sent.

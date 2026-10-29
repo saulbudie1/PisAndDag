@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Xna.Framework;
+using PisAndDag.Content.Mimic;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ID;
@@ -118,9 +119,17 @@ namespace PisAndDag.Content.NPCs.Legends
             drain = 0;
 
             // The player's own client deals it, as vanilla deals contact damage; Hurt tells the rest.
-            if (Player.whoAmI != Main.myPlayer)
-                return;
+            // The Everclear Mirror's copy is its owner's machine's, and is drained there as if it
+            // were the one at the keyboard (MimicSystem.AlsoOnCopy).
+            if (Player.whoAmI == Main.myPlayer)
+                Drain();
+            else if (MimicSystem.Is(Player))
+                MimicSystem.AlsoOnCopy(Drain);
+        }
 
+        /// <summary>A second of it out of them, through any armour, on its own slot.</summary>
+        private void Drain()
+        {
             Player.hurtCooldowns[DrainSlot] = 0;
             Player.Hurt(PlayerDeathReason.ByNPC(HeldBy), DrainPerSecond, 0, cooldownCounter: DrainSlot, dodgeable: false, scalingArmorPenetration: 1f, knockback: 0f);
         }

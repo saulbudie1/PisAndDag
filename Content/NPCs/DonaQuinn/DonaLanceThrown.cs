@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PisAndDag.Content.Combat;
+using PisAndDag.Content.Mimic;
 using PisAndDag.Content.Particles;
 using Terraria;
 using Terraria.Audio;
@@ -87,12 +88,22 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         /// <summary>The way it lay last tick.</summary>
         private float lastRotation;
 
+        /// <summary>
+        /// It has hit the Everclear Mirror's copy, a second player on this machine: as localAI[0] is for
+        /// this machine's player, so that it goes through each of them once.
+        /// </summary>
+        private bool throughCopy;
+
+        /// <summary>Whether it is already through whoever is this machine's player for the moment (the copy, under MimicSystem.AlsoOnCopy or while it parries).</summary>
+        private static bool Through(Projectile projectile) =>
+            MimicSystem.Is(Main.LocalPlayer) ? (projectile.ModProjectile as DonaLanceThrown)?.throughCopy ?? false : projectile.localAI[0] != 0f;
+
         public override void SetStaticDefaults()
         {
             // In the air, not yet parried, with someone coming back for it, and not already
             // through this machine's player: then a parry knocks it away (Deflect).
             Parry.AddProjectile(Type,
-                projectile => projectile.ai[1] == 0f && projectile.ai[2] == 0f && projectile.alpha == 0 && projectile.localAI[0] == 0f,
+                projectile => projectile.ai[1] == 0f && projectile.ai[2] == 0f && projectile.alpha == 0 && !Through(projectile),
                 (projectile, by) => (projectile.ModProjectile as DonaLanceThrown)?.Deflect(by));
         }
 
@@ -181,9 +192,17 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             Projectile.rotation = Projectile.velocity.ToRotation() + MathHelper.PiOver2;
 
             if (Turned)
+            {
                 Whirl();
+            }
             else
+            {
                 Strike();
+
+                // And the Everclear Mirror's copy, as a second player (unless this machine's player has just turned it aside).
+                if (!Turned)
+                    MimicSystem.AlsoOnCopy(Strike);
+            }
 
             lastRotation = Projectile.rotation;
         }
@@ -212,7 +231,9 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
 
             // On the machine of whoever parried it, it is through with them: a word from the
             // server that left before the parry got there must not bring it back onto them.
-            if (!Main.dedServ && by.whoAmI == Main.myPlayer)
+            if (!Main.dedServ && MimicSystem.Is(by))
+                throughCopy = true;
+            else if (!Main.dedServ && by.whoAmI == Main.myPlayer)
                 Projectile.localAI[0] = 1f;
         }
 
@@ -262,10 +283,10 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             return whirlFrom * (1f - done) + whirlWay * WhirlTurns * MathHelper.TwoPi * done;
         }
 
-        /// <summary>Its head against this machine's own player: 52 through armour, varied as vanilla varies any hit, once.</summary>
+        /// <summary>Its head against this machine's own player (or the copy, under MimicSystem.AlsoOnCopy): 52 through armour, varied as vanilla varies any hit, once each.</summary>
         private void Strike()
         {
-            if (Main.dedServ || Projectile.localAI[0] != 0f || Projectile.alpha > 0)
+            if (Main.dedServ || Through(Projectile) || Projectile.alpha > 0)
                 return;
 
             Player me = Main.LocalPlayer;
@@ -297,7 +318,10 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             if (me.Hurt(reason, damage, direction, false, false, ImmunityCooldownID.General, true, 0f, 1f, Knockback) <= 0)
                 return;
 
-            Projectile.localAI[0] = 1f;
+            if (MimicSystem.Is(me))
+                throughCopy = true;
+            else
+                Projectile.localAI[0] = 1f;
 
             SoundEngine.PlaySound(SoundID.Item1 with { Pitch = -0.4f, Volume = 1f }, me.Center);
             me.PIS().BumpScreenShake(5f, 12);

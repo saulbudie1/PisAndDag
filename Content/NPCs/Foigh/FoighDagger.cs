@@ -2,6 +2,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PisAndDag.Content.Combat;
+using PisAndDag.Content.Mimic;
 using PisAndDag.Content.Particles;
 using Terraria;
 using Terraria.Audio;
@@ -60,9 +61,14 @@ namespace PisAndDag.Content.NPCs.Foigh
             Lighting.AddLight(Projectile.Center, 0.16f, 0.17f, 0.19f);
 
             Strike();
+
+            // Or the Everclear Mirror's copy, as a second player: one knife, in whichever of them it
+            // reaches first (in them, it is gone; turned aside, it is gone).
+            if (Projectile.active)
+                MimicSystem.AlsoOnCopy(Strike);
         }
 
-        /// <summary>Against this machine's own player: a hundred through armour, once.</summary>
+        /// <summary>Against this machine's own player (or the copy, under MimicSystem.AlsoOnCopy): a hundred through armour, once.</summary>
         private void Strike()
         {
             if (Main.dedServ || Projectile.localAI[0] != 0f)

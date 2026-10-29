@@ -18,7 +18,9 @@ namespace PisAndDag.Content.PADplayer
     /// use is over, it is swapped back. The swap is always undone: when the key is let go, when the hotbar
     /// moves, before saving, and before dying, so nothing is ever lost or doubled between the two.
     ///
-    /// Which items: weapons, tools and fishing rods (<see cref="Fits"/>).
+    /// Which items: weapons, tools and fishing rods (<see cref="Fits"/>), lore weapons among them (by request, with the
+    /// Everclear Mirror: "make it so lore weapons can also go offhand"; LoreLock counts the off hand as one of the
+    /// places a lore item may be, and keeps it the only one).
     /// </summary>
     public class OffHandPlayer : ModPlayer
     {
@@ -31,19 +33,29 @@ namespace PisAndDag.Content.PADplayer
         /// <summary>Its item is in the hotbar, being used.</summary>
         internal bool Busy => swappedInto >= 0;
 
+        /// <summary>
+        /// What the off hand holds now, wherever it is: its own slot, or the hotbar slot it was swapped into while it is
+        /// being used. For the Everclear Mirror, whose copy fights with a copy of it (MimicSystem).
+        /// </summary>
+        internal Item Held => swappedInto >= 0 ? Player.inventory[swappedInto] : Item;
+
         /// <summary>The key, held this tick (the local player only).</summary>
         private bool held;
 
         /// <summary>Whether this world has the off hand open.</summary>
         internal static bool Open => GuideQuest.Done;
 
-        /// <summary>What may go in the off hand: something used, that hurts (a catalyst too), digs, chops, hammers or fishes; never a block, a potion or an accessory.</summary>
+        /// <summary>
+        /// What may go in the off hand: something used, that hurts (a catalyst too), digs, chops, hammers or fishes;
+        /// never a block, a potion or an accessory. A lore item may, if it is a weapon (the rest of them are not used
+        /// so, and stay out by the same rules).
+        /// </summary>
         internal static bool Fits(Item item)
         {
             if (item == null || item.IsAir)
                 return true;
 
-            if (item.useStyle == ItemUseStyleID.None || item.accessory || item.createTile >= 0 || item.createWall >= 0 || item.PAD().Lore)
+            if (item.useStyle == ItemUseStyleID.None || item.accessory || item.createTile >= 0 || item.createWall >= 0)
                 return false;
 
             // A weapon by its damage, or by its kind of damage: a catalyst has none of its own till a cast is up

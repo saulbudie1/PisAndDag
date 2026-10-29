@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PisAndDag.Content.Mimic;
 using ReLogic.Content;
 using Terraria;
 using Terraria.DataStructures;
@@ -58,6 +59,9 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         /// <summary>It has landed on this machine's player.</summary>
         protected bool landed;
 
+        /// <summary>It has landed on the Everclear Mirror's copy, a second player on this machine (each is hit once).</summary>
+        protected bool landedCopy;
+
         public override string Texture => KnightRig.Folder + "KnightCrescent";
 
         public override void SetDefaults()
@@ -79,13 +83,31 @@ namespace PisAndDag.Content.NPCs.GildedKnight
 
         public override bool? CanCutTiles() => false;
 
-        /// <summary>Every tick on every machine, after the shot's own AI: its hit on this machine's player.</summary>
+        /// <summary>
+        /// Every tick on every machine, after the shot's own AI: its hit on this machine's player; and
+        /// on the Everclear Mirror's copy, if there is one (MimicSystem.AlsoOnCopy), as on a second player.
+        /// </summary>
         public override void PostAI()
         {
-            if (Main.dedServ || landed || !Live)
+            if (Main.dedServ || !Live)
+                return;
+
+            LandOnLocal();
+            MimicSystem.AlsoOnCopy(LandOnLocal);
+        }
+
+        /// <summary>Its hit on whoever is this machine's player for the moment (the copy, under MimicSystem.AlsoOnCopy): once each.</summary>
+        private void LandOnLocal()
+        {
+            // (Gone already: it ended on the one it met first.)
+            if (!Projectile.active)
                 return;
 
             Player me = Main.LocalPlayer;
+            bool copy = MimicSystem.Is(me);
+
+            if (copy ? landedCopy : landed)
+                return;
 
             // Only on someone in the fight: nothing of his reaches past his walls (a lance of light
             // goes the length of his field and stops at its end).
@@ -95,7 +117,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             // The parry first, if it can be met by one (and whether or not its wind is over: it comes too fast).
             if (Parried && me.GetModPlayer<Combat.ParryPlayer>().Takes(Projectile, ComesFrom, true))
             {
-                landed = true;
+                Landed(copy);
                 return;
             }
 
@@ -107,9 +129,18 @@ namespace PisAndDag.Content.NPCs.GildedKnight
 
             if (me.Hurt(reason, damage, direction, false, false, ImmunityCooldownID.General, true, 0f, 0f, Knock) > 0)
             {
-                landed = true;
+                Landed(copy);
                 OnLanded(me);
             }
+        }
+
+        /// <summary>It is through with this machine's player, or with the copy.</summary>
+        private void Landed(bool copy)
+        {
+            if (copy)
+                landedCopy = true;
+            else
+                landed = true;
         }
 
         /// <summary>What the shot does when it has landed on this machine's player (a burst, its end).</summary>

@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
 using PisAndDag.Content.Combat;
+using PisAndDag.Content.Mimic;
 using PisAndDag.Content.PADplayer;
 using PisAndDag.Content.Particles;
 using PisAndDag.Content.UI;
@@ -1251,9 +1252,23 @@ namespace PisAndDag.Content.NPCs.Pugream
             return false;
         }
 
+        /// <summary>
+        /// The failsafe, on the player's own machine; for the Everclear Mirror's copy (the frenzy's
+        /// victim if it was the one the Eye was after), on its owner's, as if it were the one at the
+        /// keyboard (MimicSystem.AlsoOnCopy).
+        /// </summary>
         public override void PostUpdate()
         {
-            if (Player.whoAmI != Main.myPlayer || Player.statLife <= 1 || !EyeFinale.FrenzyOverdue(Player.whoAmI))
+            if (Player.whoAmI == Main.myPlayer)
+                Failsafe();
+            else if (MimicSystem.Is(Player))
+                MimicSystem.AlsoOnCopy(Failsafe);
+        }
+
+        /// <summary>Dodging the frenzy for longer than the scene will wait: on one.</summary>
+        private void Failsafe()
+        {
+            if (Player.statLife <= 1 || !EyeFinale.FrenzyOverdue(Player.whoAmI))
                 return;
 
             Player.statLife = 1;

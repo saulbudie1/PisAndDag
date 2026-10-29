@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
 using PisAndDag.Content.Combat;
+using PisAndDag.Content.Mimic;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ID;
@@ -657,24 +658,37 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         /// Every live cut of the move against this machine's own player: the blade from its grip
         /// to a little past its point, at every few degrees of the way it moved since the last
         /// tick, so a fast blade cannot pass over anyone between two ticks. The parry first; then
-        /// the hit, once a cut.
+        /// the hit, once a cut. And the same against the Everclear Mirror's copy, if there is one
+        /// (MimicSystem.AlsoOnCopy), which his blades cut as they would a second player.
         /// </summary>
         private void Strike(Move m, float clock)
         {
             if (Main.dedServ)
                 return;
 
+            StrikeOn(m, clock);
+            MimicSystem.AlsoOnCopy(() => StrikeOn(m, clock));
+        }
+
+        /// <summary>
+        /// The cuts of <see cref="Strike"/> against whoever is this machine's player for the moment
+        /// (the copy, under MimicSystem.AlsoOnCopy), each kept to its own count of what has landed.
+        /// </summary>
+        private void StrikeOn(Move m, float clock)
+        {
             Player me = Main.LocalPlayer;
 
             // Only on someone in the fight: nothing of his reaches past his walls.
             if (me == null || !me.active || me.dead || !Fights(me))
                 return;
 
+            bool copy = MimicSystem.Is(me);
+
             for (int k = 0; k < m.Strikes.Length; k++)
             {
                 Strike s = m.Strikes[k];
 
-                if (!s.Live(clock) || (struck & (1 << k)) != 0)
+                if (!s.Live(clock) || ((copy ? struckCopy : struck) & (1 << k)) != 0)
                     continue;
 
                 ParryPlayer parry = me.GetModPlayer<ParryPlayer>();
@@ -713,7 +727,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
                     // The parry first: the blade met at their arc is turned aside, and he with it.
                     if (parry.MeetsLine(NPC, grip, to, BladeWidth))
                     {
-                        struck |= 1 << k;
+                        Struck(copy, k);
                         return;
                     }
 
@@ -726,11 +740,20 @@ namespace PisAndDag.Content.NPCs.GildedKnight
                         continue;
 
                     if (Land(me, s, frame, along))
-                        struck |= 1 << k;
+                        Struck(copy, k);
 
                     break;
                 }
             }
+        }
+
+        /// <summary>Cut <paramref name="k"/> is through with this machine's player, or with the copy.</summary>
+        private void Struck(bool copy, int k)
+        {
+            if (copy)
+                struckCopy |= 1 << k;
+            else
+                struck |= 1 << k;
         }
 
         /// <summary>A cut lands on this machine's player: the hurt (their armour counts), and the look of it. True if it landed.</summary>

@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using PisAndDag.Content.Buffs;
 using PisAndDag.Content.Combat;
 using PisAndDag.Content.Graphics;
+using PisAndDag.Content.Mimic;
 using PisAndDag.Content.Particles;
 using PisAndDag.Content.Projectiles.Base;
 using ReLogic.Content;
@@ -103,6 +104,13 @@ namespace PisAndDag.Content.NPCs.Foigh
         // ai[0] his whoAmI · ai[1] which it is: Plain, Great or Pale
         // localAI[0] 1 once it has hit this machine's player · localAI[1] the ticks this machine has seen of it
 
+        /// <summary>It has hit the Everclear Mirror's copy, a second player on this machine: as localAI[0] is for this machine's player.</summary>
+        private bool throughCopy;
+
+        /// <summary>Whether it is already through whoever is this machine's player for the moment (the copy, under MimicSystem.AlsoOnCopy or while it parries).</summary>
+        private static bool Through(Projectile projectile) =>
+            MimicSystem.Is(Main.LocalPlayer) ? (projectile.ModProjectile as FoighSlash)?.throughCopy ?? false : projectile.localAI[0] != 0f;
+
         public static float SpeedOf(int kind) => kind == Great ? GreatSpeed : kind == Pale ? PaleSpeed : Speed;
 
         public static float TallOf(int kind) => kind == Great ? GreatTall : Tall;
@@ -160,7 +168,7 @@ namespace PisAndDag.Content.NPCs.Foigh
         public override void SetStaticDefaults()
         {
             // In the air, enough of it there, and not already through this machine's player.
-            Parry.AddProjectile(Type, projectile => projectile.localAI[0] == 0f && Hurts(projectile));
+            Parry.AddProjectile(Type, projectile => !Through(projectile) && Hurts(projectile));
         }
 
         public override void SetDefaults()
@@ -227,13 +235,19 @@ namespace PisAndDag.Content.NPCs.Foigh
             Wake(kind, age, shown);
 
             if (his && shown >= HurtsFrom)
+            {
                 Strike(foigh, kind);
+
+                // And the Everclear Mirror's copy, as a second player (gone already if this machine's player turned it aside).
+                if (Projectile.active)
+                    MimicSystem.AlsoOnCopy(() => Strike(foigh, kind));
+            }
         }
 
-        /// <summary>Against this machine's own player: half his sword's blow through armour, and its wound. Once.</summary>
+        /// <summary>Against this machine's own player (or the copy, under MimicSystem.AlsoOnCopy): half his sword's blow through armour, and its wound. Once each.</summary>
         private void Strike(Foigh foigh, int kind)
         {
-            if (Projectile.localAI[0] != 0f)
+            if (Through(Projectile))
                 return;
 
             Player me = Main.LocalPlayer;
@@ -264,7 +278,10 @@ namespace PisAndDag.Content.NPCs.Foigh
                 return;
 
             // It goes on through them, and is theirs no more.
-            Projectile.localAI[0] = 1f;
+            if (MimicSystem.Is(me))
+                throughCopy = true;
+            else
+                Projectile.localAI[0] = 1f;
 
             // His sword's cut still, and it leaves what his sword leaves. (Not the wind.)
             if (foigh.Phase >= 3 && kind != Pale)

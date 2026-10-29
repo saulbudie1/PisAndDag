@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PisAndDag.Content.Combat;
 using PisAndDag.Content.Graphics;
+using PisAndDag.Content.Mimic;
 using PisAndDag.Content.Particles;
 using PisAndDag.Content.Projectiles.Base;
 using ReLogic.Content;
@@ -146,6 +147,7 @@ namespace PisAndDag.Content.NPCs.Foigh
         private void Entered(Move from)
         {
             struck = 0;
+            struckCopy = 0;
             since = 0;
             guardsSeen = guards;
 
@@ -168,14 +170,15 @@ namespace PisAndDag.Content.NPCs.Foigh
                     PassageBegins();
                     break;
 
-                // His second phase's own. Caught, and it is this machine's player: they are
-                // pulled in to his hand from where they are now.
+                // His second phase's own. Caught, and it is this machine's player (or the
+                // Everclear Mirror's copy, carried here as they are): they are pulled in to
+                // his hand from where they are now.
                 case Move.Caught:
                     snatched = M.SnatchTicks;
 
-                    if (!Main.dedServ && held == Main.myPlayer)
+                    if (!Main.dedServ && held >= 0 && held < Main.maxPlayers && (held == Main.myPlayer || MimicSystem.Is(Main.player[held])))
                     {
-                        snatchedFrom = Main.LocalPlayer.Center;
+                        snatchedFrom = Main.player[held].Center;
                         snatched = 0;
                     }
                     break;
@@ -239,7 +242,10 @@ namespace PisAndDag.Content.NPCs.Foigh
             // his way to do it: the cut, the step up, the moment beside them, the blow (in
             // the air, or the one that ends on the ground).
             if (State != Move.Upcut && State != Move.Flash && State != Move.Hang && State != Move.Smite && State != Move.MillEnd)
+            {
                 liftedMe = 0;
+                liftedCopy = 0;
+            }
 
             // Not out of a flash step, which is a cut; not on the road, where every pose is
             // already the last one's end; not onto his knee or over his sword, which are
@@ -1391,7 +1397,10 @@ namespace PisAndDag.Content.NPCs.Foigh
             Wind(me.Center, me.Center + new Vector2(facing * 16f, 170f), 10);
             PADParticleHandler.SpawnParticle(new ParryRing(me.Center, 10f, 86f, 12, Steel * 0.4f));
             Sound(SoundID.DD2_MonkStaffGroundImpact, me.Center, 0.1f, 0.7f);
-            Cinematic.Flash(new Color(236, 244, 255), 0.1f);
+
+            // (The flash is the screen's, the player's: not for the copy.)
+            if (!MimicSystem.Is(me))
+                Cinematic.Flash(new Color(236, 244, 255), 0.1f);
         }
 
         /// <summary>
@@ -1399,7 +1408,8 @@ namespace PisAndDag.Content.NPCs.Foigh
         /// is near, all the way along it; and against this machine's own player, as his
         /// sword is (Strike). The parry first, from whichever end of it they face (it lies
         /// through them: it is the moment that has to be right, not the way they look);
-        /// then the hit, through armour.
+        /// then the hit, through armour. The Everclear Mirror's copy the same, as a second
+        /// player (MimicSystem.AlsoOnCopy).
         /// </summary>
         private void LateCut()
         {
@@ -1434,6 +1444,13 @@ namespace PisAndDag.Content.NPCs.Foigh
 
             Shake(6f, 12);
 
+            LateCutOn(from, to, along);
+            MimicSystem.AlsoOnCopy(() => LateCutOn(from, to, along));
+        }
+
+        /// <summary>The late cut's line against whoever is this machine's player for the moment (the copy, under MimicSystem.AlsoOnCopy).</summary>
+        private void LateCutOn(Vector2 from, Vector2 to, Vector2 along)
+        {
             Player me = Main.LocalPlayer;
 
             if (me == null || !me.active || me.dead)

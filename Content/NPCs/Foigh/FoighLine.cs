@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using PisAndDag.Content.Buffs;
 using PisAndDag.Content.Combat;
 using PisAndDag.Content.Graphics;
+using PisAndDag.Content.Mimic;
 using PisAndDag.Content.Particles;
 using PisAndDag.Content.Projectiles.Base;
 using ReLogic.Content;
@@ -98,6 +99,27 @@ namespace PisAndDag.Content.NPCs.Foigh
 
         // ai[0] his whoAmI · ai[1] the way it lies, in radians · ai[2] how far it runs each side of its middle
         // localAI[0] 1 once it is through with this machine's player · localAI[1] the ticks this machine has seen of it
+
+        /// <summary>It is through with the Everclear Mirror's copy, a second player on this machine: as localAI[0] is for this machine's player.</summary>
+        private bool throughCopy;
+
+        /// <summary>Whether it is through with whoever is this machine's player for the moment (the copy, under MimicSystem.AlsoOnCopy or while it parries).</summary>
+        private static bool Through(Projectile projectile) =>
+            MimicSystem.Is(Main.LocalPlayer) ? (projectile.ModProjectile as FoighLine)?.throughCopy ?? false : projectile.localAI[0] != 0f;
+
+        /// <summary>It is through with this player: this machine's, or the copy.</summary>
+        private static void ThroughWith(Projectile projectile, Player player)
+        {
+            if (MimicSystem.Is(player))
+            {
+                if (projectile.ModProjectile is FoighLine line)
+                    line.throughCopy = true;
+            }
+            else
+            {
+                projectile.localAI[0] = 1f;
+            }
+        }
 
         /// <summary>Ticks this one shows before it opens, and hangs after it has cut: as it was let out (Let), and sent with it to every machine.</summary>
         private int shows = (ShowsLeast + ShowsMost) / 2;
@@ -239,8 +261,8 @@ namespace PisAndDag.Content.NPCs.Foigh
         {
             // Open, not already through with this machine's player, and lying through them.
             // Turned aside, it is through with them (and opens for everybody else).
-            Parry.AddProjectile(Type, projectile => projectile.localAI[0] == 0f && Open(projectile) && LiesThrough(projectile, Main.LocalPlayer),
-                (projectile, by) => projectile.localAI[0] = 1f);
+            Parry.AddProjectile(Type, projectile => !Through(projectile) && Open(projectile) && LiesThrough(projectile, Main.LocalPlayer),
+                (projectile, by) => ThroughWith(projectile, by));
         }
 
         public override void SetDefaults()
@@ -308,8 +330,15 @@ namespace PisAndDag.Content.NPCs.Foigh
             {
                 Strike(foigh);
 
+                // And the Everclear Mirror's copy, as a second player: it cuts each of them once.
+                MimicSystem.AlsoOnCopy(() => Strike(foigh));
+
+                // The ball's cut down what fights for either of them (the copy's, on this machine, as its own).
                 if (ball)
+                {
                     CutDown();
+                    MimicSystem.AlsoOnCopy(CutDown);
+                }
             }
         }
 
@@ -347,10 +376,10 @@ namespace PisAndDag.Content.NPCs.Foigh
             SoundEngine.PlaySound(SoundID.DD2_GhastlyGlaivePierce with { Pitch = pale ? -0.2f : -0.45f, Volume = 0.55f, PitchVariance = 0.12f, MaxInstances = 3 }, Projectile.Center);
         }
 
-        /// <summary>Against this machine's own player, lying through them: the parry first; then half his sword's blow through armour, and in his third phase its wound. Once.</summary>
+        /// <summary>Against this machine's own player (or the copy, under MimicSystem.AlsoOnCopy), lying through them: the parry first; then half his sword's blow through armour, and in his third phase its wound. Once each.</summary>
         private void Strike(Foigh foigh)
         {
-            if (Projectile.localAI[0] != 0f)
+            if (Through(Projectile))
                 return;
 
             Player me = Main.LocalPlayer;
@@ -377,7 +406,7 @@ namespace PisAndDag.Content.NPCs.Foigh
             if (!Foigh.Pierce(me, "FoighLine", damage, direction, Knockback))
                 return;
 
-            Projectile.localAI[0] = 1f;
+            ThroughWith(Projectile, me);
 
             // His sword's cut, and in his third phase it leaves what his sword leaves.
             if (foigh.Phase >= 3)

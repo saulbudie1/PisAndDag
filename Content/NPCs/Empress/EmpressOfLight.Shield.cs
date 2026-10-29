@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PisAndDag.Content.Combat;
+using PisAndDag.Content.Mimic;
 using PisAndDag.Content.PADplayer;
 using PisAndDag.Content.Particles;
 using Terraria;
@@ -199,9 +200,15 @@ namespace PisAndDag.Content.NPCs.Empress
                         Vector2 at = ShieldAt(npc);
                         float speed = Math.Min(ShieldMost, ShieldStart + ShieldGather * t);
 
-                        // Whoever it meets, before it: this machine's own player, pushed out of its way.
+                        // Whoever it meets, before it: this machine's own player, pushed out of its way;
+                        // and the Everclear Mirror's copy, as a second player (MimicSystem.AlsoOnCopy).
                         if (!Main.dedServ)
-                            ShieldShoves(at, actTurn.ToRotationVector2() * speed);
+                        {
+                            Vector2 going = actTurn.ToRotationVector2() * speed;
+
+                            ShieldShoves(at, going);
+                            MimicSystem.AlsoOnCopy(() => ShieldShoves(at, going));
+                        }
 
                         if (!Main.dedServ && t % 6 == 0)
                             Sound(EmpressSounds.Crack, at, 0.3f + 0.05f * (t / 6 % 4), 0.35f, 3);
@@ -228,7 +235,7 @@ namespace PisAndDag.Content.NPCs.Empress
         /// <summary>How near the glass is to going: what it has taken, as a share of what it takes.</summary>
         private float ShieldStrain => MathHelper.Clamp(shieldTaken / (float)ShieldBreaks, 0f, 1f);
 
-        /// <summary>This machine's player, if the sphere meets them: put out of its way, and carried before it.</summary>
+        /// <summary>This machine's player (or the copy, under MimicSystem.AlsoOnCopy), if the sphere meets them: put out of its way, and carried before it.</summary>
         private static void ShieldShoves(Vector2 at, Vector2 going)
         {
             Player me = Main.LocalPlayer;

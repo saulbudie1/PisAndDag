@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
 using PisAndDag.Content.Combat;
+using PisAndDag.Content.Mimic;
 using PisAndDag.Content.Particles;
 using Terraria;
 using Terraria.Audio;
@@ -1070,9 +1071,12 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             }
 
             Scald(mouth, side);
+
+            // And the Everclear Mirror's copy, if it stands in it, as a second player would.
+            MimicSystem.AlsoOnCopy(() => Scald(mouth, side));
         }
 
-        /// <summary>The steam on this machine's own player, if they are standing in this jet.</summary>
+        /// <summary>The steam on this machine's own player (or the copy, under MimicSystem.AlsoOnCopy), if they are standing in this jet.</summary>
         private static void Scald(Vector2 from, Vector2 side)
         {
             if (!Abomanation.VentScalds)

@@ -168,6 +168,33 @@ namespace PisAndDag.Content.Items.LoreItem
                 }
             }
 
+            // The off hand counts as well, since a lore weapon may be held there (OffHandPlayer.Fits). Against the
+            // shelf it gives way, as a loose copy does; against a loose copy in the pack it is the one kept: putting a
+            // thing in the off hand is as deliberate as shelving it.
+            Item hand = Player.GetModPlayer<PADplayer.OffHandPlayer>().Item;
+
+            if (IsLore(hand))
+            {
+                if (CodexHolds(hand.type))
+                {
+                    hand.TurnToAir();
+                    Scold(Duplicate);
+                }
+                else
+                {
+                    for (int i = 0; i < SweptSlots; i++)
+                    {
+                        Item loose = Player.inventory[i];
+
+                        if (!IsLore(loose) || loose.type != hand.type)
+                            continue;
+
+                        loose.TurnToAir();
+                        Scold(Duplicate);
+                    }
+                }
+            }
+
             for (int i = 0; i < SweptSlots; i++)
             {
                 Item keep = Player.inventory[i];

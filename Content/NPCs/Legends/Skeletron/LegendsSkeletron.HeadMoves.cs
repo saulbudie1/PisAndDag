@@ -2,6 +2,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PisAndDag.Content.Combat;
+using PisAndDag.Content.Mimic;
 using PisAndDag.Content.NPCs.Empress;
 using PisAndDag.Content.Particles;
 using Terraria;
@@ -175,9 +176,13 @@ namespace PisAndDag.Content.NPCs.Legends
 
                 npc.velocity = way * speed - drift;
 
-                // Whoever is in his way, on their own machine: no hit, no immunity, dead.
+                // Whoever is in his way, on their own machine: no hit, no immunity, dead. The
+                // Everclear Mirror's copy on its owner's (MimicSystem.AlsoOnCopy), as a second player.
                 if (!Main.dedServ)
+                {
                     Crush(npc);
+                    MimicSystem.AlsoOnCopy(() => Crush(npc));
+                }
 
                 if (landed && strikes)
                     Landing(npc);
@@ -343,7 +348,7 @@ namespace PisAndDag.Content.NPCs.Legends
             return touching;
         }
 
-        /// <summary>The local player, if the skull's path this tick covers them.</summary>
+        /// <summary>The local player (or the copy, under MimicSystem.AlsoOnCopy), if the skull's path this tick covers them.</summary>
         private static void Crush(NPC npc)
         {
             Player me = Main.LocalPlayer;

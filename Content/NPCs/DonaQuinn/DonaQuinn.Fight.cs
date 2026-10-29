@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
 using PisAndDag.Content.Combat;
+using PisAndDag.Content.Mimic;
 using PisAndDag.Content.PADplayer;
 using PisAndDag.Content.Projectiles.Base;
 using PisAndDag.Content.UI;
@@ -246,6 +247,17 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         /// </summary>
         private bool lanced;
 
+        /// <summary>
+        /// The same three for the Everclear Mirror's copy, a second player on this machine: her
+        /// lance, Triunfo and the swing each land once on it, apart from this machine's player.
+        /// </summary>
+        private bool rammedCopy;
+        private bool swungCopy;
+        private bool lancedCopy;
+
+        /// <summary>Whether whoever is this machine's player for the moment (the copy, under MimicSystem.AlsoOnCopy) is the copy.</summary>
+        private static bool OnCopy => MimicSystem.Is(Main.LocalPlayer);
+
         private static readonly string[] Barks =
         {
             "The grrreat Dame Quilt shall be victorious!",
@@ -304,6 +316,8 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
                     {
                         rammed = false;
                         lanced = false;
+                        rammedCopy = false;
+                        lancedCopy = false;
 
                         // Committed: at them, and on past them.
                         if (Authority && target != null)
@@ -420,6 +434,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
                     if (fresh)
                     {
                         swung = false;
+                        swungCopy = false;
                         swingNow = SwingAngle(0f);
                     }
 
@@ -513,6 +528,15 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             LanceStrike(donkey);
             SwingStrike(donkey);
             RamStrike(donkey);
+
+            // And the Everclear Mirror's copy, if there is one: hit by all three as a second player
+            // would be, each kept apart from this machine's player (OnCopy).
+            MimicSystem.AlsoOnCopy(() =>
+            {
+                LanceStrike(donkey);
+                SwingStrike(donkey);
+                RamStrike(donkey);
+            });
         }
 
         /// <summary>
@@ -807,7 +831,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         /// </summary>
         private void LanceStrike(TriunfoTheDonkey donkey)
         {
-            if (Main.dedServ || State != Phase.Charge || !hasLance || lanced || donkey.Backing)
+            if (Main.dedServ || State != Phase.Charge || !hasLance || (OnCopy ? lancedCopy : lanced) || donkey.Backing)
                 return;
 
             // Forward: backing off for a run at a bank is not a charge.
@@ -851,12 +875,17 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             // past, so it is still across their arc for some ticks after it hits; without
             // this a parry pressed after the hit would turn aside what had already gone
             // through them.
-            lanced = true;
+            if (OnCopy)
+                lancedCopy = true;
+            else
+                lanced = true;
 
             SoundEngine.PlaySound(SoundID.Item1 with { Pitch = -0.3f, Volume = 0.9f }, pose.Tip);
             me.PIS().BumpScreenShake(4f + 3f * hard, 10);
 
-            BarkMaybe(0.7f, TakeThat, YourHair);
+            // (Her taunts are for the player, not for the copy.)
+            if (!OnCopy)
+                BarkMaybe(0.7f, TakeThat, YourHair);
         }
 
         /// <summary>A hit on this machine's player that goes through their armour (Player.Hurt with all of their defence ignored). True if it landed.</summary>
@@ -995,7 +1024,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         /// </summary>
         private void RamStrike(TriunfoTheDonkey donkey)
         {
-            if (Main.dedServ || State != Phase.Ram || rammed || donkey.Backing)
+            if (Main.dedServ || State != Phase.Ram || (OnCopy ? rammedCopy : rammed) || donkey.Backing)
                 return;
 
             float speed = donkey.NPC.velocity.X * donkey.Facing;
@@ -1033,7 +1062,10 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             if (me.Hurt(reason, damage, donkey.Facing, false, false, ImmunityCooldownID.General, true, 0f, 0f, RamKnockback) <= 0)
                 return;
 
-            rammed = true;
+            if (OnCopy)
+                rammedCopy = true;
+            else
+                rammed = true;
 
             SoundEngine.PlaySound(SoundID.Dig with { Pitch = -0.5f, Volume = 1f }, me.Center);
             me.PIS().BumpScreenShake(3f + 3f * hard, 10);
@@ -1105,7 +1137,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         /// </summary>
         private void SwingStrike(TriunfoTheDonkey donkey)
         {
-            if (Main.dedServ || State != Phase.Swing || swung || !hasLance)
+            if (Main.dedServ || State != Phase.Swing || (OnCopy ? swungCopy : swung) || !hasLance)
                 return;
 
             float p = Timer / (float)SwingTicks;
@@ -1147,7 +1179,10 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         /// </summary>
         private void Swept(Player me, bool up)
         {
-            swung = true;
+            if (OnCopy)
+                swungCopy = true;
+            else
+                swung = true;
 
             int damage = Main.DamageVar(SwingDamage, -me.luck);
 
@@ -1162,7 +1197,8 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             SoundEngine.PlaySound(SoundID.Dig with { Pitch = -0.4f, Volume = 0.8f }, me.Center);
             me.PIS().BumpScreenShake(up ? 6f : 8f, 14);
 
-            BarkMaybe(0.6f, TakeThat, YourHair);
+            if (!OnCopy)
+                BarkMaybe(0.6f, TakeThat, YourHair);
         }
 
         // ============================================================
