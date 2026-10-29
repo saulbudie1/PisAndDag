@@ -11,8 +11,8 @@ namespace PisAndDag.Content.Buffs
     /// </summary>
     public class SandSettling : ModBuff
     {
-        /// <summary>Ten seconds.</summary>
-        public const int Ticks = 10 * 60;
+        /// <summary>Seven seconds.</summary>
+        public const int Ticks = 7 * 60;
 
         public override void SetStaticDefaults()
         {

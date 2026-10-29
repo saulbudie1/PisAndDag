@@ -634,34 +634,23 @@ Items: {
 
 	HarenaeumOre: {
 		DisplayName: Harenaeum Ore
-		Tooltip: "'The desert keeps its gold in the sandstone.'"
+		Tooltip: 
 	}
 
 	HarenaeumBar: {
 		DisplayName: Harenaeum Bar
-		Tooltip: "'Smelted with a handful of the sand it came from.'"
+		Tooltip: "Grimey"
 	}
 
 	PocketSandstorm: {
 		DisplayName: Pocket Sandstorm
-		Tooltip:
-			'''
-			A whirl of sand goes round the yoyo, 3 tiles out
-			It flings needles of sand through whatever is caught in it
-			'A little weather, on a string.'
-			'''
+		Tooltip: Yoyo that spins needles of sand around it.
 	}
 
 	Corosion: {
 		DisplayName: Corosion
-		Tooltip:
-			'''
-			Punches at the cursor: a jab, a cross, then an uppercut that throws enemies up
-			Standing, you step in with each blow and back out
-			What you are punching cannot hurt you by touch for a moment. Bosses, and anything that cannot be knocked back, touch for half
-			Right-click to scatter into sand and step back 10 tiles, untouchable (10 second cooldown)
-			'What the wind does in a thousand years, in three.'
-			'''
+		Tooltip:  
+			Right-click to scatter into sand and step back 10 tiles, untouchable (7 second cooldown) 
 	}
 
 	ScorpiusServus: {
@@ -669,9 +658,6 @@ Items: {
 		Tooltip:
 			'''
 			Grows a scorpion's tail from your back to fight for you
-			It strikes over your shoulder at enemies within 13 tiles, poisoning them
-			Each summon grows another tail
-			'It was someone else's tail, once.'
 			'''
 	}
 
@@ -679,11 +665,8 @@ Items: {
 		DisplayName: Jelle's Sable Helper
 		Tooltip:
 			'''
-			Lets out a ribbon of sand that goes round you
-			When 3 or more enemies, or a boss, come near, it stands up as a ballista
-			The ballista looses a bolt a second, as far as 60 tiles
-			After 5 seconds with nothing to shoot, it falls back to sand
-			'Jelle, the arch witch, lends it out. It comes back.'
+			A trail of sand flies around your body
+			When encountering a hoard or a boss, it forms a ballista to fight for you.
 			'''
 	}
 
@@ -691,22 +674,14 @@ Items: {
 		DisplayName: Sidewinder
 		Tooltip:
 			'''
-			Arrows weave side to side as they fly
-			Arrows that land burrow to the nearest enemy within 25 tiles
-			and come up under it as a spike of sand, for 50% more damage
-			'It goes sideways. It gets there.'
+			Arrow shot onto the ground will dig its way up to the nearest enemy, dealing extra damage.
 			'''
 	}
 
 	TheLastGrain: {
 		DisplayName: The Last Grain
 		Tooltip:
-			'''
-			Right-click to turn its hourglass over. It holds 10 seconds of sand
-			Turned before it runs out, only the sand that had fallen runs again
-			While sand falls, each shot blasts packed sand from the muzzle, hurting what is near it
-			Run out, its shots do almost nothing, and you move 30% slower holding it
-			'It stops when the sand stops. So do you.'
+			''' 
 			'''
 	}
 
@@ -716,7 +691,7 @@ Items: {
 			'''
 			[c/9e6fab:A Seal]
 			Earth incantations deal 15% more damage
-			'Fired clay, gold, and a place for your thumb.'
+			'It is used to rest the heads during prayers.'
 			'''
 	}
 
@@ -724,10 +699,8 @@ Items: {
 		DisplayName: Mini Sandstorm
 		Tooltip:
 			'''
-			Calls a small tornado of sand up out of the ground under the cursor, for 6 seconds
-			It drifts after enemies, carries light ones up and throws them out to fall
-			The fall hurts them. Heavy and flying enemies are only hurt
-			'It is only small if you are not in it.'
+			Calls a small tornado of sand
+			Tornado shoots small enemies upwards.
 			'''
 	}
 }
