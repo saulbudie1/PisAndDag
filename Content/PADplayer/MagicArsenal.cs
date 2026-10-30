@@ -39,6 +39,10 @@ namespace PisAndDag.Content.PADplayer
     /// stays there, out of use, until the necklace is worn again or it is taken out by hand:
     /// a shut slot gives back what it holds (near a house, as an open one does) but takes
     /// nothing. Nothing in it is ever lost.
+    ///
+    /// The Empress' Blessing, worn, opens one more the same way: the first past those earned and
+    /// the necklace's (<see cref="BlessingSlot"/>). With the necklace off it takes the necklace's
+    /// place, the slot past it shutting; what is in each stays where it is.
     /// </summary>
     public class MagicArsenal : ModPlayer
     {
@@ -61,11 +65,27 @@ namespace PisAndDag.Content.PADplayer
         /// </summary>
         public bool Necklace { get; private set; }
 
-        /// <summary>How many of the ten can be used right now: those earned, and one more for the necklace.</summary>
-        public int OpenSlots => Maxed ? MaxSlots : System.Math.Min(MaxSlots, Unlocked + (Necklace ? 1 : 0));
+        /// <summary>
+        /// Whether the Empress' Blessing was worn when everything worn last had its say (PADPlayer.EmpressBlessing, read in
+        /// <see cref="PostUpdateEquips"/>), held till the next time as <see cref="Necklace"/> is.
+        /// </summary>
+        public bool Blessing { get; private set; }
+
+        /// <summary>How many of the ten can be used right now: those earned, and one more each for the necklace and the Blessing.</summary>
+        public int OpenSlots => Maxed ? MaxSlots : System.Math.Min(MaxSlots, Unlocked + (Necklace ? 1 : 0) + (Blessing ? 1 : 0));
 
         /// <summary>The slot the necklace holds open, or -1: none worn, all ten earned, or all ten open for testing.</summary>
         public int NecklaceSlot => !Maxed && Necklace && Unlocked < MaxSlots ? Unlocked : -1;
+
+        /// <summary>The slot the Empress' Blessing holds open (the first past those earned and the necklace's), or -1.</summary>
+        public int BlessingSlot
+        {
+            get
+            {
+                int slot = Unlocked + (Necklace ? 1 : 0);
+                return !Maxed && Blessing && slot < MaxSlots ? slot : -1;
+            }
+        }
 
         /// <summary>The slots, always <see cref="MaxSlots"/> long, air where empty. Saved.</summary>
         public readonly Item[] Slots = new Item[MaxSlots];
@@ -100,7 +120,9 @@ namespace PisAndDag.Content.PADplayer
 
         public override void PostUpdateEquips()
         {
-            Necklace = Player.GetModPlayer<PADPlayer>().BasicNecklace;
+            PADPlayer pad = Player.GetModPlayer<PADPlayer>();
+            Necklace = pad.BasicNecklace;
+            Blessing = pad.EmpressBlessing;
         }
 
         /// <summary>

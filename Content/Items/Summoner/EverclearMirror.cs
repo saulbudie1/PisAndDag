@@ -31,8 +31,12 @@ namespace PisAndDag.Content.Items.Summoner
     /// </summary>
     public class EverclearMirror : ModItem
     {
-        /// <summary>Minion slots it takes (by request).</summary>
-        public const int Slots = 15;
+        /// <summary>
+        /// Minion slots it needs (by request, later: "Make it so that the mirror costs 12 minion slot"). It takes all of
+        /// its owner's in the end ("So it takes up all minion slots": MimicAnchor), each past these twelve making the copy
+        /// stronger (MimicSystem.Extra).
+        /// </summary>
+        public const int Slots = 12;
 
         /// <summary>Mine.</summary>
         public const int ManaCost = 80;
@@ -83,6 +87,17 @@ namespace PisAndDag.Content.Items.Summoner
 
             if (!MimicSystem.Summon(player, at))
                 return false;
+
+            // It takes every slot: the minions the game left it room beside go now (sentries are not minions, and stay).
+            int anchor = ModContent.ProjectileType<MimicAnchor>();
+
+            for (int i = 0; i < Main.maxProjectiles; i++)
+            {
+                Projectile p = Main.projectile[i];
+
+                if (p.active && p.owner == player.whoAmI && p.minion && p.type != anchor)
+                    p.Kill();
+            }
 
             player.AddBuff(Item.buffType, 2);
             Projectile.NewProjectile(source, at, Vector2.Zero, type, 0, 0f, player.whoAmI);

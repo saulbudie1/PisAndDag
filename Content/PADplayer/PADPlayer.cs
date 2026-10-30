@@ -114,10 +114,17 @@ namespace PisAndDag.Content.PADplayer
         /// <summary>The Necklace Of The Academy is worn this tick.</summary>
         public bool BasicNecklace;
 
+        /// <summary>
+        /// The Empress' Blessing is worn this tick. Like the necklace, it holds one more Magic Arsenal slot open (MagicArsenal
+        /// reads it); its dash and its minion slot are its own (AccessoryDash, EmpressBlessing).
+        /// </summary>
+        public bool EmpressBlessing;
+
         public override void ResetEffects()
         {
             surging = false;
             BasicNecklace = false;
+            EmpressBlessing = false;
         }
 
         /// <summary>

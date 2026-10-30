@@ -18,6 +18,8 @@
 > *[Session 7 ended at §16.98. **A fresh chat starts at §16.99**, the end-of-session-7
 > handoff: setup, rules, state, open items. Session 8 writes §17.]*
 > *[Session 8 correction: §16.100 sits after §16.99 and belongs to session 7; read it too. Session 8's entries start at §17.1.]*
+> *[**A fresh chat starts at §17.35**, session 8's handoff: setup, delivering, rules, state, open items, and two
+> chats at once (the Everclear Mirror's training beside the main chat). Read every section after it too. The next main chat after session 8 writes §18.]*
 
 ---
 
@@ -23647,3 +23649,371 @@ Asked: "generate preview".
    ground; `README.md`: runs 5 and 6; `logs/`: their logs).
 4. **Checked**: built against the mod as it is on the computer (591 files, no errors; the warnings are the old ten); the
    trainer built and run; every file on the computer compared with what was sent.
+
+## 17.32 Session 8, later still: r80, the copy trained against sixteen bosses, every weapon sorted and tried
+
+Asked, over the day: train it against Legends Empress of Light, Legends Queen Slime, Legends Amalgaermis, the Moon Lord
+and Plantera ("as good as a pro player", Expert, the world's Legends flag); wings used when it has them; every weapon,
+vanilla, this mod's and Calamity's, "closer is better" for Blade of Mors and Dancing Sand; out of mana it stands still
+to get it back; idling "flop jiggly" fixed; this mod's NPCs' hits hurting it; Calamity's bosses too (Crabulon,
+Brimstone Elemental, the Plaguebringer Goliath, Providence, then the Devourer of Gods, Anahita and the Leviathan, Yharon,
+the Ceaseless Void, the Exo Mechs); "it isn't shooting"; the weapons sorted again, by machine learning, melee into true
+melee / a sword that throws / a held-out blade, with or without a right click, and "ranged" not just guns and bows (all
+the copy deals becomes summon damage, so the class does not matter); special weapons learned, not hard-coded ("I may
+create mind boggling weapons"); train hard until morning.
+
+1. **In the mod** (`Content/Mimic`; the trainer and its data stay in `Claude outputs`, outside it):
+   - `MimicBrain.cs`: 38 numbers now (`Lane`: it keeps off the line a body after it would charge along; `Commit`: with a
+     sword or spear it takes on part of its own target's touch to get within reach); bodies that do not hurt to touch
+     just now (Yharon between charges) told of at half weight and a little bigger; sprays and gusts used at a third of
+     their reach; each weapon kind's own trained numbers (`TrainedByKind`, 13 kinds); and **ways of using a weapon**
+     learned in play, the same for any weapon: hold the left click, the right, charge and loose, a long charge, left
+     and right in turn, a right click and then the left aimed at what it put out (a coin, a mine). Each way's damage a
+     tick is measured as it fights and the best used most, the others still tried now and then (more freely against a
+     target dummy). Nothing about any weapon is written in.
+   - `MimicPlayer.cs`: what the copy learned (how far each weapon lands best, which way) is saved with its owner and
+     taken up again next time a copy of theirs is made.
+   - `MimicSense.cs`: Calamity's beams, laser walls, warnings and growing blasts read (`MimicCalamity.cs`, by name, no
+     dependency); a held-out blade read as one (the Arks were read as guns); a weapon seen held out once the copy uses it
+     (its held projectile is its shot) is sorted so from then on; what its right click puts out noted.
+   - `MimicWeapons.cs`: the kinds, from `Claude outputs\MimicTrainer_r80\weapons\cluster4.py`: by rule first (true
+     melee, held-out blade, sword that throws, spear, yoyo or flail, whip, held-out shooter, thrown, shooter, summon),
+     then a small neural network (an autoencoder, 21 numbers in, 4 out, its weights in the file) splits the big styles
+     where its description parts cleanly: 13 kinds. Any weapon of any mod is sorted the same way.
+
+     | kind | style | weapons | | kind | style | weapons |
+     |---|---|---|---|---|---|---|
+     | 0 | true melee | 114 | | 7 | held-out shooter | 114 |
+     | 1 | held-out blade | 69 | | 8 | thrown | 105 |
+     | 2 | sword that throws | 51 | | 9 | thrown (second) | 49 |
+     | 3 | sword that throws (second) | 36 | | 10 | shooter (ranged) | 314 |
+     | 4 | spear | 39 | | 11 | shooter (magic) | 86 |
+     | 5 | yoyo or flail | 49 | | 12 | summon | 143 |
+     | 6 | whip | 10 | | | | |
+
+   - `MimicWeaponRanges.cs`: the distance each weapon did clearly best at, where it was clearly better than its kind's
+     own: 36 of the 1,179 tried (16 vanilla, 19 Calamity's, this mod's Dented Megashark); the rest go by their kind,
+     and every weapon still learns its own as it fights. Each weapon was tried at its kind's distance and three set ones
+     (150, 350, 650 pixels), six fights each; the counts were shrunk toward the weapon's kind before comparing, so a
+     lucky fight does not move a weapon. Sprays (Dancing Sand and the like) are left to the brain's own rule.
+   - `MimicSystem.cs`: its coins are its owner's, renewed, as its ammunition is (Midas Prime's right click; the owner's
+     are not spent); `/mirror` now says how much each way of using the held weapon has landed.
+2. **The trainer** (`Claude outputs\MimicTrainer_r80`, with a README; the laptop's copies in `Claude outputs\r80_laptop_*`):
+   sixteen bosses written from their code at Expert: the five above, and Calamity's Crabulon, Brimstone Elemental,
+   Plaguebringer Goliath, Providence, Anahita and the Leviathan, the Ceaseless Void, the Devourer of Gods, Yharon,
+   Thanatos, Ares, and Artemis and Apollo (each Exo Mech as the fight where you pick it, alone: the others joining at
+   70% and 40% are left out); the endgame owners with Calamity's gear (defence 150-210, damage reduction 20-35%, life
+   regeneration). Rounds A to G, each an evolution strategy (CMA-ES); F and G trained each of the 13 kinds against all
+   sixteen; the weapon sweep tried all 1,179 weapons (part of it on the laptop).
+3. **The final test.** Three sets of 24 weapons, picked at random across every kind (vanilla, Calamity's, this mod's),
+   each against all sixteen bosses, up to 45 seconds a fight, on a seed no training or judging used: the
+   owner alone, and with the copy as it is now in the mod.
+
+   | 24 weapons, 16 bosses | owner died, alone | with the copy | boss taken, alone | with the copy | the copy's share | the copy died |
+   |---|---|---|---|---|---|---|
+   | vanilla | 58% | 44% | 5.0% | 11.3% | 30% | 3.9% |
+   | Calamity | 59% | 44% | 8.0% | 15.7% | 36% | 2.6% |
+   | this mod | 59% | 41% | 6.4% | 13.8% | 34% | 2.8% |
+   | **all** | **59%** | **43%** | **6.4%** | **13.6%** | **33%** | **3.1%** |
+
+   "Owner died": fights where the owner died at least once; "boss taken": the share of its life that came off in the
+   fight; "the copy's share": of that, what the copy landed.
+
+   Per kind, on ten weapons of each and fights no run had seen, the kind's own trained numbers against round A's one set
+   for all: better for the second sword that throws (score +14), spears (+11), yoyos and flails (+11), the second thrown
+   (+10.5) and summons (+25); worse for true melee (-39), held-out blades (-19.5), held-out shooters (-18), magic
+   shooters (-10), whips (-9) and the first sword that throws (-6); the same for thrown (+1.5) and ranged shooters
+   (-1.5). The five that gained keep their own; the other eight fight by round A's numbers. On the final test that mix
+   did a little better than either alone (the owner died in 43% of fights with it, 43.7% with round A's for every kind,
+   45.2% with each kind's own).
+
+   Checked again on ten other weapons of each kind and another seed: the spears' gain held (+22), the yoyos' barely
+   (+1); the other three that had gained (the second sword that throws, the second thrown, summons) went the other way
+   (-14, -9, -19.5), and of those kept on round A's, true melee, whips and magic shooters lost again. So most of the
+   per-kind differences are within what ten weapons and one seed can tell apart; only the spears' is clearly real.
+   The mix stays as it is (on the two checks together it is no worse than round A's for any kind).
+   Round H, after: true melee and ranged shooters trained again from round A's numbers (16 and 20 generations), and
+   held-out shooters and held-out blades on the laptop (7 each). None beat round A's clearly enough to use; nothing
+   from it is in the mod.
+4. **What the training showed.**
+   - **Swords want room, not contact.** Rounds that pushed a sword in closer than its kind's distance landed no more
+     and got the copy killed more often; true melee in particular did worse with numbers trained for it alone. Closer
+     wins only where a weapon is found to land more there (sprays such as Dancing Sand), and the practice in the game
+     now finds that for each weapon.
+   - **Late bosses still kill the owner.** Alone, the owner the trainer plays (a fair dodger, not a pro) dies in more
+     than half the fights against ten of the sixteen, in every one against the Plaguebringer, the Devourer and Yharon.
+     With the copy the Moon Lord falls from 58% to 21%, Anahita and the Leviathan from 45% to 11%, Plantera from 97% to
+     62%, the Devourer from 100% to 63%; Thanatos a little (76% to 65%), and the Plaguebringer, Yharon and Ares hardly at
+     all. What is left there is the owner's to dodge.
+   - **The Exo Mechs' hand-offs are not in the trainer**; the copy meets them first in the game.
+5. **The previews** (https://claude.ai/artifact/YNfJrzWJKzhQJRuV34XHWj, private until shared): nine seconds of each
+   of the sixteen fights, drawn from the trainer's record, the copy with a gun or bow of the boss's stage; with the
+   final test's table and each boss's numbers. Not run in Terraria.
+6. **Changed**: `Content/Mimic/MimicBrain.cs`, `MimicSense.cs`, `MimicSystem.cs`, `MimicPlayer.cs`, `MimicBeams.cs`,
+   `MimicWeapons.cs` (regenerated); new `MimicCalamity.cs`, `MimicWeaponRanges.cs`. The files they replaced are in
+   `Claude outputs\r80\before2`. `Claude outputs\MimicTrainer_r80` added.
+7. **Checked**: built against the mod (596 files, no errors; the warnings are the old ten); the trainer built and run
+   with the same `MimicBrain.cs`; every file on the computer compared with what was sent. Not run in Terraria.
+
+## 17.33 Session 8, the next morning: the Everclear Mirror retuned, its copy outlined, melee in reach
+
+Asked: a quick fix for "The localization file ... is malformed"; "why given the lance he still flying in the corner?",
+"It only happens when It has wings equipped", "Melee dont work with wings?"; then "Make it so that the mirror costs 12
+minion slot; every slot after that is n with n = max minion - 12; life = player life * 3 + n*(0.15); defense =
+player.def * 1.5 + n * 5; damage = damage * (1 + n*0.2); So it takes up all minion slots; And upon it dying heals player
+by half max player culmilative HP. Cool down 45 secs; Remember all weapon damage also scale with summoner buff"; "And give
+only the body a Golden Outline".
+
+1. **The localization file**: two tooltips left as empty `'''` blocks (Harenaeum Ore, The Last Grain) stop Hjson
+   reading the whole file; both are `Tooltip: ""` now. (An empty tooltip is written that way, never as an empty block.)
+2. **Melee in reach** (`MimicBrain.cs`): with `/mirror` the copy read its held blade at 64 pixels and stood 263 off, "not
+   attacking". With wings it hovered above and across its target, the two together past its reach; and it could choose
+   a target just past its leash that a blade could never reach. Now with a blade, spear, yoyo or whip it never stands
+   further off than its weapon reaches past the target's edge, never hovers higher than two fifths of that, and only
+   chooses what it can reach from its leash. (In the trainer it lands a little more and dies a little more often with
+   plain swords: in reach is where the hits are.)
+3. **The mirror** (`EverclearMirror.cs`, `MimicAnchor.cs`, `MimicSystem.cs`, `MimicPlayer.cs`): it needs 12 minion
+   slots and takes all of its owner's (the minions left beside it sent away; sentries stay; a minion called after it
+   sends it away). For each slot past 12 (n, read from the owner each tick): its life three times its owner's and 0.15
+   of it more each (read as a share of the owner's life: 0.15 of a point would be nothing), its defence one and a half
+   times its owner's and 5 more each, its weapons 20% more each; and every weapon of its that is not a summon's gains
+   its owner's summon damage on top of its own class's (summon's own, not the generic counted twice). Broken: its owner
+   healed by half their whole life (with everything worn), the mirror clouded 45 seconds. The tooltip says so.
+4. **Its gold outline** (`MimicOutline.cs`, new): one of the game's pixels (two of the screen's) all round its body,
+   behind it, a bright gold next to it and a deeper one outside; only the body (not its weapon, wings, balloon, mount or
+   pulley), found as the HEATR's field finds its wearer's (the HEATR's alpha reader shared; each leaves the other's
+   picture out).
+5. **Checked**: built (597 files, no errors, the old ten warnings); every file on the computer compared with what was
+   sent. The files replaced are in `Claude outputs\r80\before3`. Not run in Terraria.
+
+## 17.34 Session 8: glass breaking as light (the Empress's crack, the Everclear Mirror's copy)
+
+Asked: "can you remake the glass smash effect of phase 1 Empress of Light like this? Check calamitys code but make it
+ours and more beautiful" (four pictures of the Devourer of Gods' rift), "And maybe add that effect to the Death of
+Everclear Mirror too", "Do it thoroughly spare no expense"; then, on the first preview, "the main ask was to remove these
+sectioned outlines js a pure clean glass break".
+
+1. **What Calamity does** (read, nothing taken: `Projectiles/Boss/DoGTeleportRift.cs`, `DoGRiftCrack.cs`): a star of
+   light growing at a point, up and down eight times its width and across five; a ring closing on it; three times as it
+   charges, the crack heard (higher each time), sparks and lights thrown out, a flash, the screen shaken harder; at the
+   end the rift bursts: twenty-five cracks thrown out (each a trail wandering as lightning does, thinning), sparks and
+   lights, three plasma flashes, two shine flashes, a great bloom, the screen shaken hard. Its textures (a cracked-glass
+   picture, a star, rings, explosions) and its crack shader are its own.
+2. **Her crack now, clean** (`Content/Graphics/PrismShatter.cs`, new, the mod's own glow textures and no shader;
+   `EmpressOfLight.Crack.cs`, `EmpressMirror.cs`):
+   - **no sectioned outlines:** the lines of her colours round every shard and the ring at the crack's edge are gone,
+     and so is the shards' shifting and tipping as it strains: the world stays whole until it bursts;
+   - **the cracks thin and clean:** sixteen cracks out of the middle as glass breaks (straight runs turning sharp now
+     and then, some forked) and between each two, twice, a crack across; a white line with a faint glow either side, a
+     little of her colours in the glow; they run out as it splits, the inner cracks across as they pass, the outer as
+     it strains, the lines brightening with it; now and then a glint runs out along one;
+   - as it strains, the star at the middle growing (up and down 1.7 of the reach, across 1.1), a ring of her colours
+     closing on it from over twice the reach, and three times the glass goes in deeper (a flash, spikes, sparks and a
+     ring, each bigger; a crack heard lower to higher, a small wave through the world, the screen shaken harder);
+   - as it bursts, along those same cracks: a flash over the screen, a white-hot heart cut as a crystal, the long cross
+     (up and down 2.5 of the reach, across 1.6) split into the rainbow along each side with a lens's ghosts along it,
+     thirty spikes, the cracks flaring and closing thin, two rings each split into three of her colours (as a prism
+     spreads light), forty-four sparks, thirty-six glinting flecks of glass; the world's shards thrown, clear (no wash of
+     colour on each), the world dark behind them; about a second and a third; the ground about it lit by the flash;
+   - as it mends, sparkles running home along the cracks, the cracks back a moment as the shards land, closing from
+     their ends;
+   - drawn in one place each frame (over the shards, or with the world when the lighting makes no capture of it: Retro,
+     Trippy), from the act's seed and its own clock: the same on every machine. The bloom and the rainbow dust the burst
+     had are gone; its shake is bigger (14 for 26 ticks, was 9 for 18). Each time the glass goes in deeper is heard once,
+     however a packet moves the clock.
+3. **The Everclear Mirror's copy breaking** (`Content/Particles/PrismShatterBurst.cs`, new; `MimicSystem.Shatter`): the
+   same burst in the mirror's colours (its glass's pale sky and white, the outline's two golds), its reach 190 (a copy's,
+   not a crack's), and its own glass: sixteen triangles thrown out of it, turning over as they fly (narrower as they turn
+   edge on), falling, flashing white each time they face the light; with the glass dust and shimmer it had, the shards'
+   and the shock's sounds, the screen shaken a little. Its light sampled smoothly, as hers is (the particles' own batch
+   samples by the nearest texel whenever the game draws to its own target).
+4. **The previews** (https://claude.ai/artifact/DzEn7o8DKMNyaUghHpHZH4): the whole crack act, its burst before and after,
+   and the copy breaking, drawn by a prototype (`Claude outputs\r80\shatter`, Python) from the mod's own textures with the
+   same numbers as the code; the shards hold a stand-in world. Not run in Terraria.
+5. **Changed**: `Content/NPCs/Empress/EmpressOfLight.Crack.cs` (the pulses' sounds and shake, the burst's, its light
+   drawn: `DrawCrackLight`; the old lines over each shard and the old sparkles along the shards' rays gone),
+   `EmpressMirror.cs` (the shards only as it bursts, clear; its light over them), `Content/Mimic/MimicSystem.cs` (the
+   copy's breaking); new `Content/Graphics/PrismShatter.cs`, `Content/Particles/PrismShatterBurst.cs`.
+6. **Checked**: built (599 files, no errors, the old ten warnings); read through by a second pass for crashes, batch
+   mismatches, state left behind and desyncs (none; its three smaller findings fixed: the mirror's light's sampling,
+   the pulses heard once, the strain's colours on the act's clock); every file on the computer compared with what was
+   sent; the files replaced first are in `Claude outputs\r80\before4`, the first version of it (with the old lines round
+   the shards still on) in `Claude outputs\r80\r80e_shatter.tgz`.
+
+## 17.35 Handoff: session 8 (start here in a fresh chat)
+
+Asked: "update the markdown handoff so the next one knows". Written for two readers: a fresh chat taking over from
+session 8, and a second chat the user opens beside the main one to train the Everclear Mirror's copy (§17.35 §6 and §7).
+Keep replies minimal (the file's §0); reports only when asked, in plain words. Where the `pianda-modding` skill and
+this file differ, this file wins (the skill still says version 0.1, and that nothing can be compiled here).
+
+### 1. Setup, in order
+
+1. **Link the chat to the computer** and connect the folders session 8 had:
+
+   | Folder on the computer | Why |
+   |---|---|
+   | `C:\Users\Admin\Documents\My Games\Terraria\tModLoader\ModSources\PisAndDag` | the mod. Required |
+   | `C:\Program Files (x86)\Steam\steamapps\common\tModLoader` | tML's assemblies, to compile against |
+   | `C:\Program Files (x86)\Steam\steamapps\common\tModLoader\tModLoader-Logs` | `client.log`: the user's builds, and every exception the game caught |
+   | `C:\Users\Admin\Downloads\CalamityModPublic-1.4.4` | Calamity's real source (the folder inside has the same name again) |
+   | `C:\Users\Admin\Downloads\DK` | the game's decompile: **Terraria 1.4.5**, not 1.4.4 (the file's §1) |
+   | `C:\Program Files (x86)\Steam\steamapps\common\Terraria\Content` | the game's own pictures and sounds |
+   | `C:\Users\Admin\Downloads\ILSpy_windows_11.0.0.9375-x64` | ILSpy |
+
+2. **The compiler, in the cloud workspace** (nothing there survives a new chat): `apt-get update; apt-get install -y
+   dotnet-sdk-8.0` (8.0.132; the Docker repository's 403 on update is harmless). Stage `tModLoader.dll` and these from
+   its `Libraries\`: `FNA/1.0.0/FNA.dll`, `ReLogic/1.0.0/ReLogic.dll`, `TerrariaHooks/0.0.0.0/TerrariaHooks.dll`,
+   `monomod.utils/25.0.10/lib/net8.0/MonoMod.Utils.dll`, `mono.cecil/0.11.6/lib/netstandard2.0/Mono.Cecil.dll`,
+   `log4net/2.0.8.0/log4net.dll`, `newtonsoft.json/13.0.3/lib/net6.0/Newtonsoft.Json.dll`,
+   `microsoft.codeanalysis.common/4.12.0/lib/net8.0/Microsoft.CodeAnalysis.dll`,
+   `monomod.runtimedetour/25.3.2/lib/net8.0/MonoMod.RuntimeDetour.dll`, `monomod.core/1.3.2/lib/net8.0/MonoMod.Core.dll`,
+   `monomod.backports/1.1.2/lib/net8.0/MonoMod.Backports.dll`, `monomod.ilhelpers/1.1.0/lib/net8.0/MonoMod.ILHelpers.dll`,
+   `hjson/3.0.0/lib/netstandard1.3/Hjson.dll`. Compile every `.cs` of the mod at once (none under `Claude outputs`,
+   `bin` or `obj`) with the SDK's own compiler:
+   `dotnet <sdk>/Roslyn/bincore/csc.dll -nologo -langversion:latest -t:library -nostdlib+ -noconfig -unsafe+
+   -nowarn:CS1591 -out:PisAndDag.dll -r:<every dll in packs/Microsoft.NETCore.App.Ref/*/ref/net8.0> -r:<the 14 above>
+   @<a list of the .cs files>`. tML **2026.8.3.0** (as in session 7). Baseline: **599 files, 0 errors, the 10 known
+   warnings**.
+3. **The source**: the computer's copy is the truth. Tar it in the device shell (without `Claude outputs`, `bin` and
+   `obj`) into a file under a connected folder (`device_stage_files` cannot reach the shell's own home), stage it, untar
+   it in the cloud. Read a file again just before changing it: the user edits in Visual Studio between rounds.
+4. **Check the localization file parses** before delivering (`pip install hjson`, then load it). The compile never reads
+   it, and two empty `'''` blocks stopped the whole mod from loading in session 8 (§17.33).
+
+### 2. Delivering (as session 8 did it, every time)
+
+1. Before changing a file, note its md5 on the computer.
+2. Build in the cloud (§17.35 §1 step 2).
+3. Pack the changed files as `rNNx_what.tgz` with an `.md5` list, under `/mnt/user-data/outputs/`, with **a name not
+   used before in that chat**: a same-named file put there earlier can arrive instead of the new one (session 5, and
+   §17.34's notes in session 8). Commit with `device_commit_files` (`stagedPath`) into `Claude outputs\rNN\`.
+4. In the device shell: check the package's md5; check every file it replaces still has the md5 noted in step 1 (if
+   not, the user or the other chat has changed it: stop, read it again, merge); copy the old ones to
+   `Claude outputs\rNN\beforeK\`; untar into the shell's home, never into the mod folder (tar removes a file before
+   writing it, and removing is blocked in the connected folders); `cat` each new file over its old one; `md5sum -c`.
+5. The notes: append to `PADWorkFlow_1.md` and `RELEASE_TODO.md` with `cat >>`, only after checking the delivered
+   note's md5 on the computer; then compare the old length of each against a copy taken first (only the end may change).
+6. Tell the user when a set is complete, so a Build & Reload never catches half of one.
+
+### 3. Standing rules (all from the user: §16.99 §2, with session 8's added)
+
+- Minimal replies; reports only when asked, in plain words.
+- Verify every API in the real assemblies; `DK` is 1.4.5.
+- Never touch `Content/Items/PSItem.cs` (the user's, with a BOM). Never overwrite the user's art or hand edits; merge.
+- No new shaders (`.fx`): the game's own passes, sprite batches and `BasicEffect` strips only.
+- Pictures: "all of it is 2x2 pixel so a pixel is 4 normal pixels. also use less drawing use more shading. like how
+  calamity do it"; "only when creating it for Bestiary can you use mixed 1x1 pixels". Pictures drawn by code (no AI
+  art); sounds made by code (no AI voices).
+- In-game English through `pad-lore-voice`; lines the user wrote are only proofread.
+- Calamity, Fables, Subworld Library, Boss Checklist: for reference only (never their code, assets, names, palettes or
+  designs).
+- Nothing removed from the user's folders: files to go are named for the user to delete by hand. No git commits. No
+  scripts or tools among the mod's code: they go in `Claude outputs`, which `PisAndDag.csproj` leaves out of the
+  compile and `build.txt`'s `buildIgnore` leaves out of the package (the trainer's `.cs` files are there too).
+- Every name in `Claude outputs` unique (a round tag or a date in it). Previews go on artifact pages (private to the
+  user), not as big files in the mod folder.
+- Open offers and questions: act only on a yes.
+- Never solve a CAPTCHA; never type a password, key or token; never repeat the Retro Diffusion key. Reddit is blocked;
+  never route around the proxy. The user's email identifies them, nothing more.
+- Helpers (subagents): §16.99 said none. Session 8 used about sixty, on work the user asked to be done without sparing
+  effort ("Do it thoroughly spare no expense", "train hard until morning"): an independent read of the code before each
+  big delivery, the sounds, the trainer's bosses, the laptop's training. Default to none; ask before a large batch.
+- Kill processes by PID, never `pkill -f`.
+
+### 4. State (Oct 30, 15:40 UTC; `client.log`'s times are the computer's, eight hours ahead of UTC)
+
+- **On the computer**: everything through §17.34 (round r80f); the mod's `version = 1.0`. The test lists: RELEASE_TODO
+  "Last" (§17.2 to §17.34, none ticked); readings to confirm: "Provisional".
+- **In the game**: the user's last load of the mod (Oct 30, 22:23 on the computer's clock) had everything through
+  §17.33 (the mirror's retune, its outline, melee in reach). §17.34's glass break was installed after it and has not
+  been built yet. The mod is played beside Calamity 2.2.4, Calamity Mod Music, Boss Checklist, BattleRoyaleMod (Super
+  Smash Mod), CheatSheet, HEROsMod, Shorter Respawn Time and WorldGen Previewer.
+- **Faults in that play's log**, both caught by the game (no crash), neither mended:
+  1. Three times, `maxValue must be positive` from `UnifiedRandom.Next` inside the game's own `NPC.VanillaHitEffect`,
+     reached through all four of our hit-effect hooks (`EmpressOfLight.HitNotKilled`, `LegendsQueenBee`,
+     `LegendsQueenSlime`, `SkeletronSystem.HitEffect`), each passing the call straight on. Which NPC, and why, is not
+     known: log `self.type`, `dmg` and its life there once to find out.
+  2. Twice, a NaN in Calamity's Ark of the Cosmos parry (`ArkoftheCosmosParryHoldout.AI`, at `Math.Sign`), run for the
+     copy through `MimicSystem.ShotAsLocal`. Calamity aims it at `CalamityPlayer.mouseWorld`, which is
+     `MountedCenter + mouseWorldDeltaFromPlayer`; that delta is written only for `Main.myPlayer`, in the player's own
+     update, so for the copy it stays zero: the parry's direction is zero, and normalising it gives NaN. Every Calamity
+     weapon that aims by `Owner.Calamity().mouseWorld` most likely aims at the copy itself the same way. A likely mend:
+     keep the copy's `mouseWorldDeltaFromPlayer` (and `mouseRight`) set to its aim, by reflection, as `MimicCalamity`
+     reads Calamity. The mirror chat's to do (§17.35 §6).
+- **Previews** (artifact pages, private to the user): r79 `AuEfAKGsAWVY1kRqD5oq8c`; the copy, r80
+  `YNfJrzWJKzhQJRuV34XHWj`; its melee `2UyA48wvLE15A5eBKC11St`; the glass break `DzEn7o8DKMNyaUghHpHZH4` (version 2,
+  the clean one). Each is `https://claude.ai/artifact/<id>`.
+
+### 5. Open, waiting on the user
+
+- The Gilded Knight's music: `MusicID.OtherworldlyBoss1` (`GildedKnight.cs`, line 592). Asked which track he should
+  have; no answer yet.
+- Offered, not asked for: the copy charging a lance while holding it out (the Jousting Lance); taking the star and the
+  closing ring out of the crack's strain too, so it is cracks only; mending the two faults in §17.35 §4.
+- Still waiting from earlier: the checklist's misquote and repeats, the ore pistols' costs (§17.2); session 7's offers
+  (§16.99 §4).
+- For the user to delete by hand: `Content/NPCs/Deep/CreviceEelBestiary.png`; `~$aceholderTextures.md` in the mod root
+  (a lock file).
+- The mirror's next round of training: what it should get better at has not been said.
+
+### 6. Two chats at once: the mirror's training beside the main chat
+
+The user may keep one chat for everything else (the main chat) and open a second to train the Everclear Mirror's copy
+(the mirror chat). Each chat has its own cloud workspace and its own device shell; they share only the computer's
+folders.
+
+1. **The mirror chat touches only the mirror**: `Content/Mimic/*.cs`, `Content/Items/Summoner/EverclearMirror.cs`,
+   `Content/Buffs/EverclearMirrorBuff.cs`, `Content/Projectiles/Summoner/MimicAnchor.cs`, `Claude outputs\MimicTrainer_*`
+   and its own `Claude outputs\r81\` (its packages, its `before` copies, its notes). Anything else it needs (a tooltip
+   in the localization file, `HEATRShell.cs`, `PrismShatter.cs`) goes into its notes for the main chat to make.
+2. **The main chat keeps off those files** while the mirror chat works, and keeps to its own round tags (r80 with a
+   letter, or r82 on; never r81).
+3. **Only the main chat writes `PADWorkFlow_1.md` and `RELEASE_TODO.md`.** The mirror chat keeps
+   `Claude outputs\r81\r81_notes.md` in the same shape (Asked; what changed; checked; the RELEASE_TODO lines), and the
+   main chat folds it in as a section of its own. With no main chat open, the mirror chat writes them itself.
+4. Both install as §17.35 §2 says, so neither overwrites the other's work or the user's; each builds the whole mod
+   from the computer's current files just before delivering.
+5. The mirror's files at this handoff (md5 on the computer; a different one later means someone has changed it):
+
+   | file | md5 |
+   |---|---|
+   | `Content/Mimic/MimicBeams.cs` | `45baf3711ca6e4332c8dea7f2180b2d0` |
+   | `Content/Mimic/MimicBrain.cs` | `7e7b6062163e829fb14ce8cfa51fefe0` |
+   | `Content/Mimic/MimicCalamity.cs` | `1c6fa90b57affc776594a9ca6e940535` |
+   | `Content/Mimic/MimicCommand.cs` | `db84838a078cdd9dd0b396ad80d6726a` |
+   | `Content/Mimic/MimicOutline.cs` | `7ad63423eb60ef85d941cfff6383aa4b` |
+   | `Content/Mimic/MimicPlayer.cs` | `6dbadd2c91505ebe446eddab300d438d` |
+   | `Content/Mimic/MimicSense.cs` | `3484669a20c4747cda528c680f675a4e` |
+   | `Content/Mimic/MimicSystem.cs` | `d547fd120d22351dc759d7734fc7c6d6` |
+   | `Content/Mimic/MimicWeaponRanges.cs` | `c68aac31a447a1f17b1e5c5516691a35` |
+   | `Content/Mimic/MimicWeapons.cs` | `d7767fbbd296ed9d0dfe18a97c5e2b9e` |
+   | `Content/Items/Summoner/EverclearMirror.cs` | `3e8abfdd8326d21a9d27e2d5ad6ef762` |
+   | `Content/Buffs/EverclearMirrorBuff.cs` | `10b243a8733477746569646889a90ebe` |
+   | `Content/Projectiles/Summoner/MimicAnchor.cs` | `cf3767f2d9fba20d9dbf863cfa53a230` |
+   | `Localization/en-US_Mods.PisAndDag.hjson` (shared: the main chat's) | `5466300abe6bb7f038321b04c50e9f62` |
+
+### 7. The mirror's trainer
+
+- `Claude outputs\MimicTrainer_r80`; read its `README.md` first. C#, its own small world, sixteen bosses written from
+  their code at Expert, CMA-ES. It compiles the mod's own `Content/Mimic/MimicBrain.cs` unchanged, so rebuild it after
+  any change there. `trainer/build_one.sh` still has session 8's scratch paths in it: point it at your own copy, at the
+  staged `Libraries/FNA/1.0.0/FNA.dll`, at `trainer.runtimeconfig.json` (in `Claude outputs\r80_laptop_trainer.tgz`)
+  and at the computer's current `MimicBrain.cs`.
+- Runs pick up where they stopped (`*.state`; a generation cut short goes on from `*.state.gen`). In the cloud, a job
+  started in the background lasts at most two hours and carries on between replies; one started with `nohup` or `&` is
+  stopped minutes after a reply. On the laptop (the device shell: Ubuntu 22.04, 2 cores, 3 GB; each call killed after
+  180 s, background processes with it) session 8 ran chunks of 172 s, one call each, with a .NET 8 runtime unpacked from
+  Ubuntu 22.04's packages (`dotnet-host-8.0`, `dotnet-hostfxr-8.0`, `dotnet-runtime-8.0`, 8.0.32) into the shell's home,
+  and the trainer built in the cloud (`Claude outputs\r80_laptop_*.tgz`). The shell's home does not carry over to a new
+  chat.
+- **Where it stands** (§17.32): on a test no run had seen, the owner died in 59% of fights alone and in 43% with the
+  copy; the copy landed a third of what came off the bosses and died in 3%. Of the per-kind numbers, only the spears'
+  clearly beat round A's.
+- **What it does not know**: §17.33's retune (it gives the copy three times the owner's life, the owner's defence, 30
+  potions of 200 and the owner's damage; the game now gives one and a half times the defence and 5 more for each slot
+  past 12, 15% more of the owner's life and 20% more damage for each, and the summon bonus); the Exo Mechs' hand-offs;
+  Calamity's `mouseWorld` (§17.35 §4). A parry counts only as a shot not taken. The melee-with-wings fault of §17.33
+  was found in the game, not in the trainer.
+- Ask the user what the copy should get better at before a long run: their `/mirror` readouts from real fights are
+  worth more than another round in the trainer.

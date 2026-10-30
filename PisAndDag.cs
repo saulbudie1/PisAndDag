@@ -14,6 +14,8 @@ namespace PisAndDag
     /// </summary>
     public enum PADPacket : byte
     {
+        Dash,
+        Tentochi,
         /// <summary>The Kingdom of Grace's guard map. See GraceWorld.</summary>
         Grace,
 
@@ -105,6 +107,13 @@ namespace PisAndDag
 
             switch (kind)
             {
+                case PADPacket.Dash:
+                    Content.PADplayer.AccessoryDash.HandlePacket(reader, whoAmI);
+                    break;
+
+                case PADPacket.Tentochi:
+                    Content.Items.Accessories.Tentochi.TentochiPlayer.HandlePacket(reader, whoAmI);
+                    break;
                 case PADPacket.Grace:
                     Content.Structures.Grace.GraceWorld.HandlePacket(this, reader, whoAmI);
                     break;

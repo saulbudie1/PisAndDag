@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PisAndDag.Content.Graphics;
 using PisAndDag.Content.PADplayer;
 using PisAndDag.Content.Particles;
 using Terraria;
@@ -39,6 +40,18 @@ namespace PisAndDag.Content.NPCs.Empress
     // effect"): the glint a drop of glass the world swells in (EmpressWarp); a wave through the world as it cracks and
     // a bigger one as it bursts; flecks of glass glinting inside it while it strains, the glass heard crinkling under
     // it, wavering; sparkles running home along the cracks as it mends, a shimmer of bells with them.
+    //
+    // Its breaking, remade by request ("remake the glass smash effect of phase 1 Empress of Light like this? Check
+    // calamity's code but make it ours and more beautiful", after the Devourer of Gods' rift in Calamity), in
+    // Content/Graphics/PrismShatter: as it strains, a star of light at its middle, up and down longer than across,
+    // growing, and a ring of her colours closing in on it; three times the glass goes in deeper (a crack heard, lower to
+    // higher, the world shaken harder each time, a flash and sparks); as it bursts, a flash over the screen, a white-hot
+    // heart cut as a crystal, the long cross split into the rainbow with a lens's ghosts along it, spikes, glass cracks
+    // thrown out with their web, two rings each split as a prism splits light, sparks and glinting flecks of glass.
+    // Then, by request ("the main ask was to remove these sectioned outlines js a pure clean glass break"): no lines of
+    // her colours round each shard and no ring at the edge; the cracks thin and clean, along the burst's own (not the
+    // shards' grid), the world whole under them until it bursts (the shards no longer shift and tip as it strains),
+    // then thrown, clear, with no wash of colour.
 
     public partial class EmpressOfLight
     {
@@ -142,6 +155,33 @@ namespace PisAndDag.Content.NPCs.Empress
                     break;
 
                 case CrackStrain:
+                    // The glass going in deeper, three times (PrismShatter.DrawPulse draws it): a crack heard, lower to
+                    // higher, a little wave through the world, the screen shaken harder each time.
+                    // (Each once: the furthest mark the clock has reached, played if it has not been; a client's clock
+                    // can be set back or forward by a packet.)
+                    if (entered)
+                        crackPulsed = -1;
+
+                    int deeper = t >= PulseEvery * 2 ? 2 : t >= PulseEvery ? 1 : 0;
+
+                    if (deeper > crackPulsed)
+                        crackPulsed = deeper;
+                    else
+                        deeper = -1;
+
+                    if (deeper >= 0 && !Main.dedServ)
+                    {
+                        for (int k = 0; k < actCount; k++)
+                        {
+                            Sound(EmpressSounds.Crack, actPoints[k], -0.6f + 0.35f * deeper, 0.55f + 0.15f * deeper, 3);
+                            Sound(SoundID.Item27, actPoints[k], -0.5f + 0.3f * deeper, 0.35f);
+                            EmpressWarp.Ripple(actPoints[k], 14f, 28f, 5f + 2f * deeper, 18);
+
+                            if (Vector2.Distance(Main.LocalPlayer.Center, actPoints[k]) < CrackRadius * 3f)
+                                Main.LocalPlayer.PIS().BumpScreenShake(3f + 2.5f * deeper, 10);
+                        }
+                    }
+
                     if (t % 24 == 0)
                         Sound(SoundID.Item15, actPoints[0], -0.4f + t / 96f, 0.35f);
 
@@ -193,23 +233,25 @@ namespace PisAndDag.Content.NPCs.Empress
                             Sound(SoundID.Item14, actPoints[k], -0.8f, 0.9f);
                             Sound(EmpressSounds.Shards, actPoints[k], 0f, 0.85f, 3);
                             Sound(EmpressSounds.Shock, actPoints[k], -0.1f, 0.7f, 3);
-                            PADParticleHandler.SpawnParticle(new BloomGeneric(actPoints[k], Vector2.Zero, Color.White, CrackRadius * 2f / 160f, 14));
+                            Sound(EmpressSounds.Crack, actPoints[k], 0.2f, 0.9f, 3);
 
-                            // The burst through the world: a wave out past the crack's edge.
+                            // The burst through the world: a wave out past the crack's edge. (Its light, the flash, the
+                            // cracks, the rings, the sparks and the glass, is drawn: PrismShatter.DrawBurst; the bloom and
+                            // the rainbow dust it had before were caught in the shards and thrown with them.)
                             EmpressWarp.Ripple(actPoints[k], 30f, 80f, 18f, 32);
 
-                            for (int d = 0; d < 36; d++)
-                            {
-                                Vector2 way = Main.rand.NextVector2Unit();
-                                Dust dust = Dust.NewDustPerfect(actPoints[k] + way * Main.rand.NextFloat(CrackRadius * 0.2f, CrackRadius), DustID.RainbowMk2, way * Main.rand.NextFloat(4f, 11f), 0,
-                                    EmpressArt.Prism(Main.rand.NextFloat()), Main.rand.NextFloat(1.1f, 1.8f));
-                                dust.noGravity = true;
-                                dust.fadeIn = 1.3f;
-                            }
-
                             if (Vector2.Distance(Main.LocalPlayer.Center, actPoints[k]) < CrackRadius * 3f)
-                                Main.LocalPlayer.PIS().BumpScreenShake(9f, 18);
+                                Main.LocalPlayer.PIS().BumpScreenShake(14f, 26);
                         }
+                    }
+
+                    // The world about it lit by its flash, going.
+                    if (!Main.dedServ && t < 24)
+                    {
+                        float lit = 1f - t / 24f;
+
+                        for (int k = 0; k < actCount; k++)
+                            Lighting.AddLight(actPoints[k], 1.8f * lit, 1.6f * lit, 2f * lit);
                     }
 
                     if (Authority && t >= CrackBurstTicks)
@@ -321,13 +363,67 @@ namespace PisAndDag.Content.NPCs.Empress
             if (beat == CrackStrain)
                 DrawCrackFlecks(spriteBatch, time, CrackStrainNow);
 
-            if (beat == CrackMend)
-                DrawCrackHomecoming(spriteBatch, time);
-
             if (!EmpressMirror.WillDraw)
             {
                 for (int k = 0; k < actCount; k++)
-                    CrackNet.Of(actSeed, k).DrawLines(spriteBatch, actPoints[k], this, Vector2.Zero);
+                    DrawCrackLight(spriteBatch, k);
+            }
+        }
+
+        /// <summary>Ticks between the glass going in deeper as it strains (three times).</summary>
+        private const int PulseEvery = 32;
+
+        /// <summary>The last time it went in deeper that has been heard (0 to 2; -1 none yet).</summary>
+        private int crackPulsed = -1;
+
+        /// <summary>
+        /// The light of crack <paramref name="k"/> (PrismShatter), the one place it is drawn: over the shards when they
+        /// are drawn (EmpressMirror), with the world when they are not. Its cracks, clean (by request: "remove these
+        /// sectioned outlines js a pure clean glass break"), running out as it splits; as it strains, brightening, the
+        /// web across them opening, the star growing at its middle, the ring closing on it, and each time it goes in
+        /// deeper a flash and sparks, bigger each time; as it bursts, the burst along those cracks, its last light going
+        /// on into the mend; as it mends, sparkles running home along the cracks, and the cracks back a moment as the
+        /// shards land, closing from their ends. All from the act's seed and its own clock: the same on every machine.
+        /// </summary>
+        internal void DrawCrackLight(SpriteBatch spriteBatch, int k)
+        {
+            if (k < 0 || k >= actCount)
+                return;
+
+            Vector2 at = actPoints[k];
+            int seed = actSeed * 977 + k * 131;
+            const PrismShatter.Look look = PrismShatter.Look.Empress;
+
+            switch (beat)
+            {
+                case CrackSplit:
+                    PrismShatter.DrawCrack(spriteBatch, at, seed, CrackRadius, CrackGrown, 0f, timer, look);
+                    break;
+
+                case CrackStrain:
+                    float strain = timer / (float)StrainTicks;
+                    float clock = CrackSplitTicks + timer;
+
+                    PrismShatter.DrawCrack(spriteBatch, at, seed, CrackRadius, 1f, strain, clock, look);
+                    PrismShatter.DrawCharge(spriteBatch, at, strain, clock, CrackRadius, look);
+
+                    for (int deeper = 0; deeper * PulseEvery < StrainTicks; deeper++)
+                        PrismShatter.DrawPulse(spriteBatch, at, seed + deeper, timer - deeper * PulseEvery, CrackRadius * (0.3f + 0.12f * deeper), look, 0.8f + 0.2f * deeper);
+
+                    break;
+
+                case CrackBurst:
+                    PrismShatter.DrawBurst(spriteBatch, at, seed, timer, CrackRadius, look, 1f, cracked: true);
+                    break;
+
+                case CrackMend:
+                    float mend = timer / (float)MendTicks;
+                    float mendClock = CrackSplitTicks + StrainTicks + CrackBurstTicks + timer;
+
+                    PrismShatter.DrawBurst(spriteBatch, at, seed, CrackBurstTicks + timer, CrackRadius, look, 1f, cracked: true);
+                    PrismShatter.DrawCrack(spriteBatch, at, seed, CrackRadius, CrackGrown, 0.25f * (1f - mend), mendClock, look, MathHelper.Clamp((mend - 0.35f) * 4f, 0f, 1f));
+                    PrismShatter.DrawHomecoming(spriteBatch, at, seed, CrackRadius, mend, mendClock, look);
+                    break;
             }
         }
 
@@ -356,37 +452,6 @@ namespace PisAndDag.Content.NPCs.Empress
 
                     EmpressArt.DrawStar(spriteBatch, at, (14f + 10f * dice.Next()) * shine, time * 0.03f + i, EmpressArt.Additive(Color.White, 0.85f * shine));
                     EmpressArt.DrawBloom(spriteBatch, at, 12f * shine, EmpressArt.Additive(colour, 0.6f * shine));
-                }
-            }
-        }
-
-        /// <summary>As it mends: sparkles running in along its cracks out from the middle, home to it, each its own colour.</summary>
-        private void DrawCrackHomecoming(SpriteBatch spriteBatch, float time)
-        {
-            float p = timer / (float)MendTicks;
-            float left = 1f - Ease(p);
-
-            if (left <= 0.01f)
-                return;
-
-            for (int k = 0; k < actCount; k++)
-            {
-                CrackNet net = CrackNet.Of(actSeed, k);
-
-                for (int i = 0; i < CrackRays; i++)
-                {
-                    for (int j = 0; j < 2; j++)
-                    {
-                        // Each ray's sparkles start at the rim and run in, one after the other.
-                        float run = MathHelper.Clamp(p * 1.6f - j * 0.3f, 0f, 1f);
-                        float r = CrackRadius * (1f - Ease(run));
-                        Vector2 at = actPoints[k] + net.Ray[i].ToRotationVector2() * r;
-                        Color colour = EmpressArt.Prism(i / (float)CrackRays + j * 0.3f);
-                        float shine = left * (run < 0.999f ? 1f : 0f);
-
-                        EmpressArt.DrawStar(spriteBatch, at, 26f * shine, time * 0.08f + i, EmpressArt.Additive(Color.White, 0.9f * shine));
-                        EmpressArt.DrawBloom(spriteBatch, at, 22f * shine, EmpressArt.Additive(colour, 0.7f * shine));
-                    }
                 }
             }
         }
@@ -509,83 +574,6 @@ namespace PisAndDag.Content.NPCs.Empress
                 shift += out_ * (40f + 420f * (float)Math.Pow(flight, 1.3)) * Throw[i, j] * flight;
                 turn += Spin[i, j] * flight;
             }
-        }
-
-        /// <summary>The rainbow at a point round it (any number: only its fraction counts), full colours, a little pale.</summary>
-        private static Color Rainbow(float hue) => Main.hslToRgb((hue % 1f + 1f) % 1f, 1f, 0.66f);
-
-        /// <summary>
-        /// The cracks as lines of light, each shard's edges moved with it: the rainbow running along them, glints
-        /// travelling out, the cracks out from the middle brighter than those across, the rim brightest, and stars
-        /// twinkling where they cross. <paramref name="offset"/> is added to everything (screen work passes zero).
-        /// </summary>
-        public void DrawLines(SpriteBatch spriteBatch, Vector2 centre, EmpressOfLight her, Vector2 offset)
-        {
-            float grown = her.CrackGrown;
-            float strain = her.CrackStrainNow;
-            float flight = her.CrackFlight;
-            float time = (float)Main.timeForVisualEffects;
-            int rays = EmpressOfLight.CrackRays;
-            int rings = EmpressOfLight.CrackRings.Length;
-
-            if (grown <= 0.001f)
-                return;
-
-            Span<Vector2> corners = stackalloc Vector2[4];
-
-            for (int i = 0; i < rays; i++)
-            {
-                for (int j = 0; j < rings - 1; j++)
-                {
-                    int n = Cell(i, j, corners);
-                    Vector2 middle = Vector2.Zero;
-
-                    for (int c = 0; c < n; c++)
-                        middle += corners[c];
-
-                    middle /= n;
-
-                    // A crack shows only as far as it has run out from the middle.
-                    if (middle.Length() > grown * EmpressOfLight.CrackRadius * 1.05f)
-                        continue;
-
-                    Moved(i, j, middle, strain, flight, time, out Vector2 shift, out float turn, out _);
-                    float fade = 1f - flight * 0.6f;
-                    Vector2 placed = centre + offset + shift + middle;
-
-                    for (int c = 0; c < n; c++)
-                    {
-                        Vector2 a = placed + (corners[c] - middle).RotatedBy(turn);
-                        Vector2 b = placed + (corners[(c + 1) % n] - middle).RotatedBy(turn);
-                        bool outward = c == 0 || c == 2;
-                        bool rim = j == rings - 2 && c == 1;
-                        float strength = outward || rim ? 1f : 0.6f;
-                        float along = (corners[c].Length() + corners[(c + 1) % n].Length()) / (2f * EmpressOfLight.CrackRadius);
-                        float glint = 0.5f + 0.5f * (float)Math.Sin(time * 0.15f - along * 12f + i);
-                        Color hue = Rainbow(along * 1.5f + time / 120f + i * 0.11f);
-
-                        EmpressArt.DrawLine(spriteBatch, a, b, rim ? 12f : outward ? 8f : 5f, EmpressArt.Additive(hue, (0.45f + 0.4f * glint) * fade * strength));
-                        EmpressArt.DrawLine(spriteBatch, a, b, rim ? 2.4f : outward ? 1.4f : 1f, EmpressArt.Additive(Color.White, (0.55f + 0.45f * glint * strain) * fade * strength));
-                    }
-
-                    // Where its cracks cross, now and then, a star of light; while it holds together.
-                    if (flight <= 0f && j > 0)
-                    {
-                        float twinkle = (float)Math.Sin(time * 0.11f + i * 2.1f + j * 3.7f);
-
-                        if (twinkle > 0.55f)
-                        {
-                            float shine = (twinkle - 0.55f) / 0.45f;
-                            Vector2 at = placed + (corners[1] - middle).RotatedBy(turn);
-                            EmpressArt.DrawStar(spriteBatch, at, 26f * shine, time * 0.02f + i, EmpressArt.Additive(Color.White, 0.8f * shine * grown));
-                        }
-                    }
-                }
-            }
-
-            // The edge, brightening as the two seconds run out.
-            if (flight <= 0f)
-                EmpressOfLight.DrawRing(spriteBatch, centre + offset, EmpressOfLight.CrackRadius * grown, 14f, EmpressArt.Additive(EmpressArt.Pink, 0.18f + 0.45f * strain));
         }
     }
 }

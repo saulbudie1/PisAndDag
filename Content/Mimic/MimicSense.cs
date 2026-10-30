@@ -73,7 +73,17 @@ namespace PisAndDag.Content.Mimic
                 if (n >= threats.Length)
                     break;
 
-                if (!p.hostile || p.damage <= 0)
+                // What it lands for. A shot that does no harm is passed over, unless it is the warning of a beam to come
+                // (Calamity's telegraph lines, harmless themselves): that is told of as the beam will hit, weighed as the
+                // beam's hit (MimicCalamity.Warns).
+                int hit;
+                bool warning = false;
+
+                if (p.hostile && p.damage > 0)
+                    hit = MimicBeams.HitOf(p);
+                else if (MimicCalamity.Warns(p, out hit))
+                    warning = true;
+                else
                     continue;
 
                 int i = p.whoAmI;
@@ -97,8 +107,8 @@ namespace PisAndDag.Content.Mimic
                     HalfH = p.height * 0.5f,
                     // A hostile shot lands for twice what it says (Projectile.Damage), times the difficulty's
                     // (CombinedHooks.ModifyHitByProjectile).
-                    Weight = Weight(MimicBeams.HitOf(p), s.LifeMax),
-                    Parryable = Parry.Can(p),
+                    Weight = Weight(hit, s.LifeMax),
+                    Parryable = !warning && Parry.Can(p),
                     // Gone when its time runs out (a tick of it for each of its updates).
                     Life = p.timeLeft > 0 ? Math.Max(1, p.timeLeft / steps) : 0,
                 };
@@ -108,7 +118,8 @@ namespace PisAndDag.Content.Mimic
                 if (MimicBeams.Read(p, th, threats, ref n, me, body))
                     continue;
 
-                if (Vector2.DistanceSquared(p.Center, me) > far)
+                // A warning that could not be read as its beam is no hit of its own.
+                if (warning || Vector2.DistanceSquared(p.Center, me) > far)
                     continue;
 
                 // Speeding up or falling, as the last two ticks show; bending toward someone, as room that grows.
@@ -140,22 +151,27 @@ namespace PisAndDag.Content.Mimic
                 if (Vector2.DistanceSquared(npc.Center, me) > far)
                     continue;
 
-                if (!npc.friendly && npc.damage > 0 && n < threats.Length)
+                if (!npc.friendly && (npc.damage > 0 || npc.defDamage > 0) && n < threats.Length)
                 {
                     // A body: where it is going, how it is speeding up (its velocity before its last move), and whether it
-                    // is after the copy.
+                    // is after the copy. One that does not hurt to touch just now (Yharon between charges, Calamity's
+                    // bosses keep their damage at 0 until they lunge) is told of as what it will be the moment it
+                    // lunges: its usual damage (NPC.defDamage) at half the weight, a little bigger than it is, so the
+                    // copy does not park beside it.
                     Vector2 bodyAcc = npc.velocity - npc.oldVelocity;
+                    bool dormant = npc.damage <= 0;
 
                     threats[n++] = new Threat
                     {
                         Pos = npc.Center,
                         Vel = npc.velocity,
                         Acc = bodyAcc.LengthSquared() < 4f ? bodyAcc : Vector2.Zero,
-                        HalfW = npc.width * 0.5f,
-                        HalfH = npc.height * 0.5f,
-                        Weight = Weight(npc.damage, s.LifeMax),
+                        HalfW = npc.width * 0.5f + (dormant ? MimicBrain.DormantRoom : 0f),
+                        HalfH = npc.height * 0.5f + (dormant ? MimicBrain.DormantRoom : 0f),
+                        Weight = dormant ? Weight(npc.defDamage, s.LifeMax) * MimicBrain.DormantShare : Weight(npc.damage, s.LifeMax),
                         Parryable = false,
                         Chaser = npc.target == copy.whoAmI && npc.velocity.LengthSquared() > 4f,
+                        AfterMe = npc.target == copy.whoAmI,
                     };
                 }
 
@@ -179,6 +195,29 @@ namespace PisAndDag.Content.Mimic
 
             s.ThreatCount = n;
             s.FoeCount = f;
+
+            // What its weapon's right click put out, if anything is still out (MimicSystem learns which of its shots
+            // come from the right click): the newest, near enough to shoot at.
+            if (MimicSystem.NewestAltShot(copy, out Projectile own))
+            {
+                s.OwnShotValid = true;
+                s.OwnShot = own.Center;
+                s.OwnShotVel = own.velocity * (1 + own.extraUpdates);
+            }
+
+            // A target dummy near, and no boss: it is practising, and tries its ways of using a weapon more freely.
+            bool dummy = false, boss = false;
+
+            foreach (NPC npc in Main.ActiveNPCs)
+            {
+                if (Vector2.DistanceSquared(npc.Center, me) > far)
+                    continue;
+
+                dummy |= npc.type == NPCID.TargetDummy;
+                boss |= npc.boss;
+            }
+
+            s.Practising = dummy && !boss;
             return s;
         }
 
@@ -303,8 +342,45 @@ namespace PisAndDag.Content.Mimic
         /// </summary>
         public static Weapon WeaponOf(Player copy)
         {
+            // Whether what it holds is held out: once it uses it, its held projectile is the item's shot (Player.heldProj).
+            // Seen once, kept (MimicWeapons.SeenHeld), so a weapon from any mod is sorted by how it really works.
+            Item held = copy.HeldItem;
+
+            if (held != null && !held.IsAir && held.shoot > 0 && copy.heldProj >= 0 && copy.heldProj < Main.maxProjectiles)
+            {
+                Projectile hp = Main.projectile[copy.heldProj];
+
+                if (hp.active && hp.owner == copy.whoAmI && hp.type == held.shoot)
+                    MimicWeapons.SeenHeld.Add(held.type);
+            }
+
             Weapon w = ReadWeapon(copy);
+
+            if (held != null && !held.IsAir)
+            {
+                // Its class and how it is used; then its kind (round 81: within the four classes, MimicWeapons).
+                MimicWeapons.Styles style = MimicWeapons.Style(held, w);
+                w.Style = (int)style;
+                w.Class = MimicWeapons.ClassOf(held, style);
+            }
+
             w.Cluster = MimicWeapons.ClusterOf(copy.HeldItem, w);
+            w.Best = MimicWeaponRanges.BestOf(copy.HeldItem);
+
+            // What its shots have been seen to do (MimicSystem watches them): how far a shot that flies off goes, and how
+            // fast it falls. The kind is kept as it was read; how it is used goes by what was seen.
+            if (held != null && !held.IsAir && MimicWeapons.Seen(held.type, out MimicWeapons.Watch seen) && !seen.Held
+                && !MimicWeapons.SeenHeld.Contains(held.type) && !MimicWeapons.ShotIsHeld(held.shoot)
+                && (w.Kind == WeaponKind.Ranged || w.Kind == WeaponKind.Magic) && w.Speed > 0f)
+            {
+                // How far: from shots that ended of themselves (two at the least), never nearer than half what was read.
+                if (seen.Flown >= 2)
+                    w.Reach = MathHelper.Clamp(Math.Max(seen.Far, w.Reach * 0.5f), 96f, 1200f);
+
+                w.Gravity = seen.Gravity;
+                w.GravityAfter = seen.FallAfter;
+            }
+
             return w;
         }
 
@@ -409,8 +485,14 @@ namespace PisAndDag.Content.Mimic
                 return w;
             }
 
-            if (sample != null && melee && (sample.aiStyle == 20 || sample.aiStyle == 75 || item.channel && item.noUseGraphic))
+            // A blade held out and swung by a shot of its own (Ark of the Elements, Murasama, Exoblade, Arkhalis, a drill
+            // or a chainsaw): about the holder, as far as its shot is long. (Before, one not channelled, the Arks, was read
+            // as a gun by its shot's speed.) Held out is what its shot does (round 81, MimicWeapons.HeldOut: it holds itself
+            // in its holder's hands, by its code or as seen); a thrown hammer or knife that hides itself is not, and is
+            // read below as what it is, a shot that flies (Triactis' hammer was read here as a blade of 141 px).
+            if (MimicWeapons.HeldOut(item, sample) || melee && sample != null && MimicWeapons.SeenHeld.Contains(item.type))
             {
+                w.HeldOut = true;
                 w.Reach = MathHelper.Clamp(Math.Max(sample.width, sample.height) * sample.scale * 0.6f + 40f, 64f, 260f);
                 return w;
             }
@@ -422,13 +504,12 @@ namespace PisAndDag.Content.Mimic
                 w.Reach = MathHelper.Clamp(w.Speed * Math.Min(sample.timeLeft, 120), 160f, 960f);
                 w.ThroughWalls = !sample.tileCollide;
 
-                // A blade that also throws something (Terra Blade, Night's Edge) is still swung up close.
-                if (!item.noMelee && item.useStyle == ItemUseStyleID.Swing)
-                {
-                    w.Kind = WeaponKind.Melee;
-                    w.Reach = Math.Max(MeleeReach(item), 64f);
-                    w.Speed = 0f;
-                }
+                // A sword that throws something as it swings (Meowmere, Star Wrath, Starfury, Influx Waver, Terra Blade):
+                // most of what it does is the shot, so it is used at the shot's range, if nearer than a gun's (as asked:
+                // "they also mainly use projectile"). The swords whose swing is the slash itself (Night's Edge, Excalibur)
+                // are read above. (Round 81: any melee weapon that shows as it shoots, as the trainer's weapons are read.)
+                if (melee && !item.noUseGraphic)
+                    w.Reach = Math.Min(w.Reach, 640f);
 
                 return w;
             }

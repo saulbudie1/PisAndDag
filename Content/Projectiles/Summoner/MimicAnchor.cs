@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Xna.Framework;
 using PisAndDag.Content.Buffs;
 using PisAndDag.Content.Items.Summoner;
@@ -61,6 +62,9 @@ namespace PisAndDag.Content.Projectiles.Summoner
 
             if (owner.HasBuff(buff) && mine)
                 Projectile.timeLeft = 2;
+
+            // Every slot its owner has, twelve at the least: a minion called after it sends it away.
+            Projectile.minionSlots = Math.Max(EverclearMirror.Slots, owner.maxMinions);
 
             if (mine)
                 Projectile.Center = MimicSystem.Copy.Center;

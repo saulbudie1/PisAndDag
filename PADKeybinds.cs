@@ -27,6 +27,15 @@ namespace PisAndDag
         /// <summary>Switches a worn M.U.P.R.A.L between its glow and its beam (MupralPlayer). L, as no key of the game's is.</summary>
         public static ModKeybind Lantern { get; private set; }
 
+        /// <summary>
+        /// Lets a worn Calamity Module's adrenaline go when it is full (TentochiPlayer). X: no key of the game's, nor of
+        /// Calamity's (whose own adrenaline is B).
+        /// </summary>
+        public static ModKeybind Adrenaline { get; private set; }
+
+        /// <summary>Lets a worn Adam Kit I go (TentochiPlayer.Detonate). K: no key of the game's, nor of Calamity's, and away from the hand that moves.</summary>
+        public static ModKeybind Detonate { get; private set; }
+
         public override void Load()
         {
             Reload = KeybindLoader.RegisterKeybind(Mod, "Reload", "R");
@@ -35,6 +44,8 @@ namespace PisAndDag
             SpellUp = KeybindLoader.RegisterKeybind(Mod, "SpellUp", "Up");
             SpellDown = KeybindLoader.RegisterKeybind(Mod, "SpellDown", "Down");
             Lantern = KeybindLoader.RegisterKeybind(Mod, "Lantern", "L");
+            Adrenaline = KeybindLoader.RegisterKeybind(Mod, "Adrenaline", "X");
+            Detonate = KeybindLoader.RegisterKeybind(Mod, "Detonate", "K");
         }
 
         public override void Unload()
@@ -45,6 +56,8 @@ namespace PisAndDag
             SpellUp = null;
             SpellDown = null;
             Lantern = null;
+            Adrenaline = null;
+            Detonate = null;
         }
     }
 }

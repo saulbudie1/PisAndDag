@@ -6,10 +6,12 @@ Items: {
 			Calls a copy of you out of the mirror to fight beside you
 			It fights with a copy of your off hand's weapon, or of the best weapon on your hotbar, right click and all
 			It wears what you wear and has your buffs
-			Three times your life, and 30 Super Healing Potions of its own
+			Three times your life, one and a half times your defense, and 30 Super Healing Potions of its own
 			Enemies go after it as they would another player
-			Takes 15 minion slots
-			If it breaks, the mirror clouds over for a minute
+			Needs 12 minion slots and takes all of yours
+			Each slot past 12 gives it 15% more of your life, 5 defense and 20% more damage
+			Its weapons also gain your summon damage
+			If it breaks, you heal half your life and the mirror clouds over for 45 seconds
 			Single player only
 			'It learned you faster than you learned it.'
 			'''
@@ -252,6 +254,76 @@ Items: {
 				'''
 			TopSpeedWorn: Your top speed: {0} mph, {1} mph without it
 			TopSpeedOff: Your top speed with it: {0} mph, {1} mph now
+		}
+
+		EmpressBlessing: {
+			DisplayName: Empress' Blessing
+			Tooltip:
+				'''
+				Double tap a direction to dash 20 tiles
+				Nothing can hurt you while you dash
+				Increases your max number of minions by 1
+				One more Magic Arsenal slot
+				'Her blessing. Above, every blessing is counted.'
+				'''
+		}
+
+		EnterprisesComplimentary: {
+			DisplayName: Enterprise's Complimentary
+			Tooltip:
+				'''
+				Shows a targeting laser while a ranged weapon is held
+				It runs from you toward the cursor
+				'''
+			Spec: ES-2 optical sight. Issued free with every service contract.
+		}
+
+		ExoAirI: {
+			DisplayName: Exo Air I
+			Tooltip:
+				'''
+				7 mph more top speed
+				Double tap a direction to dash 13 tiles
+				Cannot be worn with Exo Air II
+				'''
+			Spec: EA-1 lower-limb exoframe. Rated for civilian use.
+		}
+
+		ExoAirII: {
+			DisplayName: Exo Air II
+			Tooltip:
+				'''
+				12 mph more top speed
+				Double tap a direction to dash 18 tiles
+				Cannot be worn with Exo Air I
+				'''
+			Spec: EA-2 lower-limb exoframe. Rated for security personnel.
+		}
+
+		BackRocket: {
+			DisplayName: Back Rocket
+			Tooltip:
+				'''
+				Fires a homing rocket every 2 seconds for 80 damage
+				Fires only at enemies in sight within 50 tiles
+				'''
+			Spec: BR-80 dorsal launcher. Autonomous target acquisition.
+		}
+
+		CalamityModule: {
+			DisplayName: Calamity Module
+			Tooltip: Builds adrenaline to full over 30 seconds
+			Spec: CM-25 neurochemical regulator. One cycle per thirty seconds.
+		}
+
+		AdamKitI: {
+			DisplayName: Adam Kit I
+			Tooltip:
+				'''
+				10% slower movement, flight and mounts
+				Detonation costs 450 life and causes Potion Sickness
+				'''
+			Spec: AK-1 heavy augmentation kit. Detonation is irreversible.
 		}
 	}
 
@@ -634,12 +706,12 @@ Items: {
 
 	HarenaeumOre: {
 		DisplayName: Harenaeum Ore
-		Tooltip: 
+		Tooltip: ""
 	}
 
 	HarenaeumBar: {
 		DisplayName: Harenaeum Bar
-		Tooltip: "Grimey"
+		Tooltip: Grimey
 	}
 
 	PocketSandstorm: {
@@ -649,16 +721,12 @@ Items: {
 
 	Corosion: {
 		DisplayName: Corosion
-		Tooltip:  
-			Right-click to scatter into sand and step back 10 tiles, untouchable (7 second cooldown) 
+		Tooltip: Right-click to scatter into sand and step back 10 tiles, untouchable (7 second cooldown)
 	}
 
 	ScorpiusServus: {
 		DisplayName: Scorpius Servus
-		Tooltip:
-			'''
-			Grows a scorpion's tail from your back to fight for you
-			'''
+		Tooltip: Grows a scorpion's tail from your back to fight for you
 	}
 
 	JellesSableHelper: {
@@ -672,17 +740,12 @@ Items: {
 
 	Sidewinder: {
 		DisplayName: Sidewinder
-		Tooltip:
-			'''
-			Arrow shot onto the ground will dig its way up to the nearest enemy, dealing extra damage.
-			'''
+		Tooltip: Arrow shot onto the ground will dig its way up to the nearest enemy, dealing extra damage.
 	}
 
 	TheLastGrain: {
 		DisplayName: The Last Grain
-		Tooltip:
-			''' 
-			'''
+		Tooltip: ""
 	}
 
 	ClayTurbah: {
@@ -706,6 +769,11 @@ Items: {
 }
 
 Buffs: {
+	AdrenalineRush: {
+		DisplayName: Adrenaline
+		Description: 2.5 times damage
+	}
+
 	EverclearMirrorBuff: {
 		DisplayName: Everclear Mirror
 		Description: A copy of you fights beside you
@@ -884,6 +952,7 @@ Buffs: {
 }
 
 DeathText: {
+	Decommissioned: "{0} was decommissioned."
 	ManaPoisoning: "{0} drank one potion too many."
 	KeptBehindTheWall: "{0} was kept behind the Wall."
 	UnderTheSkull: "{0} was under the skull when it came down."
@@ -952,6 +1021,7 @@ Tiles: {
 
 Projectiles: {
 	MimicAnchor.DisplayName: Everclear Mirror
+	TentochiRocket.DisplayName: Back Rocket
 	CatapultBoulder.DisplayName: Boulder Catapult
 	DeepRoot.DisplayName: Deep Roots
 	Handswitch_Proj.DisplayName: Handswitch
@@ -1405,6 +1475,8 @@ Keybinds: {
 	SpellUp.DisplayName: Next Spell or Incantation
 	SpellDown.DisplayName: Previous Spell or Incantation
 	Lantern.DisplayName: Switch the M.U.P.R.A.L's light
+	Adrenaline.DisplayName: Calamity Module: let adrenaline go
+	Detonate.DisplayName: Adam Kit I: detonate
 }
 
 Magic: {
@@ -1483,4 +1555,18 @@ UI: {
 		Empty: The sand has run out. Right-click to turn it over
 		Running: "{0} seconds of sand left"
 	}
+}
+
+Tentochi: {
+	Brand: Made By Tentochi
+	Unbound: an unbound key
+	AdrenalineKey: When full, press {0} for 2.5 times damage, 5 seconds
+	DetonateKey: Press {0} to detonate: 25,000 damage within 16 tiles
+	Ready: READY [{0}]
+	Surging: "{0}s"
+}
+
+Conditions: {
+	Legends: In a Legends world
+	LegendsTag: Legends
 }

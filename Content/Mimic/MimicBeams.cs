@@ -140,9 +140,14 @@ namespace PisAndDag.Content.Mimic
             // The shapes of her acts can only be asked where they hurt: the places about the copy they cover now.
             if (p.ModProjectile is EmpressHitbox)
             {
-                Probe(p, proto, into, ref n, me, body);
+                Probe(p, proto, into, ref n, me, body, p.velocity, 0, out _);
                 return true;
             }
+
+            // Another mod's: Calamity's bosses' beams, laser walls, warnings and blasts, and any other shot that hurts out
+            // past its own box (MimicCalamity).
+            if (p.ModProjectile != null)
+                return MimicCalamity.Read(p, proto, into, ref n, me, body);
 
             return false;
         }
@@ -204,11 +209,20 @@ namespace PisAndDag.Content.Mimic
         /// <summary>
         /// A shape asked where it hurts: the copy's box tried at a grid of places about it (9 by 9, 40 px apart), and each
         /// run of places in a row it would be hurt at told of as one box there, for as long as the shape lasts a little.
+        /// The Empress's shapes, and other mods' shots that hurt out past their own box (MimicCalamity).
         /// </summary>
-        private static void Probe(Projectile p, Threat proto, Threat[] into, ref int n, Vector2 me, Rectangle body)
+        /// <param name="vel">How the places it covers are told to move.</param>
+        /// <param name="margin">How far past the shot's own box a place it hurts at must be to count as out past it.</param>
+        /// <param name="beyond">It hurts at some place that far past its own box: the box alone would not tell of it.</param>
+        /// <returns>How many of the places tried it hurts at.</returns>
+        public static int Probe(Projectile p, Threat proto, Threat[] into, ref int n, Vector2 me, Rectangle body, Vector2 vel, int margin, out bool beyond)
         {
             Rectangle own = p.Hitbox;
+            Rectangle near = own;
+            near.Inflate(margin, margin);
             float halfW = body.Width * 0.5f, halfH = body.Height * 0.5f;
+            int hits = 0;
+            beyond = false;
 
             for (int row = 0; row < Cells; row++)
             {
@@ -224,6 +238,14 @@ namespace PisAndDag.Content.Mimic
                         at.X += (int)((col - Cells / 2) * CellStep);
                         at.Y += (int)((row - Cells / 2) * CellStep);
                         hit = p.Colliding(own, at);
+
+                        if (hit)
+                        {
+                            hits++;
+
+                            if (!near.Intersects(at))
+                                beyond = true;
+                        }
                     }
 
                     if (hit && start < 0)
@@ -236,7 +258,7 @@ namespace PisAndDag.Content.Mimic
                     Threat th = proto;
                     th.Line = false;
                     th.Pos = me + new Vector2(midCol * CellStep, (row - Cells / 2) * CellStep);
-                    th.Vel = p.velocity;
+                    th.Vel = vel;
                     th.Acc = Vector2.Zero;
                     th.Homing = 0f;
                     th.HalfW = Math.Max(0f, (col - 1 - start) * CellStep * 0.5f + CellStep * 0.5f - halfW);
@@ -249,9 +271,12 @@ namespace PisAndDag.Content.Mimic
                     start = -1;
                 }
             }
+
+            return hits;
         }
 
-        private static void Add(Threat[] into, ref int n, Threat th, Vector2 me)
+        /// <summary>A threat written in, if there is room and it passes within the copy's reach.</summary>
+        internal static void Add(Threat[] into, ref int n, Threat th, Vector2 me)
         {
             if (n >= into.Length || Near(ref th, me) > MimicSense.Reach)
                 return;

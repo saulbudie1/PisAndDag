@@ -103,8 +103,10 @@ namespace PisAndDag.Content.NPCs.Empress
 
                     try
                     {
+                        // Its cracks and its light, over the shards (EmpressOfLight.DrawCrackLight): no lines round the
+                        // shards themselves (by request, "remove these sectioned outlines").
                         for (int k = 0; k < her.CrackCount; k++)
-                            CrackNet.Of(her.CrackSeed, k).DrawLines(Main.spriteBatch, her.CrackPoint(k), her, Vector2.Zero);
+                            her.DrawCrackLight(Main.spriteBatch, k);
                     }
                     finally
                     {
@@ -248,11 +250,12 @@ namespace PisAndDag.Content.NPCs.Empress
         {
             CrackNet net = CrackNet.Of(her.CrackSeed, which);
             Vector2 centre = her.CrackPoint(which);
-            float strain = her.CrackStrainNow;
+            // The world whole until it bursts (by request, "a pure clean glass break": the shards no longer shift and tip
+            // as it strains); then thrown, clear.
+            const float strain = 0f;
             float flight = her.CrackFlight;
 
-            // Nothing moved yet: the world is as it is.
-            if (strain <= 0.001f && flight <= 0.001f)
+            if (flight <= 0.001f)
                 return;
 
             Vector2 size = new Vector2(world.Width, world.Height);
@@ -304,13 +307,12 @@ namespace PisAndDag.Content.NPCs.Empress
 
                     net.Moved(i, j, middle, strain, flight, time, out Vector2 shift, out float turn, out float zoom);
 
-                    // A wash of her colours on each pane, and the flying ones going thin.
-                    float wash = 0.12f + 0.1f * (float)Math.Sin(time * 0.05f + i * 1.3f + j);
-                    Color tint = Color.Lerp(Color.White, EmpressArt.Prism(i * 0.17f + j * 0.31f), wash) * (1f - flight * 0.35f);
+                    // Clear glass, no wash of colour on it (each pane its own colour read as a section); going thin as it flies.
+                    Color tint = Color.White * (1f - flight * 0.35f);
 
-                    // The glint each pane catches, going round it as it moves.
+                    // The glint each pane catches, going round it as it moves: white, a little of her colours in it.
                     float glintWay = time * 0.035f + i * 0.9f + j * 1.3f;
-                    Color glass = EmpressArt.Prism(i * 0.13f + j * 0.29f + time / 200f);
+                    Color glass = Color.Lerp(Color.White, EmpressArt.Prism(i * 0.13f + j * 0.29f + time / 200f), 0.25f);
 
                     Vector2 source = OnScreen(centre + middle);
                     Vector2 placed = OnScreen(centre + shift + middle);

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PisAndDag.Content.Combat;
+using PisAndDag.Content.Graphics;
 using PisAndDag.Content.PADplayer;
+using PisAndDag.Content.Particles;
 using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
@@ -61,8 +63,20 @@ namespace PisAndDag.Content.Mimic
         /// <summary>The player slot the copy is kept in: the last before the server's own.</summary>
         public const int Slot = 254;
 
-        /// <summary>Ticks the mirror stays clouded after its copy breaks.</summary>
-        public const int Clouded = 60 * 60;
+        /// <summary>Ticks the mirror stays clouded after its copy breaks (by request: "Cool down 45 secs").</summary>
+        public const int Clouded = 45 * 60;
+
+        /// <summary>
+        /// The owner's minion slots past the mirror's own twelve (by request: "every slot after that is n with n = max
+        /// minion - 12"), all of them the copy's: each makes it tougher and harder-hitting (MimicPlayer). Read from its
+        /// owner each tick, so a summoning potion or a slot accessory put on or off counts at once.
+        /// </summary>
+        public static int Extra => Copy != null && Owner >= 0 && Owner < Main.maxPlayers && Main.player[Owner].active
+            ? Math.Max(0, Main.player[Owner].maxMinions - Items.Summoner.EverclearMirror.Slots)
+            : 0;
+
+        /// <summary>How far the light of its breaking reaches (PrismShatter), in world pixels: a copy's, not a crack's.</summary>
+        private const float BreakReach = 190f;
 
         /// <summary>Potions it is given.</summary>
         public const int Potions = 30;
@@ -77,6 +91,76 @@ namespace PisAndDag.Content.Mimic
 
         /// <summary>What it has learned of each weapon it has fought with, kept from one summoning to the next.</summary>
         private static readonly Practice practice = new Practice();
+
+        /// <summary>What the copy has learned of each weapon it has fought with (kept with its owner: MimicPlayer).</summary>
+        internal static Practice Learned => practice;
+
+        /// <summary>Whose copy's learning <see cref="Learned"/> holds (saved with them: MimicPlayer).</summary>
+        internal static Player LearnedFor;
+
+        // ---- what a weapon's right click puts out ----
+        // Each tick its own projectiles are noted with the tick they were first seen; those that appear on a tick it holds
+        // the right click teach which kinds of shot the held item's right click makes (AltShots). The newest such shot
+        // still out is what its "set up and shoot" way aims at (MimicSense, MimicBrain).
+        private static readonly System.Collections.Generic.Dictionary<int, System.Collections.Generic.HashSet<int>> AltShots = new System.Collections.Generic.Dictionary<int, System.Collections.Generic.HashSet<int>>();
+        private static readonly int[] seenAt = new int[Main.maxProjectiles];
+        private static readonly int[] seenType = new int[Main.maxProjectiles];
+
+        private static void NoteShots()
+        {
+            Player c = Copy;
+            Item held = c.HeldItem;
+
+            bool alt = c.altFunctionUse == 2 || intent.Alt;
+
+            foreach (Projectile p in Main.ActiveProjectiles)
+            {
+                int i = p.whoAmI;
+
+                if (p.owner != c.whoAmI || p.minion || p.sentry)
+                    continue;
+
+                if (seenType[i] == p.type + 1 && seenAt[i] > 0)
+                    continue;
+
+                seenType[i] = p.type + 1;
+                seenAt[i] = tick;
+
+                if (alt && held != null && !held.IsAir)
+                {
+                    if (!AltShots.TryGetValue(held.type, out var set))
+                        AltShots[held.type] = set = new System.Collections.Generic.HashSet<int>();
+
+                    set.Add(p.type);
+                }
+            }
+        }
+
+        /// <summary>The newest of the copy's shots its held item's right click makes, still out and within 1200 px.</summary>
+        internal static bool NewestAltShot(Player c, out Projectile shot)
+        {
+            shot = null;
+            Item held = c.HeldItem;
+
+            if (held == null || held.IsAir || !AltShots.TryGetValue(held.type, out var set))
+                return false;
+
+            int best = -1;
+
+            foreach (Projectile p in Main.ActiveProjectiles)
+            {
+                if (p.owner != c.whoAmI || !set.Contains(p.type) || Vector2.DistanceSquared(p.Center, c.Center) > 1200f * 1200f)
+                    continue;
+
+                if (seenAt[p.whoAmI] > best)
+                {
+                    best = seenAt[p.whoAmI];
+                    shot = p;
+                }
+            }
+
+            return shot != null;
+        }
 
         /// <summary>What it was told and what it did last tick, for <see cref="Report"/>.</summary>
         private static Situation lastSeen;
@@ -101,12 +185,19 @@ namespace PisAndDag.Content.Mimic
         /// <summary>Whether this player is the copy.</summary>
         public static bool Is(Player player) => Copy != null && ReferenceEquals(player, Copy);
 
-        /// <summary>Damage the copy landed on something (MimicPlayer): what it learns its weapon's best distance from.</summary>
-        internal static void Landed(NPC target, int damage)
+        /// <summary>
+        /// Damage the copy landed on something (MimicPlayer): what it learns its weapon's best distance from, and, put down to
+        /// the way and distance band the shot that landed it was made under (<paramref name="tag"/>, MimicShots; -1 for a blow
+        /// of the item itself, or a shot not marked: the way in use now), which way of using it lands the most.
+        /// </summary>
+        internal static void Landed(NPC target, int damage, int tag = -1)
         {
             if (Copy != null && brain != null && target != null)
-                brain.Practice.Landed(damage, Vector2.Distance(Copy.Center, target.Center));
+                brain.Practice.Landed(damage, Vector2.Distance(Copy.Center, target.Center), tag);
         }
+
+        /// <summary>The way and distance band the copy is using its weapon at now (Practice.Tag), for a shot it makes (MimicShots).</summary>
+        internal static int TagNow => brain?.Practice.Tag ?? -1;
 
         /// <summary>
         /// Why it is or is not fighting, in a line (the /mirror command): the weapon as it reads it, its mana, its
@@ -122,8 +213,18 @@ namespace PisAndDag.Content.Mimic
             Weapon w = s.Weapon;
             var sb = new System.Text.StringBuilder();
             sb.Append("Weapon: ").Append(Copy.HeldItem?.Name ?? "none").Append(" read as ").Append(w.Kind)
+              .Append(" (").Append(MimicWeapons.ClassNames[Math.Clamp(w.Class, 0, 3)]).Append(", ")
+              .Append(MimicWeapons.StyleNames[Math.Clamp(w.Style, 0, MimicWeapons.StyleNames.Length - 1)]).Append(')')
               .Append(", reach ").Append((int)w.Reach).Append(" px, shot ").Append(w.Speed.ToString("0.#"))
               .Append(" px/t, kind ").Append(w.Cluster);
+
+            if (w.Cluster >= 0 && w.Cluster < MimicWeapons.KindNames.Length)
+                sb.Append(" (").Append(MimicWeapons.KindNames[w.Cluster]).Append(')');
+
+            string watched = Copy.HeldItem == null || Copy.HeldItem.IsAir ? "" : MimicWeapons.WatchReport(Copy.HeldItem.type);
+
+            if (watched.Length > 0)
+                sb.Append(". ").Append(watched);
 
             if (w.ManaCost > 0f)
                 sb.Append(", ").Append((int)w.ManaCost).Append(" mana a use");
@@ -149,6 +250,16 @@ namespace PisAndDag.Content.Mimic
                   .Append(d <= w.Reach + Math.Max(f.HalfW, f.HalfH) ? "in reach" : "out of reach")
                   .Append(i.Use ? ", attacking." : ", not attacking.");
             }
+
+            string ways = practice.WaysReport();
+
+            if (ways.Length > 0)
+                sb.Append(" Ways tried with it (damage a second): ").Append(ways).Append('.');
+
+            string best = practice.BestWays();
+
+            if (best.Length > 0)
+                sb.Append(" Uses it: ").Append(best).Append('.');
 
             return sb.ToString();
         }
@@ -213,6 +324,12 @@ namespace PisAndDag.Content.Mimic
             Main.player[Slot] = copy;
             Copy = copy;
             Owner = owner.whoAmI;
+            if (LearnedFor != owner)
+            {
+                LearnedFor = owner;
+                owner.GetModPlayer<MimicPlayer>().Teach(practice);
+            }
+
             brain = new MimicBrain(MimicGenes.Trained, owner.whoAmI * 977 + (int)Main.GameUpdateCount, practice);
             intent = default;
             lastTarget = -1;
@@ -257,8 +374,28 @@ namespace PisAndDag.Content.Mimic
 
             Shimmer(at, 30);
 
+            // Its glass breaking as light (by request, "maybe add that effect to the Death of Everclear Mirror too": the
+            // Empress's crack's burst, PrismShatter, in the mirror's colours and the copy's size), its panes thrown out of it.
+            if (!Main.dedServ)
+            {
+                PADParticleHandler.SpawnParticle(new PrismShatterBurst(at, Main.rand.Next(1 << 20), BreakReach, PrismShatter.Look.Mirror, true));
+                SoundEngine.PlaySound(NPCs.Empress.EmpressSounds.Shards with { Volume = 0.6f, Pitch = 0.15f, MaxInstances = 2 }, at);
+                SoundEngine.PlaySound(NPCs.Empress.EmpressSounds.Shock with { Volume = 0.4f, Pitch = 0.3f, MaxInstances = 2 }, at);
+
+                if (Main.LocalPlayer.WithinRange(at, 1600f))
+                    Main.LocalPlayer.PIS().BumpScreenShake(7f, 16);
+            }
+
             if (Owner >= 0 && Main.player[Owner].active)
-                Main.player[Owner].GetModPlayer<MimicPlayer>().Cloud = Clouded;
+            {
+                Player owner = Main.player[Owner];
+                owner.GetModPlayer<MimicPlayer>().Cloud = Clouded;
+
+                // Its last gift (by request: "upon it dying heals player by half max player cumulative HP"): half its
+                // owner's whole life, as it is with everything worn and every buff (statLifeMax2).
+                if (!owner.dead)
+                    owner.Heal(owner.statLifeMax2 / 2);
+            }
 
             Release(true);
         }
@@ -326,6 +463,7 @@ namespace PisAndDag.Content.Mimic
                         Main.projectile[i].active = false;
                 }
 
+                MimicShots.Clear();
                 copy.active = false;
                 Main.player[Slot] = kept ?? new Player();
                 kept = null;
@@ -470,6 +608,16 @@ namespace PisAndDag.Content.Mimic
         }
 
         /// <summary>
+        /// After the projectiles have moved: what its weapon's shots do as they fly, and whether one is held in its hands (a
+        /// held projectile makes itself so in its own update; round 81: MimicShots, MimicWeapons.Watched).
+        /// </summary>
+        public override void PostUpdateProjectiles()
+        {
+            if (Copy != null && Copy.active)
+                MimicShots.Watch(Copy);
+        }
+
+        /// <summary>
         /// After the game has run every player, the copy among them: it is taken off the count of players (so a night
         /// can be slept through with it out), hurt by what touches it, parries, drinks, and its own debuffs run down;
         /// at no life it breaks.
@@ -481,6 +629,8 @@ namespace PisAndDag.Content.Mimic
 
             if (Copy.active && Main.CurrentFrameFlags.ActivePlayersCount > 1)
                 Main.CurrentFrameFlags.ActivePlayersCount--;
+
+            NoteShots();
 
             Scope.Enter();
 
@@ -811,12 +961,15 @@ namespace PisAndDag.Content.Mimic
             c.anglerQuestsFinished = owner.anglerQuestsFinished;
         }
 
-        /// <summary>Their ammunition, renewed: the copy never runs out of what they carry, and never spends theirs.</summary>
+        /// <summary>
+        /// Their ammunition and their coins, renewed: the copy never runs out of what they carry, and never spends theirs
+        /// (coins for a weapon that throws them: Midas Prime's right click).
+        /// </summary>
         private static void Ammo(Player owner)
         {
             Player c = Copy;
 
-            for (int i = 54; i < 58; i++)
+            for (int i = 50; i < 58; i++)
                 c.inventory[i] = owner.inventory[i].Clone();
 
             // Ammunition kept in the pack instead, for the weapon it holds: the first stack of it.
@@ -1044,6 +1197,9 @@ namespace PisAndDag.Content.Mimic
                 Main.mouseY = PlayerInput.MouseY = (int)MathHelper.Clamp(screen.Y, -4000f, 8000f);
                 Main.mouseLeft = Copy.controlUseItem;
                 Main.mouseRight = Copy.controlUseTile;
+
+                // Calamity keeps its own record of the cursor, for the player at the keyboard only: kept for the copy too.
+                MimicCalamity.SyncMouse(Copy, Aim, Copy.controlUseTile);
                 Main.mouseLeftRelease = true;
                 Main.mouseRightRelease = true;
                 Main.blockMouse = false;

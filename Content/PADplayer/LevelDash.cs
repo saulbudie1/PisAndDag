@@ -57,6 +57,17 @@ namespace PisAndDag.Content.PADplayer
         {
             if (Player.dashDelay >= 0)
                 return;
+            Hold();
+        }
+
+        /// <summary>
+        /// Holds the player level for this tick, as a dash under way is held: the step down taken where the game would
+        /// take it, and the fall taken away (all of it within a step of the ground, all but <see cref="Hair"/> above
+        /// it). For the game's dashes (above) and the accessories' (AccessoryDash), which set their way along the
+        /// ground first: where the player will be after this tick's move is where the ground is looked for.
+        /// </summary>
+        internal void Hold()
+        {
             StepDown();
             Player.velocity.Y = OverGround() ? 0f : Hair * Player.gravDir;
         }

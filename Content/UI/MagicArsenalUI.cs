@@ -31,6 +31,8 @@ namespace PisAndDag.Content.UI
     /// The slot the Necklace Of The Academy holds open is a little bluer than the rest and wears
     /// a small picture of the necklace in its corner. A cast left in it when the necklace comes
     /// off shows through the bands, faint; a click there gives it back, and nothing can be put in.
+    /// The one the Empress' Blessing holds open is the same, a little pinker, with her blessing in
+    /// its corner.
     /// </summary>
     public class MagicArsenalUI : ModSystem
     {
@@ -83,6 +85,9 @@ namespace PisAndDag.Content.UI
 
         /// <summary>The necklace's slot, a little bluer than the rest: the enamel of its medallion.</summary>
         private static readonly Color NecklaceTint = new Color(196, 212, 255);
+
+        /// <summary>The Blessing's slot, a little pinker than the rest: her light.</summary>
+        private static readonly Color BlessingTint = new Color(255, 214, 240);
 
         public static bool Open;
 
@@ -302,10 +307,14 @@ namespace PisAndDag.Content.UI
                 else if (index == arsenal.NecklaceSlot)
                     Main.instance.MouseText(Language.GetTextValue("Mods.PisAndDag.Magic.NecklaceSlot",
                         Lang.GetItemNameValue(ModContent.ItemType<NecklaceOfTheAcademy>())), 0, 0);
+                else if (index == arsenal.BlessingSlot)
+                    Main.instance.MouseText(Language.GetTextValue("Mods.PisAndDag.Magic.NecklaceSlot",
+                        Lang.GetItemNameValue(ModContent.ItemType<EmpressBlessing>())), 0, 0);
             }
 
             Color tint = locked || nearHome ? Color.White : Dimmed;
-            Color frameTint = index == arsenal.NecklaceSlot ? tint.MultiplyRGB(NecklaceTint) : tint;
+            Color frameTint = index == arsenal.NecklaceSlot ? tint.MultiplyRGB(NecklaceTint)
+                : index == arsenal.BlessingSlot ? tint.MultiplyRGB(BlessingTint) : tint;
 
             if (slotTexture != null && slotTexture.IsLoaded)
             {
@@ -327,6 +336,13 @@ namespace PisAndDag.Content.UI
                 Item necklace = ContentSamples.ItemsByType[ModContent.ItemType<NecklaceOfTheAcademy>()];
                 Vector2 corner = position + new Vector2(SlotSize - MarkSize * 0.5f - 2f);
                 ItemSlot.DrawItemIcon(necklace, ItemSlot.Context.ChestItem, Main.spriteBatch, corner, 1f, MarkSize, tint);
+            }
+            else if (index == arsenal.BlessingSlot)
+            {
+                // Her blessing, small, in the same corner.
+                Item blessing = ContentSamples.ItemsByType[ModContent.ItemType<EmpressBlessing>()];
+                Vector2 corner = position + new Vector2(SlotSize - MarkSize * 0.5f - 2f);
+                ItemSlot.DrawItemIcon(blessing, ItemSlot.Context.ChestItem, Main.spriteBatch, corner, 1f, MarkSize, tint);
             }
         }
 

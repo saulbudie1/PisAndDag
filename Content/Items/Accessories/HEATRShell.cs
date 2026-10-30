@@ -191,7 +191,7 @@ namespace PisAndDag.Content.Items.Accessories
                 DrawData piece = drawn[i];
                 Texture2D texture = piece.texture;
 
-                if (texture == null || piece.ignorePlayerRotation || piece.color.A == 0)
+                if (texture == null || piece.ignorePlayerRotation || piece.color.A == 0 || Mimic.MimicOutline.IsOutline(texture))
                     continue;
 
                 if (Alpha(texture) == null)
@@ -254,6 +254,21 @@ namespace PisAndDag.Content.Items.Accessories
             drawn.Add(new DrawData(picture, new Vector2(left, top), null, Color.White * seen, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f));
         }
 
+        /// <summary>One of the fields' pictures (the Everclear Mirror's copy's gold outline leaves them out).</summary>
+        internal static bool IsField(Texture2D texture)
+        {
+            if (texture == null || pictures == null)
+                return false;
+
+            foreach (Texture2D p in pictures)
+            {
+                if (ReferenceEquals(p, texture))
+                    return true;
+            }
+
+            return false;
+        }
+
         private static bool Skipped(int index)
         {
             foreach (Point skip in skips)
@@ -269,7 +284,7 @@ namespace PisAndDag.Content.Items.Accessories
         /// A texture's alpha, read the first time it is asked for and kept; none for one that cannot
         /// be read so (drawn to as the game runs, or not plain colour) or is too large.
         /// </summary>
-        private static byte[] Alpha(Texture2D texture)
+        internal static byte[] Alpha(Texture2D texture)
         {
             if (texture.IsDisposed)
             {

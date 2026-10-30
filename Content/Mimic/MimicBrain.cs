@@ -38,8 +38,17 @@ namespace PisAndDag.Content.Mimic
         private int planMove, planVert, planDash, planLeft;
 
         private int side;
-        private int altLeft, altCooldown;
+        private int wayLeft, wayTick, way, wayBand;
         private int parryCooldown;
+
+        /// <summary>How much of a body's usual weight it carries while it does not hurt to touch (MimicSense in the game, the trainer's Arena: the same).</summary>
+        public const float DormantShare = 0.5f;
+
+        /// <summary>Room added around such a body, in pixels each way.</summary>
+        public const float DormantRoom = 24f;
+
+        /// <summary>Whether it learns where its weapon lands best as it fights (off only while the trainer tries a weapon at set distances).</summary>
+        public bool Learn = true;
 
         public MimicBrain(MimicGenes genes, int seed, Practice practice = null)
         {
@@ -48,11 +57,36 @@ namespace PisAndDag.Content.Mimic
             Practice = practice ?? new Practice();
         }
 
+        /// <summary>The line from a body after it, through it and on past it, as a danger (<see cref="MimicGenes.Lane"/>).</summary>
+        private void AddLane(ref Situation s, int i)
+        {
+            if (i < 0 || s.ThreatCount >= s.Threats.Length)
+                return;
+
+            Threat th = s.Threats[i];
+            Vector2 to = s.Me.Pos - th.Pos;
+            float d = to.Length();
+
+            if (d < 1f)
+                return;
+
+            s.Threats[s.ThreatCount++] = new Threat
+            {
+                Line = true,
+                Pos = th.Pos,
+                Angle = (float)Math.Atan2(to.Y, to.X),
+                Length = d + 480f,
+                HalfW = (th.HalfW + th.HalfH) * 0.5f,
+                Weight = th.Weight * Genes.Lane,
+                Life = 40,
+            };
+        }
+
         /// <summary>Forgets its plan: after a teleport, or a new weapon.</summary>
         public void Reset()
         {
             planLeft = 0;
-            altLeft = 0;
+            wayLeft = 0;
             side = 0;
         }
 
@@ -76,6 +110,42 @@ namespace PisAndDag.Content.Mimic
                 th.HomeTurn = th.Chaser ? Genes.ChaseTurn : th.HomeTurn * Genes.HomeTrust;
             }
 
+            // A body after it, still or not, can lunge along the line between them (Yharon, the Plaguebringer, the Exo
+            // Twins charge so; a worm turns into it): that line is told of as a danger of its own, so it keeps moving
+            // across it rather than waiting on it, as a player does against a charger.
+            // Only the two nearest such bodies: a worm's every segment is after it too, and its body follows its head.
+            if (Genes.Lane > 0.01f)
+            {
+                int first = -1, second = -1;
+                float d1 = 1600f * 1600f, d2 = d1;
+
+                for (int i = 0; i < s.ThreatCount; i++)
+                {
+                    ref Threat th = ref s.Threats[i];
+
+                    if (!th.AfterMe || th.Line)
+                        continue;
+
+                    float d = Vector2.DistanceSquared(s.Me.Pos, th.Pos);
+
+                    if (d < d1)
+                    {
+                        second = first;
+                        d2 = d1;
+                        first = i;
+                        d1 = d;
+                    }
+                    else if (d < d2)
+                    {
+                        second = i;
+                        d2 = d;
+                    }
+                }
+
+                AddLane(ref s, first);
+                AddLane(ref s, second);
+            }
+
             // Out of mana for its weapon: it stops using it and rests (standing still, the game gives mana back faster)
             // until it has the share of it back that it waits for.
             if (s.Weapon.ManaCost <= 0f)
@@ -89,7 +159,27 @@ namespace PisAndDag.Content.Mimic
             intent.Target = t;
             idle = t < 0;
 
+            // A sword or a spear only lands from within its reach of what it hits, and what it hits hurts to touch: it
+            // takes on that much of its own target's touch (Commit) to get there, as a melee player does. The rest of
+            // the danger (shots, other bodies) counts in full.
+            if (t >= 0 && (s.Weapon.Kind == WeaponKind.Melee || s.Weapon.Kind == WeaponKind.Spear) && Genes.Commit > 0.01f)
+            {
+                ref Foe target = ref s.Foes[t];
+
+                for (int i = 0; i < s.ThreatCount; i++)
+                {
+                    ref Threat th = ref s.Threats[i];
+
+                    if (!th.Line && Vector2.DistanceSquared(th.Pos, target.Pos) < 1f)
+                        th.Weight *= 1f - Genes.Commit;
+                }
+            }
+
             Vector2 want = Where(ref s, t);
+
+            // A weapon that must touch, with something to touch: how much the danger on the way in and the distance from
+            // where it wants to be count (CloseRisk, CloseGoal), as a melee player goes in for the hit.
+            closeNow = t >= 0 && Close(s.Weapon.Kind) && !resting;
             Plan(ref s, want);
 
             intent.Move = planMove;
@@ -107,8 +197,10 @@ namespace PisAndDag.Content.Mimic
             if (t >= 0 && !resting)
                 Attack(ref s, t, ref intent);
 
-            // What it learns from: each tick it is hitting at, how far it is from what it is hitting at.
-            if (intent.Use && intent.AttackTarget >= 0)
+            // What it learns from: each tick it is hitting at, how far it is from what it is hitting at, whichever button
+            // its way of using the weapon has down (before round 81 only the left click was counted, so a way that uses
+            // the right click alone never had a tick put to it and stayed "untried": chosen again and again).
+            if ((intent.Use || intent.Alt) && intent.AttackTarget >= 0)
                 Practice.Attacking(Vector2.Distance(s.Me.Pos, s.Foes[intent.AttackTarget].Pos));
 
             Parry(ref s, ref intent);
@@ -152,7 +244,12 @@ namespace PisAndDag.Content.Mimic
                 ref Foe foe = ref s.Foes[i];
                 float d = Vector2.Distance(foe.Pos, s.Owner);
 
-                if (d > leash + 160f)
+                // Only what it can reach from its leash: with a blade, a spear, a yoyo or a whip, no further out than the
+                // weapon reaches (before, a sea creature just past the leash was chosen, and the copy waited at the end
+                // of its leash out of reach, "not attacking").
+                float outward = Close(s.Weapon.Kind) ? s.Weapon.Reach + Math.Max(foe.HalfW, foe.HalfH) : 160f;
+
+                if (d > leash + outward)
                     continue;
 
                 float score = d - (foe.Boss ? Genes.BossBias * 16f : 0f);
@@ -203,11 +300,19 @@ namespace PisAndDag.Content.Mimic
 
             // The weapon's distance: what it was told to begin with (the weapon's reach and the numbers it was trained
             // with), moved toward where it has found it lands the most (Practice), as it learns this weapon.
-            float told = Engage(ref s.Weapon, foe.HalfW);
-            float away = s.Weapon.Kind == WeaponKind.Summon
+            float told = s.Weapon.Best > 0f && s.Weapon.Kind != WeaponKind.Summon
+                ? foe.HalfW + s.Weapon.Best
+                : Engage(ref s.Weapon, foe.HalfW);
+            float away = s.Weapon.Kind == WeaponKind.Summon || !Learn
                 ? told
                 : Practice.Prefer(told, s.Weapon.Reach + Math.Max(foe.HalfW, foe.HalfH), Genes.LearnPrior, Genes.Explore);
             away += foe.TargetsMe ? Genes.Targeted * 16f : 0f;
+
+            // A weapon that has to reach is used from within its reach: whatever it was trained or has learned, it never
+            // stands further off than its blade, spear, yoyo or whip reaches past the target's edge (in the game, a
+            // held blade read at 64 px stood 263 px off and never swung).
+            if (Close(s.Weapon.Kind))
+                away = Math.Min(away, Math.Max(foe.HalfW, foe.HalfH) + Math.Max(24f, s.Weapon.Reach * 0.85f));
 
             // Resting for mana: further off, out of the way, where it can stand still.
             if (resting)
@@ -239,17 +344,32 @@ namespace PisAndDag.Content.Mimic
 
             if (s.Me.CanFly)
             {
-                // Above it by HoverAbove; with a weapon that must touch, never so far above that it is out of reach.
+                // Above it by HoverAbove; with a weapon that must touch, never so far above that it is out of reach (with
+                // wings it hovered over the target, up and across both, past a held blade's reach: the across is capped
+                // above, and the up kept to two fifths of it so the two together stay within the reach).
                 float above = Genes.HoverAbove * 16f;
 
                 if (Close(s.Weapon.Kind))
-                    above = MathHelper.Clamp(above, -away * 0.6f, away * 0.6f);
+                    above = MathHelper.Clamp(above, -away * 0.4f, away * 0.4f);
 
                 want.Y = foe.Pos.Y - above;
             }
             else
             {
                 want.Y = s.Me.Pos.Y;
+
+                // A weapon that must touch, and what it fights is above it (a boss in the air, the copy without wings): it
+                // jumps for it, as a melee player jumps to swing, as high as its jumps take it; and stands under it, near
+                // enough across that a jump brings it within reach (round 81: with a sword it stood under Plantera 130 px
+                // off her edge, in reach a sixth of the time).
+                if (Close(s.Weapon.Kind) && foe.Pos.Y + foe.HalfH < s.Me.Pos.Y - s.Me.HalfH)
+                {
+                    want.Y = Math.Max(foe.Pos.Y, s.Me.Pos.Y - JumpHeight(ref s.Me));
+                    float across = Math.Max(foe.HalfW, s.Weapon.Reach * 0.5f);
+
+                    if (Math.Abs(want.X - foe.Pos.X) > across)
+                        want.X = foe.Pos.X + side * across;
+                }
             }
 
             // Not where its owner is: what is aimed at one of them would hit both. Up close it takes the target's other
@@ -302,6 +422,19 @@ namespace PisAndDag.Content.Mimic
             return want;
         }
 
+        /// <summary>
+        /// How high it can get from where it stands: its jump held (its speed for its ticks, then the rise left at that speed),
+        /// and each jump it can make in the air on top.
+        /// </summary>
+        private static float JumpHeight(ref Body b)
+        {
+            float g = Math.Max(0.1f, b.Gravity);
+            float rise = b.JumpSpeed * b.JumpSpeed / (2f * g);
+            float one = b.JumpSpeed * b.JumpTicks + rise;
+            float air = b.AirJumps * (b.JumpSpeed * b.AirJumpTicks + rise);
+            return Math.Min(one + air, 640f);
+        }
+
         /// <summary>A weapon that has to reach its target: a blade, a spear, a yoyo, a whip.</summary>
         private static bool Close(WeaponKind k) => k == WeaponKind.Melee || k == WeaponKind.Spear || k == WeaponKind.Yoyo || k == WeaponKind.Whip;
 
@@ -322,6 +455,11 @@ namespace PisAndDag.Content.Mimic
                     return Genes.RangedDist * 16f * 0.75f;
 
                 default:
+                    // A spray or a gust (nothing that flies on: Dancing Sand, a flamethrower) hits harder the nearer, and
+                    // only near (as asked: "closer is better"): a third of its reach off the target's edge.
+                    if (w.Speed <= 0f && w.Reach < 900f)
+                        return targetHalfWidth + Math.Max(48f, w.Reach * 0.3f);
+
                     return Math.Min(Genes.RangedDist * 16f, Math.Max(64f, w.Reach * 0.85f));
             }
         }
@@ -455,6 +593,11 @@ namespace PisAndDag.Content.Mimic
         {
             float risk = Risk(ref s, move, vert, dash, horizon, want, out Vector2 end);
             float goal = (Math.Abs(end.X - want.X) + Genes.VertWeight * Math.Abs(end.Y - want.Y)) / 16f;
+
+            // With a weapon that must touch, a way of going that passes where it wants to be is as good as one that ends
+            // there: the blow lands on the way (a jump up at something in the air and down again, a run through and out).
+            if (closeNow)
+                goal = Math.Min(goal, nearest) + 0.2f * goal;
             float jump = (vert == 1 || vert == 3) && !s.Me.CanFly ? Genes.JumpCost : 0f;
 
             // With nothing to fight, wings are for keeping up, not for hanging in the air: going up costs it, unless
@@ -467,8 +610,16 @@ namespace PisAndDag.Content.Mimic
             if (resting && (move != 0 || vert != 0 || dash != 0))
                 jump += Genes.RestStill;
 
-            return risk * Genes.RiskWeight + goal * Genes.GoalWeight + jump;
+            return closeNow
+                ? risk * Genes.RiskWeight * Genes.CloseRisk + goal * Genes.GoalWeight * Genes.CloseGoal + jump
+                : risk * Genes.RiskWeight + goal * Genes.GoalWeight + jump;
         }
+
+        /// <summary>Fighting this tick with a weapon that must touch (a blade, a spear, a yoyo, a whip).</summary>
+        private bool closeNow;
+
+        /// <summary>The nearest the way of going last tried came to where it wants to be, as the goal counts it (Risk).</summary>
+        private float nearest;
 
         /// <summary>What going up on wings costs it when there is nothing to fight and its owner is not above it.</summary>
         private const float IdleFlyCost = 1.5f;
@@ -518,10 +669,15 @@ namespace PisAndDag.Content.Mimic
                 chasers++;
             }
 
+            nearest = float.MaxValue;
+
             for (int tick = 1; tick <= horizon; tick++)
             {
                 // A tap is a new press on its first tick only; held after it.
                 Step(ref b, move, tick == 1 ? vert : vert == 3 ? 1 : vert, s.Ground);
+
+                if (closeNow)
+                    nearest = Math.Min(nearest, (Math.Abs(b.Pos.X - want.X) + Genes.VertWeight * Math.Abs(b.Pos.Y - want.Y)) / 16f);
 
                 if (chasers > 0)
                     Chase(ref s, b.Pos, tick);
@@ -858,6 +1014,14 @@ namespace PisAndDag.Content.Mimic
             {
                 float ticks = Math.Min(40f, dist / w.Speed) * Genes.Lead;
                 aim = foe.Pos + foe.Vel * ticks;
+
+                // A shot that falls (a thrown hammer, a javelin, a grenade: its fall read off its own shots as they fly,
+                // MimicSystem): thrown up by what it drops over its flight, as a player lobs it.
+                if (w.Gravity > 0.005f)
+                {
+                    float flight = Math.Max(0f, Vector2.Distance(aim, from) / w.Speed - w.GravityAfter);
+                    aim.Y -= Math.Min(0.5f * w.Gravity * flight * flight, 640f);
+                }
             }
 
             intent.Aim = aim;
@@ -866,30 +1030,76 @@ namespace PisAndDag.Content.Mimic
             bool seen = foe.Seen || w.Kind == WeaponKind.Summon || w.ThroughWalls;
 
             if (!inReach || !seen)
-            {
-                altLeft = 0;
                 return;
+
+            // How far it is fighting from, by the distance from the target's edge (Practice.Bands): what a way of using the
+            // weapon lands is kept for each, so a right click that lands up close (a dash, a parry, a slam) and a left that
+            // lands far are each used where they land ("when" as well as "how").
+            Practice.Band = Practice.BandOf(dist - Math.Max(foe.HalfW, foe.HalfH), Practice.Band);
+
+            // How it uses the weapon: one of the ways every weapon is tried (Practice.Ways), a bout at a time, the way
+            // that lands the most chosen most (Practice.PickWay), the others still tried now and then, and more freely
+            // against a target dummy. Nothing about any weapon is told: a charge to loose, a right click to alternate with,
+            // a coin to shoot are found by what lands. Before anything is learned, holding the left click is reckoned at
+            // HoldPrior of the rate it lands overall, the right click at AltRate's share, the rest at a little less; what
+            // it learns outweighs that after about WayPrior ticks of a way. A bout is ended early when the distance band
+            // changes, so a way that lands only up close is not kept on far off.
+            if (wayLeft <= 0 || wayBand != Practice.Band && wayTick >= 12)
+            {
+                way = Practice.PickWay(w.HasAlt, Genes.AltRate / 0.5f, Genes.Explore * (s.Practising ? 4f : 1f), Genes.HoldPrior, Genes.WayPrior);
+                wayTick = 0;
+                wayBand = Practice.Band;
+                wayLeft = way == Practice.WayRight ? 40 : way == Practice.WayCharge ? 108 : way == Practice.WayLongCharge ? 228 : way == Practice.WaySetUp ? 90 : 80;
             }
 
-            if (altLeft > 0)
+            Practice.Way = way;
+            int k = wayTick++;
+            wayLeft--;
+
+            switch (way)
             {
-                altLeft--;
-                intent.Alt = true;
-                return;
+                case Practice.WayRight:
+                    intent.Alt = true;
+                    break;
+
+                case Practice.WayCharge:
+                    intent.Use = k % 54 < 50;      // held, then let go for a moment
+                    break;
+
+                case Practice.WayLongCharge:
+                    intent.Use = k % 114 < 110;
+                    break;
+
+                case Practice.WayAlternate:
+                    if (k / 20 % 2 == 0)
+                        intent.Use = true;
+                    else
+                        intent.Alt = true;
+                    break;
+
+                case Practice.WaySetUp:
+                    // a right click, a wait while what it put out settles, then the left click at it if it is still out
+                    // (else at the foe)
+                    if (k < 3)
+                    {
+                        intent.Alt = true;
+                    }
+                    else if (k >= 25)
+                    {
+                        if (s.OwnShotValid)
+                        {
+                            float fly = Vector2.Distance(from, s.OwnShot) / Math.Max(8f, w.Speed);
+                            intent.Aim = s.OwnShot + s.OwnShotVel * Math.Min(fly, 30f);
+                        }
+
+                        intent.Use = true;
+                    }
+                    break;
+
+                default:
+                    intent.Use = true;
+                    break;
             }
-
-            if (altCooldown > 0)
-                altCooldown--;
-
-            if (w.HasAlt && altCooldown == 0 && rng.NextDouble() < Genes.AltRate / 60f)
-            {
-                altLeft = 18;
-                altCooldown = 90;
-                intent.Alt = true;
-                return;
-            }
-
-            intent.Use = true;
         }
 
         /// <summary>A foe its weapon reaches and sees from where it is (a summon weapon reaches anything).</summary>
@@ -1017,6 +1227,12 @@ namespace PisAndDag.Content.Mimic
 
         /// <summary>A body that is after the copy (it turns toward it as it comes, by <see cref="MimicGenes.ChaseTurn"/>).</summary>
         public bool Chaser;
+
+        /// <summary>
+        /// A body whose target is the copy, moving or not: what may lunge at it, along the line between them (a charge
+        /// comes along that line; <see cref="MimicGenes.Lane"/>).
+        /// </summary>
+        public bool AfterMe;
     }
 
     /// <summary>An enemy it could fight.</summary>
@@ -1074,6 +1290,30 @@ namespace PisAndDag.Content.Mimic
 
         /// <summary>Its kind among those the trainer sorted every weapon into (MimicWeapons): which numbers it fights by.</summary>
         public int Cluster;
+
+        /// <summary>
+        /// How far from the target's edge the trainer found this very weapon does best (tried at several distances in
+        /// fights against every boss it knows; MimicWeapons.BestOf), in pixels; 0 when it was never tried.
+        /// </summary>
+        public float Best;
+
+        /// <summary>A blade held out and swung by a shot of its own (Ark of the Elements, Murasama): MimicWeapons.HeldOut.</summary>
+        public bool HeldOut;
+
+        /// <summary>Its class among the four (MimicWeapons.ClassOf): 0 melee, 1 ranged (with rogue and thrown), 2 magic, 3 summon (with whips).</summary>
+        public int Class;
+
+        /// <summary>How it is used (MimicWeapons.Styles: a swung blade, a held-out blade, a spear, a thrown weapon, a shooter...).</summary>
+        public int Style;
+
+        /// <summary>
+        /// What its shot falls by, in pixels a tick gained each tick (0: it flies straight): read off its own shots as they
+        /// fly in the game (MimicSystem's watch on them), the weapon's own in the trainer. It lobs by it (Attack).
+        /// </summary>
+        public float Gravity;
+
+        /// <summary>Ticks its shot flies straight before it begins to fall (an arrow's), as seen.</summary>
+        public int GravityAfter;
     }
 
     /// <summary>The blocks, as far as moving goes.</summary>
@@ -1118,6 +1358,16 @@ namespace PisAndDag.Content.Mimic
         public float ParryReach;
 
         public IGround Ground;
+
+        /// <summary>
+        /// Its own shot made by its weapon's right click (the newest still out, MimicSense in the game), for a weapon whose
+        /// left click is aimed at what its right click put out (a coin to shoot, a mine to set off): where it is, how fast.
+        /// </summary>
+        public bool OwnShotValid;
+        public Vector2 OwnShot, OwnShotVel;
+
+        /// <summary>What it fights cannot be harmed by it or hurt it (a target dummy): it tries its ways of using a weapon more freely.</summary>
+        public bool Practising;
     }
 
     /// <summary>What it presses this tick.</summary>
@@ -1160,12 +1410,59 @@ namespace PisAndDag.Content.Mimic
         public const int Steps = 40;
         public const float HalfLife = 10800f;
 
+        /// <summary>
+        /// The distances it keeps apart for its ways of using a weapon, from the target's edge: near (to 160 px), middling
+        /// (to 480), far.
+        /// </summary>
+        public const int Bands = 3;
+        public static readonly string[] BandNames = { "near", "mid", "far" };
+
+        public static int BandOf(float fromEdge) => fromEdge <= 160f ? 0 : fromEdge <= 480f ? 1 : 2;
+
+        /// <summary>The band, kept as it was within 24 px of the line it would cross (a spear stands just about 160 px off).</summary>
+        public static int BandOf(float fromEdge, int was)
+        {
+            int now = BandOf(fromEdge);
+
+            if (now == was || was < 0 || was >= Bands)
+                return now;
+
+            float line = Math.Max(now, was) == 1 ? 160f : 480f;
+            return Math.Abs(now - was) == 1 && Math.Abs(fromEdge - line) < 24f ? was : now;
+        }
+
         private sealed class Record
         {
             public readonly float[] Ticks = new float[Steps];
             public readonly float[] Dealt = new float[Steps];
             public float Smooth = -1f;
+
+            // ticks spent using the weapon each way (Ways) at each distance band (Bands), and what each landed:
+            // [way * Bands + band]
+            public readonly float[] WayTicks = new float[Ways * Bands];
+            public readonly float[] WayDealt = new float[Ways * Bands];
         }
+
+        /// <summary>
+        /// The ways it can use a weapon, the same for any weapon: what each is good for is not told, only learned from what
+        /// lands. Hold the left click; hold the right; hold the left a while and let go (a charge loosed); the same, longer;
+        /// left and right in turn; a right click and then the left aimed at what the right put out (a coin shot, a mine set
+        /// off). A weapon from any mod, however it works, is tried each of these ways and used the way that lands the most,
+        /// at each distance apart.
+        /// </summary>
+        public const int Ways = 6;
+        public const int WayHold = 0, WayRight = 1, WayCharge = 2, WayAlternate = 3, WaySetUp = 4, WayLongCharge = 5;
+        public static readonly string[] WayNames = { "hold", "right click", "charge", "alternate", "set up and shoot", "long charge" };
+
+        /// <summary>The way it is using the weapon now, and the distance band it is using it at: what it lands is put down to them.</summary>
+        public int Way, Band;
+
+        /// <summary>
+        /// The way and band now as one number (<see cref="Landed(float, float, int)"/>): a shot is marked with the one it was
+        /// made under, so what it lands later (a thrown hammer's smash a second on, a mine set off) is put down to the way
+        /// that threw it, not to whatever is being done when it lands.
+        /// </summary>
+        public int Tag => Way * Bands + Band;
 
         private readonly System.Collections.Generic.Dictionary<int, Record> records = new System.Collections.Generic.Dictionary<int, Record>();
         private Record now;
@@ -1189,7 +1486,7 @@ namespace PisAndDag.Content.Mimic
 
         private static int StepOf(float distance) => Math.Clamp((int)(distance / Step), 0, Steps - 1);
 
-        /// <summary>A tick spent hitting at something this far off.</summary>
+        /// <summary>A tick spent hitting at something this far off (either button down).</summary>
         public void Attacking(float distance)
         {
             if (now == null)
@@ -1202,15 +1499,211 @@ namespace PisAndDag.Content.Mimic
             }
 
             now.Ticks[StepOf(distance)] += 1f;
+
+            for (int i = 0; i < Ways * Bands; i++)
+            {
+                now.WayTicks[i] *= Keep;
+                now.WayDealt[i] *= Keep;
+            }
+
+            now.WayTicks[Tag] += 1f;
         }
 
-        /// <summary>Damage it landed on something this far off.</summary>
-        public void Landed(float damage, float distance)
+        /// <summary>
+        /// The way to use the weapon for the next bout, at the band it is fighting from: each way's damage a tick there,
+        /// pulled toward that way's rate at every distance by half <paramref name="prior"/> ticks' worth, which is itself
+        /// pulled toward a guess by <paramref name="prior"/> ticks' worth (holding the left click at <paramref name="holdShare"/>
+        /// of the rate it lands overall; the right click at <paramref name="altShare"/> of it; the rest at a little less);
+        /// and more for the ways it knows little of (<paramref name="explore"/>, more again while practising). Ways that
+        /// need a right click are not tried with a weapon that has none.
+        /// </summary>
+        public int PickWay(bool hasAlt, float altShare, float explore, float holdShare = 1f, float prior = 240f)
+        {
+            if (now == null)
+                return WayHold;
+
+            float ticks = 0f, dealt = 0f;
+
+            for (int i = 0; i < Ways * Bands; i++)
+            {
+                ticks += now.WayTicks[i];
+                dealt += now.WayDealt[i];
+            }
+
+            float rate = ticks > 1f && dealt > 0f ? dealt / ticks : 1f;
+            prior = Math.Max(10f, prior);
+            float best = float.MinValue;
+            int pick = WayHold;
+            int b = Math.Clamp(Band, 0, Bands - 1);
+
+            for (int i = 0; i < Ways; i++)
+            {
+                if (!hasAlt && (i == WayRight || i == WayAlternate || i == WaySetUp))
+                    continue;
+
+                float share = i == WayHold ? holdShare : i == WayRight ? MathHelper.Clamp(altShare, 0.05f, 1f) : 0.6f;
+                float wt = 0f, wd = 0f;
+
+                for (int k = 0; k < Bands; k++)
+                {
+                    wt += now.WayTicks[i * Bands + k];
+                    wd += now.WayDealt[i * Bands + k];
+                }
+
+                float overall = (wd + rate * share * prior) / (wt + prior);
+                float here = now.WayTicks[i * Bands + b];
+                float score = (now.WayDealt[i * Bands + b] + overall * prior * 0.5f) / (here + prior * 0.5f)
+                    + (0.25f + explore) * rate / (float)Math.Sqrt(here + 0.5f * (wt - here) + 1f) * 4f;
+
+                if (score > best)
+                {
+                    best = score;
+                    pick = i;
+                }
+            }
+
+            return pick;
+        }
+
+        /// <summary>What it has learned of each way with the weapon it holds (for the /mirror report): its damage a second, and where it lands best.</summary>
+        public string WaysReport()
+        {
+            if (now == null)
+                return "";
+
+            var sb = new System.Text.StringBuilder();
+
+            for (int i = 0; i < Ways; i++)
+            {
+                float wt = 0f, wd = 0f, bestRate = -1f;
+                int bestBand = -1;
+
+                for (int k = 0; k < Bands; k++)
+                {
+                    float t = now.WayTicks[i * Bands + k], d = now.WayDealt[i * Bands + k];
+                    wt += t;
+                    wd += d;
+
+                    if (t >= 30f && d / t > bestRate)
+                    {
+                        bestRate = d / t;
+                        bestBand = k;
+                    }
+                }
+
+                if (wt < 1f)
+                    continue;
+
+                sb.Append(sb.Length > 0 ? ", " : "").Append(WayNames[i]).Append(' ').Append((wd / wt * 60f).ToString("0")).Append("/s");
+
+                if (bestBand >= 0)
+                    sb.Append(" (best ").Append(BandNames[bestBand]).Append(')');
+            }
+
+            return sb.ToString();
+        }
+
+        /// <summary>The way it lands the most with at each band, as far as it knows (for the /mirror report).</summary>
+        public string BestWays()
+        {
+            if (now == null)
+                return "";
+
+            var sb = new System.Text.StringBuilder();
+
+            for (int k = 0; k < Bands; k++)
+            {
+                int best = -1;
+                float bestRate = 0f;
+
+                for (int i = 0; i < Ways; i++)
+                {
+                    float t = now.WayTicks[i * Bands + k];
+
+                    if (t >= 30f && now.WayDealt[i * Bands + k] / t > bestRate)
+                    {
+                        bestRate = now.WayDealt[i * Bands + k] / t;
+                        best = i;
+                    }
+                }
+
+                if (best >= 0)
+                    sb.Append(sb.Length > 0 ? "; " : "").Append(BandNames[k]).Append(": ").Append(WayNames[best]);
+            }
+
+            return sb.ToString();
+        }
+
+        // ---- kept between sessions (MimicPlayer saves them with its owner) ----
+
+        /// <summary>The length of a row as round 81 keeps it; the rows before it (<see cref="OldRow"/>) are read too.</summary>
+        public const int Row = Steps * 2 + Ways * Bands * 2;
+
+        /// <summary>A row as rounds 80 kept it: one count for each way, at any distance.</summary>
+        private const int OldRow = Steps * 2 + Ways * 2;
+
+        /// <summary>Everything learned, a row of numbers for each weapon (by the trainer's or the game's weapon number).</summary>
+        public System.Collections.Generic.IEnumerable<(int id, float[] row)> Export()
+        {
+            foreach (var kv in records)
+            {
+                Record r = kv.Value;
+                var row = new float[Row];
+                Array.Copy(r.Ticks, 0, row, 0, Steps);
+                Array.Copy(r.Dealt, 0, row, Steps, Steps);
+                Array.Copy(r.WayTicks, 0, row, Steps * 2, Ways * Bands);
+                Array.Copy(r.WayDealt, 0, row, Steps * 2 + Ways * Bands, Ways * Bands);
+                yield return (kv.Key, row);
+            }
+        }
+
+        /// <summary>Forgets everything (before what was kept for another player is taken up).</summary>
+        public void Clear()
+        {
+            records.Clear();
+            now = null;
+            nowId = int.MinValue;
+        }
+
+        /// <summary>
+        /// Takes up a weapon's row. A row kept before round 81 gives its distances only: its ways were counted wrongly then (a
+        /// right click alone was never counted), so they are learned again.
+        /// </summary>
+        public void Import(int id, float[] row)
+        {
+            if (row == null || row.Length != Row && row.Length != OldRow)
+                return;
+
+            var r = new Record();
+            Array.Copy(row, 0, r.Ticks, 0, Steps);
+            Array.Copy(row, Steps, r.Dealt, 0, Steps);
+
+            if (row.Length == Row)
+            {
+                Array.Copy(row, Steps * 2, r.WayTicks, 0, Ways * Bands);
+                Array.Copy(row, Steps * 2 + Ways * Bands, r.WayDealt, 0, Ways * Bands);
+            }
+
+            records[id] = r;
+
+            if (id == nowId)
+                now = r;
+        }
+
+        /// <summary>Damage it landed on something this far off, put down to the way and band it is using now.</summary>
+        public void Landed(float damage, float distance) => Landed(damage, distance, -1);
+
+        /// <summary>
+        /// Damage it landed on something this far off, put down to the way and band <paramref name="tag"/> (<see cref="Tag"/>
+        /// when the shot that landed it was made), or to the way it is using now for -1.
+        /// </summary>
+        public void Landed(float damage, float distance, int tag)
         {
             if (now == null || damage <= 0f)
                 return;
 
             now.Dealt[StepOf(distance)] += damage;
+            now.WayDealt[tag >= 0 && tag < Ways * Bands ? tag : Tag] += damage;
         }
 
         /// <summary>
@@ -1306,9 +1799,15 @@ namespace PisAndDag.Content.Mimic
             ("ChaserBias", 0f, 60f),      // tiles nearer a small foe come after it or its owner counts as
             ("ChaseTurn", 0f, 0.15f),     // radians a tick it reckons a body that is after it turns toward it
             ("HomeTrust", 0f, 2f),        // how much of a shot's seen turning it reckons with as homing on it
+            ("Lane", 0f, 1.5f),           // how much it keeps out of the line from a body after it (where a charge comes)
+            ("Commit", 0f, 1f),           // with a sword or spear, how much of the danger of touching its own target it accepts
+            ("CloseRisk", 0.15f, 1.5f),   // with a weapon that must touch and something to touch: its danger counts so many times over (round 81)
+            ("CloseGoal", 0.5f, 5f),      // and its distance from where it wants to be so many times over
+            ("HoldPrior", 0.6f, 2.5f),    // before it has learned a weapon, holding the left click reckoned at so much of what it lands overall
+            ("WayPrior", 60f, 900f),      // ticks of a way of using a weapon before what it learns of it outweighs that reckoning
         };
 
-        public const int Count = 36;
+        public const int Count = 42;
 
         /// <summary>Each number as a share of its range.</summary>
         public readonly float[] Share = new float[Count];
@@ -1358,6 +1857,12 @@ namespace PisAndDag.Content.Mimic
         public float ChaserBias => Get(33);
         public float ChaseTurn => Get(34);
         public float HomeTrust => Get(35);
+        public float Lane => Get(36);
+        public float Commit => Get(37);
+        public float CloseRisk => Get(38);
+        public float CloseGoal => Get(39);
+        public float HoldPrior => Get(40);
+        public float WayPrior => Get(41);
 
         /// <summary>A guess at good numbers, before any training: where the trainer started.</summary>
         public static readonly float[] Untrained =
@@ -1365,16 +1870,16 @@ namespace PisAndDag.Content.Mimic
             0.54f, 0.35f, 0.33f, 0.29f, 0.33f, 0.21f, 0.27f, 0.33f, 0.29f, 0.45f, 0.5f, 0.5f,
             0.33f, 0.65f, 0.6f, 0.45f, 0.42f, 0.5f, 0.3f, 0.2f, 0.44f, 0.25f, 0.1f, 0.5f,
             0.25f, 0.3f, 0.4f, 0.25f, 0f, 0.6f, 0.3f, 0.2f, 0.2f, 0.2f, 0.3f, 0.5f,
+            0.3f, 0.7f,
+            // round 81's: each as it was before it was a number (danger and distance once over, holding the left click at the
+            // rate it lands, 240 ticks)
+            0.63f, 0.111f, 0.2105f, 0.2143f,
         };
 
         /// <summary>
-        /// What the trainer settled on (Claude outputs\MimicTrainer_r79, outside the mod): six runs of an evolution
-        /// strategy, the last four against bosses that go for whichever of owner and copy is nearer, the last two with the
-        /// trainer's ground put right (before them the copy began inside the hills, in two fights of five, and could not
-        /// move). Run 6's numbers, but for the two of parrying (ParryRate, ParryLook), kept at run 5's: run 6 had trained
-        /// the parry away altogether, and it was asked for, trained less. On 600 fights none of the runs had seen, half a
-        /// minute each, against the guess above: 46% of its weapon's damage landed against 42%, 27% of its life lost
-        /// against 63%, 5.5 hits taken against 12.9, a death in 2.5% of them against 7.5%, two parries a fight.
+        /// What the trainer settled on for any weapon (round 80 A: an evolution strategy against the mod's Legends Empress,
+        /// Queen Slime and Amalgaermis and the game's Moon Lord and Plantera, every kind of weapon at once): for an item of
+        /// no kind (none held) and anything sorted before the kinds' own numbers (<see cref="TrainedByKind"/>) are read.
         /// </summary>
         public static readonly float[] TrainedShares =
         {
@@ -1386,10 +1891,181 @@ namespace PisAndDag.Content.Mimic
         public static MimicGenes Trained => new MimicGenes(TrainedShares);
 
         /// <summary>
-        /// What the trainer settled on for each kind of weapon (MimicWeapons.ClusterOf), in kind order; a kind with none
-        /// fights by <see cref="TrainedShares"/>.
+        /// What the trainer settled on for each kind of weapon (MimicWeapons.ClusterOf: round 81's kinds, in the four classes),
+        /// in kind order (Claude outputs\MimicTrainer_r81: each kind trained by CMA-ES against all sixteen bosses, from the numbers
+        /// of the round-80 kind most of its weapons were in):
+        ///   0 Melee / Swing: reach ~56, use 19t
+        ///   1 Melee / HeldBlade: reach ~64, use 20t
+        ///   2 Melee / HeldBlade (+Thrown, Swing): reach ~85, use 22t, 26 with right 
+        ///   3 Melee / Spear: reach ~188, use 24t
+        ///   4 Melee / Yoyo: reach ~296, use 25t
+        ///   5 Melee / Thrown: reach ~960, use 20t, shot 16px/t, 1 with right click
+        ///   6 Melee / SwingShot: reach ~640, use 24t, shot 17px/t, 1 with right clic
+        ///   7 Melee / SwingShot: reach ~640, use 24t, shot 12px/t, 3 with right clic
+        ///   8 Ranged / Thrown: reach ~960, use 20t, shot 16px/t
+        ///   9 Ranged / Thrown (+Shot, HeldShot): reach ~960, use 25t, shot 28px/t
+        ///   10 Ranged / Thrown: reach ~960, use 20t, shot 8px/t
+        ///   11 Ranged / Shot: reach ~960, use 27t, shot 8px/t
+        ///   12 Ranged / Shot (+Thrown, HeldShot): reach ~960, use 19t, shot 25px/t, 2
+        ///   13 Ranged / Shot: reach ~960, use 18t, shot 16px/t
+        ///   14 Ranged / HeldShot (+Shot, Thrown): reach ~360, use 22t, shot 3px/t
+        ///   15 Ranged / HeldShot: reach ~960, use 30t, shot 15px/t, 9 with right clic
+        ///   16 Magic / Shot (+Thrown, Spray): reach ~960, use 22t, shot 18px/t, 10 wi
+        ///   17 Magic / HeldShot (+Shot, Spray): reach ~960, use 20t, shot 12px/t, 7 w
+        ///   18 Summon / Whip (+HeldShot): reach ~160, use 30t
+        ///   19 Summon / Minion: reach ~800, use 36t, 2 with right click
+        ///   20 Summon / Sentry (+Shot, Minion): reach ~800, use 30t
         /// </summary>
-        public static readonly float[][] TrainedByKind = { };
+        public static readonly float[][] TrainedByKind =
+        {
+            new[]
+            {
+                0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
+                0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
+                0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
+                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+            },
+            new[]
+            {
+                0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
+                0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
+                0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
+                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+            },
+            new[]
+            {
+                0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
+                0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
+                0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
+                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+            },
+            new[]
+            {
+                0.970f, 0.674f, 0.593f, 0.310f, 0.550f, 0.094f, 0.646f, 0.219f, 0.465f, 0.675f, 0.798f, 0.832f,
+                0.663f, 0.897f, 0.690f, 0.745f, 0.426f, 0.189f, 0.721f, 0.871f, 0.933f, 0.268f, 0.174f, 0.985f,
+                0.950f, 0.206f, 0.361f, 0.289f, 0.321f, 0.590f, 0.245f, 0.321f, 0.360f, 0.758f, 0.542f, 0.354f,
+                0.205f, 0.626f, 0.630f, 0.111f, 0.210f, 0.214f,
+            },
+            new[]
+            {
+                0.940f, 0.681f, 0.380f, 0.418f, 0.577f, 0.095f, 0.597f, 0.346f, 0.401f, 0.754f, 0.900f, 0.901f,
+                0.790f, 0.912f, 0.696f, 0.766f, 0.488f, 0.259f, 0.748f, 0.852f, 0.817f, 0.197f, 0.082f, 0.819f,
+                0.918f, 0.295f, 0.413f, 0.162f, 0.359f, 0.527f, 0.294f, 0.246f, 0.183f, 0.737f, 0.573f, 0.322f,
+                0.259f, 0.696f, 0.630f, 0.111f, 0.210f, 0.214f,
+            },
+            new[]
+            {
+                0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
+                0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
+                0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
+                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+            },
+            new[]
+            {
+                0.967f, 0.593f, 0.271f, 0.637f, 0.331f, 0.084f, 0.676f, 0.098f, 0.423f, 0.814f, 0.858f, 0.979f,
+                0.510f, 0.811f, 0.727f, 0.767f, 0.444f, 0.104f, 0.767f, 0.942f, 0.837f, 0.254f, 0.170f, 0.929f,
+                0.879f, 0.135f, 0.203f, 0.365f, 0.028f, 0.652f, 0.430f, 0.173f, 0.513f, 0.597f, 0.265f, 0.258f,
+                0.200f, 0.442f, 0.630f, 0.111f, 0.210f, 0.214f,
+            },
+            new[]
+            {
+                0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
+                0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
+                0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
+                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+            },
+            new[]
+            {
+                0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
+                0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
+                0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
+                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+            },
+            new[]
+            {
+                0.953f, 0.592f, 0.273f, 0.419f, 0.536f, 0.133f, 0.648f, 0.264f, 0.065f, 0.468f, 0.829f, 0.902f,
+                0.752f, 0.893f, 0.594f, 0.850f, 0.325f, 0.351f, 0.821f, 0.834f, 0.721f, 0.378f, 0.195f, 0.683f,
+                0.900f, 0.215f, 0.267f, 0.299f, 0.364f, 0.709f, 0.166f, 0.130f, 0.300f, 0.676f, 0.352f, 0.070f,
+                0.339f, 0.654f, 0.630f, 0.111f, 0.210f, 0.214f,
+            },
+            new[]
+            {
+                0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
+                0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
+                0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
+                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+            },
+            new[]
+            {
+                0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
+                0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
+                0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
+                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+            },
+            new[]
+            {
+                0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
+                0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
+                0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
+                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+            },
+            new[]
+            {
+                0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
+                0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
+                0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
+                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+            },
+            new[]
+            {
+                0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
+                0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
+                0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
+                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+            },
+            new[]
+            {
+                0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
+                0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
+                0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
+                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+            },
+            new[]
+            {
+                0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
+                0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
+                0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
+                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+            },
+            new[]
+            {
+                0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
+                0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
+                0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
+                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+            },
+            new[]
+            {
+                0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
+                0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
+                0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
+                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+            },
+            new[]
+            {
+                0.926f, 0.619f, 0.353f, 0.454f, 0.303f, 0.038f, 0.644f, 0.245f, 0.122f, 0.582f, 0.718f, 0.950f,
+                0.568f, 0.874f, 0.772f, 0.932f, 0.240f, 0.041f, 0.935f, 0.794f, 0.675f, 0.211f, 0.047f, 0.698f,
+                0.747f, 0.258f, 0.229f, 0.092f, 0.462f, 0.532f, 0.102f, 0.108f, 0.277f, 0.833f, 0.456f, 0.237f,
+                0.340f, 0.577f, 0.630f, 0.111f, 0.210f, 0.214f,
+            },
+            new[]
+            {
+                0.926f, 0.619f, 0.353f, 0.454f, 0.303f, 0.038f, 0.644f, 0.245f, 0.122f, 0.582f, 0.718f, 0.950f,
+                0.568f, 0.874f, 0.772f, 0.932f, 0.240f, 0.041f, 0.935f, 0.794f, 0.675f, 0.211f, 0.047f, 0.698f,
+                0.747f, 0.258f, 0.229f, 0.092f, 0.462f, 0.532f, 0.102f, 0.108f, 0.277f, 0.833f, 0.456f, 0.237f,
+                0.340f, 0.577f, 0.630f, 0.111f, 0.210f, 0.214f,
+            },
+        };
 
         private static MimicGenes[] byKind;
         private static MimicGenes trained;
