@@ -8,6 +8,7 @@ using ReLogic.Content;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.GameContent;
+using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace PisAndDag.Content.Items.Accessories.Tentochi
@@ -167,8 +168,11 @@ namespace PisAndDag.Content.Items.Accessories.Tentochi
         }
 
         /// <summary>
-        /// How far along the line the laser goes before something stops it: the first block that is solid (not a platform),
-        /// or the first enemy whose hitbox the line crosses before that; at most <see cref="Range"/>.
+        /// How far along the line the laser goes before something stops it: the first block a player could not pass through
+        /// (solid, not a platform, not a bubble: the game takes bubbles for solid everywhere but in the players' own
+        /// movement, Main.DoUpdateInWorld), or the first enemy whose hitbox the line crosses before that; at most
+        /// <see cref="Range"/>. Everything else (furniture, plants, torches, walls) it goes through, by request: "laser
+        /// should go thru non solid tiles".
         /// </summary>
         public static float Cast(Vector2 from, Vector2 way, out NPC met)
         {
@@ -189,7 +193,7 @@ namespace PisAndDag.Content.Items.Accessories.Tentochi
 
                 Tile tile = Main.tile[i, j];
 
-                if (tile.HasUnactuatedTile && Main.tileSolid[tile.TileType] && !Main.tileSolidTop[tile.TileType])
+                if (tile.HasUnactuatedTile && Main.tileSolid[tile.TileType] && !Main.tileSolidTop[tile.TileType] && tile.TileType != TileID.Bubble)
                 {
                     reach = d;
                     break;

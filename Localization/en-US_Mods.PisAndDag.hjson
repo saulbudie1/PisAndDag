@@ -312,7 +312,12 @@ Items: {
 
 		CalamityModule: {
 			DisplayName: Calamity Module
-			Tooltip: Builds adrenaline to full over 30 seconds
+			Tooltip:
+				'''
+				Builds adrenaline to full over 30 seconds
+				Getting hurt empties it
+				A hit taken while it is full does half damage
+				'''
 			Spec: CM-25 neurochemical regulator. One cycle per thirty seconds.
 		}
 

@@ -73,8 +73,10 @@ namespace PisAndDag.Content.Items.Accessories.Tentochi
             SpriteBatch sb = Main.spriteBatch;
             Texture2D pixel = TextureAssets.MagicPixel.Value;
             Rectangle one = new Rectangle(0, 0, 1, 1);
-            float w = Main.screenWidth / Main.UIScale;
-            float h = Main.screenHeight / Main.UIScale;
+            // The screen as this layer sees it: the game has already divided its size by the UI scale for a UI layer
+            // (GameInterfaceLayer.Draw, PlayerInput.SetZoom_UI), and draws it back up by that scale (Main.UIScaleMatrix).
+            float w = Main.screenWidth;
+            float h = Main.screenHeight;
             TentochiPlayer t = player.GetModPlayer<TentochiPlayer>();
 
             if (t.Surging && !player.dead)

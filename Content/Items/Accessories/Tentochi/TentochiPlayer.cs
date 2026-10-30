@@ -67,6 +67,9 @@ namespace PisAndDag.Content.Items.Accessories.Tentochi
         public const int AdrenalineTicks = 5 * 60;
         public const float AdrenalineDamage = 2.5f;
 
+        /// <summary>What is left of a hit taken with the meter full.</summary>
+        public const float AdrenalineGuard = 0.5f;
+
         public const int KitDefense = 15;
         public const float KitSpeed = 0.9f;
         public const int KitSelfDamage = 450;
@@ -454,6 +457,23 @@ namespace PisAndDag.Content.Items.Accessories.Tentochi
         {
             if (Surging)
                 modifiers.FinalDamage *= AdrenalineDamage;
+        }
+
+        /// <summary>A hit taken with the meter full does half its damage (by request: "full adrenaline and gets hit half damage taken").</summary>
+        public override void ModifyHurt(ref Player.HurtModifiers modifiers)
+        {
+            if (Module && !Surging && Adrenaline >= AdrenalineMax)
+                modifiers.FinalDamage *= AdrenalineGuard;
+        }
+
+        /// <summary>
+        /// Any hurt empties the meter (by request: "any damage reset adrenaline"): every hit, the kit's own detonation
+        /// among them. What the game takes away a little at a time (poison, burning, drowning) is no hit and leaves it.
+        /// </summary>
+        public override void OnHurt(Player.HurtInfo info)
+        {
+            Adrenaline = 0f;
+            chimed = false;
         }
 
         // ---- the look -----------------------------------------------------------------------------------------------

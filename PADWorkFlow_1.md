@@ -24017,3 +24017,103 @@ folders.
   was found in the game, not in the trainer.
 - Ask the user what the copy should get better at before a long run: their `/mirror` readouts from real fights are
   worth more than another round in the trainer.
+
+## 17.36 Session 8, later: the Empress' Blessing, and Made By Tentochi
+
+Asked: "Make Empress of light drop a legends exclusive accessory: Empress' Blessing dash 20 tiles and have invincibility
+during that dash. It also have the ability to increase summoner's slot by 1 and magic arsenal slot by 1. Also add weapon a
+new accessory group: Made By Tentochi #d62747; an engineer corp from elsewhere that has crazy cybernetic implants and
+weapons; cyborg is of that origin. Accessory: Prehardmode: Enterprise's Complimentary: Allows the player to have a thin2
+pixel wide ray that is pointed at tthe cursor from the center of the player, allowing for more accurate shots when holding
+ranged weapons. Dropped by crates. Exo Air I: An exoskeleton attached to leg that increase run speed by 7 mph; allow dash
+that of 13 blocks. Hardmode: Back Rocket: Player shoots a swaying rocket (based on vanilla textures make one of your own)
+that deals 80 damage every 2 secs; when it detects an NPC it homes onto it. Only attack when it detects NPC. Exo Air II:
+An exoskeleton attached to leg that increase run speed by 12 mph; allow dash that of 18 blocks. Calamity Module: Allow
+player to store adrenaline by 100/30 point a sec; max 100; upon reaching 100 there is a button that activate Adrenaline
+mode for 5 seconds basically multiply all damage by 2.5x (homage to calamity). Adam Kit I : increase defense by 15 but
+lower general speed by 10% (even flight); Press a button to Self Detonate (450 damage to self + cannot heal buff forgot
+the name) 25000 damage to other NPCs in a radius of 16 tiles. Do not put some cheesy line in the tooltip anymore; for
+this class of Made By Tentochi; it is a serious corporate like description. Put all the effect spare no effort; this was
+inspired by cyberpunk so make it like that"; on the way, "cannot heal is potion sickness" and "give me a preview gif".
+
+1. **The Empress' Blessing** (`Content/Items/Accessories/EmpressBlessing.cs`): in a Legends world only, every time: from
+   her in a normal world, from her treasure bag in expert and master (the bestiary says "In a Legends world"). Yellow,
+   sells for 10 gold. Worn:
+   - a dash of 20 tiles (a direction tapped twice, as the game's dashes), 18 ticks; nothing can touch its wearer from its
+     first tick to 6 ticks past its last (NPCs, projectiles, the game's own hits); 75 ticks before the next. A flash of
+     her light, a ring of it, the wearer gone pale into it, a ribbon of her colours behind with her glints; her blink and
+     her tingle heard (EmpressSounds);
+   - one more minion slot; one more Magic Arsenal slot (lent while worn: drawn pale pink with her picture in its corner;
+     the necklace's lent slot, when worn, comes first);
+   - a line "Legends" in her shifting colours at the foot of the tooltip; flavour 'Her blessing. Above, every blessing is
+     counted.'
+2. **Made By Tentochi** (`Content/Items/Accessories/Tentochi/`, all on `TentochiItem`): what each does, plainly; under
+   that a model line in grey, as a maker writes it (no joke, by request): "ES-2 optical sight. Issued free with every
+   service contract." and so on; and at the very foot, under the price, "Made By Tentochi" in their red (#d62747), a tag
+   as the Lore Item one is ("no made by tentochi should be a tag like Lore Item; at the bottom").
+   - **Enterprise's Complimentary** (Green, 4 gold): holding a ranged weapon, a line of their red 2 pixels wide from the
+     wearer's middle to the cursor, stopped at the first solid tile or enemy (a hundred tiles at most), pulsing; a reticle
+     turning at its end, brackets closing on an enemy it rests on. Only its wearer sees it.
+   - **Exo Air I** (Orange, 6 gold): 7 mph faster running (the Stopwatch's mph: 1 pixel a tick is 5.11 mph), not on a
+     mount and not added to wings' own speed (in the air on wings the faster of the two counts, as with boots); a dash of
+     13 tiles, 14 ticks, 30 before the next. The frame drawn on the legs through every frame of the walk
+     (`ExoAirI_Shoes.png`), its jets and joints lit (`_ShoesGlow`), dimmer while the dash recharges.
+   - **Exo Air II** (LightRed, 25 gold; or Exo Air I, 10 Souls of Flight, 5 of Light and 5 of Night at a Tinkerer's
+     Workshop): 12 mph; 18 tiles, 16 ticks, 30 before the next; a heavier frame (red plates, a cyan cell, a double jet).
+     The two can't be worn together.
+   - **Back Rocket** (Pink, 30 gold): a launcher on the back (`BackRocketLauncher.png`, shut and fired). With an enemy in
+     sight within 50 tiles (the minions' target first), a rocket every 2 seconds for 80 damage (raised by the wearer's
+     damage bonuses), swaying as it flies, turning harder onto its mark the longer it flies, a blast where it lands
+     (`Content/Projectiles/Tentochi/TentochiRocket.cs`); nothing in sight, nothing fired.
+   - **Calamity Module** (LightPurple, 40 gold): adrenaline 100/30 a second to 100 (30 seconds), a bar of 20 cells under
+     the wearer's feet; full, "READY [X]" and a chime; X (Controls: "Calamity Module: let adrenaline go") lets it go: 5
+     seconds of 2.5 times damage on every hit of theirs (ModifyHitNPC: weapons, projectiles, minions, and the body's own:
+     thorns, stomps, a shield's bash); a pulse, heat off them, the screen's edges red with scan lines and tears, their
+     picture split red and cyan; the bar counting down.
+   - **Adam Kit I** (Lime, 50 gold): 15 defense; a tenth off every speed through `TopSpeed.Slow`, as the HEATR slows (the
+     top speed running and mounted, and the jump's speed, which also caps every climb: wings', Favor of an Empress's,
+     rocket boots', a flying mount's); a core lit on the chest, beating. K (Controls: "Adam Kit I: detonate"): 25,000
+     damage to every enemy within 16 tiles (not town NPCs, critters, or what can't be hurt; the target dummy is), a great
+     blast, the screen flashed and shaken; 450 damage to the wearer (it can kill: "{name} was decommissioned."; spared in
+     Journey's godmode, as the game's own hurts are), then Potion Sickness ("cannot heal is potion sickness") for as long
+     as a healing potion's, the Philosopher's Stone counted; a second before it can go again.
+3. **Where they come from** (`TentochiSources.cs`, my choices past the request's "dropped by crates"): any fishing crate:
+   Enterprise's Complimentary 1 in 10, Exo Air I 1 in 15; a hardmode crate also: Back Rocket 1 in 25, Calamity Module
+   1 in 25, Adam Kit I 1 in 30, Exo Air II 1 in 30 (luck doesn't change them). The Cyborg sells all six.
+4. **The dashes** (`Content/PADplayer/AccessoryDash.cs`, new): the longest worn is used; while any is worn the game's
+   own (Tabi, the Shield of Cthulhu, the Solar Flare's, the Crystal Assassin's) is off. At one speed for the first half,
+   then easing to the wearer's run, held level (`LevelDash.Hold`, split out of LevelDash); stopped by walls; not on a
+   mount, hook or rope, frozen, webbed or stoned; in water half as far, as the game's own. Its way is set before the
+   game's movement (PostUpdateRunSpeeds), as the game's own dashes set theirs, so the mod's holds (the Crevice Eel, the
+   Meat Hook, the Mantrap, the Empress's grab and arena walls, the Legends grabs) have the last word: seeing its way
+   changed before the move, it ends; one begun into a hold never goes. The double tap is timed on the game's clock (a
+   tap before a rope or hook is old after it). Multiplayer: the dasher tells the server where it began and its two
+   speeds, and where it ended (`PADPacket.Dash`); the server and the others move the dasher along it too. The exo
+   dashes: the wearer split into red and cyan copies, the game's after-images in those colours, the picture glitching
+   for the first 6 ticks, sparks off the soles (the right way up with gravity turned), squares of light shed. The
+   Everclear Mirror's copy never dashes, fires or detonates.
+5. **Sounds**, made by formula (`Content/Sounds/Tentochi/`: Dash, Launch, Blast, Ready, Surge, Detonate); **art** drawn
+   by code in 2x2 pixels (the six items, hers, the rocket, the launcher, the legs' frames, the buff); the scripts for
+   both and the preview in `Claude outputs\r82\make.tgz`.
+6. **The preview**: a GIF sent in the chat, drawn outside the game from the code's numbers and the mod's glow textures.
+7. **Changed**: `LevelDash.cs` (`Hold`), `PADPlayer.cs` (`EmpressBlessing`), `MagicArsenal.cs` and `MagicArsenalUI.cs`
+   (her lent slot), `PADKeybinds.cs` (the two keys), `PisAndDag.cs` (the packets `Dash` and `Tentochi`: pasted in by the
+   user, at the top of `PADPacket`, as Windows would not let it be written: see 9), the localization; new: the items,
+   `TentochiPlayer.cs`, `TentochiLayers.cs`, `TentochiHUD.cs`, `TentochiFX.cs`, `TentochiItem.cs`, `TentochiSources.cs`,
+   `AccessoryDash.cs`, `TentochiRocket.cs`, `AdrenalineRush.cs`, four particles (`PixelChip`, `GlitchBar`, `CyberRing`,
+   `PrismStreak`), the pictures and sounds.
+8. **Checked**: built (620 files, no errors, the old ten warnings). Read through by a second pass, which found: the dash
+   not moving the dasher on the other machines; the dash overriding the mod's holds; adrenaline missing body hits; the
+   kit's slow missing Favor of an Empress, rocket boots, jumps and flying mounts; Potion Sickness ignoring the
+   Philosopher's Stone; a stale first tap; godmode; the launcher's and the kit core's look on other machines; reversed
+   gravity's soles; the meter rounding up; the rocket's missing name; the exo's speed added in wing flight. All fixed
+   (the water's halving left, as the game's dashes have it). In the game, the user's first detonation showed the screen
+   flash covering only the top left: the UI layer divided the screen by the UI scale twice (a UI layer is handed the
+   screen already divided, PlayerInput.SetZoom_UI); fixed (`TentochiHUD.cs`, r82b). Every file on the computer compared
+   with what was sent; the files replaced first are in `Claude outputs\r82\before` and `before_b`.
+9. **On the computer**: its copies were newer than this chat's in places (the desert items' tooltips as the user left
+   them, Sand Settling at 7 seconds, the mirror chat's files); r82 was built against them and its lines merged into the
+   localization, nothing of theirs changed. Windows refuses writes to five files (read-only, or held open):
+   `PisAndDag.cs` (until the user saved it), `PADWorld.cs`, `BossLogSupport.cs`, `Content/Combat/BossArena.cs`,
+   `Content/Subworlds/SubworldFlags.cs`. Check before planning a change to them. For the mirror chat: the localization
+   is now `daf47a11f0f072e7a9426d3203d9187c`; merge onto that before writing it.

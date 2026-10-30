@@ -541,3 +541,16 @@ Then check the built size dropped.
   - Two players: both see the same light at each crack, and each crack heard once.
   - Watch the frame rate through the burst (three cracks at once if three players are near her).
   - The Everclear Mirror: let the copy break: the same burst, smaller, white and gold, smooth (not blocky), with glass triangles turning over and flashing as they fly and fall; the glass and shimmer dust as before; a crash of shards; you healed half your life; the screen shakes a little.
+- [ ] §17.36. The Empress' Blessing and Made By Tentochi (PADWorkFlow §17.36). Build & Reload.
+  - Tooltips: on the six Tentochi items "Made By Tentochi" in red as the last line, under the price, a grey model line under the effects; on the Blessing "Legends" in shifting colours at the foot.
+  - A Legends world, normal mode: beat the Empress: the Blessing drops. Expert: it is in her bag. A world not Legends: never. Its bestiary entry says "In a Legends world".
+  - The Blessing worn: double-tap: 20 tiles (count them), level through the air; nothing hurts you through it (walk it through a boss's attack); a second and a quarter before the next; minion slots one more; the Magic Arsenal one more slot, pale pink with her picture.
+  - Exo Air I and II: the Stopwatch running shows 7 and 12 mph more; flying on wings, not added; the frame on the legs moves with the walk, lit, dim after a dash; dashes of 13 and 18 tiles, red and cyan copies, sparks; can't wear both. Exo Air II's recipe at a Tinkerer's Workshop.
+  - Enterprise's Complimentary: a thin red line from you to the cursor only while holding a ranged weapon, stopping at walls and enemies, brackets on an enemy.
+  - Back Rocket: no rockets with nothing about; an enemy in sight within 50 tiles: a rocket every 2 seconds, swaying, homing, 80 damage, a blast.
+  - Calamity Module: the bar under your feet fills in 30 seconds, a chime and READY [X]; X: 5 seconds of 2.5 times damage (a weapon, a minion, thorns), red screen edges covering the whole screen at any UI scale, the bar counting down.
+  - Adam Kit I: 15 defense; run, jump, wings' climb and a mount all a tenth slower (Stopwatch); K: 25,000 to a target dummy and enemies within 16 tiles, not to town NPCs or critters; you take 450 (with less life, "was decommissioned"); Potion Sickness for 60 s (45 s with the Philosopher's Stone); the whole screen flashes.
+  - Grabs: dash while the Crevice Eel holds you, on the Meat Hook's chain, in the Mantrap, in the Empress's grab: the dash gives way to them (no escape).
+  - Gravity turned over: the sparks and heel jets at your feet, not your head.
+  - Crates: open a stack of fishing crates (pre-hardmode: the Complimentary and Exo Air I; hardmode crates: all six); the Cyborg sells all six.
+  - Two players: the other sees you dash the full distance and land where you did (not snap later), sees its sparks and copies; sees the launcher kick when it fires; sees your detonation and your adrenaline.
