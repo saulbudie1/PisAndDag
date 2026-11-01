@@ -463,7 +463,14 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             {
                 // Its own arrival is a shot too.
                 Cinematic.Frame();
-                Arrive(player);
+
+                // E held in the corner: straight to the fight (single player; CinematicSkip).
+                CinematicSkip.Offer();
+
+                if (Main.netMode != NetmodeID.MultiplayerClient && CinematicSkip.Take())
+                    SkipArrival(player);
+                else
+                    Arrive(player);
             }
             else
             {
@@ -1033,6 +1040,8 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         /// Runs everywhere. The camera work is local to each client, the motion is the
         /// same sum on every machine, and phase, timer, direction and base are synced
         /// for anyone who joins part way.
+        ///
+        /// E held in the corner skips it (CinematicSkip, single player; SkipArrival).
         /// </summary>
         private void Arrive(Player player)
         {
@@ -1123,6 +1132,51 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
 
             if (arriveTimer == panOut + Abomanation.ArriveLook && !BossIntro.Running)
                 BossIntro.PlayNameOnly(NPC.whoAmI);
+        }
+
+        /// <summary>
+        /// The arrival, skipped (CinematicSkip; single player, so this machine decides): the
+        /// whole animal moved on, as it lies, to where its wave has the head on the arrival's
+        /// last tick; that tick run, which starts the fight as it always does; its name up, if
+        /// it was not yet; and the camera walked home from it.
+        /// </summary>
+        private void SkipArrival(Player player)
+        {
+            int last = Abomanation.ArriveTicks - 1;
+            Vector2 from = NPC.Center;
+            float x = from.X + arriveDir * Abomanation.ArriveSpeed * Math.Max(0, last - arriveTimer);
+
+            float ground = GroundLine((int)(x / 16f), (int)(from.Y / 16f));
+
+            if (ground > 0f)
+                arriveBase = ground;
+
+            // The wave's clock on that tick: the arrival's less the screech, as Arrive runs it.
+            float clock = Abomanation.ArriveTicks - Abomanation.ScreechTicks;
+            float theta = clock * MathHelper.TwoPi / Abomanation.ArrivePeriod + MathHelper.PiOver2;
+            Vector2 shift = new Vector2(x, arriveBase + (float)Math.Sin(theta) * Abomanation.ArriveWave) - from;
+
+            NPC.Center += shift;
+
+            for (int i = 0; i < Main.maxNPCs; i++)
+            {
+                NPC other = Main.npc[i];
+
+                if (other.active && AbomanationChain.Head(other) == NPC.whoAmI
+                    && (other.ModNPC is AbomanationBody || other.ModNPC is AbomanationTail))
+                {
+                    other.position += shift;
+                    other.netUpdate = true;
+                }
+            }
+
+            arriveTimer = Math.Max(arriveTimer, last);
+            Arrive(player);
+
+            if (!BossIntro.Named(NPC))
+                BossIntro.PlayNameOnly(NPC.whoAmI);
+
+            PisPlayer.PanHome(from, 45);
         }
 
         /// <summary>
@@ -1947,6 +2001,8 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
         /// So it winds in on itself, the tail always in its mouth, the body always at
         /// its neck. The sits and the steps get shorter. The last piece is its own
         /// neck. GONE: a beat, and the head comes apart, and that is the death.
+        ///
+        /// E held in the corner skips it (CinematicSkip, single player; SkipEnd).
         /// </summary>
         private void Die()
         {
@@ -1956,6 +2012,15 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             Cinematic.Frame();
             Cinematic.Hold();
             Watch();
+
+            // E held in the corner: on to its end (single player; CinematicSkip).
+            CinematicSkip.Offer();
+
+            if (Main.netMode != NetmodeID.MultiplayerClient && CinematicSkip.Take())
+            {
+                SkipEnd();
+                return;
+            }
 
             attackTimer++;
 
@@ -2325,6 +2390,38 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             NPC.life = 0;
             NPC.HitEffect(0, 10.0);
             NPC.checkDead();
+        }
+
+        /// <summary>
+        /// The end, skipped (CinematicSkip; single player, so this machine decides). The head
+        /// where its rise would have taken it, up out of the ground into the air the loop
+        /// needs (from the loop on it is there already), so that what it leaves falls in the
+        /// open as it would; what is left of the body coming apart at once, a little blood
+        /// each and no voice, the head's roar being enough; and the head through Finish, as
+        /// ever, so the loot, the downed flag and every other hook run as they would.
+        /// </summary>
+        private void SkipEnd()
+        {
+            if (dieStep == StepStop)
+                riseTo = LoopHeight();
+
+            if (dieStep <= StepRise)
+                NPC.Center = new Vector2(NPC.Center.X, Math.Min(NPC.Center.Y, riseTo));
+
+            NPC part;
+
+            while ((part = AbomanationChain.NextToGo(NPC.whoAmI)) != null)
+            {
+                AbomanationChain.Burst(part, Abomanation.DieBurst / 8, Abomanation.DieShake, Abomanation.DieShakeTicks);
+
+                part.life = 0;
+                part.active = false;
+
+                if (Main.netMode == NetmodeID.Server)
+                    NetMessage.SendData(MessageID.SyncNPC, -1, -1, null, part.whoAmI);
+            }
+
+            Finish();
         }
 
         public override bool PreKill()

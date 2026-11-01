@@ -78,8 +78,11 @@ namespace PisAndDag.Content.Items.Accessories.Tentochi
         /// <summary>The blast's edge: 16 tiles.</summary>
         public const float KitRadius = 16f * 16f;
 
-        /// <summary>After a detonation, the ticks before the key does anything again, so one press is one blast.</summary>
-        public const int KitRearm = 60;
+        /// <summary>After a detonation, the ticks before it can go again: 60 seconds (by request: "Adam Kit cooldown 60 secs").</summary>
+        public const int KitRearm = 60 * 60;
+
+        /// <summary>The first ticks of the re-arming, when the core still sputters from the blast.</summary>
+        public const int KitSputter = 60;
 
         // ---- worn this tick -------------------------------------------------------------------------------------------
 
@@ -117,7 +120,7 @@ namespace PisAndDag.Content.Items.Accessories.Tentochi
         private int rearm;
         private bool chimed;
 
-        /// <summary>Ticks till the kit can be let go again: its core beats fast and unsteady meanwhile (TentochiKitCore).</summary>
+        /// <summary>Ticks till the kit can be let go again: its core sputters, then lies dim, meanwhile (TentochiKitCore).</summary>
         public int Rearm => rearm;
 
         public bool LocalAndReal => Player.whoAmI == Main.myPlayer && !MimicSystem.Is(Player);
@@ -141,6 +144,21 @@ namespace PisAndDag.Content.Items.Accessories.Tentochi
             chimed = false;
             Target = -1;
             Held = 0;
+
+            // The minute runs on while they wait to come back (a detonation is often their death).
+            Rearming();
+        }
+
+        /// <summary>The kit's minute running down; on the wearer's own machine a chime as it is armed again.</summary>
+        private void Rearming()
+        {
+            if (rearm <= 0)
+                return;
+
+            rearm--;
+
+            if (rearm == 0 && LocalAndReal && Kit && !Main.dedServ)
+                SoundEngine.PlaySound(TentochiSounds.Ready with { Pitch = -0.35f, Volume = 0.8f });
         }
 
         // ---- speed ----------------------------------------------------------------------------------------------------
@@ -190,8 +208,7 @@ namespace PisAndDag.Content.Items.Accessories.Tentochi
             else
                 SurgeTime = 0;
 
-            if (rearm > 0)
-                rearm--;
+            Rearming();
 
             if (!LocalAndReal)
             {

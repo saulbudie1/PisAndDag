@@ -36,6 +36,11 @@ namespace PisAndDag.Content.NPCs.Foigh
     /// and at Oath for the player's word, and not for ever. Only the player he fights is
     /// moved and shown it; to anybody else he is simply doing it.
     ///
+    /// E held in the corner skips it (CinematicSkip, single player), until the picture is
+    /// back: they are put off him if they were not yet, the sword is in his hands and its
+    /// sharp side, and the fight goes on (SkipPassage). The passage into his third phase is
+    /// skipped the same way, from here (Foigh.Third: SkipThird).
+    ///
     /// The camera is PisPlayer's (BlendCamera); the bars, the lean, the fade and the hold are
     /// Cinematic's. The lines are the user's own words, kept as written (the bars in them are
     /// Dialogue.Pause: he stops there).
@@ -249,6 +254,23 @@ namespace PisAndDag.Content.NPCs.Foigh
             // Nobody to show it to: everything asked for lets go by itself.
             if (me.dead || !me.active)
                 return;
+
+            // E held in the corner, for as long as they are held for it: on with the fight, in
+            // the phase it has come to (single player; CinematicSkip).
+            if (State != Move.Resume || now < FadeOutTicks + BlackTicks + FadeInTicks / 2)
+            {
+                CinematicSkip.Offer();
+
+                if (Authority && CinematicSkip.Take())
+                {
+                    if (phase >= 3)
+                        SkipThird(me);
+                    else
+                        SkipPassage(me);
+
+                    return;
+                }
+            }
 
             Vector2 him = NPC.Center + new Vector2(0f, -30f);
             bool wantShot = false;
@@ -469,6 +491,49 @@ namespace PisAndDag.Content.NPCs.Foigh
             {
                 Cinematic.Fade(1f - Smooth((now - back) / (float)FadeInTicks));
             }
+        }
+
+        /// <summary>
+        /// The passage into his second phase, skipped (CinematicSkip; single player, so this
+        /// machine decides): what it does done at once. The player put down a long way off
+        /// him, if Knee has not put them there yet; and the rest as either passage ends
+        /// (PassageSkipped). His sword is its sharp side from here as it is drawn, and the
+        /// hook in his hand, as Oath would have left them (ShowBlade, HookIs: by his phase).
+        /// </summary>
+        private void SkipPassage(Player me)
+        {
+            if (!put)
+            {
+                put = true;
+                me.GetModPlayer<FoighScenePlayer>().PutOff(NPC, PutOffAt, PutOffLeast);
+            }
+
+            PassageSkipped(me);
+        }
+
+        /// <summary>
+        /// The end of either passage, skipped to: what he had thrown gone and the sword in his
+        /// hands (as under the black of it: Gather), his lines cut, his face and name theirs,
+        /// him turned to them, the camera home, and on with the fight, as Resume leaves him.
+        /// </summary>
+        private void PassageSkipped(Player me)
+        {
+            Gather();
+
+            if (Dialogue.Speaking(NPC))
+                Dialogue.Close();
+
+            DialogueIntroductions.Known.Add(DialogueIntroductions.Key(Type));
+
+            if (shot > 0f)
+                PisPlayer.PanHome(NPC.Center + new Vector2(0f, -30f), 30);
+
+            shot = 0f;
+            cutBack = true;
+
+            FaceThem(me);
+            rest = FirstRest;
+            Go(Move.Walk);
         }
 
         // ============================================================

@@ -1802,7 +1802,7 @@ namespace PisAndDag.Content.Mimic
             ("Lane", 0f, 1.5f),           // how much it keeps out of the line from a body after it (where a charge comes)
             ("Commit", 0f, 1f),           // with a sword or spear, how much of the danger of touching its own target it accepts
             ("CloseRisk", 0.15f, 1.5f),   // with a weapon that must touch and something to touch: its danger counts so many times over (round 81)
-            ("CloseGoal", 0.5f, 5f),      // and its distance from where it wants to be so many times over
+            ("CloseGoal", 0.5f, 10f),     // and its distance from where it wants to be so many times over (to 10 since round 81c)
             ("HoldPrior", 0.6f, 2.5f),    // before it has learned a weapon, holding the left click reckoned at so much of what it lands overall
             ("WayPrior", 60f, 900f),      // ticks of a way of using a weapon before what it learns of it outweighs that reckoning
         };
@@ -1873,7 +1873,7 @@ namespace PisAndDag.Content.Mimic
             0.3f, 0.7f,
             // round 81's: each as it was before it was a number (danger and distance once over, holding the left click at the
             // rate it lands, 240 ticks)
-            0.63f, 0.111f, 0.2105f, 0.2143f,
+            0.63f, 0.0526f, 0.2105f, 0.2143f,
         };
 
         /// <summary>
@@ -1891,30 +1891,30 @@ namespace PisAndDag.Content.Mimic
         public static MimicGenes Trained => new MimicGenes(TrainedShares);
 
         /// <summary>
-        /// What the trainer settled on for each kind of weapon (MimicWeapons.ClusterOf: round 81's kinds, in the four classes),
-        /// in kind order (Claude outputs\MimicTrainer_r81: each kind trained by CMA-ES against all sixteen bosses, from the numbers
-        /// of the round-80 kind most of its weapons were in):
-        ///   0 Melee / Swing: reach ~56, use 19t
-        ///   1 Melee / HeldBlade: reach ~64, use 20t
-        ///   2 Melee / HeldBlade (+Thrown, Swing): reach ~85, use 22t, 26 with right 
-        ///   3 Melee / Spear: reach ~188, use 24t
-        ///   4 Melee / Yoyo: reach ~296, use 25t
-        ///   5 Melee / Thrown: reach ~960, use 20t, shot 16px/t, 1 with right click
-        ///   6 Melee / SwingShot: reach ~640, use 24t, shot 17px/t, 1 with right clic
-        ///   7 Melee / SwingShot: reach ~640, use 24t, shot 12px/t, 3 with right clic
-        ///   8 Ranged / Thrown: reach ~960, use 20t, shot 16px/t
-        ///   9 Ranged / Thrown (+Shot, HeldShot): reach ~960, use 25t, shot 28px/t
-        ///   10 Ranged / Thrown: reach ~960, use 20t, shot 8px/t
-        ///   11 Ranged / Shot: reach ~960, use 27t, shot 8px/t
-        ///   12 Ranged / Shot (+Thrown, HeldShot): reach ~960, use 19t, shot 25px/t, 2
-        ///   13 Ranged / Shot: reach ~960, use 18t, shot 16px/t
-        ///   14 Ranged / HeldShot (+Shot, Thrown): reach ~360, use 22t, shot 3px/t
-        ///   15 Ranged / HeldShot: reach ~960, use 30t, shot 15px/t, 9 with right clic
-        ///   16 Magic / Shot (+Thrown, Spray): reach ~960, use 22t, shot 18px/t, 10 wi
-        ///   17 Magic / HeldShot (+Shot, Spray): reach ~960, use 20t, shot 12px/t, 7 w
-        ///   18 Summon / Whip (+HeldShot): reach ~160, use 30t
-        ///   19 Summon / Minion: reach ~800, use 36t, 2 with right click
-        ///   20 Summon / Sentry (+Shot, Minion): reach ~800, use 30t
+        /// The numbers for each kind of weapon (MimicWeapons.ClusterOf: round 81's kinds, in the four classes), in kind order:
+        /// each kind begins at the numbers of the round-80 kind most of its weapons were in; a change is kept only where it beat
+        /// those on fights none of the choosing used, against all sixteen bosses (Claude outputs\MimicTrainer_r81, README):
+        ///   0 Melee / Swing: reach ~56, use 19t: brave (Commit 0.9, CloseRisk 0.15, CloseGoal 5): tested better (run/valid_melee012.txt; CloseGoal 10 hardly more, run/valid_cgx.txt)
+        ///   1 Melee / HeldBlade: reach ~64, use 20t: brave (Commit 0.9, CloseRisk 0.15, CloseGoal 5): tested better (run/valid_melee012.txt; CloseGoal 10 hardly more, run/valid_cgx.txt)
+        ///   2 Melee / HeldBlade (+Thrown, Swing): reach ~85, use 22t, 26 with right : brave (Commit 0.9, CloseRisk 0.15, CloseGoal 5): tested better (run/valid_melee012.txt; CloseGoal 10 hardly more, run/valid_cgx.txt)
+        ///   3 Melee / Spear: reach ~188, use 24t: brave, and CloseGoal 10 (Commit 0.9, CloseRisk 0.15): tested better (run/valid_melee012.txt, run/laptop/valid_p2*.txt, valid_x*.txt, valid_y*.txt)
+        ///   4 Melee / Yoyo: reach ~296, use 25t: brave, and CloseGoal 10 (Commit 0.9, CloseRisk 0.15): tested better (run/valid_melee012.txt, run/laptop/valid_p2*.txt, valid_x*.txt, valid_y*.txt)
+        ///   5 Melee / Thrown: reach ~960, use 20t, shot 16px/t, 1 with right click: as r81a (the round-80 kind most of its weapons were in); nothing tried beat it clearly
+        ///   6 Melee / SwingShot: reach ~640, use 24t, shot 17px/t, 1 with right clic: as r81a (the round-80 kind most of its weapons were in); nothing tried beat it clearly
+        ///   7 Melee / SwingShot: reach ~640, use 24t, shot 12px/t, 3 with right clic: as r81a (the round-80 kind most of its weapons were in); nothing tried beat it clearly
+        ///   8 Ranged / Thrown (+Shot, HeldShot): reach ~960, use 25t, shot 28px/t: as r81a (the round-80 kind most of its weapons were in); nothing tried beat it clearly
+        ///   9 Ranged / Thrown: reach ~960, use 20t, shot 8px/t: as r81a (the round-80 kind most of its weapons were in); nothing tried beat it clearly
+        ///   10 Ranged / Thrown: reach ~960, use 20t, shot 16px/t: as r81a (the round-80 kind most of its weapons were in); nothing tried beat it clearly
+        ///   11 Ranged / Shot (+HeldShot, Thrown): reach ~960, use 18t, shot 22px/t, 3: as r81a (the round-80 kind most of its weapons were in); nothing tried beat it clearly
+        ///   12 Ranged / Shot: reach ~960, use 18t, shot 16px/t: as r81a (the round-80 kind most of its weapons were in); nothing tried beat it clearly
+        ///   13 Ranged / Shot: reach ~960, use 27t, shot 8px/t: as r81a (the round-80 kind most of its weapons were in); nothing tried beat it clearly
+        ///   14 Ranged / HeldShot (+Shot, Thrown): reach ~360, use 22t, shot 3px/t: as r81a (the round-80 kind most of its weapons were in); nothing tried beat it clearly
+        ///   15 Ranged / HeldShot: reach ~960, use 30t, shot 15px/t: as r81a (the round-80 kind most of its weapons were in); nothing tried beat it clearly
+        ///   16 Magic / Shot (+Thrown, Spray): reach ~960, use 22t, shot 18px/t, 10 wi: as r81a (the round-80 kind most of its weapons were in); nothing tried beat it clearly
+        ///   17 Magic / HeldShot (+Shot, Spray): reach ~960, use 20t, shot 12px/t, 7 w: as r81a (the round-80 kind most of its weapons were in); nothing tried beat it clearly
+        ///   18 Summon / Whip: reach ~160, use 30t: brave, and CloseGoal 10 (Commit 0.9, CloseRisk 0.15): tested better (run/valid_melee012.txt, run/laptop/valid_p2*.txt, valid_x*.txt, valid_y*.txt)
+        ///   19 Summon / Minion (+Shot): reach ~800, use 36t, 2 with right click: as r81a (the round-80 kind most of its weapons were in); nothing tried beat it clearly
+        ///   20 Summon / Sentry (+HeldShot, Shot): reach ~800, use 30t: as r81a (the round-80 kind most of its weapons were in); nothing tried beat it clearly
         /// </summary>
         public static readonly float[][] TrainedByKind =
         {
@@ -1923,147 +1923,147 @@ namespace PisAndDag.Content.Mimic
                 0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
                 0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
                 0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
-                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+                0.300f, 0.900f, 0.150f, 0.474f, 0.210f, 0.214f,
             },
             new[]
             {
                 0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
                 0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
                 0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
-                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+                0.300f, 0.900f, 0.150f, 0.474f, 0.210f, 0.214f,
             },
             new[]
             {
                 0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
                 0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
                 0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
-                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+                0.300f, 0.900f, 0.150f, 0.474f, 0.210f, 0.214f,
             },
             new[]
             {
                 0.970f, 0.674f, 0.593f, 0.310f, 0.550f, 0.094f, 0.646f, 0.219f, 0.465f, 0.675f, 0.798f, 0.832f,
                 0.663f, 0.897f, 0.690f, 0.745f, 0.426f, 0.189f, 0.721f, 0.871f, 0.933f, 0.268f, 0.174f, 0.985f,
                 0.950f, 0.206f, 0.361f, 0.289f, 0.321f, 0.590f, 0.245f, 0.321f, 0.360f, 0.758f, 0.542f, 0.354f,
-                0.205f, 0.626f, 0.630f, 0.111f, 0.210f, 0.214f,
+                0.205f, 0.900f, 0.150f, 1.000f, 0.210f, 0.214f,
             },
             new[]
             {
                 0.940f, 0.681f, 0.380f, 0.418f, 0.577f, 0.095f, 0.597f, 0.346f, 0.401f, 0.754f, 0.900f, 0.901f,
                 0.790f, 0.912f, 0.696f, 0.766f, 0.488f, 0.259f, 0.748f, 0.852f, 0.817f, 0.197f, 0.082f, 0.819f,
                 0.918f, 0.295f, 0.413f, 0.162f, 0.359f, 0.527f, 0.294f, 0.246f, 0.183f, 0.737f, 0.573f, 0.322f,
-                0.259f, 0.696f, 0.630f, 0.111f, 0.210f, 0.214f,
+                0.259f, 0.900f, 0.150f, 1.000f, 0.210f, 0.214f,
             },
             new[]
             {
                 0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
                 0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
                 0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
-                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+                0.300f, 0.700f, 0.630f, 0.053f, 0.210f, 0.214f,
             },
             new[]
             {
                 0.967f, 0.593f, 0.271f, 0.637f, 0.331f, 0.084f, 0.676f, 0.098f, 0.423f, 0.814f, 0.858f, 0.979f,
                 0.510f, 0.811f, 0.727f, 0.767f, 0.444f, 0.104f, 0.767f, 0.942f, 0.837f, 0.254f, 0.170f, 0.929f,
                 0.879f, 0.135f, 0.203f, 0.365f, 0.028f, 0.652f, 0.430f, 0.173f, 0.513f, 0.597f, 0.265f, 0.258f,
-                0.200f, 0.442f, 0.630f, 0.111f, 0.210f, 0.214f,
+                0.200f, 0.442f, 0.630f, 0.053f, 0.210f, 0.214f,
             },
             new[]
             {
                 0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
                 0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
                 0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
-                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
-            },
-            new[]
-            {
-                0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
-                0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
-                0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
-                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+                0.300f, 0.700f, 0.630f, 0.053f, 0.210f, 0.214f,
             },
             new[]
             {
                 0.953f, 0.592f, 0.273f, 0.419f, 0.536f, 0.133f, 0.648f, 0.264f, 0.065f, 0.468f, 0.829f, 0.902f,
                 0.752f, 0.893f, 0.594f, 0.850f, 0.325f, 0.351f, 0.821f, 0.834f, 0.721f, 0.378f, 0.195f, 0.683f,
                 0.900f, 0.215f, 0.267f, 0.299f, 0.364f, 0.709f, 0.166f, 0.130f, 0.300f, 0.676f, 0.352f, 0.070f,
-                0.339f, 0.654f, 0.630f, 0.111f, 0.210f, 0.214f,
+                0.339f, 0.654f, 0.630f, 0.053f, 0.210f, 0.214f,
             },
             new[]
             {
                 0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
                 0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
                 0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
-                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+                0.300f, 0.700f, 0.630f, 0.053f, 0.210f, 0.214f,
             },
             new[]
             {
                 0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
                 0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
                 0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
-                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+                0.300f, 0.700f, 0.630f, 0.053f, 0.210f, 0.214f,
             },
             new[]
             {
                 0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
                 0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
                 0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
-                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+                0.300f, 0.700f, 0.630f, 0.053f, 0.210f, 0.214f,
             },
             new[]
             {
                 0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
                 0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
                 0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
-                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+                0.300f, 0.700f, 0.630f, 0.053f, 0.210f, 0.214f,
             },
             new[]
             {
                 0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
                 0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
                 0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
-                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+                0.300f, 0.700f, 0.630f, 0.053f, 0.210f, 0.214f,
             },
             new[]
             {
                 0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
                 0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
                 0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
-                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+                0.300f, 0.700f, 0.630f, 0.053f, 0.210f, 0.214f,
             },
             new[]
             {
                 0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
                 0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
                 0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
-                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+                0.300f, 0.700f, 0.630f, 0.053f, 0.210f, 0.214f,
             },
             new[]
             {
                 0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
                 0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
                 0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
-                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+                0.300f, 0.700f, 0.630f, 0.053f, 0.210f, 0.214f,
             },
             new[]
             {
                 0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
                 0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
                 0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
-                0.300f, 0.700f, 0.630f, 0.111f, 0.210f, 0.214f,
+                0.300f, 0.700f, 0.630f, 0.053f, 0.210f, 0.214f,
+            },
+            new[]
+            {
+                0.887f, 0.625f, 0.314f, 0.369f, 0.529f, 0.087f, 0.590f, 0.249f, 0.241f, 0.595f, 0.859f, 0.866f,
+                0.611f, 0.926f, 0.664f, 0.839f, 0.414f, 0.085f, 0.911f, 0.959f, 0.772f, 0.302f, 0.097f, 0.836f,
+                0.856f, 0.266f, 0.291f, 0.238f, 0.253f, 0.580f, 0.239f, 0.199f, 0.319f, 0.735f, 0.478f, 0.206f,
+                0.300f, 0.900f, 0.150f, 1.000f, 0.210f, 0.214f,
             },
             new[]
             {
                 0.926f, 0.619f, 0.353f, 0.454f, 0.303f, 0.038f, 0.644f, 0.245f, 0.122f, 0.582f, 0.718f, 0.950f,
                 0.568f, 0.874f, 0.772f, 0.932f, 0.240f, 0.041f, 0.935f, 0.794f, 0.675f, 0.211f, 0.047f, 0.698f,
                 0.747f, 0.258f, 0.229f, 0.092f, 0.462f, 0.532f, 0.102f, 0.108f, 0.277f, 0.833f, 0.456f, 0.237f,
-                0.340f, 0.577f, 0.630f, 0.111f, 0.210f, 0.214f,
+                0.340f, 0.577f, 0.630f, 0.053f, 0.210f, 0.214f,
             },
             new[]
             {
                 0.926f, 0.619f, 0.353f, 0.454f, 0.303f, 0.038f, 0.644f, 0.245f, 0.122f, 0.582f, 0.718f, 0.950f,
                 0.568f, 0.874f, 0.772f, 0.932f, 0.240f, 0.041f, 0.935f, 0.794f, 0.675f, 0.211f, 0.047f, 0.698f,
                 0.747f, 0.258f, 0.229f, 0.092f, 0.462f, 0.532f, 0.102f, 0.108f, 0.277f, 0.833f, 0.456f, 0.237f,
-                0.340f, 0.577f, 0.630f, 0.111f, 0.210f, 0.214f,
+                0.340f, 0.577f, 0.630f, 0.053f, 0.210f, 0.214f,
             },
         };
 

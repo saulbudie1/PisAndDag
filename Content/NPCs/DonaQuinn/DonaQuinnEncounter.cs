@@ -28,7 +28,9 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
     /// If it is night or raining, the world first runs on to eight in the morning, quickly,
     /// the sky going through it, and the rain stops: by tModLoader's own time rate
     /// (ModifyTimeRate), the way the Enchanted Sundial does, so everything that happens at
-    /// dawn still happens. The player is held through it with the bars in. Then she is put
+    /// dawn still happens. The player is held through it with the bars in. E does not skip
+    /// it (CinematicSkip): it is the world's clock, not her scene, run the way it is so that
+    /// what happens at dawn happens, and it is over in two and a half seconds. Then she is put
     /// down at her place, off their screen, on Triunfo, facing them; the
     /// fight is boxed in round the two of them (<see cref="BoxHalf"/>, BossArena); and the
     /// rest is hers (DonaQuinn).
@@ -1140,7 +1142,9 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
     /// goes in close on the two of them with the bars in; the picture comes back up on that,
     /// and the player walks the rest of the way, slowly, on their own, and stops a few
     /// blocks off her (StopAt), facing her, so that the two of them face each other. The
-    /// server is told they are there (Choice.Arrived), and she begs.
+    /// server is told they are there (Choice.Arrived), and she begs. E held in the corner
+    /// skips it (her scene's CinematicSkip; SkipApproach): no fade, the player put down
+    /// where the walk ends, and she begs.
     ///
     /// From the first moment of it: no weapon, no building, nothing able to touch them, off
     /// any mount and hook, and a walk whatever they have on their feet.
@@ -1163,6 +1167,9 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
 
         /// <summary>Where the walk ends: four blocks off her middle.</summary>
         public const float StopAt = 64f;
+
+        /// <summary>A walk that is skipped puts them down where it ends, or at the nearest of these to it with ground to stand on.</summary>
+        private static readonly float[] StandAt = { StopAt, StopAt + 16f, StopAt + 32f, StopAt - 16f, StopAt + 48f, StopAt + 64f, StopAt + 96f, StopAt + 128f };
 
         /// <summary>The walk: pixels a tick at most (a run is three), and how quickly it gets up to that.</summary>
         private const float WalkPace = 1.6f;
@@ -1233,6 +1240,23 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
 
             approachTo = npc.whoAmI;
             approachAsked = 2;
+        }
+
+        /// <summary>
+        /// The walk up, skipped (from her scene: CinematicSkip, single player): the player put
+        /// down where the walk would have ended, a few blocks off her on her head's side (her
+        /// other side if there is no standing there), on their feet, facing her, past the cut,
+        /// with no fade; and the walk done, as though they had walked it. Her scene moves her on.
+        /// </summary>
+        public static void SkipApproach(NPC npc, int side)
+        {
+            Approach(npc, side);
+
+            Main.LocalPlayer.GetModPlayer<DonaScenePlayer>().PutDown(npc, StandAt);
+
+            blackness = 0f;
+            reported = true;
+            Next(Step.There);
         }
 
         /// <summary>This machine's player turns to face her, this tick.</summary>
@@ -1390,21 +1414,22 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         /// <summary>
         /// Under the black: the player put down on her head's side, on their feet, facing her,
         /// off any mount, hook or rope, the right way up. The nearest place to the planned
-        /// distance that has ground for them near her own height; on her other side if there
-        /// is none on that one; and where there is none at all, they stay where they are and
-        /// walk from there.
+        /// distance (PutDownAt; for a walk that is skipped, where it ends: StandAt) that has
+        /// ground for them near her own height; on her other side if there is none on that
+        /// one; and where there is none at all, they stay where they are and walk from there.
         /// </summary>
-        private void PutDown(NPC her)
+        private void PutDown(NPC her, float[] at = null)
         {
             PastCut = true;
 
             int side = approachSide;
+            at ??= PutDownAt;
 
-            if (!FindFeet(her, side, out Vector2 feet))
+            if (!FindFeet(her, side, at, out Vector2 feet))
             {
                 side = -side;
 
-                if (!FindFeet(her, side, out feet))
+                if (!FindFeet(her, side, at, out feet))
                     return;
             }
 
@@ -1428,10 +1453,10 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
                 NetMessage.SendData(MessageID.PlayerControls, -1, -1, null, Player.whoAmI);
         }
 
-        /// <summary>A place for the player's feet on this side of her, the nearest of PutDownAt that has one.</summary>
-        private bool FindFeet(NPC her, int side, out Vector2 feet)
+        /// <summary>A place for the player's feet on this side of her, the nearest of these distances off her that has one.</summary>
+        private bool FindFeet(NPC her, int side, float[] at, out Vector2 feet)
         {
-            foreach (float off in PutDownAt)
+            foreach (float off in at)
             {
                 float x = her.Center.X + side * off;
 

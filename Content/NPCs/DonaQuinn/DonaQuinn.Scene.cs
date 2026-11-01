@@ -4,6 +4,7 @@ using PisAndDag.Content.Combat;
 using PisAndDag.Content.PADplayer;
 using PisAndDag.Content.UI;
 using Terraria;
+using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace PisAndDag.Content.NPCs.DonaQuinn
@@ -18,6 +19,13 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
     /// too. From the road to the end, while a scene is on, the player faces her
     /// (DonaScenePlayer.FaceToward); the walk up puts them on the side her head is, so the
     /// two face each other.
+    ///
+    /// E held in the corner skips what the player is held or walked for (CinematicSkip,
+    /// single player), and never an answer of theirs: the road on to her question, the two
+    /// answers coming up under it; "Coward!" on to the first charge, her name up; the throw
+    /// and the walk up on to her begging, the player standing by her; getting up and the
+    /// talk on to her left alone, the player let go; the finish on to her gone, her locket
+    /// left.
     ///
     /// The lines are hers, the user's own words, kept as written (the bars in them are
     /// Dialogue.Pause: she trails off): Q01 to Q10 of the script Amy Lam records from
@@ -108,6 +116,22 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             // Nobody to show it to: everything asked for lets go by itself.
             if (me.dead || !me.active)
                 return;
+
+            // E held in the corner: on to where this scene would have got to (single player;
+            // CinematicSkip). The rest of the tick is the scene it has got to.
+            if (Skippable)
+            {
+                CinematicSkip.Offer();
+
+                if (Authority && CinematicSkip.Take())
+                {
+                    Skip(donkey);
+
+                    // The finish, skipped: she is gone, and there is nothing left to show.
+                    if (!NPC.active)
+                        return;
+                }
+            }
 
             Vector2 focus = NPC.Center;
             bool wantShot = false;
@@ -414,6 +438,164 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
                     Dialogue.Say(TalkLine(i + 1, male));
             })
             { Remembered = false };
+        }
+
+        // ============================================================
+        // SKIPPED: E held in the corner (CinematicSkip)
+        // ============================================================
+
+        /// <summary>
+        /// Whether the scene on now can be skipped: the player is held or walked for it, and
+        /// no answer of theirs is waiting to be given. The road until her question is coming
+        /// up; "Coward!"; from the throw to the end of the walk up; getting up, and the talk
+        /// until its last line lets them go; the finish.
+        /// </summary>
+        private bool Skippable => State switch
+        {
+            Phase.Intro => roadLine < 2,
+            Phase.Challenge or Phase.Buck or Phase.Thrown or Phase.Lying or Phase.GetUp or Phase.Finish => true,
+            Phase.Plead => !DonaScenePlayer.There,
+            Phase.Talk => !talkDone && talkLine < TalkLines,
+            _ => false,
+        };
+
+        /// <summary>
+        /// The scene on now, skipped (single player, so this machine decides): on to where it
+        /// would have got to, and no further than an answer the player has to give.
+        /// </summary>
+        private void Skip(TriunfoTheDonkey donkey)
+        {
+            switch (State)
+            {
+                case Phase.Intro:
+                    SkipRoad();
+                    break;
+
+                case Phase.Challenge:
+                    SkipChallenge();
+                    break;
+
+                case Phase.Buck:
+                case Phase.Thrown:
+                case Phase.Lying:
+                case Phase.Plead:
+                    SkipFall(donkey);
+                    break;
+
+                case Phase.GetUp:
+                case Phase.Talk:
+                    SkipTalk();
+                    break;
+
+                case Phase.Finish:
+                    SkipFinish();
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// The road, on to her question: Triunfo's rear as her name goes up over, the camera on
+        /// her, and her second line in the box (her name in it brings her face up), the two
+        /// answers to come up under it as the road has them. Which one is the player's.
+        /// </summary>
+        private void SkipRoad()
+        {
+            Timer = Math.Max(Timer, RevealRearAt + RevealRearTicks);
+            NPC.netUpdate = true;
+
+            if (Dialogue.Speaking(NPC))
+                Dialogue.Line(ItIsI);
+            else
+                Dialogue.Converse(NPC, ItIsI, Pace);
+
+            roadLine = 2;
+            shot = 1f;
+        }
+
+        /// <summary>"Coward!" over: her name up, the box down, and the first charge.</summary>
+        private void SkipChallenge()
+        {
+            saidCoward = true;
+            roadLine = 3;
+
+            if (!named)
+            {
+                named = true;
+                BossIntro.PlayNameOnly(NPC.whoAmI);
+            }
+
+            if (Dialogue.Speaking(NPC))
+                Dialogue.Close();
+
+            Go(Phase.Charge);
+        }
+
+        /// <summary>
+        /// The throw and the walk up, on to her begging: off the saddle if she is not yet, her
+        /// lance away and Triunfo bolting (BeginThrow); down where her arc meets the ground,
+        /// face down (Down); the player standing where the walk up would have left them, facing
+        /// her, the shot already the close one (DonaScenePlayer.SkipApproach); and her head
+        /// coming up, the box with it. Spare or Finish is the player's.
+        /// </summary>
+        private void SkipFall(TriunfoTheDonkey donkey)
+        {
+            if (State == Phase.Buck)
+                BeginThrow(donkey);
+
+            if (State == Phase.Buck || State == Phase.Thrown)
+            {
+                NPC.position = LandingSpot();
+                NPC.velocity = Vector2.Zero;
+                Down();
+            }
+            else
+            {
+                // Lying already: as the first tick of lying leaves her, in case this is it.
+                Normalise();
+            }
+
+            DonaScenePlayer.SkipApproach(NPC, facing);
+            shot = 1f;
+
+            if (State != Phase.Plead)
+                Go(Phase.Plead);
+        }
+
+        /// <summary>
+        /// Getting up and the talk, on to her left alone: up on her feet, the box down, the
+        /// player let go. What sparing her does to the world is done already (Answered: Spare),
+        /// and Triunfo was sent back to her the moment she started up.
+        /// </summary>
+        private void SkipTalk()
+        {
+            talkLine = TalkLines;
+            talkDone = true;
+
+            if (Dialogue.Speaking(NPC))
+                Dialogue.Close();
+
+            StandUp();
+            Go(Phase.Free);
+        }
+
+        /// <summary>
+        /// The finish, on to her gone: her last words not said, the box down, and the end of it
+        /// now, the cut letting her go as it does at the end of her fade (DonaQuinn.Fall), so her
+        /// locket and everything else her death does come as they would.
+        /// </summary>
+        private void SkipFinish()
+        {
+            saidLastWords = true;
+
+            if (Dialogue.Speaking(NPC))
+                Dialogue.Close();
+
+            cut = true;
+            NPC.life = 0;
+            NPC.checkDead();
+
+            if (Main.netMode == NetmodeID.Server && !NPC.active)
+                NetMessage.SendData(MessageID.SyncNPC, -1, -1, null, NPC.whoAmI);
         }
     }
 }

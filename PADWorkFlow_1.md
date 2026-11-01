@@ -24117,3 +24117,49 @@ inspired by cyberpunk so make it like that"; on the way, "cannot heal is potion 
    `PisAndDag.cs` (until the user saved it), `PADWorld.cs`, `BossLogSupport.cs`, `Content/Combat/BossArena.cs`,
    `Content/Subworlds/SubworldFlags.cs`. Check before planning a change to them. For the mirror chat: the localization
    is now `daf47a11f0f072e7a9426d3203d9187c`; merge onto that before writing it.
+
+### 17.36, later: tested in the game, and three asks
+
+- **The screen flash covered only the top left** (the user's screenshot, a detonation at UI scale 150%): a UI layer is
+  handed the screen already divided by the UI scale (GameInterfaceLayer.Draw, PlayerInput.SetZoom_UI), and
+  `TentochiHUD.DrawScreen` divided it again. Fixed (r82b).
+- "laser should go thru non solid tiles": it stopped at bubbles. The game counts bubbles solid everywhere but in the
+  players' own movement (Main.DoUpdateInWorld sets `Main.tileSolid[TileID.Bubble]` false for the players' update only),
+  so the laser drawn after took them for blocks. It now stops only at what a player cannot pass (`TentochiSight.Cast`).
+- "And any damage reset adrenaline" and "full adrenaline and gets hit half damage taken": the Calamity Module's meter
+  empties on any hurt (`TentochiPlayer.OnHurt`: every hit, the kit's detonation included; poison, burning and the like
+  are not hits and leave it), and a hit taken while it is full does half damage (`ModifyHurt`, `AdrenalineGuard`
+  0.5). Its tooltip says both (the key's line now second). r82c; the files replaced are in `Claude outputs\r82\before_c`.
+- The localization is rewritten by tModLoader on Build (it took the quotes off the two keybinds' names and added a
+  blank line): compare it with the computer's before writing it. Now `b81822069aff776c62886ba0534a6e49`.
+- `PisAndDag.cs` was saved by the user (so writable now), with `Dash` and `Tentochi` first in `PADPacket`.
+- "Also Adam Kit cooldown 60 secs": `TentochiPlayer.KitRearm` 3600 ticks (was 60), running on while the wearer is dead
+  (`UpdateDead`); the core sputters for a second, then lies dim and comes up slowly through the minute; a low chime on
+  the wearer's machine when it is armed again. Tooltip: "60 second cooldown". r82d (`Claude outputs\r82\before_d`). The
+  localization is now `c044ce9a30938a00de5cb6cda5b2c83e`.
+- "make the Back Rocket have a 4 tile radius explosion": the rocket bursts (on an enemy, a wall, or out of fuel) and
+  every enemy within 4 tiles (64 px from the burst to the nearest point of its hitbox: `TentochiRocket.Colliding`, round)
+  takes 80; the one it struck takes its 80 once (still under that hit's immunity). Struck on the owner's machine
+  (`Projectile.Damage` in `OnKill`, the hitbox grown to the burst); the burst's rings drawn to its reach
+  (`TentochiFX.Blast(at, reach)`). Tooltip: "It explodes, hitting enemies within 4 tiles". r82e
+  (`Claude outputs\r82\before_e`). The localization is now `dcc2ff55b88d0c38b1a82d59083ec4fd`.
+- "Also add E skip to every cinematic", "I mean cut scenes", "boss cutscenes": every boss cutscene that holds the player
+  now offers CinematicSkip's "E Skip" (held, single player only, as before) and jumps to where it would have ended, the
+  fight's flags, drops and spawns all kept; a choice is never made for the player. Already skippable: the Empress's
+  arrival, change and death, the Gilded Knight's scene, Skeletron's arrival. Added (r82f, files replaced in
+  `Claude outputs\r82\before_f`; each scene's top comment says so):
+  - the universal boss arrival (`BossIntro.cs`, up to the end of the plate's settle; `BossArrivalWait.EndWaits` lets
+    every waiting boss start): Eye, Twins, Plantera, Moon Lord, WhiteDeath, the Legends Wall and the rest without their
+    own scene. Name-only plates inside a boss's own scene are left to that scene;
+  - Foigh: the road and walk-up (`SkipRoad`, `FoighScenePlayer.SkipApproach`), both passages (`SkipPassage`, `SkipThird`),
+    his end in three stretches (`SkipToPlea`, `SkipFinish`, `SkipSpare`); Plead's Finish/Spare and Cast's last fade not;
+  - Dona Quinn: the road (to her name and Decline/Accept), the challenge, the throw and walk-up (to Spare/Finish), the
+    getting up, the finish; her morning run (the clock to 8 AM, before she exists) not. The Abomanation: arrival and death;
+  - King Slime's arrival (from the bars; the heralds' gathering before them not) and death; Queen Slime's arrival and
+    her death's shudder (the frenzy before it is the fight, not);
+  - Queen Bee's arrival and death; the Eye's finale (Pugream); the Guide's sacrifice; the Megashark's arrival, both
+    changes (the third to its last pan only) and death.
+  Not skippable, being the fight: Skeletron's lost hands and grabs, the Eye's frenzy and screams, the Wall's roar and
+  grab, Queen Slime's wings, the slimes' grabs. Built (620 files, no errors, the ten old warnings); not run in the
+  game. Found on the way, not changed: in the Guide's sacrifice the game refuses his death call (he is still the
+  sacrifice then) and quietly removes him, with no death message, skipped or not.

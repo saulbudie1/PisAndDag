@@ -305,6 +305,7 @@ Items: {
 			Tooltip:
 				'''
 				Fires a homing rocket every 2 seconds for 80 damage
+				It explodes, hitting enemies within 4 tiles
 				Fires only at enemies in sight within 50 tiles
 				'''
 			Spec: BR-80 dorsal launcher. Autonomous target acquisition.
@@ -327,6 +328,7 @@ Items: {
 				'''
 				10% slower movement, flight and mounts
 				Detonation costs 450 life and causes Potion Sickness
+				60 second cooldown
 				'''
 			Spec: AK-1 heavy augmentation kit. Detonation is irreversible.
 		}

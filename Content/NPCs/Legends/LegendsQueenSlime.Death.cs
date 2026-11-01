@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using PisAndDag.Content.Combat;
 using PisAndDag.Content.PADplayer;
 using PisAndDag.Content.Particles;
+using PisAndDag.Content.UI;
 using Terraria;
 using Terraria.Audio;
 using Terraria.ID;
@@ -24,6 +25,9 @@ namespace PisAndDag.Content.NPCs.Legends
     //                    pops with her, and gives nothing; then the loot, and the camera home
     //
     // Untouchable throughout. The server throws her about and ends her; every machine plays it.
+    //
+    // From SHUDDER on, E held in the corner skips on to her BURST (CinematicSkip, single player).
+    // What comes before is not skipped: the FRENZY is still the fight, and hurts.
 
     public partial class LegendsQueenSlime
     {
@@ -216,6 +220,19 @@ namespace PisAndDag.Content.NPCs.Legends
                         Spasm(npc, 0.8f + 1.6f * p);
                         Shudder(npc, t, p);
                         DeathShot(npc, Ease(t / (float)DeathPanTicks), 1f + DeathLean * Ease(p * 2f));
+
+                        // E held in the corner, for a player in the shot: on to her burst (single
+                        // player; CinematicSkip).
+                        if (deathWatching)
+                        {
+                            CinematicSkip.Offer();
+
+                            if (Authority && CinematicSkip.Take())
+                            {
+                                Next(npc, DeathBurst);
+                                break;
+                            }
+                        }
 
                         if (Authority && t >= ShudderTicks)
                             Next(npc, DeathBurst);

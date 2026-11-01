@@ -23,6 +23,9 @@ namespace PisAndDag.Content.NPCs.Legends
     /// The spawn distance is worked out from Ticks below and the Wall's speed, so that
     /// when the camera is back on the player the Wall is still half a screen off.
     ///
+    /// E held in the corner skips it, in a world of one (BossIntro; CinematicSkip): the
+    /// name on the bar, no roar, the camera home. The Wall walks on as it was walking.
+    ///
     /// The line under the name is Lore Bible §XXVII: what the houses built the lock out
     /// of. It reads as nonsense the first time and as an explanation the moment the
     /// player watches three things spread through the world at once.

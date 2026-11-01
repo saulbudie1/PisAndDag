@@ -78,6 +78,11 @@ namespace PisAndDag.Content.NPCs.Legends
     ///
     /// The server runs every scene and sends where it is and when (SendExtraAI); every
     /// machine plays them from that. A scene is untouchable and harmless.
+    ///
+    /// E held in the corner skips her arrival and her death, for a player in the shot
+    /// (CinematicSkip, single player): the arrival to the fight, her name up; the death
+    /// to her bursting, the larva left first if it was still to come. The honey is fought
+    /// through, not watched, and is not skipped.
     /// </summary>
     public class LegendsQueenBee : GlobalNPC
     {
@@ -417,6 +422,19 @@ namespace PisAndDag.Content.NPCs.Legends
             seen = scene;
             moved = false;
 
+            // E held in the corner, for a player who was in the shot on the last tick: her arrival
+            // on to the fight, her death on to her bursting (single player; CinematicSkip).
+            if (watching && Skippable)
+            {
+                CinematicSkip.Offer();
+
+                if (Authority && CinematicSkip.Take())
+                {
+                    Skip(npc);
+                    return;
+                }
+            }
+
             // Asked afresh each tick (Shot), so it says whether the player was in it on the last.
             watching = false;
 
@@ -636,6 +654,12 @@ namespace PisAndDag.Content.NPCs.Legends
             if (!Authority || t < HoldTicks)
                 return;
 
+            EndArrival(npc);
+        }
+
+        /// <summary>Her arrival over, the server's: the fight.</summary>
+        private void EndArrival(NPC npc)
+        {
             // Over her first: up to hang over them and let out her bees, rather than a dash
             // at someone whose camera is still on its way back to them.
             npc.ai[0] = 2f;
@@ -646,6 +670,47 @@ namespace PisAndDag.Content.NPCs.Legends
             scene = BeeScene.None;
             moved = true;
             npc.netUpdate = true;
+        }
+
+        /// <summary>The scenes E held in the corner skips: her arrival, and her death up to her bursting.</summary>
+        private bool Skippable => scene >= BeeScene.Pan && scene <= BeeScene.Hold || scene >= BeeScene.Nest && scene <= BeeScene.Swell;
+
+        /// <summary>
+        /// A scene of hers, skipped (CinematicSkip; single player, so this machine decides).
+        ///
+        /// Her arrival: she is up level with the player where she would have come to, facing them, her name up,
+        /// and the fight; left as her hold leaves her, so the camera is walked home (Leave) as it would have been.
+        ///
+        /// Her death: the larva put on the hive if it was still to come (and there is still room for it), and on
+        /// to her bursting, whose end is the loot.
+        /// </summary>
+        private void Skip(NPC npc)
+        {
+            if (dying)
+            {
+                bool larvaToCome = hasSpot
+                    && (scene == BeeScene.Nest || scene == BeeScene.Settle || scene == BeeScene.Birth && timer <= LarvaAt);
+
+                if (larvaToCome && QueenBeeGround.NestFree(nest))
+                    QueenBeeGround.PlaceLarva(nest);
+
+                Go(npc, BeeScene.Burst);
+                return;
+            }
+
+            Player target = Main.player[npc.target];
+
+            if (levelSide == 0)
+                levelSide = SideOf(npc, target);
+
+            npc.Center = LevelPoint(npc, target);
+            npc.velocity = Vector2.Zero;
+            npc.rotation = 0f;
+            Face(npc, target);
+            Announce(npc);
+
+            EndArrival(npc);
+            seen = BeeScene.Hold;
         }
 
         /// <summary>Her name, once, on this machine: the plain plate, from the roar.</summary>

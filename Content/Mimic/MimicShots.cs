@@ -33,6 +33,15 @@ namespace PisAndDag.Content.Mimic
         private static readonly int[] fallTicks = new int[Main.maxProjectiles];
         private static readonly bool[] wasHeld = new bool[Main.maxProjectiles];
         private static readonly bool[] hitSomething = new bool[Main.maxProjectiles];
+
+        // A watched shot fired by the copy's held projectile (a held gun's bullet), not made by its weapon itself; how fast it left.
+        private static readonly bool[] fired = new bool[Main.maxProjectiles];
+        private static readonly float[] leftAt = new float[Main.maxProjectiles];
+
+        // Where each was made, the furthest it has gone from there, and whether it is the copy's held projectile this tick.
+        private static readonly Vector2[] spawnAt = new Vector2[Main.maxProjectiles];
+        private static readonly float[] fromSpawn = new float[Main.maxProjectiles];
+        private static readonly bool[] heldNow = new bool[Main.maxProjectiles];
         private static readonly int[] fallFrom = new int[Main.maxProjectiles];
 
         public override void OnSpawn(Projectile projectile, IEntitySource source)
@@ -56,10 +65,22 @@ namespace PisAndDag.Content.Mimic
                 return;
             }
 
-            // Made by another of its shots: that one's mark.
+            // Made by another of its shots: that one's mark. Fired by its held projectile (a held gun's bullet, a held bow's
+            // arrow): watched too, for how far and how fast what the weapon fires goes.
             if (source is EntitySource_Parent parent && parent.Entity is Projectile maker && maker.owner == MimicSystem.Slot)
             {
                 tag[i] = TagOf(maker);
+                int m = maker.whoAmI;
+
+                // Held now (not once: a boomerang held for its wind-up and then thrown makes shards where it hits, and those
+                // say nothing of how far the weapon fires), or a shot that holds itself on its first tick.
+                if (m >= 0 && m < Main.maxProjectiles && watchItem[m] != 0 && !fired[m]
+                    && (Main.player[MimicSystem.Slot].heldProj == m || heldNow[m] || ticks[m] == 0 && MimicWeapons.ShotIsHeld(maker.type)))
+                {
+                    Begin(i, projectile, watchItem[m]);
+                    fired[i] = true;
+                }
+
                 return;
             }
 
@@ -67,20 +88,28 @@ namespace PisAndDag.Content.Mimic
 
             // Made by its weapon as it is used: watched to its end. (Not minions or sentries: they stay out.)
             if (source is EntitySource_ItemUse use && use.Item != null && !use.Item.IsAir && !projectile.minion && !projectile.sentry)
-            {
-                watchItem[i] = use.Item.type;
-                watchId[i] = projectile.identity;
-                far[i] = 0f;
-                last[i] = projectile.Center;
-                step[i] = Vector2.Zero;
-                ticks[i] = 0;
-                fall[i] = 0f;
-                falls[i] = 0;
-                fallTicks[i] = 0;
-                fallFrom[i] = -1;
-                wasHeld[i] = false;
-                hitSomething[i] = false;
-            }
+                Begin(i, projectile, use.Item.type);
+        }
+
+        private static void Begin(int i, Projectile projectile, int item)
+        {
+            watchItem[i] = item;
+            watchId[i] = projectile.identity;
+            far[i] = 0f;
+            last[i] = projectile.Center;
+            step[i] = Vector2.Zero;
+            ticks[i] = 0;
+            fall[i] = 0f;
+            falls[i] = 0;
+            fallTicks[i] = 0;
+            fallFrom[i] = -1;
+            wasHeld[i] = false;
+            hitSomething[i] = false;
+            fired[i] = false;
+            leftAt[i] = 0f;
+            spawnAt[i] = projectile.Center;
+            fromSpawn[i] = 0f;
+            heldNow[i] = false;
         }
 
         /// <summary>A watched shot that hit something: how far it got says where that was, not how far it flies.</summary>
@@ -120,10 +149,13 @@ namespace PisAndDag.Content.Mimic
                     continue;
                 }
 
-                if (copy.heldProj == i)
+                heldNow[i] = copy.heldProj == i;
+
+                if (heldNow[i])
                     wasHeld[i] = true;
 
                 far[i] = Math.Max(far[i], Vector2.Distance(p.Center, copy.Center));
+                fromSpawn[i] = Math.Max(fromSpawn[i], Vector2.Distance(p.Center, spawnAt[i]));
 
                 // What it falls by: the second difference of where it is, a tick at a time (pixels a tick each tick, its
                 // extra updates and all); while it is going one way across, not turned or stopped.
@@ -151,6 +183,9 @@ namespace PisAndDag.Content.Mimic
                     }
                 }
 
+                if (ticks[i] == 1)
+                    leftAt[i] = d.Length();
+
                 step[i] = d;
                 last[i] = now;
                 ticks[i]++;
@@ -168,6 +203,18 @@ namespace PisAndDag.Content.Mimic
 
             bool fell = fallTicks[i] >= 4 && falls[i] * 10 >= fallTicks[i] * 7;
             float g = fallTicks[i] > 0 ? Math.Max(0f, fall[i] / fallTicks[i]) : 0f;
+
+            // A fired shot that never left where it was made (a beam laid along from the weapon's tip, a circle about it) or was
+            // itself held says nothing of how far the weapon fires.
+            if (fired[i] && (wasHeld[i] || fromSpawn[i] < 48f))
+                return;
+
+            if (fired[i])
+            {
+                MimicWeapons.FiredShot(item, far[i], !hitSomething[i], leftAt[i], g, fell, Math.Max(0, fallFrom[i] - 1));
+                return;
+            }
+
             MimicWeapons.Watched(item, far[i], !hitSomething[i], wasHeld[i], g, fell, Math.Max(0, fallFrom[i] - 1));
         }
 

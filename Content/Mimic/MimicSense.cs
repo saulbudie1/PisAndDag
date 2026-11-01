@@ -381,6 +381,21 @@ namespace PisAndDag.Content.Mimic
                 w.GravityAfter = seen.FallAfter;
             }
 
+            // A held-out shooter (a held gun, bow or staff of any mod, whose item says little of what it fires): how far and how
+            // fast the shots its held projectile fired went, once two have been seen out.
+            if (held != null && !held.IsAir && (w.Kind == WeaponKind.Ranged || w.Kind == WeaponKind.Magic)
+                && (MimicWeapons.SeenHeld.Contains(held.type) || MimicWeapons.ShotIsHeld(held.shoot) || held.noUseGraphic && held.channel)
+                && MimicWeapons.SeenFired(held.type, out MimicWeapons.Watch fire))
+            {
+                w.Reach = MathHelper.Clamp(MimicWeapons.FiredReach(fire, w.Reach), 96f, 1200f);
+
+                if (fire.FiredSpeed > 0.5f)
+                    w.Speed = fire.FiredSpeed;
+
+                w.Gravity = fire.FiredGravity;
+                w.GravityAfter = fire.FiredFallAfter;
+            }
+
             return w;
         }
 
@@ -511,6 +526,18 @@ namespace PisAndDag.Content.Mimic
                 if (melee && !item.noUseGraphic)
                     w.Reach = Math.Min(w.Reach, 640f);
 
+                return w;
+            }
+
+            // A ranged or magic weapon whose shot is not thrown at a speed (Calamity's Eternity, Heresy: made where it is
+            // wanted; a held one fires its own): a spray as far as a cone reaches, or a held-out shooter (cluster81.py reads
+            // them so; before round 81 they were read as blades and the copy walked up to its target with them).
+            if (sample != null && !melee)
+            {
+                w.Kind = item.CountsAsClass(DamageClass.Magic) ? WeaponKind.Magic : WeaponKind.Ranged;
+                w.Speed = 0f;
+                w.Reach = 480f;
+                w.ThroughWalls = !sample.tileCollide;
                 return w;
             }
 

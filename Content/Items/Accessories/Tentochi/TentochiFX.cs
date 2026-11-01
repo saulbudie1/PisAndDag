@@ -205,19 +205,20 @@ namespace PisAndDag.Content.Items.Accessories.Tentochi
         }
 
         /// <summary>A rocket's blast: a flash, a hard ring and a soft one, sparks and squares of light out, smoke.</summary>
-        public static void Blast(Vector2 at)
+        public static void Blast(Vector2 at, float reach = 64f)
         {
             if (!Room(36))
                 return;
 
+            // The rings sized to the burst's reach: the hard one to its edge, the soft one a little past it.
             PADParticleHandler.SpawnParticle(new SoftGlow(at, Vector2.Zero, Amber, 0.55f, 16));
             PADParticleHandler.SpawnParticle(new SoftGlow(at, Vector2.Zero, Red, 0.8f, 22));
-            PADParticleHandler.SpawnParticle(new CyberRing(at, Hot, 6f, 52f, 3f, 14, 32));
-            PADParticleHandler.SpawnParticle(new CyberRing(at, Red * 0.7f, 4f, 64f, 18f, 18, 32, 0f, 0f, soft: true));
+            PADParticleHandler.SpawnParticle(new CyberRing(at, Hot, 6f, reach, 3f, 14, 32));
+            PADParticleHandler.SpawnParticle(new CyberRing(at, Red * 0.7f, 4f, reach * 1.2f, 18f, 18, 32, 0f, 0f, soft: true));
 
             for (int i = 0; i < 12; i++)
             {
-                Vector2 velocity = Main.rand.NextVector2CircularEdge(1f, 1f) * R(4f, 10f);
+                Vector2 velocity = Main.rand.NextVector2CircularEdge(1f, 1f) * R(4f, 10f) * (reach / 64f);
                 PADParticleHandler.SpawnParticle(new SparkShard(at, velocity, i % 3 == 0 ? Hot : i % 3 == 1 ? Amber : Red, 6f, 1.8f, 16f, Main.rand.Next(12, 18), falls: true));
             }
 

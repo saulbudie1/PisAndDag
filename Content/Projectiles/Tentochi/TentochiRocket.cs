@@ -16,7 +16,9 @@ namespace PisAndDag.Content.Projectiles.Tentochi
     /// damage ... when it detects an NPC it homes onto it"). Out of the tube on the back, up and a little back; a breath
     /// later its motor lights and it turns for the enemy the launcher held (ai[0]), gathering speed, swaying either side of
     /// its line as it goes, less as it nears. Its enemy gone, the wearer's machine gives it the nearest in sight (and tells
-    /// the others); none, and it flies on and bursts at the end of its fuel. Bursts on what it hits: 80, to that one.
+    /// the others); none, and it flies on and bursts at the end of its fuel. Bursts on what it hits, a wall or the end of
+    /// its fuel: 80 to what it struck, and 80 to every other enemy within 4 tiles of the burst (by request: "make the Back
+    /// Rocket have a 4 tile radius explosion"), counted from the burst to the nearest point of each one's hitbox.
     ///
     /// Drawn: its picture (the mod's own, after the game's rockets: Tentochi's red band), a hard red line of light where it
     /// has been, the motor's flame behind it, smoke and sparks shed (TentochiFX).
@@ -36,6 +38,12 @@ namespace PisAndDag.Content.Projectiles.Tentochi
 
         /// <summary>The sway: how far either side of its line it swings, in radians, at its widest.</summary>
         public const float Sway = 0.32f;
+
+        /// <summary>How far the burst reaches: 4 tiles.</summary>
+        public const float BlastRadius = 4f * 16f;
+
+        /// <summary>Bursting now: what it hurts is what is within <see cref="BlastRadius"/>, not what it touches.</summary>
+        private bool bursting;
 
         private int Target
         {
@@ -182,8 +190,29 @@ namespace PisAndDag.Content.Projectiles.Tentochi
 
         public override void OnKill(int timeLeft)
         {
+            // The burst, struck where the game strikes for its owner (Projectile.Damage: the owner's machine). Whatever it
+            // hit before bursting is still under that hit's immunity (NPC.immune), so it takes the 80 once.
+            if (Projectile.owner == Main.myPlayer)
+            {
+                bursting = true;
+                Projectile.Resize((int)(BlastRadius * 2f), (int)(BlastRadius * 2f));
+                Projectile.penetrate = -1;
+                Projectile.maxPenetrate = -1;
+                Projectile.Damage();
+            }
+
             if (!Main.dedServ)
-                TentochiFX.Blast(Projectile.Center);
+                TentochiFX.Blast(Projectile.Center, BlastRadius);
+        }
+
+        /// <summary>Bursting, a round reach (the nearest point of each hitbox within it), not the square one the game would use.</summary>
+        public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
+        {
+            if (!bursting)
+                return null;
+
+            Vector2 nearest = Vector2.Clamp(Projectile.Center, targetHitbox.TopLeft(), targetHitbox.BottomRight());
+            return Vector2.Distance(nearest, Projectile.Center) <= BlastRadius;
         }
 
         public override bool PreDraw(ref Color lightColor)

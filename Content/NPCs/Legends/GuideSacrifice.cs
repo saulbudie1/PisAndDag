@@ -2,6 +2,7 @@ using System;
 using Microsoft.Xna.Framework;
 using PisAndDag.Content.PADplayer;
 using PisAndDag.Content.Particles;
+using PisAndDag.Content.UI;
 using Terraria;
 using Terraria.Audio;
 using Terraria.ID;
@@ -27,6 +28,10 @@ namespace PisAndDag.Content.NPCs.Legends
     /// thirds of the way through and something still has to hold the camera and spawn the
     /// Wall afterwards, which is the same reason the Megashark's death outro lives on
     /// PisPlayer instead of on the boss.
+    ///
+    /// E held in the corner skips it, in a world of one, until the shot is home
+    /// (CinematicSkip): whatever of it was still to come is done at once, in its order (he
+    /// comes apart, he dies, the Wall is summoned), and the camera walks home.
     /// </summary>
     public class GuideSacrifice : ModSystem
     {
@@ -249,6 +254,18 @@ namespace PisAndDag.Content.NPCs.Legends
             else
             {
                 guide = -1;
+            }
+
+            // E held in the corner, until the shot is home: straight to its end (single player; CinematicSkip).
+            if (timer < PansDoneAt && !Main.dedServ)
+            {
+                CinematicSkip.Offer();
+
+                if (Main.netMode == NetmodeID.SinglePlayer && CinematicSkip.Take())
+                {
+                    Skip(doomed);
+                    return;
+                }
             }
 
             Camera();
@@ -573,6 +590,30 @@ namespace PisAndDag.Content.NPCs.Legends
             SoundEngine.PlaySound(SoundID.ForceRoar with { Volume = 1f, Pitch = -0.55f }, Main.LocalPlayer.Center);
             Main.LocalPlayer.PIS().AddScreenShake(QuakePeak, 6);
         }
+
+        /// <summary>
+        /// Skipped (CinematicSkip; single player, so this machine decides): whatever of it was still to
+        /// come (anything the timer has not yet come to), done now and in its order: he comes apart, he dies,
+        /// the Wall is summoned where it would have been.
+        /// The camera walked home from wherever it is; the Wall's own arrival takes it from there.
+        /// </summary>
+        private static void Skip(NPC doomed)
+        {
+            if (timer < DissolveAt)
+                ComeApart(doomed);
+
+            if (timer < LingerAt)
+                Announce(doomed);
+
+            if (timer < BreachAt)
+                Breach();
+
+            PisPlayer.PanHome(altar, SkipHome);
+            Finish();
+        }
+
+        /// <summary>The walk home when the sacrifice is skipped.</summary>
+        private const int SkipHome = 60;
 
         /// <summary>The shake is spent and the Wall is already here.</summary>
         private static void Finish()

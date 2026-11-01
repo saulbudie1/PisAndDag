@@ -45,6 +45,9 @@ namespace PisAndDag.Content.NPCs
     /// Runs on server and clients alike, from the boss's own first tick, so it needs
     /// no message: the arrival's length is a function of the type, and everyone can
     /// work it out for themselves.
+    ///
+    /// An arrival skipped (E held in the corner, in a world of one: BossIntro) ends the
+    /// wait there and then: every boss still waiting starts on its next tick (EndWaits).
     /// </summary>
     public class BossArrivalWait : GlobalNPC
     {
@@ -306,6 +309,20 @@ namespace PisAndDag.Content.NPCs
             Take(npc);
             Hold(npc);
             return false;
+        }
+
+        /// <summary>
+        /// The arrival skipped (BossIntro; CinematicSkip, single player): every boss still
+        /// waiting is home on its next tick, as it would have been on the tick the camera
+        /// came home, and its parts the tick after.
+        /// </summary>
+        internal static void EndWaits()
+        {
+            foreach (NPC npc in Main.ActiveNPCs)
+            {
+                if (npc.TryGetGlobalNPC(out BossArrivalWait wait) && wait.left > 1)
+                    wait.left = 1;
+            }
         }
 
         /// <summary>A waiting worm's head crawls: its own AI, capped.</summary>

@@ -43,6 +43,10 @@ namespace PisAndDag.Content.NPCs.Pugream
     ///     445    him, in the light, in the wind
     ///     645    the camera walks home
     ///     745    the player can move; the Eye is beaten; he is gone
+    ///
+    /// E held in the corner skips it, for the player in it (CinematicSkip, single player):
+    /// the arrow lands then if it has not, the Eye dies of it and is beaten, he is owed to
+    /// the shore, and it is over (Skip).
     /// </summary>
     public static class EyeFinale
     {
@@ -85,6 +89,9 @@ namespace PisAndDag.Content.NPCs.Pugream
         public const int PanBack = 100;
 
         public const int End = PanBackAt + PanBack;
+
+        /// <summary>The walk home when it is skipped, from wherever the camera was.</summary>
+        private const int SkipHome = 60;
 
         /// <summary>After the end he is gone the moment nobody can see him, and gone regardless after this.</summary>
         private const int Linger = 600;
@@ -480,6 +487,18 @@ namespace PisAndDag.Content.NPCs.Pugream
                 return;
             }
 
+            // E held in the corner, for a player in the scene: straight to its end (single player; CinematicSkip).
+            if (!Main.dedServ && t < End && InScene(victim))
+            {
+                CinematicSkip.Offer();
+
+                if (Authority && CinematicSkip.Take())
+                {
+                    Skip(actor, eye, victim, t);
+                    return;
+                }
+            }
+
             if (!actor.Struck && eye != null)
                 Steer(actor, eye, victim, t);
 
@@ -816,6 +835,41 @@ namespace PisAndDag.Content.NPCs.Pugream
 
             if (Main.netMode == NetmodeID.Server)
                 NetMessage.SendData(MessageID.WorldData);
+        }
+
+        /// <summary>
+        /// Skipped (CinematicSkip; single player, so this machine decides): what was still to come of it, done now.
+        /// The Eye's servants gone; the arrow lands if it has not, and the Eye dies of it; the zoom the scene
+        /// borrowed handed to the lean, which lets it go by itself; the camera walked home from wherever it is; and
+        /// the end: the Eye beaten, he owed to the shore, and gone the moment nobody can see him.
+        /// </summary>
+        private static void Skip(PugreamAtTheEye actor, NPC eye, Player victim, int t)
+        {
+            if (t <= ServantFade)
+                FadeServants(ServantFade);
+
+            if (!actor.Struck)
+                Strike(actor, eye, victim);
+
+            // Asked for once more, so it is still there on the frame the lean takes it over (EyeFinaleView gives
+            // it back the tick after it was last asked for, and the lean is taken up at the start of the next).
+            if (EyeFinaleView.HoldingZoom)
+            {
+                float now = Main.GameZoomTarget;
+
+                EyeFinaleView.Want(now);
+                Cinematic.Lean(now / Math.Max(1f, EyeFinaleView.SavedZoom), 1f);
+            }
+
+            if (!actor.PannedHome)
+            {
+                actor.PannedHome = true;
+                PisPlayer.PanHome(HimAt(actor), SkipHome);
+            }
+
+            actor.Tick = End;
+            actor.NPC.netUpdate = true;
+            Keep(actor, End);
         }
 
         /// <summary>Save and quit halfway through: whatever has already happened is kept.</summary>

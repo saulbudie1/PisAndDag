@@ -404,8 +404,8 @@ namespace PisAndDag.Content.Items.Accessories.Tentochi
     }
 
     /// <summary>
-    /// Adam Kit I's core: a light at the wearer's chest in their red, beating slowly as a heart does; fast and unsteady
-    /// for a second after it was let go, while it re-arms.
+    /// Adam Kit I's core: a light at the wearer's chest in their red, beating slowly as a heart does when armed; after it is
+    /// let go, sputtering for a second, then dim and still, coming up slowly through the minute it takes to re-arm.
     /// </summary>
     public class TentochiKitCore : PlayerDrawLayer
     {
@@ -432,8 +432,17 @@ namespace PisAndDag.Content.Items.Accessories.Tentochi
             float time = Main.GlobalTimeWrappedHourly;
             float beat;
 
-            if (t.Rearm > 0)
+            if (t.Rearm > TentochiPlayer.KitRearm - TentochiPlayer.KitSputter)
+            {
+                // Just after the blast: sputtering.
                 beat = Main.rand.NextFloat() < 0.3f ? 0.2f : 0.9f;
+            }
+            else if (t.Rearm > 0)
+            {
+                // Re-arming: dim and still, coming up slowly toward its beat as the minute runs out.
+                float armed = 1f - t.Rearm / (float)(TentochiPlayer.KitRearm - TentochiPlayer.KitSputter);
+                beat = 0.08f + 0.3f * armed;
+            }
             else
             {
                 // Two beats a second and a little, the second softer: lub, dub.

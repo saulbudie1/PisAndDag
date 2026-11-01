@@ -969,6 +969,9 @@ namespace PisAndDag.Content.NPCs.Legends
         // every machine plays it from those, and nothing seen or heard is decided by one
         // machine alone.
         //
+        // From the APPROACH on, E held in the corner skips it (CinematicSkip, single
+        // player).
+        //
         //     GATHER     until 14 are in their places, or ten seconds
         //     APPROACH   90    the camera goes; anyone still out is thrown in
         //     STACK     106    settle, three bounces, crouch (SlimeRite)
@@ -2951,6 +2954,19 @@ namespace PisAndDag.Content.NPCs.Legends
             npc.chaseable = false;
             npc.noTileCollide = true;
 
+            // E held in the corner, once the camera has gone: straight to the fight (single
+            // player; CinematicSkip).
+            if (rite >= KingRite.Approach && InScene())
+            {
+                Content.UI.CinematicSkip.Offer();
+
+                if (Authority && Content.UI.CinematicSkip.Take())
+                {
+                    SkipRite(npc);
+                    return;
+                }
+            }
+
             // His frames, through vanilla's own frame code: the fast tremble while he
             // forms and roars, his ordinary idle otherwise.
             npc.aiAction = rite == KingRite.Burst || rite == KingRite.Roar ? 1 : 0;
@@ -3119,6 +3135,41 @@ namespace PisAndDag.Content.NPCs.Legends
             npc.ai[2] = 0f;
 
             npc.netUpdate = true;
+        }
+
+        /// <summary>
+        /// Skipped (CinematicSkip; single player, so this machine decides): the heralds gone
+        /// into him, as they go at the Burst; him on the altar at his size, out of the pile
+        /// with his flash if this machine has not seen it yet; his name up; the fight, put
+        /// back to himself next tick with the camera walked home from him (Finish).
+        /// </summary>
+        private void SkipRite(NPC npc)
+        {
+            TakeHeralds(npc);
+
+            Resize(npc, TargetScale);
+            Anchor(npc);
+
+            // (This tick's phase has not played yet: what has, is what seen says.)
+            if (seen < KingRite.Burst)
+                Burst(npc);
+
+            Announce(npc);
+
+            // The skip is offered only in the shot, so this player was watching: the camera
+            // is walked home for them.
+            watching = true;
+            Next(npc, KingRite.Done);
+        }
+
+        /// <summary>This machine's player is near enough the altar to be in the shot.</summary>
+        private bool InScene()
+        {
+            if (Main.dedServ)
+                return false;
+
+            Player me = Main.LocalPlayer;
+            return me.active && !me.dead && Vector2.Distance(me.Center, altar) <= SceneRange;
         }
 
         /// <summary>
@@ -3650,6 +3701,9 @@ namespace PisAndDag.Content.NPCs.Legends
         /// burst, and the ninja last of all. The silence before the cut is doing as much
         /// work as anything after it: with no pause the slash lands while the fight is
         /// still ringing and reads as one more attack rather than as the end.
+        ///
+        /// Until the camera starts home, E held in the corner skips it (CinematicSkip,
+        /// single player).
         /// </summary>
         private void RunDeath(NPC npc)
         {
@@ -3664,6 +3718,18 @@ namespace PisAndDag.Content.NPCs.Legends
 
             if (npc.velocity.Y == 0f)
                 npc.velocity.X *= 0.8f;
+
+            // E held in the corner: on to his end (single player; CinematicSkip).
+            if (deathTimer < BackAt)
+            {
+                Content.UI.CinematicSkip.Offer();
+
+                if (Authority && Content.UI.CinematicSkip.Take())
+                {
+                    SkipDeath(npc);
+                    return;
+                }
+            }
 
             DeathCamera(npc);
             PisPlayer.HideUI();
@@ -3704,6 +3770,28 @@ namespace PisAndDag.Content.NPCs.Legends
             // gore — which is where the duplicate crown was coming from. Everything that
             // branch would have done has already happened, at the moment the body went,
             // and it looked better there.
+            npc.life = 0;
+            npc.checkDead();
+        }
+
+        /// <summary>
+        /// Skipped (CinematicSkip; single player, so this machine decides): whatever of him
+        /// has not gone yet goes at once, the body with its slimes and its crown (Rupture)
+        /// and the ninja after it; the camera walked home from him; and he is handed back
+        /// to vanilla to die as at the end, the frame the loot drops on.
+        /// </summary>
+        private void SkipDeath(NPC npc)
+        {
+            // (This tick's beat has not played yet: what has, is what deathTimer says.)
+            if (deathTimer <= BurstAt)
+                Rupture(npc);
+
+            if (deathTimer <= NinjaAt)
+                NinjaGoes(npc);
+
+            PisPlayer.PanHome(npc.Center, DeathBack);
+
+            deathTimer = DeathEnd;
             npc.life = 0;
             npc.checkDead();
         }

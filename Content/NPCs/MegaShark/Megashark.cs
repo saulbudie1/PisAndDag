@@ -24,6 +24,9 @@ namespace PisAndDag.Content.NPCs.MegaShark
     /// <see cref="ChooseNextAttack"/>), and each phase opens with a scripted hand-over
     /// that owns the camera and cannot be shot through.
     ///
+    /// E held in the corner skips the entrance, either hand-over and the death, in a world
+    /// of one (CinematicSkip): each on to the fight, or the blast and the loot.
+    ///
     /// The enrage sits outside all of it: once it latches it never returns to a rotation.
     /// </summary>
     [AutoloadBossHead]
@@ -1069,6 +1072,15 @@ namespace PisAndDag.Content.NPCs.MegaShark
                 NPC.netUpdate = true;
             }
 
+            // E held in the corner: straight to the fight (single player; CinematicSkip).
+            Content.UI.CinematicSkip.Offer();
+
+            if (Main.netMode == NetmodeID.SinglePlayer && Content.UI.CinematicSkip.Take())
+            {
+                SkipRise(player);
+                return;
+            }
+
             // Interpolated rather than driven by velocity. A velocity curve rises by
             // however much it happens to integrate to, which is why the breach kept
             // finishing below the player — where it ends up depends on the easing, not on
@@ -1095,6 +1107,23 @@ namespace PisAndDag.Content.NPCs.MegaShark
 
             if (Timer >= RiseLength)
                 SwitchTo(State.Hover, Main.rand.Next(HoverTimeMin, HoverTimeMax));
+        }
+
+        /// <summary>
+        /// The entrance, skipped: up at the surface over the player where the rise would have left it,
+        /// the camera walked home from wherever it is, and the first attack. Its name comes up as it can
+        /// be hurt (BossPlate, for a boss whose own entrance did not put it up).
+        /// </summary>
+        private void SkipRise(Player player)
+        {
+            NPC.velocity = Vector2.Zero;
+            NPC.Center = new Vector2(NPC.Center.X, player.Center.Y - RiseAbove);
+
+            if (!Main.dedServ)
+                PisPlayer.PanHome(NPC.Center, PanBack);
+
+            SwitchTo(State.Hover, Main.rand.Next(HoverTimeMin, HoverTimeMax));
+            NPC.netUpdate = true;
         }
 
         /// <summary>
@@ -1201,9 +1230,25 @@ namespace PisAndDag.Content.NPCs.MegaShark
         ///
         /// It holds position rather than freezing outright — a boss that stops dead reads
         /// as a paused game, one that drifts reads as a machine in trouble.
+        ///
+        /// E held in the corner skips it, in a world of one: the camera walked home from
+        /// wherever it is, and phase 2's first attack.
         /// </summary>
         private void DoPhase2Intro(Player player)
         {
+            // E held in the corner: straight to phase 2's fight (single player; CinematicSkip).
+            Content.UI.CinematicSkip.Offer();
+
+            if (Main.netMode == NetmodeID.SinglePlayer && Content.UI.CinematicSkip.Take())
+            {
+                if (!Main.dedServ)
+                    PisPlayer.PanHome(NPC.Center, P2PanBack);
+
+                SwitchTo(State.Hover, Phase2HoverTime);
+                NPC.netUpdate = true;
+                return;
+            }
+
             NPC.velocity *= 0.94f;
             NPC.velocity.Y -= 0.03f;
 
@@ -1420,9 +1465,29 @@ namespace PisAndDag.Content.NPCs.MegaShark
         /// The two dead beats are doing real work. Without them the bolts run straight
         /// into the sparks and the whole thing reads as one continuous effect instead of
         /// two things happening to the same machine.
+        ///
+        /// E held in the corner skips it, in a world of one, as far as its last leg: the
+        /// rain it calls down is called if it has not been, and the camera's pan onto the
+        /// phase 3 hold plays out (the hold is asked for every tick after, so a walk home
+        /// would only be cut off by it).
         /// </summary>
         private void DoPhase3Intro(Player player)
         {
+            // E held in the corner: on to the pan onto the phase 3 hold (single player; CinematicSkip).
+            if (Timer < P3PanOut + P3Body)
+            {
+                Content.UI.CinematicSkip.Offer();
+
+                if (Main.netMode == NetmodeID.SinglePlayer && Content.UI.CinematicSkip.Take())
+                {
+                    if (Timer <= P3PanOut)
+                        ForceRain();
+
+                    Timer = P3PanOut + P3Body;
+                    NPC.netUpdate = true;
+                }
+            }
+
             NPC.velocity *= 0.94f;
             NPC.velocity.Y -= 0.03f;
 
@@ -2371,9 +2436,22 @@ namespace PisAndDag.Content.NPCs.MegaShark
         /// Nothing is timed until it has stopped moving. A boss that is still coasting
         /// when the camera arrives reads as the game hanging, so the deceleration runs
         /// first, off the clock, and the clock is reset the moment it comes to rest.
+        ///
+        /// E held in the corner skips it, in a world of one: the blast, now, where it is,
+        /// and with it the loot and the camera's walk home.
         /// </summary>
         private void DoDeath(Player player)
         {
+            // E held in the corner: straight to the blast (single player; CinematicSkip).
+            Content.UI.CinematicSkip.Offer();
+
+            if (Main.netMode == NetmodeID.SinglePlayer && Content.UI.CinematicSkip.Take())
+            {
+                NPC.velocity = Vector2.Zero;
+                Detonate();
+                return;
+            }
+
             if (!deathStopped)
             {
                 NPC.velocity *= 0.8f;

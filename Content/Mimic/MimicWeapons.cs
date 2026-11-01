@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
+using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -33,19 +34,19 @@ namespace PisAndDag.Content.Mimic
     ///   5: Melee / Thrown: reach ~960, use 20t, shot 16px/t, 1 with right click (44; e.g. Zenith, Daybreak, Paladin's Hammer, Possessed Hatchet, Defacer)
     ///   6: Melee / SwingShot: reach ~640, use 24t, shot 17px/t, 1 with right click (31; e.g. Star Wrath, Flying Dragon, Death Sickle, True Night's Edge, Orderbringer)
     ///   7: Melee / SwingShot: reach ~640, use 24t, shot 12px/t, 3 with right click (31; e.g. Meowmere, Influx Waver, Terra Blade, Golem Fist, Terror Blade)
-    ///   8: Ranged / Thrown: reach ~960, use 20t, shot 16px/t (86; e.g. Bone Throwing Knife, Snowball Cannon, Poisoned Knife, Bone Javelin, She Who Sings)
-    ///   9: Ranged / Thrown (+Shot, HeldShot): reach ~960, use 25t, shot 28px/t (50; e.g. Scarlet Devil, Executioner's Blade, Wrathwing, Ghoulish Gouger)
-    ///   10: Ranged / Thrown: reach ~960, use 20t, shot 8px/t (25; e.g. Bone, Bouncy Grenade, Happy Grenade, Grenade, Meat Hook)
-    ///   11: Ranged / Shot: reach ~960, use 27t, shot 8px/t (45; e.g. Electrosphere Launcher, Sniper Rifle, Phoenix Blaster, Handgun, Handswitch)
-    ///   12: Ranged / Shot (+Thrown, HeldShot): reach ~960, use 19t, shot 25px/t, 24 with right click (24; e.g. The Last Grain, Sacrifice, Septic Skewer, Vega, Pristine Fury)
-    ///   13: Ranged / Shot: reach ~960, use 18t, shot 16px/t (136; e.g. Eventide, S.D.M.G., Chain Gun, Elf Melter, Dented Megashark)
+    ///   8: Ranged / Thrown (+Shot, HeldShot): reach ~960, use 25t, shot 28px/t (50; e.g. Scarlet Devil, Executioner's Blade, Wrathwing, Ghoulish Gouger)
+    ///   9: Ranged / Thrown: reach ~960, use 20t, shot 8px/t (25; e.g. Bone, Bouncy Grenade, Happy Grenade, Grenade, Meat Hook)
+    ///   10: Ranged / Thrown: reach ~960, use 20t, shot 16px/t (86; e.g. Bone Throwing Knife, Snowball Cannon, Poisoned Knife, Bone Javelin, She Who Sings)
+    ///   11: Ranged / Shot (+HeldShot, Thrown): reach ~960, use 18t, shot 22px/t, 33 with right click (33; e.g. The Last Grain, Supernova, Ontological Despoiler, Photoviscerator, Sacrifice)
+    ///   12: Ranged / Shot: reach ~960, use 18t, shot 16px/t (136; e.g. Eventide, S.D.M.G., Chain Gun, Elf Melter, Dented Megashark)
+    ///   13: Ranged / Shot: reach ~960, use 27t, shot 8px/t (45; e.g. Electrosphere Launcher, Sniper Rifle, Phoenix Blaster, Handgun, Handswitch)
     ///   14: Ranged / HeldShot (+Shot, Thrown): reach ~360, use 22t, shot 3px/t (14; e.g. The Final Dawn, Kingsbane, Seadragon, Karasawa)
-    ///   15: Ranged / HeldShot: reach ~960, use 30t, shot 15px/t, 9 with right click (57; e.g. Celebration Mk2, Phantasm, Vortex Beater, Phantom Phoenix, Voidragon)
+    ///   15: Ranged / HeldShot: reach ~960, use 30t, shot 15px/t (48; e.g. Celebration Mk2, Phantasm, Vortex Beater, Phantom Phoenix, Voidragon)
     ///   16: Magic / Shot (+Thrown, Spray): reach ~960, use 22t, shot 18px/t, 10 with right click (188; e.g. Nightglow, Stellar Tune, Tome of Infinite Wisdom, Blizzard Staff, Dancing Sand)
     ///   17: Magic / HeldShot (+Shot, Spray): reach ~960, use 20t, shot 12px/t, 7 with right click (45; e.g. Last Prism, Charged Blaster Cannon, Laser Machinegun, Medusa Head, Betsy's Flames)
-    ///   18: Summon / Whip (+HeldShot): reach ~160, use 30t (11; e.g. Kaleidoscope, Morning Star, Dark Harvest, Durendal, Joint Arms Of The Defiled)
-    ///   19: Summon / Minion: reach ~800, use 36t, 2 with right click (108; e.g. Terraprisma, Raven Staff, Stardust Cell Staff, Pygmy Staff, Bone Squad)
-    ///   20: Summon / Sentry (+Shot, Minion): reach ~800, use 30t (37; e.g. Ballista Staff, Rainbow Crystal Staff, Explosive Trap Staff, Staff of the Frost Hydra, Universe Splitter)
+    ///   18: Summon / Whip: reach ~160, use 30t (10; e.g. Kaleidoscope, Morning Star, Dark Harvest, Durendal, Joint Arms Of The Defiled)
+    ///   19: Summon / Minion (+Shot): reach ~800, use 36t, 2 with right click (109; e.g. Terraprisma, Raven Staff, Stardust Cell Staff, Pygmy Staff, Bone Squad)
+    ///   20: Summon / Sentry (+HeldShot, Shot): reach ~800, use 30t (37; e.g. Ballista Staff, Rainbow Crystal Staff, Explosive Trap Staff, Staff of the Frost Hydra, Universe Splitter)
     /// </summary>
     public static class MimicWeapons
     {
@@ -60,6 +61,7 @@ namespace PisAndDag.Content.Mimic
         public static readonly string[] StyleNames = { "a swung blade", "a held-out blade", "a spear", "a yoyo or flail", "a whip", "thrown", "a sword that shoots", "a shooter", "a held-out shooter", "a spray", "a minion", "a sentry" };
 
         private const int StyleCount = 12;
+        private const float Clip = 4f;
         private const int FeatureCount = StyleCount + 9;
 
         /// <summary>Each class's first kind and how many it has.</summary>
@@ -77,19 +79,19 @@ namespace PisAndDag.Content.Mimic
             "Melee / Thrown: reach ~960, use 20t, shot 16px/t, 1 with right click",
             "Melee / SwingShot: reach ~640, use 24t, shot 17px/t, 1 with right click",
             "Melee / SwingShot: reach ~640, use 24t, shot 12px/t, 3 with right click",
-            "Ranged / Thrown: reach ~960, use 20t, shot 16px/t",
             "Ranged / Thrown (+Shot, HeldShot): reach ~960, use 25t, shot 28px/t",
             "Ranged / Thrown: reach ~960, use 20t, shot 8px/t",
-            "Ranged / Shot: reach ~960, use 27t, shot 8px/t",
-            "Ranged / Shot (+Thrown, HeldShot): reach ~960, use 19t, shot 25px/t, 24 with right click",
+            "Ranged / Thrown: reach ~960, use 20t, shot 16px/t",
+            "Ranged / Shot (+HeldShot, Thrown): reach ~960, use 18t, shot 22px/t, 33 with right click",
             "Ranged / Shot: reach ~960, use 18t, shot 16px/t",
+            "Ranged / Shot: reach ~960, use 27t, shot 8px/t",
             "Ranged / HeldShot (+Shot, Thrown): reach ~360, use 22t, shot 3px/t",
-            "Ranged / HeldShot: reach ~960, use 30t, shot 15px/t, 9 with right click",
+            "Ranged / HeldShot: reach ~960, use 30t, shot 15px/t",
             "Magic / Shot (+Thrown, Spray): reach ~960, use 22t, shot 18px/t, 10 with right click",
             "Magic / HeldShot (+Shot, Spray): reach ~960, use 20t, shot 12px/t, 7 with right click",
-            "Summon / Whip (+HeldShot): reach ~160, use 30t",
-            "Summon / Minion: reach ~800, use 36t, 2 with right click",
-            "Summon / Sentry (+Shot, Minion): reach ~800, use 30t",
+            "Summon / Whip: reach ~160, use 30t",
+            "Summon / Minion (+Shot): reach ~800, use 36t, 2 with right click",
+            "Summon / Sentry (+HeldShot, Shot): reach ~800, use 30t",
         };
 
         // Each class's numbers' means and spreads (the style marks are kept as they are: 2 for its style).
@@ -97,16 +99,16 @@ namespace PisAndDag.Content.Mimic
         {
             new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 1.082480f, 0.251367f, 3.064907f, 0.000000f, 0.862040f, 0.286119f, 0.141643f, 0.131728f, 0.614731f },
             new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.640829f, 0.824573f, 2.940994f, 0.000000f, 0.356522f, 0.153318f, 0.288330f, 0.113272f, 0.800915f },
-            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.515606f, 0.853778f, 2.968597f, 1.470466f, 0.472103f, 0.210300f, 0.480687f, 0.109442f, 0.849785f },
-            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.416011f, 0.010159f, 3.414110f, 0.687624f, 0.867308f, 0.019231f, 1.000000f, 0.019231f, 0.679487f },
+            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.525036f, 0.853778f, 2.968597f, 1.470466f, 0.472103f, 0.210300f, 0.480687f, 0.109442f, 0.849785f },
+            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.423053f, 0.010159f, 3.414110f, 0.687624f, 0.867308f, 0.019231f, 1.000000f, 0.019231f, 0.679487f },
         };
 
         private static readonly float[][] Spread =
         {
             new[] { 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.097254f, 0.393868f, 0.451632f, 0.100000f, 0.303947f, 0.451947f, 0.348685f, 0.424548f, 0.486660f },
             new[] { 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 0.220201f, 0.185244f, 0.745720f, 0.100000f, 0.380816f, 0.360295f, 0.452986f, 0.396331f, 0.399313f },
-            new[] { 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 0.455903f, 0.331462f, 0.790454f, 0.547866f, 0.398327f, 0.407523f, 0.499628f, 0.390111f, 0.357283f },
-            new[] { 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 0.408353f, 0.100000f, 0.231346f, 0.388800f, 0.319087f, 0.137336f, 0.100000f, 0.168750f, 0.466675f },
+            new[] { 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 0.433538f, 0.331462f, 0.790454f, 0.547866f, 0.398327f, 0.407523f, 0.499628f, 0.390111f, 0.357283f },
+            new[] { 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 0.391556f, 0.100000f, 0.231346f, 0.388800f, 0.319087f, 0.137336f, 0.100000f, 0.168750f, 0.466675f },
         };
 
         /// <summary>Each kind's middle, in its class's standardised numbers.</summary>
@@ -120,19 +122,19 @@ namespace PisAndDag.Content.Mimic
             new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 1.344199f, 1.485825f, -0.196761f, 0.000000f, -0.174204f, -0.180494f, 0.441119f, -0.229979f, 0.091152f }, // 5
             new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 1.069310f, 1.584092f, 0.087745f, 0.000000f, -1.053157f, -0.633081f, 2.461700f, -0.196305f, 0.659091f }, // 6
             new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 1.081230f, 1.258048f, 0.304609f, 0.000000f, -1.689939f, -0.633081f, -0.406221f, 0.031641f, 0.659091f }, // 7
-            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.305274f, 0.113405f, 0.022682f, 0.000000f, 0.095851f, -0.425535f, -0.636508f, -0.285802f, 0.498568f }, // 8
-            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 1.720000f, 0.000000f, 0.240000f, 0.040000f, 0.000000f, 0.000000f, 0.000000f, 0.219897f, 0.837319f, 0.240798f, 0.000000f, 0.838930f, -0.425535f, 1.571064f, -0.285802f, 0.498568f }, // 9
-            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, -0.366631f, -0.949812f, 0.173105f, 0.000000f, 0.135179f, -0.425535f, -0.371600f, -0.285802f, -2.005734f }, // 10
-            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, -0.088492f, -0.570305f, 0.384348f, 0.000000f, -0.510218f, -0.363857f, -0.636508f, -0.285802f, -2.005734f }, // 11
-            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.416667f, 0.000000f, 1.416667f, 0.166667f, 0.000000f, 0.000000f, 0.000000f, 0.216339f, 0.621704f, -0.188966f, 0.000000f, -0.049950f, -0.309889f, -0.084615f, 3.498909f, 0.289876f }, // 12
-            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.258760f, 0.175216f, -0.292965f, 0.000000f, -0.399431f, -0.364311f, -0.587812f, -0.285802f, 0.498568f }, // 13
-            new[] { 0.000000f, 0.000000f, 0.142857f, 0.000000f, 0.000000f, 0.285714f, 0.000000f, 0.571429f, 1.000000f, 0.000000f, 0.000000f, 0.000000f, -4.640826f, -2.430707f, -0.190535f, 0.000000f, 0.020388f, 0.763967f, 0.624962f, -0.285802f, 0.319689f }, // 14
-            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.000000f, 0.000000f, 0.000000f, 0.000000f, 0.008554f, -0.121583f, 0.200564f, 0.000000f, 0.432048f, 2.301277f, 1.532335f, 0.311784f, -0.116524f }, // 15
-            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.074468f, 0.000000f, 1.914894f, 0.000000f, 0.010638f, 0.000000f, 0.000000f, 0.081076f, 0.116560f, -0.028543f, -0.010102f, -0.112911f, -0.437731f, -0.248793f, -0.076016f, 0.092905f }, // 16
-            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.177778f, 1.777778f, 0.044444f, 0.000000f, 0.000000f, -0.338718f, -0.486962f, 0.119248f, 0.042206f, 0.471715f, 1.828744f, 1.039400f, 0.317580f, -0.388136f }, // 17
-            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 1.818182f, 0.000000f, 0.000000f, 0.000000f, 0.181818f, 0.000000f, 0.000000f, 0.000000f, -3.622926f, -0.101594f, 0.068466f, -1.638681f, -0.096977f, 0.521919f, 0.000000f, -0.113960f, -1.261217f }, // 18
-            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.000000f, 0.000000f, 0.268684f, -0.101594f, 0.111603f, 0.042480f, 0.259153f, -0.072607f, 0.000000f, 0.050649f, 0.289983f }, // 19
-            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.108108f, 0.000000f, 0.000000f, 0.054054f, 1.837838f, 0.292818f, 0.326749f, -0.346114f, 0.363181f, -0.727615f, 0.056768f, 0.000000f, -0.113960f, -0.471480f }, // 20
+            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 1.720000f, 0.000000f, 0.240000f, 0.040000f, 0.000000f, 0.000000f, 0.000000f, 0.219897f, 0.837319f, 0.240798f, 0.000000f, 0.838930f, -0.425535f, 1.571064f, -0.285802f, 0.498568f }, // 8
+            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, -0.366631f, -0.949812f, 0.173105f, 0.000000f, 0.135179f, -0.425535f, -0.371600f, -0.285802f, -2.005734f }, // 9
+            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.305274f, 0.113405f, 0.022682f, 0.000000f, 0.095851f, -0.425535f, -0.636508f, -0.285802f, 0.498568f }, // 10
+            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.303030f, 0.000000f, 1.030303f, 0.666667f, 0.000000f, 0.000000f, 0.000000f, 0.062151f, 0.310396f, -0.154962f, 0.000000f, 0.066427f, 0.415527f, 0.366934f, 3.498909f, 0.195016f }, // 11
+            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.258760f, 0.175216f, -0.292965f, 0.000000f, -0.399431f, -0.364311f, -0.587812f, -0.285802f, 0.498568f }, // 12
+            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, -0.088492f, -0.570305f, 0.384348f, 0.000000f, -0.510218f, -0.363857f, -0.636508f, -0.285802f, -2.005734f }, // 13
+            new[] { 0.000000f, 0.000000f, 0.142857f, 0.000000f, 0.000000f, 0.285714f, 0.000000f, 0.571429f, 1.000000f, 0.000000f, 0.000000f, 0.000000f, -3.696765f, -2.398472f, -0.190535f, 0.000000f, 0.020388f, 0.763967f, 0.624962f, -0.285802f, 0.319689f }, // 14
+            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.000000f, 0.000000f, 0.000000f, 0.000000f, 0.075599f, -0.046925f, 0.250223f, 0.000000f, 0.442413f, 2.292147f, 1.525073f, -0.285802f, -0.127507f }, // 15
+            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.074468f, 0.000000f, 1.914894f, 0.000000f, 0.010638f, 0.000000f, 0.000000f, 0.063507f, 0.116560f, -0.028543f, -0.010102f, -0.112911f, -0.437731f, -0.248793f, -0.076016f, 0.092905f }, // 16
+            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.177778f, 1.777778f, 0.044444f, 0.000000f, 0.000000f, -0.265319f, -0.486962f, 0.119248f, 0.042206f, 0.471715f, 1.828744f, 1.039400f, 0.317580f, -0.388136f }, // 17
+            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 2.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, -3.791146f, -0.101594f, 0.002085f, -1.768581f, 0.133795f, -0.140027f, 0.000000f, -0.113960f, -1.456019f }, // 18
+            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.018349f, 0.000000f, 0.000000f, 1.981651f, 0.000000f, 0.266496f, -0.063965f, 0.101150f, 0.025865f, 0.260591f, -0.064063f, 0.000000f, -0.038474f, 0.293623f }, // 19
+            new[] { 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.054054f, 0.054054f, 0.000000f, 0.054054f, 1.837838f, 0.239550f, 0.009260f, -0.247714f, 0.401799f, -0.803846f, -0.028134f, 0.000000f, -0.113960f, -0.471480f }, // 20
         };
 
         // ---- the class -----------------------------------------------------------------------------------------------
@@ -388,6 +390,14 @@ namespace PisAndDag.Content.Mimic
             public float Gravity;
             public int FallAfter;
 
+            /// <summary>
+            /// For a weapon held out (a held gun, bow or staff: its held projectile fires its shots): how far the shots it fired
+            /// flew before they ended of themselves (eased) and how many such were seen; the furthest one of them hit something
+            /// from; how many were seen at all; how fast they left; how they fall, and after how long.
+            /// </summary>
+            public float FiredFar, FiredHitFar, FiredSpeed, FiredGravity;
+            public int Fired, FiredSeen, FiredFallAfter;
+
             /// <summary>Seen often enough to go by: three shots.</summary>
             public bool Sure => Shots >= 3;
 
@@ -398,6 +408,43 @@ namespace PisAndDag.Content.Mimic
         private static readonly Dictionary<int, Watch> watched = new Dictionary<int, Watch>();
 
         public static bool Seen(int itemType, out Watch w) => watched.TryGetValue(itemType, out w) && w.Sure;
+
+        /// <summary>A held-out weapon whose fired shots have been seen out (two at the least).</summary>
+        public static bool SeenFired(int itemType, out Watch w) => watched.TryGetValue(itemType, out w) && w.FiredSeen >= 2;
+
+        /// <summary>A shot fired by the copy's held projectile (a held gun's bullet, a held bow's arrow), seen out to its end (MimicShots).</summary>
+        public static void FiredShot(int itemType, float far, bool flown, float speed, float gravity, bool fell, int fallAfter)
+        {
+            if (!watched.TryGetValue(itemType, out Watch w))
+                watched[itemType] = w = new Watch();
+
+            w.FiredSeen++;
+
+            if (speed > 0.5f)
+                w.FiredSpeed = w.FiredSpeed <= 0f ? speed : w.FiredSpeed + (speed - w.FiredSpeed) * 0.25f;
+
+            if (flown)
+            {
+                w.FiredFar = w.Fired == 0 ? far : w.FiredFar + (far - w.FiredFar) * 0.25f;
+                w.Fired++;
+            }
+            else
+            {
+                w.FiredHitFar = Math.Max(w.FiredHitFar, far);
+            }
+
+            if (fell)
+            {
+                w.FiredGravity = w.FiredGravity <= 0f ? gravity : w.FiredGravity + (gravity - w.FiredGravity) * 0.25f;
+                w.FiredFallAfter = fallAfter;
+            }
+        }
+
+        /// <summary>
+        /// How far a held-out weapon reaches, by what it fired: as far as its shots fly when two have flown out to their end;
+        /// else no nearer than <paramref name="read"/> nor than the furthest one hit something from.
+        /// </summary>
+        public static float FiredReach(Watch w, float read) => w.Fired >= 2 ? Math.Max(w.FiredFar, read * 0.5f) : Math.Max(read, w.FiredHitFar);
 
         /// <summary>A shot of the copy's, from the item it held when the shot was made, seen out to its end (MimicShots).</summary>
         public static void Watched(int itemType, float far, bool flown, bool wasHeld, float gravity, bool fell, int fallAfter)
@@ -431,8 +478,12 @@ namespace PisAndDag.Content.Mimic
         /// <summary>How a weapon's shots were seen, for the /mirror report.</summary>
         public static string WatchReport(int itemType)
         {
-            if (!watched.TryGetValue(itemType, out Watch w) || w.Shots == 0)
+            if (!watched.TryGetValue(itemType, out Watch w) || w.Shots == 0 && w.FiredSeen == 0)
                 return "";
+
+            if (w.FiredSeen > 0)
+                return w.Shots + " shots watched: held, firing shots" + (w.Fired > 0 ? " that fly " + (int)w.FiredFar + " px" : " that hit up to " + (int)w.FiredHitFar + " px")
+                    + " at " + w.FiredSpeed.ToString("0") + " px/t" + (w.FiredGravity > 0.005f ? ", falling " + w.FiredGravity.ToString("0.00") + " px/t²" : "");
 
             return w.Shots + " shots watched: " + (w.Held ? "held" : w.Flown > 0 ? "fly " + (int)w.Far + " px" : "fly")
                 + (w.Gravity > 0.005f ? ", fall " + w.Gravity.ToString("0.00") + " px/t²" + (w.FallAfter > 0 ? " after " + w.FallAfter + " ticks" : "") : "");
@@ -459,12 +510,14 @@ namespace PisAndDag.Content.Mimic
             if (item.CountsAsClass(DamageClass.Melee))
                 return item.noUseGraphic ? Styles.Thrown : Styles.SwingShot;
 
-            bool heldShot = SeenHeld.Contains(item.type) || ShotIsHeld(item.shoot) || item.noUseGraphic && item.channel;
+            // (as cluster81.py's read: a shot made where it is wanted is a spray unless its code holds it; then, a held-out
+            // shooter if its code holds it, or the item hides itself and channels)
+            bool heldCode = SeenHeld.Contains(item.type) || ShotIsHeld(item.shoot);
 
-            if (w.Speed <= 0f && !heldShot)
+            if (w.Speed <= 0f && !heldCode)
                 return Styles.Spray;
 
-            if (heldShot)
+            if (heldCode || item.noUseGraphic && item.channel)
                 return Styles.HeldShot;
 
             if (sample != null && (sample.aiStyle == 2 || sample.aiStyle == 3) || item.consumable || item.CountsAsClass(DamageClass.Throwing) || Rogue(item) || item.noUseGraphic)
@@ -520,7 +573,9 @@ namespace PisAndDag.Content.Mimic
 
                 for (int i = 0; i < FeatureCount; i++)
                 {
-                    float z = (x[i] - Mean[c][i]) / Spread[c][i] - Centre[k][i];
+                    // A number far outside the usual (a weapon unlike any sorted) counts as four spreads off at the most, so it
+                    // cannot outweigh everything else about the weapon (cluster81.py does the same).
+                    float z = MathHelper.Clamp((x[i] - Mean[c][i]) / Spread[c][i], -Clip, Clip) - Centre[k][i];
                     d += z * z;
                 }
 

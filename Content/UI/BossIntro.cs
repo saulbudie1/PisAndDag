@@ -1,7 +1,9 @@
 using System;
 using Microsoft.Xna.Framework;
+using PisAndDag.Content.NPCs;
 using PisAndDag.Content.PADplayer;
 using Terraria;
+using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace PisAndDag.Content.UI
@@ -78,6 +80,12 @@ namespace PisAndDag.Content.UI
     ///
     /// All of it is local. Nothing here is synced, because a cutscene is something each
     /// player watches rather than something that happens to the world.
+    ///
+    /// The universal arrival, up to the end of its settle, is skipped by E held in the
+    /// corner (CinematicSkip, single player): the name straight onto the bar (no
+    /// touchdown, so no roar of the boss's), the boss let go to fight at once
+    /// (BossArrivalWait.EndWaits), and the camera walked home and the zoom let go over
+    /// SkipHome. A name-only run is a boss's own scene's to skip, and is left alone.
     /// </summary>
     public static class BossIntro
     {
@@ -170,6 +178,19 @@ namespace PisAndDag.Content.UI
         private static float savedZoom = 1f;
         private static bool holdingZoom;
 
+        /// <summary>
+        /// The return: how long it takes, and the zoom it lets go from. The profile's, unless
+        /// the arrival was skipped: then SkipHome, from wherever the zoom had got to.
+        /// </summary>
+        private static int homeTicks;
+        private static float homeFrom = 1f;
+
+        /// <summary>This run was skipped (E held in the corner): the bars are not asked for again.</summary>
+        private static bool skipped;
+
+        /// <summary>The walk home after a skip, and the zoom let go over the same.</summary>
+        private const int SkipHome = 40;
+
         public static bool Running => npcIndex >= 0;
 
         /// <summary>
@@ -235,6 +256,10 @@ namespace PisAndDag.Content.UI
             flyEnd = readEnd + flyTicks;
             settleEnd = flyEnd + settle;
             total = settleEnd + (brisk ? 0 : p.ReturnTicks);
+
+            homeTicks = p.ReturnTicks;
+            homeFrom = p.ZoomIn;
+            skipped = false;
         }
 
         /// <summary>
@@ -377,8 +402,9 @@ namespace PisAndDag.Content.UI
             frame++;
 
             // Every arrival is a shot, universal or the boss's own: the screen narrows for it.
-            // A brisk one lets go of the shot as the name starts down to the bar.
-            if (!brisk || frame <= readEnd)
+            // A brisk one lets go of the shot as the name starts down to the bar; a skipped
+            // one, at once.
+            if (!skipped && (!brisk || frame <= readEnd))
                 Combat.Cinematic.Frame();
 
             BossIntroProfile p = profile;
@@ -415,6 +441,19 @@ namespace PisAndDag.Content.UI
             // No UI hiding here, on purpose: the universal arrival keeps the interface
             // up. A boss's own cutscene hides it if it wants to.
 
+            // E held in the corner, up to the end of the settle: on to the return (single
+            // player; CinematicSkip).
+            if (frame <= settleEnd)
+            {
+                CinematicSkip.Offer();
+
+                if (Main.netMode == NetmodeID.SinglePlayer && CinematicSkip.Take())
+                {
+                    Skip();
+                    return;
+                }
+            }
+
             if (frame <= panEnd)
             {
                 // Out to the boss. Ease supplies the curve; the spring in
@@ -440,18 +479,36 @@ namespace PisAndDag.Content.UI
             {
                 // One call, and the walk owns the camera the rest of the way — it keeps
                 // running even if the boss stops existing mid-pan.
-                PisPlayer.PanHome(npc.Center, Math.Max(p.ReturnTicks, 1));
+                PisPlayer.PanHome(npc.Center, Math.Max(homeTicks, 1));
             }
 
             if (frame > settleEnd)
             {
-                float t = Ease((frame - settleEnd) / (float)Math.Max(p.ReturnTicks, 1));
+                float t = Ease((frame - settleEnd) / (float)Math.Max(homeTicks, 1));
 
-                Main.GameZoomTarget = MathHelper.Lerp(p.ZoomIn, savedZoom, t);
+                Main.GameZoomTarget = MathHelper.Lerp(homeFrom, savedZoom, t);
             }
 
             if (frame >= total)
                 Stop();
+        }
+
+        /// <summary>
+        /// The universal arrival, skipped (CinematicSkip; single player, so this machine decides): the
+        /// boss let go to fight now, as it would have been with the camera home (BossArrivalWait); the
+        /// run put at the end of its settle, so the name is on the bar from the next tick (the touchdown
+        /// and what the profile does on it passed over), and the camera walks home and the zoom is let
+        /// go from where it had got to, over SkipHome, the bars no longer asked for.
+        /// </summary>
+        private static void Skip()
+        {
+            BossArrivalWait.EndWaits();
+
+            skipped = true;
+            homeTicks = SkipHome;
+            homeFrom = Main.GameZoomTarget;
+            frame = settleEnd;
+            total = settleEnd + SkipHome;
         }
 
         /// <summary>The name has touched the bar. The boss gets its one loud moment.</summary>

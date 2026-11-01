@@ -27,7 +27,9 @@ namespace PisAndDag.Content.NPCs.Foigh
     ///
     /// From the first moment of it: no weapon, no building, nothing able to touch them, off
     /// any mount and hook, and a walk whatever they have on their feet. Asked for every tick
-    /// by his scene, and gone when it stops asking.
+    /// by his scene, and gone when it stops asking. E held in the corner skips it with the
+    /// rest of his road (Foigh.Scene): they are stood where the walk ends
+    /// (<see cref="SkipApproach"/>).
     /// </summary>
     public class FoighScenePlayer : ModPlayer
     {
@@ -264,6 +266,43 @@ namespace PisAndDag.Content.NPCs.Foigh
 
             if (found)
                 StandAt(feet, -side);
+        }
+
+        /// <summary>
+        /// The walk up, skipped with his road (Foigh.SkipRoad): let go of at once, wherever it
+        /// had got to, and this machine's player stood where it ends, twenty tiles off him on
+        /// the side they came up on, on their feet, facing him; with no ground there, as near
+        /// to it as there is, out as far as they would have been put down; with none at all,
+        /// left where they are. One who has got there already is left where they stand.
+        /// </summary>
+        internal void SkipApproach(Foigh foigh)
+        {
+            if (Player.whoAmI != Main.myPlayer)
+                return;
+
+            NPC him = foigh.NPC;
+            bool ours = approachTo == him.whoAmI;
+            int way = ours ? side : -foigh.Faces;
+            bool there = ours && (step == Step.There || (step == Step.Walk && Arrived(him)));
+
+            ResetApproach();
+            approachTo = -1;
+            approachAsked = 0;
+
+            if (there)
+                return;
+
+            for (float off = Foigh.StopAt; off <= Foigh.PutDownAt; off += 16f)
+            {
+                float x = him.Center.X + way * off;
+
+                if (DonaQuinnEncounter.Ground(x, him.Bottom.Y, Player.width, Player.height, 1, 10, out float ground)
+                    && Collision.CanHitLine(new Vector2(x, ground - Player.height), 2, 2, him.Top, 2, 2))
+                {
+                    StandAt(new Vector2(x, ground), -way);
+                    return;
+                }
+            }
         }
 
         /// <summary>

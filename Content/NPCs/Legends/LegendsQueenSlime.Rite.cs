@@ -33,6 +33,8 @@ namespace PisAndDag.Content.NPCs.Legends
     // The server decides where (BeginRite) and when each step starts; every machine plays it.
     // From the first tick to the last, anything hostile in the scene with less than 500 life is
     // killed on the spot and gives nothing (ClearScene), so nothing walks into it.
+    //
+    // E held in the corner skips it (CinematicSkip, single player).
 
     public partial class LegendsQueenSlime
     {
@@ -225,6 +227,18 @@ namespace PisAndDag.Content.NPCs.Legends
                 npc.Bottom = riteFocus + new Vector2(0f, CoreBelow);
             }
 
+            // E held in the corner: straight to the fight (single player; CinematicSkip).
+            if (InRiteScene())
+            {
+                CinematicSkip.Offer();
+
+                if (Authority && CinematicSkip.Take())
+                {
+                    SkipRite(npc, entered);
+                    return;
+                }
+            }
+
             int t = timer;
 
             switch (beat)
@@ -394,6 +408,44 @@ namespace PisAndDag.Content.NPCs.Legends
 
             if (Authority)
                 npc.TargetClosest(false);
+        }
+
+        /// <summary>
+        /// Skipped (CinematicSkip; single player, so this machine decides): her on the ground under
+        /// where she formed, landed, and out of the light with her flash if this machine has not seen
+        /// her come yet; her name up; the fight, the camera walked home (Release, EndRite).
+        /// </summary>
+        private void SkipRite(NPC npc, bool entered)
+        {
+            if (beat < RiteRoar)
+            {
+                npc.velocity = Vector2.Zero;
+                npc.Bottom = new Vector2(riteFocus.X, riteGround);
+            }
+
+            // (This tick's step has not played yet: what has, is what the step and entered say.)
+            if (beat < RiteGrow || beat == RiteGrow && entered)
+                SheComes(npc);
+
+            if (beat < RiteRoar)
+                RiteLanded(npc);
+
+            Announce(npc);
+
+            // The skip is offered only in the shot, so this player was watching: the camera is
+            // walked home for them.
+            watching = true;
+            Release(npc);
+        }
+
+        /// <summary>This machine's player is near enough to be in the shot.</summary>
+        private bool InRiteScene()
+        {
+            if (Main.dedServ)
+                return false;
+
+            Player me = Main.LocalPlayer;
+            return me.active && !me.dead && Vector2.Distance(me.Center, riteFocus) <= SceneRange;
         }
 
         /// <summary>

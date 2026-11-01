@@ -51,6 +51,11 @@ namespace PisAndDag.Content.NPCs.Foigh
     /// word, and not for ever. Only the player he fights is moved and shown it; to anybody
     /// else he is simply doing it.
     ///
+    /// E held in the corner skips it (CinematicSkip, single player; offered where the other
+    /// passage's is, Foigh.Passage), until the picture is back: they are stood off him if
+    /// they were not yet, he is back where he stood, the sword bloodied and burning, their
+    /// wings cut all the same, and the fight goes on (SkipThird).
+    ///
     /// HIS THIRD PHASE, by request: every blow of the sword leaves a wound (Ultra
     /// Bleeding: three at the most, 12 life a second each, and no life coming back by
     /// itself; five seconds from the last blow); nobody flies while he is there (wings, a
@@ -543,6 +548,39 @@ namespace PisAndDag.Content.NPCs.Foigh
             int toward = NPC.Center.X >= me.Center.X ? 1 : -1;
 
             grip.Hold(NPC.whoAmI, pulledFrom + new Vector2(toward * PullBack * t, 0f), toward * PullTilt * t);
+        }
+
+        /// <summary>
+        /// The passage into his third phase, skipped (CinematicSkip; single player, so this
+        /// machine decides): what it does done at once. The player stood off him, if Shudder
+        /// has not stood them there yet; let go of, if his hand is on their wings (as at the
+        /// cut); him back where he stood, if he has gone behind them (as under the black at
+        /// the end: Return); the sword taking, as the picture comes back (Kindle); and the
+        /// rest as either passage ends (PassageSkipped). The sword is bloodied and burns from
+        /// here, and their wings are cut, as it is drawn and as nobody flies (ShowBlood,
+        /// HasCut: by his phase and what he is doing), whether the cut was seen or not.
+        /// </summary>
+        private void SkipThird(Player me)
+        {
+            if (!stood)
+            {
+                stood = true;
+                me.GetModPlayer<FoighScenePlayer>().PutOff(NPC, StandOffAt, StandOffLeast);
+            }
+
+            if (pulled)
+            {
+                pulled = false;
+                me.GetModPlayer<FoighGripPlayer>().LetGo(NPC.whoAmI, Vector2.Zero);
+            }
+
+            if (State == Move.Flash || State == Move.Sever || (State == Move.Resume && now < FadeOutTicks + 4))
+                Return();
+
+            if (!Main.dedServ && (State != Move.Resume || now < FadeOutTicks + BlackTicks + 5))
+                Kindle();
+
+            PassageSkipped(me);
         }
 
         // ============================================================

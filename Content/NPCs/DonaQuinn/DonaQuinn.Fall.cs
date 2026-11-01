@@ -368,6 +368,33 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
         }
 
         /// <summary>
+        /// Where the arc she is on now comes down, for a fall that is skipped: run on as she
+        /// is moved (Collision.TileCollision, platforms holding her, as they do), a wall taking
+        /// the sideways part of it, until a floor stops her. No longer than a throw may last.
+        /// </summary>
+        private Vector2 LandingSpot()
+        {
+            Vector2 at = NPC.position;
+            Vector2 v = NPC.velocity;
+
+            for (int t = 0; t < ThrownLongest; t++)
+            {
+                Vector2 moved = Collision.TileCollision(at, v, NPC.width, NPC.height);
+                at += moved;
+
+                if (v.Y > 0f && moved.Y < v.Y)
+                    break;
+
+                if (moved.X != v.X)
+                    v.X = 0f;
+
+                v.Y = Math.Min(v.Y + Gravity, MaxFall);
+            }
+
+            return at;
+        }
+
+        /// <summary>
         /// One tick of a body on its own: what the last move did to it (a floor, a wall), the
         /// bounce and skid, gravity, the turn (free in the air, settling on the ground), and
         /// the loose head and arm. Lying still is the same thing with nothing left to do.
@@ -543,6 +570,25 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             armRel = MathHelper.Lerp(upFromBody + upFromArm, 0f, e) - body;
             headRel = MathHelper.Lerp(upFromBody + upFromHead, LookAt(Nearest()), e) - body;
             armVel = 0f;
+            headVel = 0f;
+        }
+
+        /// <summary>
+        /// Up at once, for a getting up that is skipped: as GetUp leaves her at its end, upright
+        /// on her feet, her arm at her side and her head on whoever is there.
+        /// </summary>
+        private void StandUp()
+        {
+            body = 0f;
+            spin = 0f;
+            lastSpin = 0f;
+
+            Resize(20, 44);
+
+            NPC.velocity.X = 0f;
+            armRel = 0f;
+            armVel = 0f;
+            headRel = LookAt(Nearest());
             headVel = 0f;
         }
 

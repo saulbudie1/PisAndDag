@@ -75,6 +75,14 @@ namespace PisAndDag.Content.NPCs.Foigh
     /// is the choice: PAD_Lore_Planning 9.2). Only the player he fights is moved and shown
     /// it; to anybody else he is simply doing it.
     ///
+    /// E held in the corner skips it (CinematicSkip, single player) a stretch at a time, and
+    /// never past a choice that changes what they are left with: from the blow to PLEAD (his
+    /// roar, his fall and his lines done at once, they five tiles off him; the question of
+    /// ASKED, which changes only what he says, left unasked: SkipToPlea); from FINISH to the
+    /// end of CAST, the sword theirs and him gone (SkipFinish); and from SPARE to SLUMP, which
+    /// takes them out of the place as it always does (SkipSpare). Not PLEAD, which is theirs
+    /// to answer; nor the last fade of CAST, nor SLUMP.
+    ///
     /// The lines are the user's own words, kept as written; the bars in them are
     /// Dialogue.Pause, and "*cough blood range 2-4 times*" is his, not a word of it.
     /// </summary>
@@ -526,11 +534,12 @@ namespace PisAndDag.Content.NPCs.Foigh
         /// <summary>
         /// His roar puts out the hall's flames, where the world is decided: from the voice
         /// on, each as the dark going out from him reaches it, but those up his own
-        /// pilaster. Not anywhere but the hall.
+        /// pilaster. Not anywhere but the hall. All of them that are left at once, his roar
+        /// skipped (<paramref name="atOnce"/>: SkipToPlea).
         /// </summary>
-        private void Sweep()
+        private void Sweep(bool atOnce = false)
         {
-            if (now < M.RoarDraws || !EmptyHall.Here(out EmptyHall hall))
+            if ((!atOnce && now < M.RoarDraws) || !EmptyHall.Here(out EmptyHall hall))
                 return;
 
             if (flames == null)
@@ -554,7 +563,7 @@ namespace PisAndDag.Content.NPCs.Foigh
                 flames.Sort((a, b) => a.Far.CompareTo(b.Far));
             }
 
-            float reach = (now - M.RoarDraws + 1) * SweepSpeed;
+            float reach = atOnce ? float.MaxValue : (now - M.RoarDraws + 1) * SweepSpeed;
             int put = 0;
 
             while (put < flames.Count && flames[put].Far <= reach)
@@ -658,6 +667,19 @@ namespace PisAndDag.Content.NPCs.Foigh
             // Nobody to show it to: everything asked for lets go by itself.
             if (me.dead || !me.active)
                 return;
+
+            // E held in the corner, in a stretch of it that can be: on to the end of that
+            // stretch (single player; CinematicSkip).
+            if (EndSkips)
+            {
+                CinematicSkip.Offer();
+
+                if (Authority && CinematicSkip.Take())
+                {
+                    SkipEnd(me);
+                    return;
+                }
+            }
 
             bool wantShot = false;
 
@@ -911,6 +933,119 @@ namespace PisAndDag.Content.NPCs.Foigh
 
             if (shot > 0f)
                 PisPlayer.BlendCamera(EndLook, shot * shot * (3f - 2f * shot));
+        }
+
+        // ---- skipped (CinematicSkip; single player, so this machine decides) ----
+
+        /// <summary>
+        /// Whether the part of his end he is in can be skipped: anything before his plea (to
+        /// it); Finish, Thrust, and Cast until its last fade (to him gone); Spare and Scorn (to
+        /// Slump). Not the plea, which is theirs to answer and decides what they are left
+        /// with; nor the last of either end, which lets go by itself.
+        /// </summary>
+        private bool EndSkips => State < Move.Plead || State == Move.Finish || State == Move.Thrust
+            || (State == Move.Cast && now < CastFades) || State == Move.Spare || State == Move.Scorn;
+
+        /// <summary>The stretch of his end he is in, skipped: his line cut, and on to the end of it.</summary>
+        private void SkipEnd(Player me)
+        {
+            if (Dialogue.Speaking(NPC))
+                Dialogue.Close();
+
+            if (State < Move.Plead)
+                SkipToPlea(me);
+            else if (State <= Move.Cast)
+                SkipFinish(me);
+            else
+                SkipSpare();
+        }
+
+        /// <summary>
+        /// On to his plea, what comes before it done at once. Still rocked by the blow: what
+        /// he had thrown gone, and him where he would have been shown (in the hall, at the end
+        /// of it, facing down it), as Dying leaves him. Before his roar is done: the hall's
+        /// flames out but his own, as it leaves them. The sword let fall before him, as Fold
+        /// leaves it. Not walked up yet: the player five tiles off him on the side of him they
+        /// are on (the way he faces, if they have not been put down before him yet), on their
+        /// feet, facing him; nearer, down to two, where there is no ground there; on his other
+        /// side, where there is none on theirs; and where they are, where there is none at
+        /// all. His lines and the question cut. He rises for his plea, and it is theirs to
+        /// answer.
+        /// </summary>
+        private void SkipToPlea(Player me)
+        {
+            if (State == Move.Dying)
+            {
+                Gather();
+
+                if (EmptyHall.EndColumn(out Vector2 column))
+                {
+                    NPC.position = new Vector2(column.X - NPC.width * 0.5f, column.Y - NPC.height);
+                    NPC.velocity = Vector2.Zero;
+                    Face(EmptyHall.DownTheHall);
+                }
+                else
+                {
+                    FaceThem(me);
+                }
+            }
+
+            if (State <= Move.Roar)
+                Sweep(true);
+
+            if (hasSword)
+            {
+                hasSword = false;
+                NPC.netUpdate = true;
+            }
+
+            if (State <= Move.Bowed)
+            {
+                int side = endPut ? (me.Center.X >= Feet.X ? 1 : -1) : facing;
+
+                endPut = true;
+                me.GetModPlayer<FoighEndPlayer>().PutAhead(NPC, side, EndNear, 2f * 16f);
+            }
+
+            Go(Move.Plead);
+        }
+
+        /// <summary>
+        /// Finish, skipped to the end of Cast: his body to ash where it is (if it is not ash
+        /// already), the sword theirs (if it is not yet), the camera home, the hall's flames lit
+        /// again, and he is gone (Perish).
+        /// </summary>
+        private void SkipFinish(Player me)
+        {
+            if (!Main.dedServ && !(State == Move.Cast && now >= CastAshes))
+                Ashes();
+
+            if (!endGiven)
+            {
+                endGiven = true;
+                me.QuickSpawnItem(new EntitySource_Gift(NPC), ModContent.ItemType<FoighsRustSideSword>(), 1);
+            }
+
+            if (shot > 0f && !endHome)
+                PisPlayer.PanHome(EndLook, 40);
+
+            endHome = true;
+            shot = 0f;
+
+            Perish();
+        }
+
+        /// <summary>
+        /// Spare, skipped to Slump: the sword where it would have come down behind them, if it
+        /// has not been thrown yet (Threw); and he is down on his face, which takes them out of
+        /// the place, or, anywhere else, leaves him gone, as it always does.
+        /// </summary>
+        private void SkipSpare()
+        {
+            if (!thrown)
+                Threw();
+
+            Go(Move.Slump);
         }
 
         /// <summary>Leaving the place by the passage: this machine has asked it to, and it has begun.</summary>

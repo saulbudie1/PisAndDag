@@ -25,6 +25,10 @@ namespace PisAndDag.Content.NPCs.Foigh
     /// The server waits at Await, Talk and Vow for the player's word, and not for ever: a
     /// player who never answers is not a world stopped.
     ///
+    /// E held in the corner skips it (CinematicSkip, single player), from the walk up to the
+    /// picture coming back: they are where the walk ends, he has turned round to them with
+    /// the sword in his hand, his name is up, and he walks (SkipRoad).
+    ///
     /// The camera is PisPlayer's (BlendCamera); the bars, the lean, the fade and the hold are
     /// Cinematic's. The lines are the user's own words, kept as written (the bars in them are
     /// Dialogue.Pause: he stops there).
@@ -189,6 +193,19 @@ namespace PisAndDag.Content.NPCs.Foigh
             // Nobody to show it to: everything asked for lets go by itself.
             if (me.dead || !me.active)
                 return;
+
+            // E held in the corner, for as long as they are held for it: straight to the fight
+            // (single player; CinematicSkip).
+            if (State < Move.Begin || now < FadeOutAt + FadeOutTicks + BlackTicks + FadeInTicks / 2)
+            {
+                CinematicSkip.Offer();
+
+                if (Authority && CinematicSkip.Take())
+                {
+                    SkipRoad(me);
+                    return;
+                }
+            }
 
             Vector2 him = NPC.Center + new Vector2(0f, -30f);
             bool wantShot = false;
@@ -375,6 +392,45 @@ namespace PisAndDag.Content.NPCs.Foigh
             // The fight's first words, if there are any: in a box that goes by itself.
             if (now == back + FadeInTicks - 1 && FirstPhaseLine.Length > 0)
                 Dialogue.Aside(NPC, FirstPhaseLine, Pace);
+        }
+
+        /// <summary>
+        /// The road, skipped (CinematicSkip; single player, so this machine decides): what it
+        /// does done at once. The walk up let go of, and the player where it ends
+        /// (FoighScenePlayer.SkipApproach); his lines cut, his face and name theirs as his
+        /// first line would have made them; turned round to them, if he had not yet; the sword
+        /// out of the ground and in his hand; his name up and to the bar; the camera home; and
+        /// he walks, as Begin leaves him.
+        /// </summary>
+        private void SkipRoad(Player me)
+        {
+            if (State == Move.Await)
+                me.GetModPlayer<FoighScenePlayer>().SkipApproach(this);
+
+            if (Dialogue.Speaking(NPC))
+                Dialogue.Close();
+
+            DialogueIntroductions.Known.Add(DialogueIntroductions.Key(Type));
+
+            // He turns round at the end of Turn: seen from his other side by then.
+            if (State <= Move.Turn)
+                facing = -facing;
+
+            if (!named)
+            {
+                named = true;
+                BossIntro.PlayNameOnly(NPC.whoAmI);
+            }
+
+            if (shot > 0f)
+                PisPlayer.PanHome(NPC.Center + new Vector2(0f, -30f), 30);
+
+            shot = 0f;
+            cut = true;
+
+            hasSword = true;
+            rest = FirstRest;
+            Go(Move.Walk);
         }
 
         private static float Smooth(float t)
