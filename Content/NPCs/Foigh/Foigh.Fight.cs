@@ -698,6 +698,10 @@ namespace PisAndDag.Content.NPCs.Foigh
             if (Authority)
                 LetGoTick(target);
 
+            // His third phase: crowded up close, and free for it, he plunges where he stands (Foigh.Wild).
+            if (Authority)
+                CrowdTick();
+
             // Owed the ball, and free for it (Foigh.Wild).
             if (Authority)
                 SwarmTick();
@@ -980,11 +984,16 @@ namespace PisAndDag.Content.NPCs.Foigh
             Vector2 feet = Feet;
             Vector2 to = target != null ? new Vector2(target.Center.X, target.Bottom.Y) : feet + new Vector2(facing * 200f, 0f);
 
+            // The crowded plunge (Foigh.Wild): straight up where he stands, as high as his longest leap goes, and down.
+            if (crowding)
+                to = feet;
+
             // Up to them if they are over him; never down after them.
             float rise = Math.Max(0f, feet.Y - to.Y);
+            float far = crowding ? LeapFurthest : Math.Abs(to.X - feet.X);
             float high = phase >= 2
-                ? LeapHigh(Math.Abs(to.X - feet.X), rise, Math.Min(SuperLeap, Headroom(feet, SuperLeap + NPC.height + LeapHeadroom) - NPC.height - LeapHeadroom))
-                : LeapHigh(Math.Abs(to.X - feet.X), rise);
+                ? LeapHigh(far, rise, Math.Min(SuperLeap, Headroom(feet, SuperLeap + NPC.height + LeapHeadroom) - NPC.height - LeapHeadroom))
+                : LeapHigh(far, rise);
 
             // To the top of it, and from there down to where they stand (or, with them over
             // the top of it, no further than the top).
@@ -998,7 +1007,7 @@ namespace PisAndDag.Content.NPCs.Foigh
             if (boost > 0)
                 ticks = boost + Coast.Ticks + FallTicks(boost * MaxSpeed + Coast.Rise - rise);
 
-            if (target != null)
+            if (target != null && !crowding)
                 to.X += target.velocity.X * ticks * 0.35f;
 
             float dx = MathHelper.Clamp(to.X - feet.X, -LeapReach - 80f, LeapReach + 80f);
@@ -1009,7 +1018,9 @@ namespace PisAndDag.Content.NPCs.Foigh
             above = false;
             landedHit = false;
 
-            Face(dx >= 0f ? 1 : -1);
+            if (!crowding)
+                Face(dx >= 0f ? 1 : -1);
+
             Go(Move.TwoAir, ticks);
         }
 
@@ -1159,7 +1170,8 @@ namespace PisAndDag.Content.NPCs.Foigh
 
             if (now > 4 && grounded)
             {
-                Go(landedHit ? Move.TwoLanded : Move.TwoStuck, aimShown);
+                // (The crowded plunge drives the sword in whatever it came down on.)
+                Go(landedHit && !crowding ? Move.TwoLanded : Move.TwoStuck, aimShown);
                 return;
             }
 
@@ -3655,6 +3667,10 @@ namespace PisAndDag.Content.NPCs.Foigh
             }
             else if (!Pierce(me, down ? "FoighSmite" : "FoighSword", damage, direction, knock))
             {
+                // (Landed on a creature instead, in the Super Smash battle: his sword's wound is left on it.)
+                if (phase >= 3)
+                    WoundStruck();
+
                 return;
             }
 
@@ -3695,7 +3711,7 @@ namespace PisAndDag.Content.NPCs.Foigh
             PlayerDeathReason reason = PlayerDeathReason.ByCustomReason(
                 NetworkText.FromKey("Mods.PisAndDag.DeathText." + death, me.name));
 
-            if (me.Hurt(reason, damage, direction, false, false, ImmunityCooldownID.General, true, 0f, 1f, knockback) <= 0)
+            if (BattleRoyaleSupport.Hurt(me, reason, damage, direction, false, false, ImmunityCooldownID.General, true, 0f, 1f, knockback, OnCreatures, true) <= 0)
                 return false;
 
             // From his second phase a hit of his lets go their hook and shuts their wings for a moment.

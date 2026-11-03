@@ -131,7 +131,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
                     var reason = Terraria.DataStructures.PlayerDeathReason.ByCustomReason(
                         Terraria.Localization.NetworkText.FromKey("Mods.PisAndDag.DeathText.GildedKnightGreat", me.name));
 
-                    if (me.Hurt(reason, damage, Way, false, false, ImmunityCooldownID.General, true, 0f, 0f, 9f) > 0)
+                    if (BattleRoyaleSupport.Hurt(me, reason, damage, Way, false, false, ImmunityCooldownID.General, true, 0f, 0f, 9f) > 0)
                     {
                         if (copy)
                             burstLandedCopy = true;

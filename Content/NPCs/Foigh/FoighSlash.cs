@@ -22,9 +22,10 @@ namespace PisAndDag.Content.NPCs.Foigh
     /// along the ground at one who stands on it, up at one who hangs from the ceiling,
     /// down at one below him; the third the largest, and the slowest).
     ///
-    /// It goes straight, whichever way it was sent, at one speed, through platforms and
-    /// through players, and is gone against the first solid thing it meets, or when it
-    /// has flown its time: it thins away over the last of that, and hurts nobody by
+    /// It goes straight, whichever way it was sent, at one speed, through platforms, through
+    /// players and through solid ground, walls and ceilings, in every phase (by request: "his
+    /// flying slashes goes thru tiles but still fade with time", "all phases"), and is gone
+    /// when it has flown its time: it thins away over the last of that, and hurts nobody by
     /// then. With him gone, or down, it thins away from that tick.
     ///
     /// Half his sword's blow, through armour, varied as vanilla varies any hit, once,
@@ -178,7 +179,8 @@ namespace PisAndDag.Content.NPCs.Foigh
             Projectile.aiStyle = -1;
             Projectile.hostile = false;
             Projectile.friendly = false;
-            Projectile.tileCollide = true;
+            // (Through tiles: it ends only by thinning away, or met by a parry.)
+            Projectile.tileCollide = false;
             Projectile.ignoreWater = true;
             Projectile.penetrate = -1;
             Projectile.timeLeft = GreatLife + 20;
@@ -275,7 +277,13 @@ namespace PisAndDag.Content.NPCs.Foigh
             int direction = Projectile.velocity.X >= 0f ? 1 : -1;
 
             if (!Foigh.Pierce(me, "FoighSlash", damage, direction, Knockback))
+            {
+                // (Landed on a creature instead, in the Super Smash battle: in his third phase his sword's wound is left on it.)
+                if (foigh.Phase >= 3 && kind != Pale)
+                    Foigh.WoundStruck();
+
                 return;
+            }
 
             // It goes on through them, and is theirs no more.
             if (MimicSystem.Is(me))
@@ -376,8 +384,8 @@ namespace PisAndDag.Content.NPCs.Foigh
         }
 
         /// <summary>
-        /// Gone while there was still something of it: against the ground, a wall or a
-        /// ceiling, or met by a parry. What it was made of is let go where it was.
+        /// Gone while there was still something of it: met by a parry. What it was made of is
+        /// let go where it was.
         /// </summary>
         public override void OnKill(int timeLeft)
         {

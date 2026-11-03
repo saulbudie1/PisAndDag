@@ -1476,7 +1476,13 @@ namespace PisAndDag.Content.NPCs.Foigh
 
             // The way it went: the way he faces still.
             if (!Pierce(me, "FoighLate", damage, facing, KnockCut))
+            {
+                // (Landed on a creature instead, in the Super Smash battle: his sword's wound is left on it.)
+                if (phase >= 3)
+                    WoundStruck();
+
                 return;
+            }
 
             Wound(me);
 

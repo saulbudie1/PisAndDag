@@ -228,7 +228,16 @@ namespace PisAndDag.Content.NPCs.Foigh
                 Projectile.localAI[0] = 1f;
 
             // A blow that killed them throws nothing.
-            if (!Foigh.Pierce(me, "FoighSwordThrown", damage, direction, 0f) || me.dead)
+            if (!Foigh.Pierce(me, "FoighSwordThrown", damage, direction, 0f))
+            {
+                // (Landed on a creature instead, in the Super Smash battle: in his third phase his sword's wound is left on it.)
+                if (foigh.Phase >= 3)
+                    Foigh.WoundStruck();
+
+                return;
+            }
+
+            if (me.dead)
                 return;
 
             // In his third phase it is his sword still, and leaves what his sword leaves.

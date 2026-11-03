@@ -24163,3 +24163,123 @@ inspired by cyberpunk so make it like that"; on the way, "cannot heal is potion 
   grab, Queen Slime's wings, the slimes' grabs. Built (620 files, no errors, the ten old warnings); not run in the
   game. Found on the way, not changed: in the Guide's sacrifice the game refuses his death call (he is still the
   sacrifice then) and quietly removes him, with no death message, skipped or not.
+- "Make cyborg walk speed rate 40% faster": `TentochiCyborgPace` (`TentochiSources.cs`), the Cyborg only. The town
+  walk keeps its pace in a local of its own (NPC.AI_007_TownEntities: 1 px a tick, 0.07 to get there), so his way along
+  is multiplied by 1.4 after his AI (PostAI) and divided back before it (PreAI), when nothing else has changed it: the
+  AI never sees its own extra and does not damp it, and the move between carries him 40% further. Running from harm
+  is 40% faster too. r82g (`Claude outputs\r82\before_g`). Lore said with it (not written into the Bible yet): the
+  Cyborg is "vegan tech", the user's word for safe implants that are not too brutal; Tentochi is the foreign
+  engineering corp he comes from.
+- "And His rockets are homing too; his vanilla rockets that is shot from him specifically": `TentochiCyborgRockets`
+  (`TentochiSources.cs`). Only the Rocket I a town Cyborg fires (his attack picks a rocket, a grenade or a mine at
+  random; the other two are left alone), told apart where it is made (`OnSpawn`: the source is his AI), never the same
+  rocket out of a launcher. After the game's own move (it speeds up to 15 a tick) it turns at most 0.09 radians a tick
+  toward the nearest enemy in sight within 50 tiles, keeping its speed; steered on the machine that fired it (single
+  player or the server), the others sent its way every 6 ticks. r82h (`Claude outputs\r82\before_h`).
+- "Make cyborg 175% as fast as normal": `TentochiCyborgPace.Pace` 1.75 (was 1.4). r82j
+  (`Claude outputs\r82\before_j`).
+- "And he shoots 3 consecutive back rockets in succession with a 15 degrees offset instead of three types of
+  explosives": `TentochiCyborgVolley` (`TentochiSources.cs`) replaces `TentochiCyborgRockets`. His town attack hooks
+  (`TownNPCAttackProj/Strength/Cooldown/ProjSpeed`) make every shot the Back Rocket's rocket (`TentochiRocket`), 20
+  damage each (the game's Rocket I for him, scaled as his shots are), knockback 4, speed 10, no random spread,
+  cooldown 20 + up to 10. The first is the game's own shot, turned to 15 degrees above his aim and moved to the tube on
+  his back (`TentochiCyborgVolleyStart.OnSpawn`, before it is sent to anyone); the next two follow 8 ticks apart from
+  the world's machine, on his aim and 15 below, inside the second he stands to fire. Each finds its own enemy and
+  bursts 4 tiles wide. `TentochiRocket` no longer tells a launcher it fired when the shot is a town NPC's
+  (`npcProj`). r82k (`Claude outputs\r82\before_k`).
+- "fix this so if a ytber wants to create a battle royale styled video then they can" / "only inflict under battle of
+  that mod": support for the Super Smash mod (BattleRoyaleMod, read from `Downloads\tModUnpacker\BattleRoyaleMod`).
+  That mod stands this machine's player where a marked creature's enemy is during its turn and turns body touches
+  (npc.damage) and hurting projectiles (Projectile.Damage) onto the enemy. Our bosses' blows are neither: they find
+  the player themselves and call Player.Hurt. New `Content/Combat/BattleRoyaleSupport.cs` (read by reflection, no
+  reference; off without that mod or if its fields moved): `BattleRoyaleSupport.Hurt(me, ...)` is Player.Hurt except
+  that while the battle stands the player in for an enemy the blow strikes that enemy (their side's grace 10 ticks,
+  the mod's MeleeDamageModifier or ProjDamageModifier and its per-creature damage setting) and the player is not hurt.
+  Routed through it: Foigh's sword (`Foigh.Pierce`, which also serves his dagger, line, slash, thrown and returned
+  sword) and hook (`FoighGripPlayer.Bite`, `Through`), Dona Quinn's lance, swing and thrown lance and the donkey's
+  ram, the Gilded Knight's blade, shot and great shot, Amalgaermis' steam. `GildedKnight.Fights` is true for the
+  stand-in, so his hits are not held to his arena there. Single player only, as the mod is. Not covered: the
+  Legends holds (slime and wall drains, Skeletron's crush) and White Death's marksman, which act on the real player.
+  r82l (`Claude outputs\r82\before_l`).
+- "Can foigh also parry other mods attacks?" / "yeah sure": he already answered any player's weapon from any mod (by
+  what it is); now, in the Super Smash battle only, he answers creatures of the other side too, at his phase's odds
+  (`Foigh.Smash.cs`, `SmashReact` called beside `React`). A body that runs into him is met (`CanBeHitByNPC`, which the
+  battle asks before it looks at touching): it does not land, the creature is thrown back by its knockback resist,
+  that side's touch waits 30 ticks (`BattleRoyaleSupport.Shield`). A solid shot (`ParryRules.Solid`) coming at him is
+  rolled for ahead (sword up toward its maker) and struck out of the air when it touches (`FoighMark.Colliding`,
+  which the battle's shot hit asks); half go back at the maker, made in his own turn so they are his side's. Anything
+  else coming at him is stepped out of the way of (`DodgedFrom`, toward its maker). Our creatures' blows
+  (`BattleRoyaleSupport.IGuard.Turns`) are met if swung, struck aside if thrown. Posture worn as by a player's. His
+  player reactions are unchanged: `Guarded`, `Clashed`, `Dodged` and `SendBack` now call position-based versions;
+  `FoighMark.PostAI` also ends a struck shot in single player whatever its owner. r82m (`Claude outputs\r82\before_m`).
+- "bump all foighs damage to x1.75 and even his slashes projectile ignore defense" ("his flying slashes or his
+  straight slash cluster"), "and he also draw ultrableeding on NPCs too", "and every damage is 2x on NPCs as well on
+  top", "and his straight cluster radius 1.25x radius". `Foigh.Harder` 1.75: `SwordDamage()` (and all that is a share
+  of it: slashes, straight cuts, thrown sword, late cut, grip), `DaggerDamage` 175 (knife and shots sent back),
+  `HookDamage` 88. The flying slashes (`FoighSlash`) and the straight cuts (`FoighLine`) already went through all
+  defence (`Foigh.Pierce`: scalingArmorPenetration 1, checked against Player.HurtModifiers.GetDamage), so nothing
+  changed there. Super Smash battle: `Foigh.OnCreatures` 2, passed to `BattleRoyaleSupport.Hurt` (new last argument
+  `onCreatures`) from `Pierce`, `FoighGripPlayer.Bite` and `Through`; `BattleRoyaleSupport.Struck` is the creature
+  the last blow landed on, and a third-phase cut of his that landed on one (not the pale wind) leaves the enemy Ultra
+  Bleeding (`Foigh.WoundStruck`, `UltraBleedingGeneric.Cut`: 200 a second for 5 seconds, not doubled). `Foigh.Wild`
+  `ClusterWider` 1.25: the driven sword's cuts (`LineRadius` 10 to 12.5 tiles) and the ball's (`BurstReach` 18/23/27
+  to 22.5/28.75/33.75 tiles), rings drawn to match. r82n (`Claude outputs\r82\before_n`).
+- "Give it normal ai that also translate to battle attack in phase 3: if there is a swarm of too much minions and
+  players doing close range attack: he plunges down and do 3x damage and 2x many straight slashes in same radius",
+  "Guarentee hit within radius", "every npcs and player", "in that attack", "like maybe 5+ npcs so it can kill a
+  swarm of 100 ish bees". The crowded plunge (`Foigh.Wild`: `CrowdTick`, `Crowd`, `CrowdCut`; `crowding` sent with
+  him in ExtraAI and over in `Go` with anything but TwoGather/TwoAir/TwoStuck). Third phase, where the world is
+  decided: 5+ (`CrowdMany`) within 8 tiles of his middle (players with an item in use, held out or channelled;
+  minions, once each by minion slots; in the Super Smash battle creatures of another side that can be hurt) for 30
+  ticks (each tick without takes two back), he free (CanReact, grounded) and none in the last 10 seconds: `Launch`
+  sends him straight up where he stands (as high as his longest leap, within headroom), the landing always goes to
+  TwoStuck (a late Word.Struck no longer turns it to TwoLanded), and `Driven` lets out 28 cuts (`crowdLineAt`) over
+  the same 12.5 tiles. At DriveBursts, on every machine: the local player (and the mirror's copy) within that reach
+  of the blade is cut by `FoighGripPlayer.Through` (through armour and i-frames, not dodgeable) for a straight cut's
+  blow x3 (`CrowdHarder`), plus Ultra Bleeding; in the battle instead every creature of another side there
+  (`BattleRoyaleSupport.StrikeAround`: once per worm, whatever grace, through defence, x2, the battle's modifiers) and
+  each left bleeding. Its straight cuts are x3 too (`FoighLine`, `foigh.Crowding`). Outside the battle it touches no
+  NPC. r82o (`Claude outputs\r82\before_o`).
+- "Can you make foighs attack bypass calamity damage reduction cuz somehow slashes are still <100 damage on devourer
+  of gods": the Devourer of Gods' body has Calamity DR 0.925, unbreakable (DevourerofGodsBody.SetDefaults), applied
+  in CalamityGlobalNPC.ApplyDR as `modifiers.FinalDamage *= 1 - DR`. `BattleRoyaleSupport.Unreduced` sets the
+  final damage modifier's additive and multiplicative parts to at least 1 (flat and base at least 0) after the
+  incoming-hit hooks have run: every reduction undone (Calamity's DR and spawn DR, vanilla takenDamageMultiplier under
+  1), increases kept, a one-hit cap (SetMaxDamage, as the Devourer's) kept. Used for Foigh's blows only: `Hurt`'s
+  new last argument `pastReduction` (true from `Foigh.Pierce`, `FoighGripPlayer.Bite` and `Through`), and always in
+  `StrikeAround` (the crowded plunge). Defence was already ignored. r82p (`Claude outputs\r82\before_p`).
+- "his flying slashes goes thru tiles but still fade with time", "all phases": `FoighSlash` (every kind: the burning
+  cuts, the great one off the wheel, the pale wind of his second phase) has `tileCollide` false, so it flies on
+  through ground, walls and ceilings and ends only by thinning away at the end of its life (or met by a parry).
+  r82q (`Claude outputs\r82\before_q`).
+- "Make empress of light only try to fight inside her decagon" / "can go outside for a bit but will go back inside
+  while fighting": `EmpressOfLight.Within.cs` `KeepIn` (PostAI, the server's): in no scene (vanilla's own moves),
+  not dying, not leaving (vanilla state 13), with someone to fight, after 60 ticks outside her decagon she moves back
+  in (6 px a tick, 0.3 faster each tick, at most 26) to 96 px inside the border (`Decagon.PushInside`, which also
+  takes the outward part of her speed off); her place sent every 10 ticks. Her acts and scenes place her themselves,
+  as before.
+- "and that her day light form phase 2 does the negative heal twice as often": `StartSecond` now picks by weight
+  (`SecondWeight`): the negative 3.6, every other act 1, still never one of the last three. Counted over a long run
+  (simulated) that is twice as often as before.
+- "Anything outside her decagon daylight suffer 30k dps a second (property like her dash and hold and light up in
+  phase 2)": while her Legends second half holds the day (`MarkDay`: arenaSet, unveiled, LegendsSecond), anything
+  outside her decagon and within `EmpressArena.Reach` (radius + 200 tiles) burns as her hand's burn does: lifeRegen
+  -60000 (30,000 life a second), no regen. `EmpressDayCreature` (GlobalNPC: not a townsperson, not one that cannot be
+  hurt, not her; numbers shown 3000 at a time) and `EmpressDayPlayer` (ModPlayer, on the player's own machine; dies
+  "was seen through." as of her hand). Lit white while it burns (drawn white, full bright for a player, glints and
+  light). r82r (`Claude outputs\r82\before_r`).
+- "Manta ray NPCs create: 4 frame, falt and swimming slowly in whatever zone you figure out in school of 2-3": new
+  `Content/NPCs/VastOcean/MantaRay.cs` (namespace PisAndDag.Content.NPCs.Ocean): `MantaRay` (ModPseudoNPC, as the
+  school fish: looks only, client side, no bestiary, nothing can hit it) and `VastOceanRays` (ModSystem). Two schools
+  of 2 or 3 about the player while the screen's middle is in the Vast Ocean's 1st section, rows 12 under the surface
+  to 10 over the section's end, spawned out of sight in open water (nothing solid within 10 tiles in 8 ways), 900 px
+  apart, let go 1200 px past the screen. A school's middle cruises 0.5-0.8 px a tick, mostly level, turning wide off
+  the rock; the first ray on it, the others behind (-95,-40) and (-80,+46), drifting; each keeps 70 px from the others,
+  shies from players without hurry (bell curve, 110 px), speed 0.35 to 1.3 (2.4 hurried), rises and sinks with its
+  stroke, turns round edge on like the fish. `MantaRay.png`: 4 frames of 44x18 art pixels drawn 2x2 (88x144), facing
+  left: level, up, level, down (12 ticks each, quicker hurried); 11 colours, dark above, pale beneath, shoulder marks.
+  The school fish part round the rays (`VastOceanSchools.GatherThreats` calls `VastOceanRays.Threaten`).
+- "Add 2 more small fish school using template of what were": `SchoolFish.cs` `BlueChromis` (BlueChromis.png, 18x8
+  art pixels; blue, + blue-green, violet, navy, aqua; Depths {3,1}, NearRock 2) and `BluestripeSnapper`
+  (BluestripeSnapper.png, 20x8; yellow with blue lines, + golden, lemon, sunset red, violet-lined; Depths {1,3},
+  NearRock 1.5). Picked by VastOceanSchools as the others, 40-80 a school. r82s (`Claude outputs\r82\before_s`).

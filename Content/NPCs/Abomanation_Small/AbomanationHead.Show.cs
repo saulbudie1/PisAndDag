@@ -1105,7 +1105,7 @@ namespace PisAndDag.Content.NPCs.Abomanation_Small
             PlayerDeathReason reason = PlayerDeathReason.ByCustomReason(
                 NetworkText.FromKey("Mods.PisAndDag.DeathText.AmalgaermisSteam", me.name));
 
-            me.Hurt(reason, damage, side.X >= 0f ? 1 : -1, false, false, ImmunityCooldownID.General, true, 0f, 0f, 2f);
+            BattleRoyaleSupport.Hurt(me, reason, damage, side.X >= 0f ? 1 : -1, false, false, ImmunityCooldownID.General, true, 0f, 0f, 2f);
         }
     }
 }

@@ -59,8 +59,8 @@ namespace PisAndDag.Content.NPCs.Foigh
         // NUMBERS
         // ============================================================
 
-        /// <summary>The hook's blow, through armour, the same in every world: half a knife's.</summary>
-        public const int HookDamage = 50;
+        /// <summary>The hook's blow, through armour, the same in every world: half a knife's (50, <see cref="Harder"/>).</summary>
+        public const int HookDamage = (int)(50 * Harder + 0.5f);
 
         /// <summary>
         /// The wind: how likely he is to begin it, beside what else he may pick (Choose),

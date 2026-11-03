@@ -501,7 +501,10 @@ namespace PisAndDag.Content.NPCs.Foigh
         // ============================================================
 
         /// <summary>The sword up across his front, toward whoever shot; again, if it is up already.</summary>
-        private void Guarded(int by)
+        private void Guarded(int by) => GuardedToward(Main.player[by].Center);
+
+        /// <summary>The sword up across his front, toward where it came from (a player, or a creature in the Super Smash battle: Foigh.Smash).</summary>
+        private void GuardedToward(Vector2 from)
         {
             if (State == Move.Guard)
             {
@@ -512,10 +515,8 @@ namespace PisAndDag.Content.NPCs.Foigh
                 return;
             }
 
-            Player who = Main.player[by];
-
-            if (Math.Abs(who.Center.X - NPC.Center.X) > 6f)
-                Face(who.Center.X > NPC.Center.X ? 1 : -1);
+            if (Math.Abs(from.X - NPC.Center.X) > 6f)
+                Face(from.X > NPC.Center.X ? 1 : -1);
 
             guards = 0;
             Go(Move.Guard);
@@ -546,10 +547,13 @@ namespace PisAndDag.Content.NPCs.Foigh
         }
 
         /// <summary>His sword into theirs, toward them.</summary>
-        private void Clashed(Player by)
+        private void Clashed(Player by) => ClashedToward(by.Center);
+
+        /// <summary>His sword into what came at him, toward where it came from.</summary>
+        private void ClashedToward(Vector2 from)
         {
-            if (Math.Abs(by.Center.X - NPC.Center.X) > 6f)
-                Face(by.Center.X > NPC.Center.X ? 1 : -1);
+            if (Math.Abs(from.X - NPC.Center.X) > 6f)
+                Face(from.X > NPC.Center.X ? 1 : -1);
 
             // They are thrown back: he comes on after them sooner. But not out of the
             // second or two he takes after a move from up close in his second phase, which
@@ -580,7 +584,13 @@ namespace PisAndDag.Content.NPCs.Foigh
         /// him to stand, and nothing else of theirs is on its way to that place; up if not,
         /// and now and then anyway.
         /// </summary>
-        private void Dodged(Player by, Vector2 at, Vector2 going)
+        private void Dodged(Player by, Vector2 at, Vector2 going) => DodgedFrom(by, by);
+
+        /// <summary>
+        /// The step out of the way, from whoever sent it: <paramref name="player"/> when that is a player (whose other
+        /// shots he keeps clear of, and whom he then goes for); null for a creature in the Super Smash battle (Foigh.Smash).
+        /// </summary>
+        private void DodgedFrom(Entity by, Player player)
         {
             int side = by.Center.X >= NPC.Center.X ? 1 : -1;
             bool level = by.velocity.Y == 0f || Collision.SolidCollision(by.BottomLeft, by.width, 40);
@@ -590,12 +600,15 @@ namespace PisAndDag.Content.NPCs.Foigh
             bool front = level
                 && Stand(by.Center.X - side * FrontGap, by.Bottom.Y, out ahead)
                 && Math.Abs(ahead.X - by.Center.X) >= 30f
-                && !ShotAt(by, ahead);
+                && (player == null || !ShotAt(player, ahead));
 
             if (front && Main.rand.Next(4) != 0)
             {
-                TargetIndex = by.whoAmI;
-                NPC.target = by.whoAmI;
+                if (player != null)
+                {
+                    TargetIndex = player.whoAmI;
+                    NPC.target = player.whoAmI;
+                }
 
                 Move next = Main.rand.NextBool() ? Move.One : Move.Three;
 
@@ -618,8 +631,12 @@ namespace PisAndDag.Content.NPCs.Foigh
                 return;
             }
 
-            TargetIndex = by.whoAmI;
-            NPC.target = by.whoAmI;
+            if (player != null)
+            {
+                TargetIndex = player.whoAmI;
+                NPC.target = player.whoAmI;
+            }
+
             last = Move.TwoGather;
 
             FlashTo(feet + new Vector2(0f, -high), Move.TwoAir);
@@ -655,13 +672,16 @@ namespace PisAndDag.Content.NPCs.Foigh
         /// A shot of theirs struck out of the air goes back at whoever sent it, the server's:
         /// what it was, from where it was struck, no slower than it came (FoighReturned).
         /// </summary>
-        private void SendBack(Player to, Vector2 at, Vector2 going, int type)
+        private void SendBack(Player to, Vector2 at, Vector2 going, int type) => SendBackToward(to.Center, at, going, type);
+
+        /// <summary>A shot struck out of the air sent back toward this place: whoever sent it.</summary>
+        private void SendBackToward(Vector2 toward, Vector2 at, Vector2 going, int type)
         {
             if (type <= ProjectileID.None || type >= ProjectileLoader.ProjectileCount || Vector2.Distance(at, NPC.Center) > 400f)
                 return;
 
             float speed = MathHelper.Clamp(going.Length(), BackLeast, BackMost);
-            Vector2 way = (to.Center - at).SafeNormalize(new Vector2(-facing, 0f));
+            Vector2 way = (toward - at).SafeNormalize(new Vector2(-facing, 0f));
 
             Projectile.NewProjectile(NPC.GetSource_FromAI(), at, way * speed, ModContent.ProjectileType<FoighReturned>(),
                 0, 0f, Main.myPlayer, type, NPC.whoAmI);
@@ -736,9 +756,31 @@ namespace PisAndDag.Content.NPCs.Foigh
 
         public override bool CanHitPlayer(Projectile projectile, Player target) => !Dead;
 
+        /// <summary>
+        /// A creature's shot in the Super Smash battle, on him (Foigh.Smash): the battle strikes with whatever touches
+        /// (its shot-on-creature hit, after Projectile.Damage, asks only this), so it is here that one he struck out of the air is
+        /// stopped, and that one already struck touches nothing more.
+        /// </summary>
+        public override bool? Colliding(Projectile projectile, Rectangle projHitbox, Rectangle targetHitbox)
+        {
+            if (rolledBy < 0 || !BattleRoyaleSupport.Battle || BattleRoyaleSupport.Side(projectile) <= 0)
+                return null;
+
+            if (Dead)
+                return false;
+
+            NPC him = Main.npc[rolledBy];
+
+            if (Verdict != Struck || !him.active || him.ModNPC is not Foigh foigh || targetHitbox != him.Hitbox)
+                return null;
+
+            return foigh.SmashStruck(projectile, this) ? false : null;
+        }
+
         public override void PostAI(Projectile projectile)
         {
-            if (Dead && projectile.owner == Main.myPlayer)
+            // (In single player every shot is this machine's to end: a creature's too, whatever owner it has.)
+            if (Dead && (projectile.owner == Main.myPlayer || Main.netMode == NetmodeID.SinglePlayer))
                 projectile.Kill();
         }
     }

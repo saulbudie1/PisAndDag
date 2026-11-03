@@ -383,6 +383,10 @@ namespace PisAndDag.Content.NPCs.Empress
             BowTick(npc);
             StepSeen(npc);
 
+            // Back inside her arena if she has been out of it too long; and the day she holds outside it (EmpressOfLight.Within).
+            KeepIn(npc);
+            MarkDay(npc);
+
             if (heldFor > 0 && scene == Scene.None)
                 npc.dontTakeDamage = true;
         }

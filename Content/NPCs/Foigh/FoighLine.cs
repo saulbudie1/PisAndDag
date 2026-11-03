@@ -400,11 +400,18 @@ namespace PisAndDag.Content.NPCs.Foigh
             float away = across.X * Math.Sign(side);
             int direction = Math.Abs(away) > 0.2f ? Math.Sign(away) : me.Center.X >= Projectile.Center.X ? 1 : -1;
 
-            int damage = Main.DamageVar(foigh.SwordDamage() * Share, -me.luck);
+            // (Three times as hard, the crowded plunge's: Foigh.Wild.)
+            int damage = Main.DamageVar(foigh.SwordDamage() * Share * (foigh.Crowding ? Foigh.CrowdHarder : 1f), -me.luck);
 
             // (Not while the game's grace after a hit lasts: Player.Hurt takes nothing then.)
             if (!Foigh.Pierce(me, "FoighLine", damage, direction, Knockback))
+            {
+                // (Landed on a creature instead, in the Super Smash battle: in his third phase his sword's wound is left on it.)
+                if (foigh.Phase >= 3)
+                    Foigh.WoundStruck();
+
                 return;
+            }
 
             ThroughWith(Projectile, me);
 

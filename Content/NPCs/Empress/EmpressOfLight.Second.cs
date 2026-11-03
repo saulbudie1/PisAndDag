@@ -123,6 +123,15 @@ namespace PisAndDag.Content.NPCs.Empress
                 DashMeets(npc);
         }
 
+        /// <summary>
+        /// How likely an act is to be chosen, beside the others that may be: the negative twice as often over a fight as
+        /// any other (by request: "her day light form phase 2 does the negative heal twice as often"). Never within three
+        /// of itself, so to come twice as often it is 3.6 times as likely whenever it may come (counted over a long run).
+        /// </summary>
+        private static float SecondWeight(Act which) => which == Act.Negative ? NegativeWeight : 1f;
+
+        private const float NegativeWeight = 3.6f;
+
         /// <summary>One of her second half's acts, chosen: never one of the last three (the first, the bow's). The server's.</summary>
         private void StartSecond(NPC npc, Player target)
         {
@@ -137,14 +146,30 @@ namespace PisAndDag.Content.NPCs.Empress
             {
                 Span<Act> open = stackalloc Act[SecondActs.Length];
                 int count = 0;
+                float total = 0f;
 
                 foreach (Act a in SecondActs)
                 {
                     if (a != recent[0] && a != recent[1] && a != recent[2])
+                    {
                         open[count++] = a;
+                        total += SecondWeight(a);
+                    }
                 }
 
-                chosen = open[Main.rand.Next(count)];
+                float roll = Main.rand.NextFloat(total);
+                chosen = open[count - 1];
+
+                for (int i = 0; i < count; i++)
+                {
+                    roll -= SecondWeight(open[i]);
+
+                    if (roll < 0f)
+                    {
+                        chosen = open[i];
+                        break;
+                    }
+                }
             }
 
             recent[2] = recent[1];

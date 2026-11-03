@@ -96,6 +96,18 @@ namespace PisAndDag.Content.NPCs.Foigh
     /// picks up close cannot be parried. The more they are in the air, the more he
     /// picks what goes up after them. The more they keep off, the less he walks.
     ///
+    /// THE CROWDED PLUNGE, his third phase's, by request ("if there is a swarm of too much minions and players doing
+    /// close range attack: he plunges down and do 3x damage and 2x many straight slashes in same radius", "Guarentee hit
+    /// within radius", "every npcs and player", "in that attack", "like maybe 5+ npcs so it can kill a swarm of 100 ish
+    /// bees"). Five or more on him from up close (eight tiles) for half a second (players swinging or holding something
+    /// out, minions, and in the Super Smash battle the creatures of the other side), and he is free (on his feet,
+    /// walking or with his sword up): straight up where he stands, as high as his longest leap, and down, the sword
+    /// driven in whatever it came down on. As it goes in, everyone within the reach of its cuts is cut, every one,
+    /// whatever they would have dodged it with or had just been hit by: three times a straight cut's blow, through
+    /// armour, and the wound his sword leaves; in the battle every creature of the other side there is, and not the
+    /// player. Then twice as many straight cuts as the driven sword lets out, across the same reach, each three times as
+    /// hard. No oftener than every ten seconds.
+    ///
     /// WHO DECIDES. The server all of it. A linger is sent with him (how long; or that
     /// it is a feint, for the blade to flare everywhere), and the clock stands still on
     /// every machine by itself. What their minions take from him is counted on the
@@ -155,10 +167,29 @@ namespace PisAndDag.Content.NPCs.Foigh
         /// </summary>
         private const int LineCount = 14;
         private const int LineSpread = 40;
-        private const float LineRadius = 160f;
+        private const float LineRadius = 160f * ClusterWider;
+
+        /// <summary>
+        /// Both of his clusters of straight cuts, the driven sword's and the ball's, a quarter wider again than the tiles
+        /// given for them here (by request: "his straight cluster radius 1.25x radius").
+        /// </summary>
+        private const float ClusterWider = 1.25f;
         private const float LineMiddle = 0.7f;
         private const int LineAtThem = 3;
         private const int DriveAfter = 5;
+
+        /// <summary>
+        /// The crowded plunge: how many on him make a crowd, and from how near (to the nearest of each); for how many
+        /// ticks of crowding (each tick without one takes two back) before he plunges; the least time between two; how
+        /// many times the driven sword's cuts it lets out; and how many times as hard those cuts are, and its own cut of
+        /// everyone in reach, than a straight cut's blow.
+        /// </summary>
+        private const int CrowdMany = 5;
+        private const float CrowdNear = 8f * 16f;
+        private const int CrowdHold = 30;
+        private const int CrowdEvery = 600;
+        private const int CrowdLines = 2;
+        internal const float CrowdHarder = 3f;
 
         /// <summary>
         /// Every straight cut of his, of both moves (Cut): the least share it is of the line
@@ -186,9 +217,9 @@ namespace PisAndDag.Content.NPCs.Foigh
         private const int SwarmEvery = 600;
         private const int SwarmTellEvery = 60;
         private const int BurstLines = 16;
-        private const float BurstReachFirst = 18f * 16f;
-        private const float BurstReachSecond = 23f * 16f;
-        private const float BurstReachThird = 27f * 16f;
+        private const float BurstReachFirst = 18f * 16f * ClusterWider;
+        private const float BurstReachSecond = 23f * 16f * ClusterWider;
+        private const float BurstReachThird = 27f * 16f * ClusterWider;
         private const float BurstMiddle = 0.6f;
         private const int BurstAtThem = 4;
         private const int BurstLead = FoighLine.ShowsMost;
@@ -268,6 +299,19 @@ namespace PisAndDag.Content.NPCs.Foigh
         private readonly int[] lineAt = new int[LineCount];
         private int linesOut;
         private int drivenEnds;
+
+        /// <summary>
+        /// The crowded plunge: whether the leap he is in, or the sword he has driven, is one (sent with him; over as he
+        /// moves on to anything else, Go); the ticks of its cuts; and, the server's, the ticks he has been crowded
+        /// for and the update of the game the last began on.
+        /// </summary>
+        private bool crowding;
+        private readonly int[] crowdLineAt = new int[LineCount * CrowdLines];
+        private int crowdHeld;
+        private uint crowdLast;
+
+        /// <summary>Whether the leap he is in, or the sword he has driven, is the crowded plunge: its cuts are three times as hard (FoighLine).</summary>
+        public bool Crowding => crowding;
 
         /// <summary>
         /// The ball: where his middle was as the first of its cuts was let out (the middle of
@@ -492,22 +536,29 @@ namespace PisAndDag.Content.NPCs.Foigh
             Fall();
             NPC.velocity.X *= 0.6f;
 
+            // The crowded plunge: as it goes in, everyone within reach is cut (on every machine, each its own player).
+            if (crowding && At(M.DriveBursts))
+                CrowdCut(DrivenAt());
+
             if (!Authority)
                 return;
+
+            // (Twice as many cuts in the crowded plunge.)
+            int[] lines = crowding ? crowdLineAt : lineAt;
 
             if (At(M.DriveBursts))
             {
                 drivenAt = DrivenAt();
-                Uneven(lineAt, LineSpread);
+                Uneven(lines, LineSpread);
                 linesOut = 0;
                 drivenEnds = 0;
                 opensAt.Clear();
             }
 
-            while (now >= M.DriveBursts && linesOut < LineCount && now >= M.DriveBursts + lineAt[linesOut])
+            while (now >= M.DriveBursts && linesOut < lines.Length && now >= M.DriveBursts + lines[linesOut])
                 Line(target, linesOut++);
 
-            if ((now > M.DriveBursts && linesOut >= LineCount && now >= drivenEnds) || now >= M.DriveTicks)
+            if ((now > M.DriveBursts && linesOut >= lines.Length && now >= drivenEnds) || now >= M.DriveTicks)
                 Go(Move.TwoFree, Arg);
         }
 
@@ -649,6 +700,128 @@ namespace PisAndDag.Content.NPCs.Foigh
 
             FoighLine.Let(NPC, through + along * (start - on + length * 0.5f), turn, length * 0.5f, shows, Main.rand.Next(FoighLine.HangsLeast, FoighLine.HangsMost + 1), ball, pale, downs);
             return shows;
+        }
+
+        // ============================================================
+        // THE CROWDED PLUNGE
+        // ============================================================
+
+        /// <summary>
+        /// Every tick of the fight, where the world is decided, in his third phase: crowded long enough, and free for it
+        /// (on his feet, walking or with his sword up), and none too lately: up, to come down where he stands (Launch).
+        /// </summary>
+        private void CrowdTick()
+        {
+            if (phase < 3 || !Fighting || Passing)
+            {
+                crowdHeld = 0;
+                return;
+            }
+
+            if (crowdLast != 0 && Main.GameUpdateCount - crowdLast < CrowdEvery)
+                return;
+
+            crowdHeld = Crowd() >= CrowdMany ? crowdHeld + 1 : Math.Max(0, crowdHeld - 2);
+
+            if (crowdHeld < CrowdHold || !CanReact || !grounded)
+                return;
+
+            crowdHeld = 0;
+            crowdLast = Math.Max(1u, Main.GameUpdateCount);
+            crowding = true;
+            close = false;
+            waitingOut = false;
+            Go(Move.TwoGather);
+        }
+
+        /// <summary>
+        /// How many are on him from up close: players swinging or holding something out, what fights for them (each
+        /// minion once, by what it takes up of their room for minions), and in the Super Smash battle every creature of
+        /// another side that can be hurt.
+        /// </summary>
+        private int Crowd()
+        {
+            int crowd = 0;
+
+            foreach (Player player in Main.ActivePlayers)
+            {
+                if (!player.dead && Near(player.Hitbox) && (player.itemAnimation > 0 || player.channel || player.heldProj >= 0))
+                    crowd++;
+            }
+
+            foreach (Projectile projectile in Main.ActiveProjectiles)
+            {
+                if (projectile.minion && projectile.minionSlots > 0f && projectile.friendly && projectile.owner < Main.maxPlayers && Near(projectile.Hitbox))
+                    crowd++;
+            }
+
+            int mine = SmashSide;
+
+            if (mine > 0)
+            {
+                foreach (NPC npc in Main.ActiveNPCs)
+                {
+                    int theirs = BattleRoyaleSupport.Side(npc);
+
+                    if (theirs > 0 && theirs != mine && !npc.dontTakeDamage && Near(npc.Hitbox))
+                        crowd++;
+                }
+            }
+
+            return crowd;
+        }
+
+        /// <summary>Whether this box comes within <see cref="CrowdNear"/> of his middle.</summary>
+        private bool Near(Rectangle box) => Vector2.Distance(Vector2.Clamp(NPC.Center, box.TopLeft(), box.BottomRight()), NPC.Center) <= CrowdNear;
+
+        /// <summary>The crowded plunge's own cut, and each of its straight cuts: three times a straight cut's blow.</summary>
+        private float CrowdDamage => SwordDamage() * FoighLine.Share * CrowdHarder;
+
+        /// <summary>
+        /// The sword driven in, in the crowded plunge: everyone within the reach of its cuts of the point it went in at is
+        /// cut, every one. This machine's player, through armour and whatever just hit them, undodged (FoighGripPlayer.Through),
+        /// and the wound his sword leaves. In the Super Smash battle every creature of the other side within it instead,
+        /// twice as hard (Foigh.OnCreatures), and wounded the same (BattleRoyaleSupport.StrikeAround): the player is not in it.
+        /// </summary>
+        private void CrowdCut(Vector2 at)
+        {
+            if (SmashSide > 0)
+            {
+                if (Authority)
+                {
+                    foreach (NPC struck in BattleRoyaleSupport.StrikeAround(at, LineRadius, CrowdDamage * OnCreatures, KnockCut))
+                        Buffs.UltraBleedingGeneric.Cut(struck);
+                }
+
+                return;
+            }
+
+            if (Main.dedServ)
+                return;
+
+            CrowdCutOn(at);
+
+            // And the Everclear Mirror's copy, as a second player.
+            Mimic.MimicSystem.AlsoOnCopy(() => CrowdCutOn(at));
+        }
+
+        /// <summary>The crowded plunge's cut, on whoever is this machine's player for the moment (the copy, under MimicSystem.AlsoOnCopy).</summary>
+        private void CrowdCutOn(Vector2 at)
+        {
+            Player me = Main.LocalPlayer;
+
+            if (me == null || !me.active || me.dead)
+                return;
+
+            Rectangle body = me.Hitbox;
+
+            if (Vector2.Distance(Vector2.Clamp(at, body.TopLeft(), body.BottomRight()), at) > LineRadius)
+                return;
+
+            int damage = Main.DamageVar(CrowdDamage, -me.luck);
+
+            FoighGripPlayer.Through(me, "FoighLine", damage, me.Center.X >= at.X ? 1 : -1);
+            Wound(me);
         }
 
         // ============================================================

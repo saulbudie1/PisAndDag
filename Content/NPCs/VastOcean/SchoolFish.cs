@@ -733,4 +733,67 @@ namespace PisAndDag.Content.NPCs.Ocean
         public override float[] Depths => depths;
         private static readonly float[] depths = { 1f, 3f };
     }
+
+    /// <summary>
+    /// Blue Chromis (Chromis cyanea), by request ("Add 2 more small fish school using template of what were"): small,
+    /// deep in the body, a deep fork to its tail, bright blue, in quick bright clouds over the rock in the upper sea;
+    /// twice as likely near it. Its picture (BlueChromis) and four more: blue-green (as the green chromis is), violet,
+    /// deep navy and aqua.
+    /// </summary>
+    public class BlueChromis : SchoolFish
+    {
+        protected override string File => "BlueChromis";
+
+        public override Variant[] Variants => variants;
+
+        private static readonly Variant[] variants =
+        {
+            new Variant(0),
+            new Variant(0, new Recolour(180f, 240f, Part.All, -42f, 0.95f, 1.02f)),
+            new Variant(0, new Recolour(180f, 240f, Part.All, 38f, 0.9f, 0.98f)),
+            new Variant(0, new Recolour(180f, 240f, Part.All, 8f, 1.1f, 0.78f)),
+            new Variant(0, new Recolour(180f, 240f, Part.All, -22f, 0.85f, 1.06f)),
+        };
+
+        public override float CruiseSlow => 0.4f;
+        public override float CruiseFast => 0.75f;
+        public override float Swim => 1.7f;
+        public override float Top => 2.3f;
+        public override float Flee => 5f;
+        public override float Steer => 0.075f;
+        public override float[] Depths => depths;
+        private static readonly float[] depths = { 3f, 1f };
+        public override float NearRock => 2f;
+    }
+
+    /// <summary>
+    /// Bluestripe Snapper (Lutjanus kasmira), by request (as the Blue Chromis): longer, yellow, blue lines along it,
+    /// pale beneath, in slow close walls, deeper, in the Schooler Zone most. Its picture (BluestripeSnapper) and four
+    /// more: golden, lemon, sunset red (its lines still blue) and violet-lined.
+    /// </summary>
+    public class BluestripeSnapper : SchoolFish
+    {
+        protected override string File => "BluestripeSnapper";
+
+        public override Variant[] Variants => variants;
+
+        private static readonly Variant[] variants =
+        {
+            new Variant(0),
+            new Variant(0, new Recolour(25f, 70f, Part.All, -10f, 1.08f, 1f)),
+            new Variant(0, new Recolour(25f, 70f, Part.All, 8f, 0.72f, 1.04f)),
+            new Variant(0, new Recolour(25f, 70f, Part.All, -36f, 1.1f, 0.95f)),
+            new Variant(0, new Recolour(190f, 240f, Part.All, 48f, 0.9f, 1f)),
+        };
+
+        public override float CruiseSlow => 0.35f;
+        public override float CruiseFast => 0.6f;
+        public override float Swim => 1.4f;
+        public override float Top => 2f;
+        public override float Flee => 4.4f;
+        public override float Steer => 0.055f;
+        public override float[] Depths => depths;
+        private static readonly float[] depths = { 1f, 3f };
+        public override float NearRock => 1.5f;
+    }
 }

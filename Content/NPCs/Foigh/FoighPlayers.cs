@@ -667,7 +667,7 @@ namespace PisAndDag.Content.NPCs.Foigh
                 NetworkText.FromKey("Mods.PisAndDag.DeathText." + death, me.name));
 
             me.hurtCooldowns[Slot] = 0;
-            me.Hurt(reason, damage, direction, false, false, Slot, false, 0f, 1f, 0f);
+            BattleRoyaleSupport.Hurt(me, reason, damage, direction, false, false, Slot, false, 0f, 1f, 0f, Foigh.OnCreatures, true);
 
             // A hit of his like any other, for what it takes from them (Struck).
             me.GetModPlayer<FoighGripPlayer>().Struck();
@@ -689,7 +689,7 @@ namespace PisAndDag.Content.NPCs.Foigh
 
             me.hurtCooldowns[Slot] = 0;
 
-            if (me.Hurt(reason, damage, direction, false, false, Slot, true, 0f, 1f, 0f) <= 0)
+            if (BattleRoyaleSupport.Hurt(me, reason, damage, direction, false, false, Slot, true, 0f, 1f, 0f, Foigh.OnCreatures, true) <= 0)
                 return false;
 
             me.GetModPlayer<FoighGripPlayer>().Struck();

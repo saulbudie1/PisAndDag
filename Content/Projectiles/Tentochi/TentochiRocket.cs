@@ -85,8 +85,9 @@ namespace PisAndDag.Content.Projectiles.Tentochi
                 if (!Main.dedServ)
                     TentochiFX.Launch(Projectile.Center, Projectile.velocity);
 
-                // The launcher it left seen kicking, and holding its mark, on the machines that did not fire it.
-                if (Projectile.owner >= 0 && Projectile.owner < Main.maxPlayers)
+                // The launcher it left seen kicking, and holding its mark, on the machines that did not fire it. Not the
+                // Cyborg's (TentochiCyborgVolley): those are his, whoever the game puts down as their owner.
+                if (!Projectile.npcProj && Projectile.owner >= 0 && Projectile.owner < Main.maxPlayers)
                     Main.player[Projectile.owner].GetModPlayer<TentochiPlayer>().Fired(Target);
             }
 

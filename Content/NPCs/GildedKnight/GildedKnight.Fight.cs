@@ -765,7 +765,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             PlayerDeathReason reason = PlayerDeathReason.ByCustomReason(
                 NetworkText.FromKey("Mods.PisAndDag.DeathText.GildedKnightBlade", me.name));
 
-            if (me.Hurt(reason, damage, direction, false, false, ImmunityCooldownID.General, true, 0f, 0f, s.Heavy ? KnockHeavy : KnockCut) <= 0)
+            if (BattleRoyaleSupport.Hurt(me, reason, damage, direction, false, false, ImmunityCooldownID.General, true, 0f, 0f, s.Heavy ? KnockHeavy : KnockCut) <= 0)
                 return false;
 
             KnightFx.Cut(me.Center, along, s.Blade, second, s.Heavy);

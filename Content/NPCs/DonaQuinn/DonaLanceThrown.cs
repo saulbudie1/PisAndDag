@@ -315,7 +315,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
 
             int direction = Projectile.velocity.X >= 0f ? 1 : -1;
 
-            if (me.Hurt(reason, damage, direction, false, false, ImmunityCooldownID.General, true, 0f, 1f, Knockback) <= 0)
+            if (BattleRoyaleSupport.Hurt(me, reason, damage, direction, false, false, ImmunityCooldownID.General, true, 0f, 1f, Knockback) <= 0)
                 return;
 
             if (MimicSystem.Is(me))

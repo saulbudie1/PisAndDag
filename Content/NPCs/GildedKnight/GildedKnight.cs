@@ -813,6 +813,10 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             if (player == null || !player.active)
                 return false;
 
+            // Stood in for an enemy in the Super Smash mod's battle: that enemy is in his fight (BattleRoyaleSupport).
+            if (BattleRoyaleSupport.StandIn(player) != null)
+                return true;
+
             return BossArena.Up && BossArena.Sealed && player.GetModPlayer<BossArenaPlayer>().Held;
         }
 

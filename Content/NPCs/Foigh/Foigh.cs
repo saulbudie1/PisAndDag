@@ -200,8 +200,20 @@ namespace PisAndDag.Content.NPCs.Foigh
         public const int ThirdDefense = 2;
 
         /// <summary>
+        /// All of his blows, three quarters as hard again as the numbers here (by request: "bump all foighs damage to
+        /// x1.75"): his sword and all that is a share of it, his knife, a shot sent back, his hook.
+        /// </summary>
+        public const float Harder = 1.75f;
+
+        /// <summary>
+        /// And twice that again on a creature, in the Super Smash battle (by request: "every damage is 2x on NPCs as well
+        /// on top"; BattleRoyaleSupport.Hurt).
+        /// </summary>
+        public const float OnCreatures = 2f;
+
+        /// <summary>
         /// The sword, through armour, in a Classic, an Expert and a Master world: while he has
-        /// more than two thirds of his life, and after. Half as much again in Legends.
+        /// more than two thirds of his life, and after (each <see cref="Harder"/>). Half as much again in Legends.
         /// </summary>
         private static readonly int[] SwordFirst = { 100, 130, 150 };
         private static readonly int[] SwordLater = { 150, 200, 230 };
@@ -210,8 +222,8 @@ namespace PisAndDag.Content.NPCs.Foigh
         /// <summary>The blow down in his third move: twice the sword.</summary>
         public const float HardBlow = 2f;
 
-        /// <summary>A knife, through armour, the same in every world; and a shot of theirs sent back.</summary>
-        public const int DaggerDamage = 100;
+        /// <summary>A knife, through armour, the same in every world; and a shot of theirs sent back: 100, <see cref="Harder"/>.</summary>
+        public const int DaggerDamage = (int)(100 * Harder);
 
         /// <summary>Where his second phase begins (Foigh.Passage), and his third (Foigh.Third): shares of his life.</summary>
         public const float SecondAt = 0.66f;
@@ -751,7 +763,7 @@ namespace PisAndDag.Content.NPCs.Foigh
         public int SwordDamage()
         {
             int[] table = Stage == 1 ? SwordFirst : SwordLater;
-            int damage = table[Main.masterMode ? 2 : Main.expertMode ? 1 : 0];
+            int damage = (int)Math.Round(table[Main.masterMode ? 2 : Main.expertMode ? 1 : 0] * Harder);
 
             return PADWorld.Legends ? (int)(damage * LegendsSword) : damage;
         }
@@ -841,6 +853,9 @@ namespace PisAndDag.Content.NPCs.Foigh
 
             // (How long the sword lingers in the move he is in; or 255, that it is a feint. Foigh.Wild.)
             writer.Write((byte)(feint ? 255 : Math.Clamp(linger, 0, 254)));
+
+            // (The crowded plunge. Foigh.Wild.)
+            writer.Write(crowding);
         }
 
         public override void ReceiveExtraAI(BinaryReader reader)
@@ -866,6 +881,8 @@ namespace PisAndDag.Content.NPCs.Foigh
 
             feint = wile == 255;
             linger = feint ? 0 : wile;
+
+            crowding = reader.ReadBoolean();
         }
 
         // ============================================================
@@ -902,6 +919,10 @@ namespace PisAndDag.Content.NPCs.Foigh
 
             State = move;
             Arg = arg;
+
+            // The crowded plunge is over with anything but its leap and its driven sword (Foigh.Wild).
+            if (move != Move.TwoGather && move != Move.TwoAir && move != Move.TwoStuck)
+                crowding = false;
 
             // His third phase: whether the sword will linger in this one, or it is a feint (Foigh.Wild).
             Wiles(move);
@@ -1079,7 +1100,7 @@ namespace PisAndDag.Content.NPCs.Foigh
                     break;
 
                 // The word came after he was down: he is not stuck after all.
-                case Word.Struck when State == Move.TwoStuck && Timer <= LateStruck:
+                case Word.Struck when State == Move.TwoStuck && Timer <= LateStruck && !crowding:
                     Go(Move.TwoLanded, Arg);
                     break;
 
@@ -1215,6 +1236,7 @@ namespace PisAndDag.Content.NPCs.Foigh
             if (!Main.dedServ)
             {
                 React();
+                SmashReact();
                 Holds();
                 Drinks();
                 Reads();

@@ -12,8 +12,8 @@ using Terraria.ModLoader;
 namespace PisAndDag.Content.NPCs.Ocean
 {
     /// <summary>
-    /// Schools of fish in the Vast Ocean (SchoolFish: the Anthias, the Fusiliers and the Pacific
-    /// Creolefish), for the looks only, on each player's own machine: pseudo-NPCs (PseudoNPCs), none of
+    /// Schools of fish in the Vast Ocean (SchoolFish: the Anthias, the Fusiliers, the Pacific
+    /// Creolefish, the Blue Chromis and the Bluestripe Snapper), for the looks only, on each player's own machine: pseudo-NPCs (PseudoNPCs), none of
     /// the game's, so they count against nothing. By request (SchoolFish's notes).
     ///
     /// WHERE: in the Vast Ocean and the Schooler Zone, the 1st and 2nd sections (VastOceanDepthMeter's
@@ -31,8 +31,8 @@ namespace PisAndDag.Content.NPCs.Ocean
     /// inside it every second or so, the crowd bulging after it and changing shape (SchoolFish: each fish
     /// keeps a drifting place of its own in an oval laid along the way the school goes; never round and
     /// round). The things the fish keep from (<see cref="Threats"/>):
-    /// every player, every creature bigger than a critter, every shot going fast; each school looks only at
-    /// those near it.
+    /// every player, every creature bigger than a critter, every shot going fast, every manta ray
+    /// (VastOceanRays); each school looks only at those near it.
     ///
     /// THE LIGHT: the sea's own light where each school is (VastOceanSky.SeaGlow, as its bubbles have it);
     /// how much of the sun reaches it (to three sections down, by day); and how dark it is about it,
@@ -259,6 +259,13 @@ namespace PisAndDag.Content.NPCs.Ocean
 
                 AddThreat(npc.Center, size * 0.5f, 1.5f * MathHelper.Clamp(size / 30f, 0.6f, 2f));
             }
+
+            // And the manta rays going through (VastOceanRays).
+            VastOceanRays.Threaten((at, body, push) =>
+            {
+                if (threatCount < MostThreats)
+                    AddThreat(at, body, push);
+            });
         }
 
         /// <summary>A threat, if it is near enough a school to frighten any of it.</summary>

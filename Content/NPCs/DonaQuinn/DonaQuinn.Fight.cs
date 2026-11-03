@@ -894,7 +894,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             PlayerDeathReason reason = PlayerDeathReason.ByCustomReason(
                 NetworkText.FromKey("Mods.PisAndDag.DeathText." + death, me.name));
 
-            return me.Hurt(reason, damage, direction, false, false, ImmunityCooldownID.General, true, 0f, 1f, knockback) > 0;
+            return BattleRoyaleSupport.Hurt(me, reason, damage, direction, false, false, ImmunityCooldownID.General, true, 0f, 1f, knockback) > 0;
         }
 
         /// <summary>The lance aimed at them as she comes: from her fist to the middle of them, if they are in front of her and near enough to aim at.</summary>
@@ -1059,7 +1059,7 @@ namespace PisAndDag.Content.NPCs.DonaQuinn
             PlayerDeathReason reason = PlayerDeathReason.ByCustomReason(
                 NetworkText.FromKey("Mods.PisAndDag.DeathText.DonaTrampled", me.name));
 
-            if (me.Hurt(reason, damage, donkey.Facing, false, false, ImmunityCooldownID.General, true, 0f, 0f, RamKnockback) <= 0)
+            if (BattleRoyaleSupport.Hurt(me, reason, damage, donkey.Facing, false, false, ImmunityCooldownID.General, true, 0f, 0f, RamKnockback) <= 0)
                 return;
 
             if (OnCopy)
