@@ -114,6 +114,19 @@ namespace PisAndDag.Content.Subworlds
         /// </summary>
         public virtual bool KeepsTile(int x, int y) => false;
 
+        /// <summary>
+        /// The tile here may be broken all the same, though the place is otherwise kept (<see cref="Untouched"/>): what is
+        /// there to be cut through, and nothing else (the Abandoned Lab's cobwebs). Asked only where the rules hold.
+        /// </summary>
+        public virtual bool MayBreak(int x, int y) => false;
+
+        /// <summary>
+        /// A pick may be put to the tile here, though nobody's tools work in the place otherwise (SubworldRulesPlayer): the
+        /// one thing in it that is there to be dug open (the Abandoned Lab's whole specimen canisters). Asked only where the
+        /// rules hold, of the tile a player aims at.
+        /// </summary>
+        public virtual bool MayDig(int x, int y) => false;
+
         /// <summary>The game spawns here, as it would anywhere (SubworldQuiet holds it back otherwise).</summary>
         public virtual bool Spawns => false;
 

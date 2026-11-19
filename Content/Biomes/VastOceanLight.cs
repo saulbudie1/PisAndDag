@@ -55,6 +55,16 @@ namespace PisAndDag.Content.Biomes
     /// water it never blacks under its surface line, so the sea shows there as before. (Not under
     /// the game's two old lightings when it draws straight to the screen: there it would black
     /// the open sea as well, so it is left as it is.)
+    ///
+    /// And the reefs (VastOceanReef), by request ("Fix the black shader shit"): the open water they
+    /// stand in is lit by nothing (the sea is drawn behind it), so a reef far from any lamp was lit
+    /// by nothing either, and the game drew none of it, its blocks nor its walls, and blacked it
+    /// (above): islands and the strands between them black against the blue. From the 2nd section
+    /// to the end of the 6th, whatever is in the water (a block, a wall, what stands on them) is
+    /// given the light the sea has at its depth (<see cref="Ambient"/>): a blue-green dimming
+    /// section by section, near nothing by the 6th, and less by night; a block a little less the
+    /// further it is in from the water, so a reef has some depth to it. The game spreads it on
+    /// from there as it spreads any light.
     /// </summary>
     public class VastOceanLight : ModSystem
     {
@@ -63,6 +73,16 @@ namespace PisAndDag.Content.Biomes
 
         /// <summary>The faintest light: about two of the game's least steps of brightness (1/255, at its brightness of 1.2), far under what it lets spread (0.0185).</summary>
         private static readonly Vector3 Faintest = new Vector3(0.002f, 0.006f, 0.012f);
+
+        /// <summary>The sea's light on what is in it, at a depth (rows under the surface), by day: from the 2nd section's top to the 7th's (<see cref="Ambient"/>).</summary>
+        private static readonly (float rows, Vector3 light)[] SeaLight =
+        {
+            (VastOcean.SectionRows, new Vector3(0.42f, 0.56f, 0.7f)),
+            (2 * VastOcean.SectionRows, new Vector3(0.32f, 0.44f, 0.6f)),
+            (3 * VastOcean.SectionRows, new Vector3(0.2f, 0.28f, 0.44f)),
+            (4 * VastOcean.SectionRows, new Vector3(0.09f, 0.13f, 0.24f)),
+            (6 * VastOcean.SectionRows, new Vector3(0.03f, 0.05f, 0.1f)),
+        };
 
         /// <summary>What the last look at the tiles found: water deep enough to halve, or to keep a light to its own cell.</summary>
         private static bool halved;
@@ -116,6 +136,8 @@ namespace PisAndDag.Content.Biomes
                 }
             }
 
+            Ambient(area, map);
+
             for (int y = Math.Max(area.Y, VastOcean.HalvedLightFrom); y < to; y++)
             {
                 bool own = y >= VastOcean.OwnLightFrom;
@@ -135,6 +157,73 @@ namespace PisAndDag.Content.Biomes
                         halved = true;
                 }
             }
+        }
+
+        /// <summary>
+        /// The sea's light on whatever is in its water from the 2nd section to the end of the 6th: on a
+        /// wall, on what stands in the water, and on a block, less the further in from the water it is
+        /// (three quarters two cells in, a little over half three or more).
+        /// </summary>
+        private static void Ambient(Rectangle area, LightMap map)
+        {
+            int from = Math.Max(area.Y, VastOcean.SectionTop(2)), to = Math.Min(area.Y + area.Height, VastOcean.SectionTop(7));
+
+            if (from >= to)
+                return;
+
+            // Less by night: as much as the sky's own light on the tiles, never under two fifths.
+            float day = Math.Max(0.4f, (Main.tileColor.R + Main.tileColor.G + Main.tileColor.B) / (3f * 255f));
+
+            for (int y = from; y < to; y++)
+            {
+                Vector3 light = SeaAt(y - VastOcean.Surface) * day;
+                int my = y - area.Y;
+
+                for (int mx = 0; mx < area.Width; mx++)
+                {
+                    int x = area.X + mx;
+
+                    if (!WorldGen.InWorld(x, y, 3))
+                        continue;
+
+                    Tile tile = Main.tile[x, y];
+
+                    if (!tile.HasTile && tile.WallType == 0)
+                        continue;
+
+                    float k = 1f;
+
+                    if (Solid(x, y))
+                        k = !Solid(x - 1, y) || !Solid(x + 1, y) || !Solid(x, y - 1) || !Solid(x, y + 1) ? 1f
+                            : !Solid(x - 2, y) || !Solid(x + 2, y) || !Solid(x, y - 2) || !Solid(x, y + 2) ? 0.75f : 0.55f;
+
+                    map[mx, my] = Vector3.Max(map[mx, my], light * k);
+                }
+            }
+        }
+
+        private static bool Solid(int x, int y)
+        {
+            Tile tile = Main.tile[x, y];
+            return tile.HasTile && Main.tileSolid[tile.TileType] && !Main.tileSolidTop[tile.TileType];
+        }
+
+        /// <summary>The sea's light at a depth (rows under the surface), by day (<see cref="SeaLight"/>, between its rows).</summary>
+        private static Vector3 SeaAt(float rows)
+        {
+            if (rows <= SeaLight[0].rows)
+                return SeaLight[0].light;
+
+            for (int k = 1; k < SeaLight.Length; k++)
+            {
+                if (rows <= SeaLight[k].rows)
+                {
+                    float t = (rows - SeaLight[k - 1].rows) / (SeaLight[k].rows - SeaLight[k - 1].rows);
+                    return Vector3.Lerp(SeaLight[k - 1].light, SeaLight[k].light, t);
+                }
+            }
+
+            return SeaLight[^1].light;
         }
 
         /// <summary>

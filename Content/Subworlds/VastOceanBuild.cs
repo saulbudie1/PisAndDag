@@ -19,8 +19,8 @@ namespace PisAndDag.Content.Subworlds
     /// sun's light, where nothing grows that needs it; and none of the beach's coral, the deep
     /// having its own (VastOceanFloor.PlantLife).
     ///
-    /// Nothing here asks for the mod's types: the waygate's and the lighthouse lens's are handed
-    /// in, so that the preview can lay the place out with the game alone.
+    /// Nothing here asks for the mod's types: the waygate's, the lighthouse lens's and the reefs'
+    /// are handed in, so that the preview can lay the place out with the game alone.
     /// </summary>
     public static class VastOceanBuild
     {
@@ -58,9 +58,10 @@ namespace PisAndDag.Content.Subworlds
         /// Lays the place out. <paramref name="gateType"/>: the waygate's tile (0 for none);
         /// <paramref name="plant"/>: what puts the floor's own living things and vents down (the
         /// game's own, SeaLifeTile.Plant; null for none); <paramref name="lensType"/>: the
-        /// lighthouse's lens (LighthouseLens; 0 for none).
+        /// lighthouse's lens (LighthouseLens; 0 for none); <paramref name="reef"/>: the reefs' types (VastOceanReef;
+        /// null for no reefs).
         /// </summary>
-        public static void Lay(VastOcean.Dune dune, int seed, UnifiedRandom rand, ushort gateType, VastOceanFloor.Planter plant, ushort lensType = 0)
+        public static void Lay(VastOcean.Dune dune, int seed, UnifiedRandom rand, ushort gateType, VastOceanFloor.Planter plant, ushort lensType = 0, VastOceanReef.Types reef = null)
         {
             Array.Clear(Counts);
 
@@ -77,6 +78,9 @@ namespace PisAndDag.Content.Subworlds
             // The island, on the sea once it is poured, before anything is put on the floor where
             // its chains come down.
             VastOceanIsland.Build(seed, plant, lensType);
+
+            // The reefs, in the open water the island has left (VastOceanReef).
+            VastOceanReef.Grow(seed, reef);
 
             // What the floor's own places have first (the vents' worms, the seeps' mussels), then
             // what lies anywhere.

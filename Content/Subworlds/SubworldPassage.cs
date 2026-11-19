@@ -377,6 +377,20 @@ namespace PisAndDag.Content.Subworlds
             return Enter(Waygate.LeadsTo, new Point16(left, top), heardAt, Waygate.Going);
         }
 
+        /// <summary>
+        /// The vent on the Wasted Mile whose top left tile this is has been gone into, on this machine, open (LabVent): in the
+        /// world it leads down to the Abandoned Lab; in the lab, back up. False if it stays shut.
+        /// </summary>
+        public static bool ThroughVent(int left, int top)
+        {
+            Vector2 heardAt = new Vector2(left + LabVent.Wide * 0.5f, top + LabVent.Tall * 0.5f) * 16f;
+
+            if (Subworld.Active)
+                return Leave(heardAt, LabVent.Going);
+
+            return Enter(ModContent.GetInstance<AbandonedLab>(), new Point16(left, top), heardAt, LabVent.Going);
+        }
+
         /// <summary>From the world into a place. <paramref name="door"/> is the door gone through, to come back to: (-1, -1) for none (by hand).</summary>
         public static bool Enter(Subworld place, Point16 door)
         {
@@ -959,7 +973,7 @@ namespace PisAndDag.Content.Subworlds
         /// read from their file with what was kept in it: nothing is given to that one.
         ///
         /// Then, if this is the passage's other side, they are stood in front of the door, if
-        /// it is there, or in the waygate (its middle over their feet, on what it stands on).
+        /// it is there, or in the waygate or before the vent (its middle over their feet, on what it stands on).
         /// Any other way into a world, nothing more is this passage's.
         /// </summary>
         internal static void Arrived(Player me)
@@ -993,6 +1007,13 @@ namespace PisAndDag.Content.Subworlds
                 wide = Waygate.Wide;
                 tall = Waygate.Tall;
                 arriving = Waygate.Coming;
+            }
+            else if (arrive.X >= 0 && LabVent.StandsAt(arrive.X, arrive.Y))
+            {
+                // Stood before it, as in the waygate: it is walked past like furniture.
+                wide = LabVent.Wide;
+                tall = LabVent.Tall;
+                arriving = LabVent.Coming;
             }
 
             if (wide > 0)

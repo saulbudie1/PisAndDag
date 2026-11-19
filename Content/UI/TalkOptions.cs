@@ -68,7 +68,8 @@ namespace PisAndDag.Content.UI
     /// registered options are offered again.
     ///
     /// Looks are Main.DrawNPCChatButtons: MouseText font, gold, swells on hover, ticks on
-    /// entering and leaving. Lines stack under the dialogue box's bottom-right corner.
+    /// entering and leaving. Lines stack under the dialogue box's bottom-right corner; while
+    /// the townsperson's own panel is up (TownChat) they stand in its list instead.
     /// A line the player has clicked before is grey instead of gold — still clickable,
     /// just marked as heard. Heard lines are remembered per world (TalkMemory).
     /// Clicks go through PADMouse, not Main.mouseLeftRelease / IgnoreMouseInterface — see
@@ -187,7 +188,7 @@ namespace PisAndDag.Content.UI
         }
 
         /// <summary>The lines to offer this frame, after keeping the conversation state honest.</summary>
-        private static List<TalkOption> Current(Player player, NPC npc, List<TalkOption> into)
+        internal static List<TalkOption> Current(Player player, NPC npc, List<TalkOption> into)
         {
             into.Clear();
 
@@ -252,6 +253,14 @@ namespace PisAndDag.Content.UI
                 talkingTo = -1;
                 replaced = null;
                 saidText = null;
+                hovered = -1;
+                return;
+            }
+
+            // The townsperson's own panel (TownChat) has the conversation, and these lines in
+            // its list with vanilla's buttons.
+            if (TownChat.HasConversation)
+            {
                 hovered = -1;
                 return;
             }
@@ -364,7 +373,7 @@ namespace PisAndDag.Content.UI
         /// hover when <paramref name="mayHover"/>, so two lines never both swell. True when it
         /// was clicked; <paramref name="height"/> is its height at rest.
         /// </summary>
-        private static bool DrawOne(SpriteBatch spriteBatch, TalkOption option, NPC npc, float anchorX, float alignX,
+        internal static bool DrawOne(SpriteBatch spriteBatch, TalkOption option, NPC npc, float anchorX, float alignX,
             float top, bool mayHover, HashSet<string> heard, out bool over, out float height)
         {
             Player player = Main.LocalPlayer;
@@ -526,6 +535,7 @@ namespace PisAndDag.Content.UI
                     // Never both up: the bench clears the dialogue while it is open, and
                     // the lines need the dialogue. One layer serves both.
                     TalkOptions.Draw(Main.spriteBatch);
+                    TownChat.Draw(Main.spriteBatch);
                     Dialogue.Draw(Main.spriteBatch);
                     MegasharkRepairUI.Draw(Main.spriteBatch);
 

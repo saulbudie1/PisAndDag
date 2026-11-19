@@ -24283,3 +24283,694 @@ inspired by cyberpunk so make it like that"; on the way, "cannot heal is potion 
   art pixels; blue, + blue-green, violet, navy, aqua; Depths {3,1}, NearRock 2) and `BluestripeSnapper`
   (BluestripeSnapper.png, 20x8; yellow with blue lines, + golden, lemon, sunset red, violet-lined; Depths {1,3},
   NearRock 1.5). Picked by VastOceanSchools as the others, 40-80 a school. r82s (`Claude outputs\r82\before_s`).
+- "from section 2- 3 you ucan create a clusters of coral reefs connected with walls like this", "red is cluster of coral
+  reef islands and connected by walls in neon green", "from section 3 down theres still some but sparser and spareser
+  and smaller islands"; answers: a few big fields, regenerate, soft glow, mine and place; then "too far away, need it
+  beeefier, jagged and closer", "and more extended too", "the walls connecting should be thicker too", "thicker wall
+  veins", Minecraft's warm ocean reefs as the look, "with glowing sea pickles basically ambient torches". New
+  `Content/Subworlds/VastOceanReef.Plan.cs` (`ReefPlan`: the plan alone, no game types, previewed outside the game)
+  and `VastOceanReef.cs` (lays it down). 3-5 fields 1700-2600 wide in sections 2-3, the first under the island (its
+  middle moved so it stays 250 off the platform), the rest 250+ off the platform and apart; islands tried one to 30
+  columns, half widths 52 down to 9, 6 apart, 8 clear of anything already there (the chains); bodies 0.34-0.48 of the
+  half width tall, crags and spires on top, a deep belly with sharp drips, edges bitten and grown (Roughen); islets
+  round each big one; all joined by strands (Prim's + extra, up to 220 long): walls 13-28 thick at the ends, 10-17
+  between, wandering, ragged-edged, staghorn heart, sea fan lace edge, sea fan spurs. Sections 3.5-6: lone islands,
+  fewer and smaller deeper, some strung to the nearest. Layers: rubble under, crust over, a living band (star, brain,
+  staghorn), rock, rubble blobs, hollows. Tops: star patches, then packed pieces of one bright coral each (tree, claw,
+  dome, spire: 4-connected, nothing floats: Prune), plate shelves off the ends. Walls: rock/brain behind (interior
+  only), staghorn hanging under, sea fans up behind. Life on every top and under (Stand/Hang), sea pickles none nearer
+  than 7. Edges worn by Tile.SmoothSlope, never under life. Seed 1234 against the saved ocean: 663 islands, 686
+  strands, ~23.6k life, under 1.4 s.
+  Blocks (`Content/Tiles/Reef/ReefBlocks.cs`, all merge): ReefRock, CoralRubble, CorallineCrust, BrainCoral, StarCoral,
+  StaghornCoral, PlateCoral, BlueCoral, OrganPipeCoral, BubbleCoral. Walls (`Content/Walls/Reef/ReefWalls.cs`):
+  ReefRockWall, StaghornCoralWall, SeaFanWall, BrainCoralWall (house walls, placed by the items) and `...Natural`
+  (grown, not house walls, so spawns go on; drop the same item). Staghorn and sea fan walls see-through. Life
+  (`ReefLife.cs`, no drops): ReefPolyp 1x1 x12, ReefSponge 1x2 x5, ReefCoral 2x2 x8, ReefClam 2x1 x5, ReefTable 3x2 x2,
+  ReefHanging 1x2 top x3, SeaPickle 1x1 x4 (1-4 pickles, torch light 0.62-1.04 green); glow sheets for polyps, clams,
+  pickles; map names by style. Items (`Content/Items/Reef/ReefItems.cs`): the 10 blocks and 4 walls; walls 4 from a
+  block at a work bench and back (sea fan from bubble coral). Hjson: 14 items, 24 map names. VastOcean.Layout 10 (the
+  ocean regenerates); VastOceanBuild.Lay takes the reefs' types after the island. r82t (`Claude outputs\r82\before_t`).
+- "Fix the black shader shit" (the reefs black away from any lamp: the sea is drawn behind and its water lit by
+  nothing, so the game drew no reef block or wall there and VastOceanLight's forced Main.DrawBlack blacked them):
+  `VastOceanLight.Ambient`, in the scan (after the game's own), from the 2nd section's top to the 7th's, every cell
+  with a tile or a wall gets the sea's light at its depth (SeaLight: 0.42/0.56/0.70 at section 2's top, 0.32/0.44/0.60
+  at 3's, 0.20/0.28/0.44 at 4's, 0.09/0.13/0.24 at 5's, 0.03/0.05/0.10 at 7's, lerped), times the tiles' sky light
+  (never under 0.4, for night); a solid block x1 at the water, x0.75 two in, x0.55 deeper. Spread on by the game as
+  any light (halved from section 3, own cell from section 5, as before). r82u (`Claude outputs\r82\before_u`).
+- "Lets make a vent tile in the miles; sortalike chimney walkthruable; right click to go onto another dimension but
+  locked after armagaermis", "sub world is : Abandoned Lab"; answers: starter lab, 2 wide 4 tall, middle of the Mile, a
+  line in chat. New `Content/Tiles/LabVent.cs` (+ LabVent.png 36x72 and LabVentGlow.png, code-drawn 2x2): a riveted
+  iron stack with a louvred cowl, a rain cap and a grated hatch, flange in the ash; walk-through furniture
+  (Style2xX, heights 16/16/16/18, solid ground under), never broken or framed (as Waygate), no item. Open = in the lab,
+  or PADWorld.DownedAbomanation: warm light 0.34/0.16/0.06 breathing, glow sheet over louvres and hatch, smoke puffs
+  off the cowl (1 in 14 a frame, near the player); shut: "Subworlds.VentShut" in chat. Right click ->
+  SubworldPassage.ThroughVent (new: world -> AbandonedLab, lab -> Leave; sounds Unlock / DoorClosed low), and
+  SubworldPassage.Arrived stands the player at a vent like a waygate. `Content/Structures/MileVent.cs`: ModSystem,
+  saved "PADMileVentX/Y", net-synced; PostWorldGen and (old worlds) PostWorldLoad, extra large worlds only: nearest
+  spot to the Mile's middle with level, whole ground for 2 columns and nothing over it 5 rows (and a column either
+  side); else the middle, levelled with ash. `Content/Subworlds/AbandonedLab.cs` (440x240, Layout 1, Door = the vent at
+  56,146, Spawn beside it on the floor; LabWorld canvas: blocks/walls written, furniture by PlaceObject at its
+  TileObjectData origin, chests stocked, torches/platforms/chains/webs by PlaceTile; client.log counts what would not go)
+  and `AbandonedLab.Plan.cs` (LabPlan, game-free, previewed): way in (48-86 x 126-149), corridor (87-299 x 144-149),
+  lab one (100-140 x 110-131), specimen lab (170-216 x 108-131), duct between them (141-169 x 113-115), duct from the
+  way in (87-99 x 129-131), drop shaft (146-148) to the lower duct (146-231 x 160-162), store room (232-268 x
+  158-177) with its shaft up (262-265), containment hall (300-390 x 96-149: four tanks, outer two broken; the great one
+  burst on its plinth, stumps, cap on chains, flesh; catwalks at 128 and 112; ladders; chains). Gray Brick mass, slab
+  floors, plating ceilings and corridor floor, grate in ducts; registers: Tin Plating dado, Iron Brick rail, Gray Brick
+  field patched Stone Slab / Rocks1, Tin Plating frieze, Lead Brick pilasters (bay 8, hall 10, dado 3/frieze 2 in the
+  hall); ducts and shafts Copper Pipe wallpaper. Furniture (styles read from the items): steampunk and glass tables
+  with bottles, metal sink, steampunk bookcase, glass and steampunk work benches, steampunk lamps and lanterns,
+  martian lantern; 10 chests (steampunk, glass, martian, barrel, trash can) with lab loot (3-6 lines). No chairs: no
+  housing. Red torches every other corridor pilaster and up the hall, a little white at the way in and lab one.
+  Preview: 0 open cells, only harmless overlaps. Hjson: Tiles.LabVent.MapEntry, Subworlds.VentShut. r82v
+  (`Claude outputs\r82\before_v`).
+- "Also the cobweb should be destroyable": `Subworld.MayBreak(x, y)` (new virtual, false): what a kept place lets be
+  broken all the same; `SubworldRules.KeptAt` answers it where the place is Untouched; `AbandonedLab.MayBreak` = a
+  cobweb. "Make the vent only 1 tile wide": LabVent Wide 1 (Style1xX), LabVent.png / Glow 18x72 redrawn (8x33 art
+  pixels: the stack, two seams, a narrow hatch, the cowl, the cap); smoke from 12 px; `LabVent.TidyOldWidth` takes
+  away the second column of a vent put down two wide (MileVent.PostWorldLoad, logged); AbandonedLab.Layout 2 (the lab
+  is laid out again). "create a light decor chandelier typa tile that hangs on walls; flicker rarely", "to decorate the
+  lab", "a flat flurescent bulb 1x4wide", "glow the color #82bd7d downwards", "like a long flursecent bulb you have on
+  hospitals": new `Content/Tiles/LabLight.cs` (+ LabLight.png 72x54, three styles down: working, failing with black
+  ends, dead and cracked; LabLightGlow.png; LabLightBeam.png 80x96, banded): 4 wide 1 tall on the wall (Style3x3Wall,
+  AnchorWall), no item, no drops. Light #82bd7d: 0.45 at the tube, and down its columns 0.95 .. 0.22 for six tiles or to
+  the floor (Lighting.AddLight in PostDraw); glow drawn over the tube; the beam drawn additive (alpha 0) at 0.26 from
+  the first tile. Lit(): dead never; stutters of off/on in 3-tick steps (0.75 / 0.06), a working one 40 ticks once in
+  1800-5400, a failing one 54 ticks once in 240-600 and otherwise 0.82; each fitting its own time (hash of where it
+  hangs). LabPlan.Tubes: 2 at the way in, 13 along the corridor under its ceiling, 3 + 2 in the labs, 1 in the store, 8
+  along the hall's top clear of its chains and 2 over its catwalks (31); the white torches gone. ICanvas.Light. Hjson:
+  Tiles.LabLight.MapEntry. r82w (`Claude outputs\r82\before_w`).
+
+- "Create a carrion like NPCs with tentacles like it with hooking and dragging physics and blood dripping; amorphous
+  masses of tentacles with eyes ... takes knock back unlike any npcs (each part being shot takes back but the mass
+  doesnt) optimize it too; it has 6 tentacles to drag its mass and should both fit a 4 tile tall hallway and squeeze
+  thru a 1 tile tall path. move too fast for its mass and js jump to close ranged attack; bit 300hp base tho; 50 damage
+  base"; Abandoned Lab only, 1-2 at a time, "Culture", "gore that dissolves itself thats it"; "priority of beauty";
+  "carrion dont have to be super detailed; can js be red shades"; from Carrion's first quarter hour, "thin slender and
+  fast". New `Content/NPCs/Lab/`: `Culture.cs` (ModNPC: 300 life, 50 damage, 8 defence, knockBackResist 0, no gravity,
+  aiStyle -1, no value, SpawnChance 0; mass 32x32 that changes shape for the way it goes: Wide 32x32 42x24 52x18 60x14
+  (+ tall fallbacks), Tall the same turned; a flat or thin shape tried in line with the row or column of the gap, the
+  round one eased 3 px a tick off a ceiling or wall to fit; jolt keeps the drawing from jumping. Crawl 8.6 px/tick with
+  two holds or more, swing with one, fall with none; leap: in sight within 144 px, draws in 12 ticks, lets go of all
+  and flies at 15 px/tick at where they will be in 6 ticks, 24 ticks or until it hits, gathers 20, rests 80-120),
+  `Culture.Tentacles.cs` (Tentacle: 12 Verlet points, reach 208 px, let go at 1.2x, tip whips 26 px/tick, gives up after
+  20 ticks, never into a solid block but its tip; Struck pushes the points from the hit on and may shake a hold near
+  the tip loose), `Culture.Body.cs` (Grow: 6 tentacles, 14 lobes (6 haze), 1-2 eyes of 3 kinds, 16 curls, seeded by
+  whoAmI and place; Hold: raycast holds ahead, two to the sides, release overstretched / dragged through a block /
+  behind (1 in 3 a tick while 3 or more hold); Writhe; Shot: any friendly player projectile on a tentacle and not the
+  mass pushes it back and strikes the Culture once per projectile per 12 ticks (SimpleStrikeNPC with the shot's damage,
+  class, crit, luck; penetrate spent); Bleed; Settle; HitEffect; no loot), `Culture.Draw.cs` (all on the world's 2 px
+  grid: strands as 2 px squares along Catmull-Rom curves, 4 px for their first 14 px, lit top / dark under; haze lobes
+  at 0.45, dense lobes, curls that stop at walls, mouth only drawing in / leaping / just after, eyes look at the target
+  and blink, gleam at 150 light; light floor 40/24/24; hit flash; skipped off screen; bestiary draws Culture.png),
+  `CultureGore.cs` (CultureLump / Strand / EyeGore / Teeth: lie 50-100 ticks then fade 3 alpha a tick, shrinking and
+  bleeding), `CulturePath.cs` (ModSystem: one shared BFS step map of the lab from the target's cell, every 20 ticks,
+  only when asked; straight at them within 320 px in sight, else downhill up to 6 cells as far as a clear line;
+  spawner: lab only, 2 at most, first at 900 ticks, then 600-1500, from LabPlan.Nests at 45+ tiles and off screen).
+  Art (code-drawn, 2x2): Culture.png 106x92 (portrait), CultureLobe.png 82x20, CultureEye1-3.png, CultureMouth.png
+  18x48, CultureGore1-4.png. `LabPlan.Nests` (15 places). Hjson: NPCs.Culture DisplayName + Bestiary ("Grown in the
+  tanks under the Mile. When the feeding stopped, it went looking."). Tested outside the game in a port of its AI on
+  the lab's own grid and a strip with a 1-tile crawlspace and a 1-tile shaft. r82x (`Claude outputs\r82\before_x`).
+
+- "entering the abandoned laba makes the terraria crash?": Natives.log, a stack overflow while the lab was laid out
+  (SubworldPassage.Saved > SubworldKeeper.Make > AbandonedLab.Build > LabPlan.Webs > LabWorld.Place > WorldGen.PlaceTile
+  > SquareTileFrame > TileFrame > TileLoader.CheckModTile > TileFrame > CheckModTile ... ). LabPlan.Webs put cobwebs in
+  the rooms' top rows, where r82w's LabLights hang; a cobweb is not solid, so PlaceTile put it over one tile of a light
+  (and over two red torches); CheckModTile found the light broken and killed its tiles, which SubworldRules refused in
+  the kept lab (CheckTileBreakability and SubworldTiles.KillTile), then reframed its neighbours, which checked it again,
+  for ever. The lab preview had listed these as "51/0 at x,y: taken" and they were passed over. Fixed both ways:
+  `LabPlan.ICanvas.Empty` (LabWorld: no tile at all) and Webs only where Empty; SubworldRules lets a kill through while
+  WorldGen.destroyObject (the game clearing what is left of an already broken thing of several tiles: NothingBreaks,
+  SubworldTiles.CanKillTile / KillTile). Lab preview: the web problems gone (12 left: a platform laid twice over the
+  same cells, the second does nothing). Layout unchanged (2): no lab was written. r82y (`Claude outputs\r82\before_y`).
+
+- "why does culture sometimes explode on its own", "specifically when im holding foigh rust side": Culture.Shot took any
+  friendly projectile over a tentacle as a hit, every 12 ticks, and never asked whether it could hit at all. Foigh's
+  Rust Side keeps its holdout (RustSideHoldout, 40x40, friendly, the sword's damage) about the player while it is held,
+  harmless by CanDamage (false but while Hitting) and by its own Colliding; its hanging lines (RustSideLine) the same
+  until open. A Culture on the player had its tentacles over the holdout and was struck for the sword's whole damage
+  five times a second. Now (Culture.Body.cs): only what could hit it by the game's own say (CanHits:
+  ProjectileLoader.CanDamage, ProjectileLoader.CanHitNPC, PlayerLoader.CanHitNPCWithProj, NPCLoader.CanBeHitByProjectile;
+  no pets; not when dontTakeDamage), by the shot's own shape (Projectile.Colliding against the tentacles' bounds, each
+  tentacle, each point), through no wall for an ownerHitCheck shot, and sharing the game's wait between hits with the
+  mass (Ready / Wait: the shot's localNPCImmunity, its kind's perIDStaticNPCImmunity, or NPC.immune[owner] = 10), in
+  place of the per-projectile 12-tick table. r82z (`Claude outputs\r82\before_z`).
+
+- "also these tiles here are letting light inside" (the lower duct): the whole lab is under the sky (Subworld.SurfaceLine
+  under it all, and its clock at 8:15 in the morning), so any cell with no wall behind a tile that lets light through
+  is daylight; the duct floors' grates (TileID.Grate, tileBlockLight false) had none (82 of them, lab preview). LabPlan:
+  a pipe wall behind every grate; lab preview counts grates with no wall (0). "they should be able to go thru this
+  path" (a path a tile wide stairing up and over), "also why are they stuck in tiles like these; also tentacles
+  shouldnt clip like that": no shape of the Culture's had room in a gap a tile wide that turns (the flat and thin ones
+  are four tiles long), so it stopped at the first turn; and its holds were kept with a wall between (the old test
+  looked for points in blocks, which points are kept out of). Culture: `Ball` 14x14, last of all, where none of its
+  shapes has room (here and the next step on); Fits lines a shape up across the way it goes only (flat along a row,
+  thin up a column; a flat shape going up has no room ahead, which had it pressed to a ceiling under the stair);
+  Become (jolt only for a move of more than 3 px); wedged (any side 18 or under) it moves without holds; CulturePath
+  looks one cell ahead when balled. Hold: a hold or a reach let go of when a wall comes between its root and it
+  (Collision.CanHitLine). Draw: no square of a tentacle drawn over a solid tile. "they should spawn rarer": first after
+  45 s (2700), then 60-150 s (3600-9000). "please make them move 20% slower and 35% slower when squeezing": Crawl 6.88
+  (8.6 x 0.8), Squeezing 5.59 (8.6 x 0.65), the leap as it was (15). "this room can use red fluorescent light" (the
+  hall): LabLight styles 3 RedWorking, 4 RedFailing (#d64a46; sheet and glow 72x90, red tube, the beam tinted); the
+  hall's 10 tubes red but the dead ones. AbandonedLab.Layout 3 (laid out again: its chests too). Tested outside the
+  game: a 1-tile stair 30 steps up (climbed balled in about 5.5 s), the strip, the 1-tile shaft, the corridor, the
+  duct. r82aa (`Claude outputs\r82\before_aa`).
+
+- "add a 5tall 3wide decorative walk thru tile that is basically js a canister with this thing inside; breaking it with
+  pickaxe opens it"; "Release it, keep broken can", "A few in the lab", a Culture let out counts toward the two. New
+  `Content/Tiles/LabCanister.cs` (+ LabCanister.png 108x90, two styles side by side: whole, a steel cap with a pipe and
+  bolts, a glass tube between two rings, the lab's green fluid with an air gap over it, a steel base with a lit red
+  lamp; broken, ragged glass at both rings, the rails in stumps, a stain, the lamp out. LabCanisterGlass.png 48x80, the
+  shine; LabCanisterSpecimen.png 30x184, a Culture asleep, four frames of its strands drifting): 3x5 (Style3x3 copy,
+  origin 1,4, anchored on solid ground, StyleHorizontal), not solid, no item, no drops, no explosions; fluid light
+  0.03/0.10/0.08 in its tube rows; drawn by SpecialDraw from the top left tile (DrawEffects > AddSpecialLegacyPoint):
+  the specimen through the fluid (0.78/0.94/0.86), a frame every 24 ticks, bobbing 2 px; three bubbles; the glass over.
+  KillTile: hits ring (Tink, glass dust, MineResist 2); the breaking hit fails and opens it instead (Open): style to
+  Broken, Shatter and a wet sound, glass, fluid (t_Slime green) and blood, a Culture spawned in the tube and sent at the
+  nearest player at 6 px/tick; while two are about, only a low ring. AbandonedLab.MayBreak: a whole canister too.
+  LabPlan.ICanvas.Canister, LabWorld (canister type), LabPlan.Canisters: one past the specimen lab's tanks (214), four in
+  the hall (312, 323, 365, 375), two in the store room (234, 238), on their floors; lab preview: all 7 free and floored.
+  AbandonedLab.Layout 4 (laid out again). Hjson: Tiles.LabCanister.MapEntry "Specimen Canister". r82ab
+  (`Claude outputs\r82\before_ab`).
+
+- "you forgot to make the specimen canister the sole exception for being able to break tile": in a kept place the
+  player's tools are off (SubworldRulesPlayer: Player.noBuilding), so a pick never reached the canister. New
+  `Subworld.MayDig(x, y)` (false): the one thing a pick may be put to; `AbandonedLab.MayDig` = a whole LabCanister;
+  SubworldRulesPlayer.ResetEffects leaves noBuilding off while the held item is a pick and the tile aimed at
+  (tileTargetX/Y) is MayDig. What a pick then breaks is still only what MayBreak lets (the canister opens; cobwebs, cut
+  by a swing as before, are not dug). "also dont use torch in this lab": LabPlan.Lights, Torch and RedTorch gone (45
+  red torches); the hall gets four more red tubes where they were (318,104 working; 369,104 failing; 325,138 and 362,138
+  working, over the canisters by the great tank), the store room a working one (236,161): 36 tubes. Lab preview: 0
+  torches, 12 problems as before (a platform laid twice). AbandonedLab.Layout 5. r82ac (`Claude outputs\r82\before_ac`).
+
+- "new flooring plan" (a drawing over the lab's outline); "check calamity fables mod to see how their elevator work and
+  how they decorate their lab; also check calamity to see how they decorate draedon's lab to add our very own lab
+  decoration; in document room the blues are the book shelves; create our own 6 tall and 6 wide sheves and place next to
+  each other"; "purple lines are 1 tile vents with no light"; "incineration pit should have a big fire that anything item
+  dropped down should disappear"; answers: the green room "js random stuff each floor but no more canister", "Ride a
+  car", "Cultures can't enter (Recommended)" (with a bed for respawn), all four decoration sets, the squiggle "Broken
+  floor, a gap", the fire "Burns both", the dining room "Two floors". Read for reference only: Fables' Wulfrum elevator
+  (a base tile, rail tiles, stations, a controller tile entity, a platform NPC that carries whoever stands on it, up/down
+  hover icons) and its bunker decor (rubble furniture, conduits, tube lights, posters, a parallax); Calamity's Draedon
+  lab tiles (consoles, servers, terminals, displays, screens, containment boxes, electric panels, shelves, hazard chevron
+  panels, power cell factory, hologram projector). Nothing copied: our own code and art.
+  LabPlan: the plan laid 130 east (`Dx`, a `Shifted` canvas; `VentLeft`, `Nests` in the world's frame), the place 570 by
+  290. New: the annex (-82..-35, 132..200, three floors, steel floors at 150 and 175 with hatches of shelves and stairs;
+  `Scatter`: racks, cabinets, consoles, lockers, counters, shelves, desks with bottles, a chest, a band of screens,
+  pipes, fans and signs), its corridor to the way in (-34..47, 144..149), the corridor stairing down from it to the
+  document room (`Slope`, 7 high, 194 to 222), the document room (36..96, 196..228, its middle floor all shelves at 213:
+  eight LabBookshelf in pairs at either end of both floors, ledges of books, cabinets, consoles, a terminal, a monitor, a
+  chest, a fan), the elevator shaft (64..68, from the way in's floor at 150 to 213; the way in's stair moved to 71..86
+  and its desk and locker east of it; rails and a panel at each floor), the lower corridor (97..158, 223..228), the
+  dining room (159..192, 186..228, a steel floor at 207 with a hatch: canteen below, kitchen above), the gap corridor
+  (193..236, its floor fallen in at 211..217 seven deep), the safe room (237..285, 194..228: UV lamp over its door, bunks,
+  lockers, chests, a desk, console, rack, monitor, fan; a gallery at 211 with a stair and supplies), the store room's
+  corridor (269..324, 172..177), the pit's shaft (325..330, 172..216) and the pit (318..340, 217..238, burnt walls, its
+  floor burners). Six vents a tile across, unlit, papered (`VentLine`): over the annex corridor, way in to the first
+  lab, specimen lab east to x 269, 269 from 90 down to the corridor, 269 over to the hall's top, the corridor floor into
+  the store room. New nests in the annex, its corridor, the document room, lower corridor, dining room, gap corridor and
+  store corridor (none in the safe room). Webs kept out of the elevator shaft. Public world rects: SafeRoom, Fire,
+  Elevator*. `ICanvas.Decor`, `LabPlan.LabDecor` (kinds, sizes, wall or floor, styles). AbandonedLab.Layout 6;
+  LabWorld.Decor (by LabFurnishing.TypeOf; the burner a block).
+  New `Content/Tiles/Lab/`: `LabFurnishing.cs` (base: a multi-tile of its kind's size on the wall (Style3x3Wall,
+  AnchorWall) or the floor (Style3x3, anchored on solid or platform), styles across, a Glow sheet of frames drawn over
+  unlit in its own time, light; no items, no drops) and LabBookshelf (6x6, 3 looks), LabMonitor (3x2, text or trace),
+  LabConsole (4x3), LabTerminal (6x3, one cracked), LabServerRack (2x4, green or red), LabFilingCabinet (2x3, one open),
+  LabPipe (4x2, one with a gauge), LabValve (2x2), LabFan (3x3, four frames turning), LabHazardSign (2x2: our own
+  knot-of-strands warning, and a fall), LabCanteenTable (5x2 with benches), LabVendingMachine (3x4), LabLocker (2x4,
+  one ajar), LabCounter (3x2, cupboards or a hob), LabElevatorRail (1x1), LabUVLamp (2x1, violet light), LabBunk (4x3:
+  right-click sets where you wake after dying in the lab, "Spawn point set!"), LabElevatorPanel (1x2: right-click calls
+  or sends the car). `LabFire.cs`: LabBurner (solid, frame-important block; flames up to 88 px drawn additive over it
+  when open above, embers, light up five tiles), LabFireSystem (the Fire rect: items turned to air with smoke and a
+  sizzle; NPCs but the car struck 70 every 10 ticks with Hellfire), LabPlayer (OnRespawn at the bunk; no fall damage in
+  the shaft; in the fire Hellfire and 40 every 20 ticks, "{0} was burned with the waste."). `LabElevator.cs`:
+  LabElevator (ModNPC car, 80x8 plate, friendly, immortal, hidden from the bestiary and hover, never despawns; eases
+  between FloorY(Top) and FloorY(Bottom) at up to 4 px/tick, a clunk on arrival; carries any player whose feet are on
+  its plate and who is not jumping; draws its cage and its cable), LabElevatorSystem (one car, made at the top floor).
+  All art code-drawn (lab/art/labdecor.py), 2x2. Culture: `KeepOut` (never into LabPlan.SafeRoom: turned back,
+  recoiling, out of a leap; put out west if ever in it); CulturePath: the safe room closed to its map (InSafe), InLab
+  internal. Hjson: map names for the 19 tiles and the burner, NPCs.LabElevator.DisplayName, Subworlds.Incinerated.
+  Lab preview: 0 cells open to the sky, every room reachable by a player-sized box from the vent, 14 problems (the old
+  doubled platform and two wall pieces with no room). r82ad (`Claude outputs\r82\before_ad`).
+
+- "white light in document room": LabLight styles 5 WhiteWorking, 6 WhiteFailing (#e6eaf0; sheet and glow 72x126, a
+  white tube); LabPlan: the document room's three live tubes white (the dead one as it was). Found on the way: light.py
+  drew the red styles from the wrong base (red working with a failing tube's blackened ends, red failing as the grey
+  dead tube); now 3-4 from 0-1 and 5-6 from 0-1. AbandonedLab.Layout 7. r82ae (`Claude outputs\r82\before_ae`).
+
+### r82af — Sword Of A Gilded Knight balanced (2026-11-10)
+- Request: "Balance the SwordOfAGildedKnight for player, make it decent against hardmode, 300 dps on no defense; and the light thing has a 3 sec coold down; it deals 350 damage and 2x if player is in hell".
+- Cuts unchanged: 100 damage, 3 a second = 300 dps on no defense (about 312 with base crit), one hit per target per cut.
+- Long blade (right click): 3.5x a cut = 350; 700 with player.ZoneUnderworldHeight. 3 second cooldown counted from the click (CanUseItem refuses alt while cooling; GildedSwordPlayer.longWait); gold dust + chime when ready if the sword is held.
+- Tooltip: "...for 3.5 times the damage" / "Twice that in the Underworld; once every 3 seconds".
+
+### r82ag — Culture tentacles thicker and swaying madly (2026-11-10)
+- Request: "make culture's tentacles a bit thicker and make it sway more madly; research on how carrion sway".
+- Research: Carrion's devs say the monster is "90 or 95%" physics-based and procedural; the best public breakdown models a tentacle as a spring rope with a sine wave run along it that dominates when slack. YouTube was not reachable from the sandbox this time.
+- Thickness: 6 px at the root (pale/bright/dark rows), 4 px to 60% of its length, 2 px to the tip (was 4 px for 14 px, then 2). Tentacle.ThickAlong(f).
+- Sway (Tentacle.Sway/Shown): two travelling waves across the root-to-tip line; free 6 px wide growing to the tip, held 2.5 px + 2.5% of its length, peaked mid-rope, more kinks the longer; spasms (1 in 45 ticks free, 1 in 100 held) throw a point and widen the sway 2.5x, decaying 0.9 a tick. Drawn and hit where swayed; the rope physics itself is unchanged apart from a faster free tip writhe and faster root swing.
+
+### r82ah — Culture tentacles as hooks (2026-11-10)
+- Requests: "why are its tentacles not anchoring at one point, its just touching and propell it forward, make it actually anchor faraway and pull it in; think of tentacles like hooks physics thats pulling it" / "except for when its dashing thats when it jumps" / "its tentacles also anchoring at a place its getting further and further away from, making it stretch which is not apply to a rubbery bandy tentacle physics".
+- Cause: holds were found along one random angle each (in a corridor, the floor or ceiling right beside it), movement was a fixed crawl toward its way with the holds adding little, and holds behind were only let go of 1 in 3 ticks with 3+ holding (the long trailing lines).
+- Now: up to 3 hooks out; FindHold fans 14 rays ahead and picks the furthest, most-ahead hold not near another hook (>= 3 tiles if any). A grip yanks (1.6). Move reels toward the holds (each weighted by how far and how ahead), 25% steered by its way; on one hook it hangs and swings, never further than the rope let out. Rope only shortens; a hold is let go when reached (40 px), behind, blocked, or the mass is 20 px further than its rope. Wedged squeezing unchanged; leap unchanged (lets go and jumps). Hook roots come from the side facing their hold. Unhooked: horizontal speed capped at half a crawl.
+- Python sim (corridor 4 tall, hall 6 tall, shaft 5 wide, open floor): steady ~6.6 px/tick, grips ~100 px off on average, never more than 6 px over its rope.
+
+### r82ai — let-go tentacles no longer stay stretched (2026-11-10)
+- Screenshot: a tentacle drawn out ~50 tiles along the corridor floor behind the Culture ("like why").
+- Cause: a let-go tentacle shrinks back by its rope physics, but the block clip put any point that touched a block back where it was, so a long one lying along a floor snagged and never shrank.
+- Fix (Tentacle.Update): a free tentacle more than twice its relaxed length snaps toward its root, every point a third of the way a tick, ignoring blocks; otherwise a point hitting a block slides along it (keeps its across or up-down move) before falling back to where it was.
+
+### r82aj — Culture hooks onto background walls too (2026-11-10)
+- Request: "Remember it doesnt just hook to tiles it hooks to any wall too".
+- FirstSolid: a ray stops at the first solid block as before; short of one, the hold is the furthest point on it with a wall behind, out to 70-100% of Reach (random per throw so hooks thrown the same way spread). Rays stop at the safe room's edge.
+- So in the lab (walls everywhere) it hooks out in open air ahead and reels straight along its way.
+
+### r82ak — Scuttlebutt, a fist found in the Vast Ocean's lighthouse (2026-11-10)
+- Requests: "Add a boxing weapon same as corosion: Scuttlebutt; 1.5x base damage of corosion; Found in vast ocean's light house; Start with 2 jabs, a cross and a hook. Right click stand still and perform a 3 second barrage of water fist(same texture as the fist but threshold it to black and white and map the bright ness to a rrange from #cafafc, #83add4, #4c6fb5" / "during 3 second, each second punch 3 flying fist at cursor, alternating hands, 8 second cool down" / "also move the player during left click like corosion".
+- Scuttlebutt (FistWeapon): 27 damage (Corosion 18 x 1.5), knockback 5.5, crit 6, Orange, 3 gold. Combo: jab 11t x0.8 step 8, jab 11t x0.8 step 10, cross (back arm) 14t x1.1 step 16, hook 22t x2.2 step 14 throwing (7, -2.5). Reach 44, combo window 36. Water drips (Shed), splash on hits.
+- FistArc.Hook (FistWeapon/FistPunch): cocked high, swung from -75 to +22 degrees onto the line, swept hit line like the uppercut's.
+- Right-click: ScuttlebuttBarrage, 180 ticks; planted (ScuttlebuttPlayer.SetControls blocks left/right/jump, velocity.X 0), faces the cursor; every 20 ticks an arm punches out (front, back in turn), a ScuttlebuttWaterFist leaving the hand 3 ticks in at 14 px/tick for the weapon's damage (9 in all); pierce 1, bursts on blocks. After: Winded 8 s (counted from the end of the barrage).
+- Found: the lighthouse watch room's west sea chest, first (LighthouseTower); Vast Ocean Layout 10 -> 11 so it is rebuilt with it.
+- Art (code-drawn placeholders, PlaceholderTextures.md): Scuttlebutt/Fist/Arm in oak and iron hoops on Corosion's shapes; the water fist the fist in the three asked blues by brightness; Winded icon.
+
+### r82al — Scuttlebutt barrage: 7 a second, gloves on (2026-11-10)
+- Requests: "nah make every second is 7 punches" / "and make him still wear the gloves on right click".
+- ScuttlebuttBarrage: 7 punches a second (punch k starts on tick ceil(k*60/7)), 21 in 3 s; arm out 2 ticks, held to 4, back by 8; the water fist leaves the hand 1 tick in. Each still the weapon's damage.
+- Gloves: the barrage is the held projectile, drawn over the arms: Scuttlebutt's fist on the front hand always (0.6 at the guard, to 0.85 punching) and on the back hand while it punches.
+
+### r82am — Gilded Knight's end can be skipped (2026-11-10)
+- Request: "gilded knight death animation unskippable tho".
+- GildedKnight.EndTick: in single player, near or in his field, until he comes apart (EndApart), CinematicSkip is offered (hold E, as his scene). Taken: Timer jumps to EndApart (he comes apart then; the Sun is let fall that tick and comes apart 30 ticks later), the camera pans home in 30 ticks and stops leaning in, and he perishes (loot, downed flag) 45 ticks after the Sun (EndSunApart + 45) instead of at EndTicks.
+
+### r82an — half-size canvas and the hit kit, after a study of Calamity's effects (2026-11-11)
+- Requests: "Deep learn calamity's effect choices and systems and particles; then think of what we can implement onto our mod" / "yeah 1 and 4 and what weapons can be implemented?".
+- Study (Calamity source: Particles, Effects, Graphics, Systems): a small set of generic particles reused everywhere; hits layered (flash, ring, sparks, smoke, shake); easing curves on everything; a half-resolution pass for trails/particles; draw layers; telegraphs exempt from the cap; metaballs; death into ash by BasicEffect quads; ropes, IK, enhanced darkness. Offered and not built: shaderless metaballs (AlphaTestEffect), death-into-grains for all NPCs, particle draw layers, telegraph particles, lab darkness with cut-out lights, emotes/stat arrows/sky flash/single-instance loop sound.
+- PADPixelCanvas (Content/Graphics): two half-screen render targets (alpha, additive) painted in Main.OnPreDraw, corner snapped to an even world pixel, presented x2 PointClamp at the dust layer before the other particles. PADParticle.Pixelate sends a particle through it; PADPixelCanvas.Queue(draw, additive) for anything else (drawn a frame later).
+- Hit kit: HitRing (squishable ring, world-pixel radii), ImpactStar, HitCrack (3 variants) with code-made textures; HitFx.Light/Heavy/Slash/Ground lay them down with BloomGeneric, SparkShard, SlashStreak, StoneChip, DustFog, all pixelated. /hitfx [light|heavy|slash|ground] shows them at the cursor.
+- No weapon uses HitFx yet.
+
+### r82i — town NPC chat panel installed (2026-11-11)
+- Request: "i thought we implemented the new town npc chat UI?" -> "Install it now".
+- Built earlier as round r82i and held as an open offer; installed now unchanged: TownChat (the panel in place of vanilla's chat box, buttons laid out in it, six at most with paging), ChatSlot, ChatSubBox (reforge slot box), ReforgeBox, ShopBox (shop grid inside the panel), ChatArrow/ChatSlot/ChatSubBox art, and TalkOptions.cs updated for it. Builds with 0 errors against the current mod.
+
+### r82ao — Eyesore, Slimy Fortification, the Iron Borne Mantis (2026-11-11)
+- Request: "New items Legends exclusive: Eye of Cthulhu. Accessory: Eyesore ... King Slime: Spell: Slimy Fortification ... New Hardmode boss: Iron Borne Mantis ... Im giving you creativity, spare no effort" (full text in the chat).
+- Eyesore (Items.Accessories; EoC, Legends, bag in Expert): EyesoreEye by the shoulder looks at EyesorePlayer.MostMenacing (boss first, then lifeMax + damage x12; 20% stickiness) within 45 tiles; 300 ticks on one marks it; hits 1-3 on it x2 / x1.75 / x1.3 (FinalDamage); third spends it, 300 ticks rest. Stare restarts when the target changes; a mark on something dead or 67 tiles off is dropped with no rest. Dotted stare line, red eye and pips over the marked.
+- Slimy Fortification (Spell; King Slime, Legends): 12 damage, 12 mana, 30 ticks; 3 SlimyFortificationGlob from the cursor (within 45 tiles of the caster) homing on the nearest NPC within 22 tiles of it. SlimeCasing (GlobalNPC, per caster machine): each glob adds 34 x clamp(1400/area, 0.2, 1) toward 100, drying after 3 s; full -> buff Encased 300 ticks (synced as a buff). Encased small NPC (knockback-able, area <= 2600, not a boss/part): AI not run, falls, no touch damage; bigger: 40% speed; bosses immune.
+- Iron Borne Mantis (Content/NPCs/Mantis): 34000 life, 34 defense, 70 touch, blade x1.5, landing x1.2; box 110x150. States Arrive (rear and roar), Stalk (stride 40 / stop 12, turns only stopped), Slash (wind 38 in 4 notches, fixes at 26 on prey + velocity x8 clamped 70..208 px from the shoulder, cut 8, stuck 12, fold 26; other arm if in reach, 2 a bout, 3 enraged), Crouch/Air/Land (jump when kept away 150 ticks). Under half life x1.25 pace.
+- Arms: 3 pieces (52/76/94 px), joints in 3D relative to the shoulder, FABRIK from the blade point; drawn by Strip in 6 slices a piece through View (size = 360/(360 - z)), so a piece toward the viewer is a trapezoid; cut path bulges z to ~200 (blade > 2x). Blade hit worked out per client for its own player.
+- Art by script (scratchpad mantis/rig.py, arms.py): 14 body frames 192x192, arm pieces, map head. /mantis [clear] to call it; no natural spawn, no loot, no downed flag yet (PADWorld is locked).
+
+### r82ap — the Mantis's raptorial foreleg remade: idle, pierce, slash (2026-11-11)
+- Requests: a sketch ("i meant like this": idle a tight zigzag of slivers; pierce the arm out in a line; slash the blade cocked, then one great crescent) and "idle pierce slash, remake the raptorial foreleg".
+- Art (mantis/arms.py): coxa a slim sliver; femur thick and dark, swollen at its root; tibia a clean scythe blade, its hollow edge ground bright (112x52, pivot row 36). No spines or teeth, by request: "dont put saw teeth on it, make it a blade insteead".
+- Idle: Folded() is a tight N: down-forward, straight up, blade hung down along the femur.
+- Slash (36 ready / fixes 24 / cut 10 / held 12 / fold 26): readied with the elbow lifted and the blade hanging; the cut a cubic through back-low (z 150) and low-front (z 250) to the mark, then 16,-44 past it; smear laid twice a tick, 16 long.
+- Pierce (30 / 18 / 5 / 14 / 24), new state Act.Pierce: drawn back (z -70), straight to the mark, held shaking; hit line from the first elbow. Chosen when the prey is over 150 px from the shoulder, the slash when nearer; follow-ups choose the same way.
+
+### r82aq — the Mantis's blows in real depth (2026-11-11)
+- Request (second sketch, pieces coloured: the femur a trapezoid, the blade a crescent across the picture): "its still js 2d rotatingg i meant make it Realllly dynamic".
+- Eye 360 -> 190 (size = 190/(190 - z), z capped at 145: up to 4.2x); 12 slices a piece.
+- Blows are poses in depth now, not a led point: Dirs (a way to point per piece), Blend (each piece's way turned from pose to pose, lengths kept), Reaching (IK onto the mark, elbows toward the viewer). StrikePose: slash = swung back behind the shoulder -> arm down and out at the viewer, blade swept from pointing back, through pointing at the viewer, to pointing ahead (cut 14 ticks) -> onto the mark in the world's plane -> past it; pierce = coiled with the elbow at the viewer -> out in a line, near end big, point small.
+- Idle fold by the second sketch: down, up-forward, blade hung down and turned a little away.
+- Blade hit window is the last quarter of the cut and 3 ticks after; smear thinner and fainter for the bigger blade.
+
+### r82ar — the Mantis's blade flips, smear frames, a thinner blade (2026-11-11)
+- Requests: "you know you can flip the blaade right?" / "and add a smear frame system too" / "and make the blade thinner".
+- Flip (Limb.BladeSide): the blade piece is drawn flipped over its length when needed. Cutting, whenever its tip moves over 8 px a tick, its edge (the picture's underside) is turned to where it is going, and kept so to the end of the hold; otherwise its edge is to the femur (6 px hysteresis).
+- SmearFrames (Content/Graphics, reusable): Add(tip, turnsAbout, size) while something sweeps, Fade(n) after, Draw(body, edge, reach, edgeWidth): the swept shape in the thing's own colour (alpha blend, solid at the newest, gone at the oldest, its inner end `reach` of the way back to the pivot), and its leading edge a thin added line, corners on the 2-px grid. The Mantis keeps one per arm (22 frames, two a tick while cutting, fading 3 a tick), steel (206,212,226) at 0.85, reach 0.6 slash / 0.2 pierce, plus the blade's last two poses drawn at 0.38 and 0.26. The old pink glow smear is gone.
+- Blade art thinner (mantis/arms.py: back sag 9.6, edge sag 3.6, edge band narrower, fewer red marks); hit line width 28 -> 20 x size.
+
+
+### r82au — The Sump: toxic sludge, its debuffs, the sludge cavern (2026-11-14)
+- Request: "Create a sub biome at the bottom of the jungle where the poison and toxic sludge is, create the liquid toxic sludge ... Overwhelming Toxicity where it -3HP a sec / if you dipped in the toxic sludge, you -20 HP a sec. and has a permanent debuff Stench, making every thing from the shop 10x time more expensive. debuff is cleared only when you submerged fully in water ... Toxic sludge sits on water and turn nearby water tiles into toxic sludge liquid tile with chance of 1 in 100 a second ... foul brown ... Acidic Mud, Stained Cobblestone ... halftone ... remnants of oil barrel tiles" (full text in the chat); then "this pocket should be 2/3 as wide as the jungle; think sunken sea under the desert"; then "make it twice as deep" (the lake). (r82as and r82at were earlier versions, never installed.)
+- Toxic sludge (Content/Biomes/Sludge/ToxicSludge.cs): 1.4.4 has no custom liquids, so sludge is water marked cell by cell (keys y*maxTilesX+x, at most 250000). Every cell is looked at once per 20 ticks, a share each tick: a mark drops where the water is gone; floats above water (swaps with the water over it); follows water into cells it filled; and spreads to each touching water cell at 1 in 100 a second. Saved and sent as runs along the rows. The server sends changes every 20 ticks, and everything to a client that asks on entering (PADPacket.Sludge). Drawn after the front water (On_Main.DrawWaters) in foul browns, with a scum band, flecks, bubbles, fumes, faint light and drips.
+- SludgePlayer: any part in it gives Overwhelming Toxicity (3 life a second, kept 3 s after). Head under it means 20 a second and Stench. Stench is permanent: saved, kept through death, the Nurse can't take it. It ends only when the head is under clean water (not marked) and DrownCollision agrees. StenchShops multiplies every shop price by 10 for the local player while they stink.
+- Blocks: Acidic Mud, Stained Cobblestone (Tiles/Items.Sludge; merge with mud, jungle grass, stone, dirt). Remnants: RustedBarrel (2x2, 4 styles numbered 17/40/3/9), RustedPipe (1x1, 13 styles, no anchors), SludgeVat (4x4, 2 styles). None drop anything; they drip sludge from their leaks.
+- The cavern (Content/Structures/SludgePocket.cs, SludgePocket.Plan.cs): the last worldgen pass.
+  - Size: the Jungle is found by mud columns in the caverns. The cavern is 2/3 of its width and 0.3 of that high (0.24 for the shape above the lake, 56 to 190 rows, times 1.25 for the deeper lake; less if the caverns are shallower). It sits centred under the Jungle with its canvas 4 rows over the Underworld; other sites are tried shifted 40/80 sideways or raised 30/60.
+  - Shape (pure plan, previewed): a ceiling and a floor along its length, closing at the ends. Islands are flat-topped. Columns are nearly whole but leave a gap so the cavern stays one piece. A sludge lake runs across most of the floor; below its surface the bed falls twice as far as the shape alone gives (on test ground, deepest 92 rows and mean 37, against 47 and 19 before). The dry floor is stepped in terraces 3 rows apart, and the ceiling has mud drips.
+  - Surroundings: a 5-tile shell, with cobble lining two deep round the lake. A Bayer 4x4 halftone band 12-22 wide turns soft ground to Acidic Mud and hard to Stained Cobblestone.
+  - Ways in: one from each end and one up from the ceiling, dug on in the world past the canvas if needed. Lava about it is removed.
+  - Kept things (temple bricks and walls, altars, larvae, orbs, non-chest containers, other mods' objects): the cavern stays 8+ tiles from them and wraps round them. If more than 40% is lost to them, another site is tried. Plain chests in its way are moved whole (items, name, kind) onto free floor in the cavern.
+  - Works: about 1 vat per 170 tiles of width. Each has a pipe down from the rock (at most 40 long, hanging from a joint if the rock is further) and an outlet along the floor, out over the lake with its mouth. Barrels come in clusters, some stand in the shallows, and some have a pipe open over them. About 1 shut barrel chest per 220 tiles holds healing and gills potions, wire, bombs, spores and gold, maybe a Bezoar or Wrench.
+  - Saved with the world: each cavern's extent (also sent to clients) and a place to stand.
+- Biome: SumpBiome "The Sump" (inside a cavern's extent, or 90+ of its blocks about the player; no music of its own). /sludgepocket [here | go | where] makes one in an older world, takes you to it (single player), or gives its Cell Phone position.
+
+
+### r82av — The Sump: lake shown as plain water; a check and a fix (2026-11-14)
+- Report: in world FUHHH (Extra Large, 12600 by 3000) the Sump's lake showed as plain water (an Arapaima swimming in it), with no sludge drawn over it. No sludge errors in client.log.
+- Found in the code: ToxicSludge.Mark refused cells once 250000 were marked, and the cavern marks its lake top row first. On a wide enough cavern the deep part of the lake would be left as plain water. Mark now never refuses; the cap only limits running and spreading.
+- SludgePocket.Lay writes the cavern's canvas, extent, lake row and lake size, and the world's sludge count to the log ("The Sump made: ...").
+- /sludgepocket check: says (and logs) the Jungle span found, each cavern's water and how much of it is sludge, and the liquid, sludge and buffs at the player. /sludgepocket fix: marks every water cell inside the caverns as sludge (repairs a cavern already made).
+- Not yet known: whether the cap was the cause in FUHHH; the check's numbers in client.log will tell.
+
+
+### r82aw — Terraprisma's opening cut (2026-11-14)
+- Request: "Make the first attack of terraprisma after in idle position be: teleport from idle position to behiidn the targeted npc, leaving a streak of slash that explode that deals double damage".
+- Vanilla (Projectile.AI_156_Think, EmpressBlade 946): state ai[0] 0 is waiting at the idle spot. Each tick there is a 1 in 20 chance to pick a target; then ai[0] = 80 (the dive: rise 100, through the target, out beyond) and ai[1] = the target. The count runs down; at 41 the blade picks its next attack (40 arc or 80 dive).
+- TerraprismaOpener (GlobalProjectile, EmpressBlade, per entity): if ai[0] was 0 when the tick began and is 80 after it, on the owner's machine:
+  - The blade moves to the target's far side: Center + direction from the idle spot × (half the target's larger side + 40).
+  - It turns to face the target, and its old positions are reset so no trail stretches across.
+  - The game's dive then starts from behind and comes back through.
+  - A PrismCut is spawned from the idle spot to there, with twice the blade's damage and the blade's colour (AI_156_GetColor) packed into ai[2].
+- PrismCut (Projectiles/Summoner): hangs 18 ticks, then bursts. In ticks 19-21 it hits everything within 22 px of its line once (local immunity -1) for 2 × the blade's damage.
+  - Counts as a minion shot (whip marks apply), summon damage, Legends × 1.15 like the blades.
+  - Never drawn itself. Visuals are particles on every machine, on the half-size canvas: PrismCutLine (arrives in 3 ticks, tapers, white core in the blade's colour cycling through the Empress's, flickers, widens and brightens toward the burst, stars glint at the end), flashes and rings at both ends, and a ribbon of PrismStreaks.
+  - The burst: blooms and rings along the line, sparks thrown off both sides, the line breaking into drifting pieces, an ImpactStar at the middle and a ring at the far end.
+  - Sounds: Item8 (teleport), Item1 (the cut), Item14 (the burst, pitched up).
+- hjson: Projectiles.PrismCut.DisplayName: Terraprisma (death messages).
+
+
+### r82ax — The Sump: the sludge drawn in the world pass (2026-11-14)
+- Report: "nah slump still clear". /sludgepocket check in FUHHH: cavern 3129, 2520, 1114 by 208; 15271 cells of water, all 15271 marked as sludge, none marked dry; drawToScreen False, lighting Color. So the marks were right and the drawing was not seen.
+- It was drawn inside Main.DrawWaters, which with drawToScreen off runs only in Main.RenderWater, into the game's water picture (waterTarget). That picture is only remade on some frames, RenderWater swallows any exception (try/catch with nothing in it), and M.U.P.R.A.L. hooks the same two methods. It was never seen there, though the exact reason was not pinned down.
+- Now drawn every frame from On_Main.DrawInfernoRings, after orig. In Main.DoDraw that comes just after the water is laid on the screen and its ForegroundWater overlays, in the world's batch (Transform). Coordinates are world minus screenPosition (no offScreenRange).
+
+
+### r82ay — Terraprisma's cut hits at once and tingles; the blade waits for the burst (2026-11-14)
+- Request: "terraprisma streak should instantly deal damage before exploding making mind tingling sounds, also unless streak is exploded, it doesnt attack".
+- PrismCut:
+  - Spawned with the blade's damage (×1). In ticks 1-3 it hits along as much of its line as has been drawn (the cut), at ×1, with a HitFx.Slash on whatever it hits.
+  - At tick 18 its local immunity is reset and it bursts. In ticks 18-20 it hits along all of it at ×2 (Times). Legends ×1.15 on both.
+  - Its cut plays PrismTingle (3 variants, volume 0.75, pitch variance 0.06, at most 4 at once) instead of Item8 and Item1. The burst keeps Item14.
+- Content/Sounds/PrismTingle1-3.ogg: made in code (scratchpad sludge/sound/tingle.py: numpy/scipy synthesis, ffmpeg libvorbis q5), 1.15 s mono 44.1 kHz.
+  - A glass bell chord on G6/A6/B6 with partials ×1, 2, 2.76, 4.07, 5.40, each a pair detuned by 0.8-2.2 Hz so it shimmers.
+  - 34 tiny pings on the chord's notes ×2-6, dense at first and thinning, each with a 1.5 ms soft start.
+  - A 5.2-12 kHz hiss swelling in over 30 ms. Lowpass at 13.5 kHz, peak 0.7.
+- TerraprismaOpener: after the teleport the blade holds for Fuse + 1 ticks.
+  - PreAI returns false while holding. It keeps the game's keep-alive (empressBlade, timeLeft = 2) and its light, stays at the same offset from the target as it moves, and turns to face it.
+  - ai[0] is left at 80, so the game's dive starts from behind the target once the cut has burst.
+  - The hold (ticks, target and offset) is synced through GlobalProjectile Send/ReceiveExtraAI.
+
+
+### r82az — The Destroyer reworked: its rising, its last stand, its end (2026-11-14)
+- Request: "Destroyer rework : / Spawn animation: Cinematic + pan / Spawn somewhere faraway under ground, pierce the ground up then look at the direction of the player and do a reverbed and echoed and slowed version of the original roar, (use this sound for all mech bosses); then it quickly dive into the ground, panning back to player / Death animation: 1HP, invincible. it dive down and fast really quickly making parabols above player. As its last attem to kill. Then after 10 seconds it pans to it going super fast then player pause, it going super fast up to the player and it slowed just before; explosion happens in exponentially shorter intervals and black smokes come out of the creases (between segments). sparks (the one used for megashark) happens too, then it played loud buzzer and explode quickly 1 after another from tail up into its gores / Make it beautiful".
+- User's choices: the new roar replaces the summoning roar only (the Twins' phase-change roar stays vanilla); both scenes skippable (E held, single player); the last stand is arcs only (no lasers, no probes).
+- New files, all under Content/NPCs/Mech/ and Content/Sounds/Mech/. No existing file changed. Not active while the Mechdusa is up (NPC.IsMechQueenUp): vanilla.
+- MechRoar.cs (ModSystem): hooks Player.ItemCheck_UseBossSpawners and SoundEngine.PlaySound. While a Mechanical Eye or Skull is used, the game's roar (SoundID.Roar) plays MechRoar.ogg instead. The Mechanical Worm's roar is silenced, because the Destroyer roars when it rises.
+- MechRoar.ogg: the game's Roar_0, slowed to 0.68 (pitch and time together), echoes at 0.34, 0.71, 1.12 and 1.6 s, a 4.2 s hall reverb, 7.0 s stereo (scratchpad mech/roar/mechroar.py).
+- DestroyerBuzzer.ogg: a harsh buzzer made in code, 1.35 s mono (saw and square tones at 98, 103.5, 147 and 196 Hz, a 30 Hz rasp, driven, relay clicks at each end; scratchpad mech/roar/buzzer.py).
+- Destroyer.cs (GlobalNPC on the head): scene clock (Rise, Stand, Finale), synced by Send/ReceiveExtraAI; between scenes vanilla's AI runs untouched.
+  - CheckDead refuses its first death: life 1, untouchable, and its last stand begins. Every segment the blow left at 0 life is given 1 back (otherwise it, and every segment behind it, vanishes the next tick).
+  - Its end sets life 0 and calls checkDead itself: the loot drops as vanilla's.
+  - Untouchability is given back by the machine that set it (found in review before delivery: a client's copy would have stayed untouchable after its rising).
+  - DestroyerSystem: BossPlate.HasOwnIntro + NamesItself (its name comes up as it roars); On_NPC.VanillaHitEffect shows no pieces for the refused death or for parts already blown up.
+- Destroyer.Rise.cs, its rising (~400 ticks):
+  - It is put 45 tiles under the ground 95 tiles to one side of the player, its body laid out behind it, away and down.
+  - GATHER 100: the camera goes there, bars, the player held; the ground shakes harder and louder, dust and chips thrown up.
+  - BURST 28: it bursts up out of the ground to 26 tiles over it and slows. TURN 30: its head comes round onto the player.
+  - ROAR 200: Cinematic.Roar with MechRoar (red rim), the air thrown off its head, its name. DIVE 40: it rears and dives back into the ground, curving toward the player; the camera walks home; vanilla's AI takes over.
+- Destroyer.Death.cs:
+  - Its last stand (600 ticks, contact damage on, no lasers, no probes; lasers in flight and probes cleared): it dives under the player, then leaps over them side to side, parabola after parabola. Ends 34 tiles out and 24 under; its top 17 tiles over them at first, lower each leap down to 8; each leap quicker (70 ticks down to 46); a 14-tick turn under the ground between. Smoke and sparks start coming out of it.
+  - Its end: WIND 34 (the camera pans onto it racing round under the ground, the player held and immune from here), RUSH 46 (it bursts up and comes at them at full speed, easing out, and stops about 8 tiles to their side and a little over them, its head turning onto them).
+  - BREAK ~250: explosions along its body near its head, the gap 36 ticks then x0.84 each time down to 2, then a rattle; black smoke out of the creases, more and more; Megashark sparks (3 arcs in (255,186,66), torch dust, Item93, a wisp of smoke); its head shaking, its eye flickering.
+  - BEAT 24: only the smoke. BUZZ 82: the buzzer, a red flash, its eye flashing red.
+  - CHAIN ~150: each segment blows up from its tail (one a tick, one every 3 ticks within 28 of its head) into gore 156 and smoke gores; its head last and biggest (white flash); the camera walks home; then its loot.
+  - Explosion sites are picked from a synced seed, so every machine shows the same.
+- Destroyer.Fx.cs: all the effects (Tremor, Breach and Spill eruptions where it crosses the ground, HeadGlow, RoarBurst, Decay, Explosion, Spark, SegmentBurst, HeadBurst). Particles on the 2-pixel canvas, thinned when the particle pool is short; explosions off screen are only heard; sounds capped per tick.
+- DestroyerPart.cs (GlobalNPC on body and tail): no lasers and untouchable during its head's scenes; laid out under the ground before it rises; harmless while its head is; throws up ground where every third segment crosses it; hidden once blown up.
+- Motion checked in a Python sketch of the head paths and vanilla's 44 px rigid follow (scratchpad mech/sim): the rush first ended with its head buried under the player, so the end now winds round underground first and stops beside and above the player.
+- Build: 0 errors, no new warnings.
+
+
+### r82ba — The Destroyer: slower, its body along its way, no rings, its colour; Legends Destroyer and its Probes (2026-11-15)
+- Requests: "Make everything a bit slower, also the body of the death animation should follow the path all the way instead of having 80% of it frozen"; mech boss elements (Destroyer lightning and energy #7fd4d1, Retinazer fire #c2380e, Spazmatism toxic gas #3ea637, Skeletron Prime nuclear #bbff00); "stop overusing that ring radial effect, dig into ground doesnt need it nor pierce from ground up"; the Legends Destroyer (2 phases, phase 2 at 35%, moves listed by the user, 2 more after Thanatos, "Make it insane"); "dash must roar as well, modify it to a robotic roar".
+- User's choices: sky storm every 30-40 s (about 8 s long); the orbs are the Probes with a new AI; teal in normal and Legends; the 2 new attacks are Coil cage and Overload sweep.
+- Every world:
+  - Slower: rising 130/40/40/220/56 ticks (gather, burst, turn, roar, dive); last stand dive 44, leaps 84 down to 60, turns 20; end wind 46, rush 60, explosions 42 ticks then x0.85, beat 34, buzz 84, chain one every 2 ticks (4 near the head).
+  - Destroyer.Path.cs: while its head is driven (any scene or Legends move) the way its head has come is kept, and every segment is put on it 44 px apart, facing the one ahead. Its whole body now follows the leaps, the rush and the moves exactly. Vanilla's pull takes over between them. The rising lays the way along the buried body first, so it comes up out of the ground along it.
+  - No rings anywhere in it: HitRing, HitCrack and ImpactStar removed; eruptions are spouts thrown along its way; its roar no longer uses Cinematic.Roar (its rings). Its own roar (Bellow): the sound, shake, the screen dimmed about it, steam and sparks out of its mouth the way it faces, its lightning crackling over its head.
+  - Its own lightning and glow in #7fd4d1 (the eye glow in scenes, the explosion arcs, the buzz flash). The Megashark sparks in its death stay orange.
+  - Lightning.Spawn gained an optional pixelate argument (drawn on the half-size canvas). Nothing else calling it changes.
+- Legends (PADWorld.Legends): life x1.3, damage x1.15. Vanilla's chase between moves; vanilla's segment lasers replaced by its own warned bolts from a few segments (every 160-240 ticks, 110-170 in phase 2).
+  - PULSE (both phases, 25-35 s apart): comes to about 26 tiles off; charge 100 ticks with red running from tail to head and red sparks, its mouth gathering, five warning lines closing in like a sight; then a 4-tile beam (DestroyerRay: white core, teal halo, pulses running along it) for 150 ticks while it creeps forward and turns only 0.008 rad a tick.
+  - STORM (both phases, every 30-40 s): up into the sky about 30 tiles over the player; 480 ticks back and forth; lightning crackles at its mouth and strikes out of it to places within 30 tiles (harmless); its body glows yellow and zaps at random within every 3 s: the player within 3 tiles of it is hurt (40% of its contact damage), its Probes there are overcharged.
+  - VOLLEY (phase 1): slows; every segment near the player fires a warned bolt (warned 50 ticks, aim locked 10 before), 3 times, 90 ticks apart (at most 64 a wave).
+  - Second wind at 35% (Wake, untouchable, camera on it, skippable): it slows; from tail to head each segment vents steam (DestroyerVent) and its eye turns teal; the head last, with the robotic roar. From then on: teal eyes with a trail each, steam out of every crease.
+  - POP (phase 2): a half circle over the player, 34 tiles round; every segment shakes; each pops a Probe (at most 44 Probes up), its probe slot left empty.
+  - BERSERK (phase 2): lightning sparks off it; three times as fast (48) and twice as sharp out to 90 tiles off; turns with a warning line; dashes at 7x its speed (112) with the robotic roar (DestroyerDashRoar), homing until 50 tiles off; 3 dashes; contact damage x1.3 while dashing.
+  - CAGE (phase 2, after Thanatos): circles the player from 42 tiles, closing to 24 over 380 ticks (its body a ring with one gap, then overlapping); 5 waves of warned bolts from every second segment, all but a random stretch of 10.
+  - SWEEP (phase 2, after Thanatos): circles at 34 tiles, charges, then fires its beam for 300 ticks as it goes round, the beam always just missing a circle about the player (12 tiles shrinking to 7) that drifts with them; its lightning chains from its body to the beam (harmful), only from the side away from the safe circle.
+  - Probes (LegendsProbe): circle the player at their own distance, keep apart, fire warned bolts every 2.5-4 s; overcharged by the storm (flare, fire at once, faster for 1.5 s); in phase 2 about half of new ones pair up and fly into each other at a spot by the player, lightning between them, into a 9-tile ProbeBlast.
+  - Its body in phase 2, red while charging, yellow in the storm: drawn by the mod (vanilla's sprite and the same placement; its glow recoloured to teal in code from vanilla's own red glow the first time it is drawn).
+- New sounds (made in code: scratchpad mech/roar/legends_sounds.py): DestroyerDashRoar (the game's Roar_0 lowered, vocoded onto a buzzing chord, ring-modulated, bit-crushed, through a metal comb, a servo whine, 2.2 s), DestroyerCharge (1.75 s rising whine and crackle), DestroyerBeam (6 s blast and hum, faded out when the beam ends), DestroyerVent (1.3 s clunk and hiss).
+- Checked: build 0 errors, no new warnings; a Python sketch of the paths with the new body (death leaps, cage, sweep with its safe circle, pop arc). Not yet seen in game.
+
+
+### r82bb — The Destroyer: less pixelation, warnings fade (2026-11-16)
+- Requests: "doing too much pixelation not everything need pixelation" (a screenshot of the Legends volley: its warning lines and bolts as stair-stepped lines); "also indicators need to fade not disappear immediately"; and of the pulse laser's beam: "except this is cool".
+- Smooth now (drawn straight into the world's batch, added as light): every warning line, the bolts, its lightning (Arc, the sweep's chains, the Probe burst, the Probes' tether), the phase 2 eye trails, the Probes' glow. Still on the two-pixel grid: the pulse laser's beam and its own edge crackles (kept exactly), and the particles (smoke, dust, chips, embers, soft blooms).
+- Warnings fade over 16 ticks instead of vanishing: a bolt's line fades where it was after the bolt goes; the head's sight lines (pulse, sweep) and its dash line fade where they last were when their step ends (DrawWarnings keeps the last one shown).
+- A bolt's warning line now runs only to just past its mark (its distance to the player plus 15 tiles, 19 to 100 tiles), not 100 tiles always: far less clutter in a volley.
+- Build 0 errors, no new warnings. Not seen in game yet.
+
+
+### r82bc — The Destroyer's warning lines longer, fading at their ends (2026-11-16)
+- Request (with a screenshot of the Legends volley): "indicator should be twice as long and fade as it ends start fading at 3/4 length and opacity = 0 at end".
+- A bolt's warning line is twice as long: twice its distance to the player plus 15 tiles (38 to 200 tiles); DrawScreenCheckFluff 3400.
+- Every warning line (bolts, the pulse and sweep sight, the dash line) is full for its first three quarters and fades to nothing over its last quarter (DestroyerArt.DrawWarning: the last quarter drawn in 12 pieces, each dimmer).
+- Build 0 errors, no new warnings. Not seen in game yet.
+
+
+### r82bd — Legends Destroyer: 75% of Probes clash in phase 2 (2026-11-16)
+- Request: "switch to 75% of the orbs clashing in phase 2".
+- LegendsProbe.ClashShare 0.75 (was a coin toss): three in four Probes that appear while a Destroyer is in its second phase look for another to fly into.
+- Build 0 errors, no new warnings.
+
+
+### r82be — The Destroyer's sounds from the part of it nearest the player (2026-11-16)
+- Request: "also sounds should be play at the segment nearest to the player".
+- Destroyer.Listen (every tick, each machine): the part of it (head or a segment not yet blown up) nearest the middle of the screen, where the game hears from (the player, or a cinematic's camera). Every sound of its own plays from there: its roars (MechRoar, the robotic roar), the charge, the beam (which follows it while it lasts), the vent, the buzzer, zaps, eruptions, explosions, strikes, clanks.
+- Left where they are: the sounds of its bolts, its lightning chains and the Probes' burst (they are where they happen, by the player).
+- Build 0 errors, no new warnings.
+
+
+### r82bf — The Destroyer's head stays on its way; its sweep a lighthouse; Probe pairs in turn (2026-11-16)
+- Requests: (with a screenshot of the sweep: its head turned hard against its body) "head should not be broken like this, it should keep natural on its leading path laser too"; "each pair of colliding orbs assigned an ascending number and each one flies to a new position that is 30 tick lag".
+- SWEEP remade: its head always faces the way it goes and its beam comes out along that way. It comes to about 36 tiles off the player; charges (80 ticks) aiming 1.2 rad behind them, creeping at 1.5; then fires 300 ticks while it curls at a steady 0.012 rad a tick (a curl about 8 tiles across), so the beam turns like a lighthouse's onto the player and past them (a sketch: a player standing still is crossed about 110 ticks in, for about 25 ticks). The safe circle and the circling at 34 tiles are gone. Its chains now run from segments near its head to the beam within 520 px of its mouth.
+- Rising: its head no longer turns on the spot to look at the player. It comes round along a curve (apex, a bend 3 tiles over it, then 4 tiles toward the player and 2 up), its neck bending; it roars facing the way that curve ends; its dive goes on from that way.
+- End: its rush is bent so it comes up steeply and ends heading straight at the player (its bend on the line from the player out through where it stops), so it faces them by its own way; the turn on the spot is gone.
+- Probes: pairs are numbered in the order they pair (LegendsProbeSystem; the count starts again when no pair is left) and wait their turn (QUEUED: circling, holding fire, a faint crackle between them), each turn 30 ticks after the last. On its turn a pair flies at a new place, where the player is then (within 3 by 2 tiles), swooping in from either side and quickening, and bursts 45 ticks later. So the bursts come 30 ticks apart, following the player.
+- Build 0 errors, no new warnings. Not seen in game yet.
+
+
+### r82bg — The Destroyer's shaking only seen, every part in place (2026-11-16)
+- Request: "during cinematic animation the body should stop following the head, shaking itself results in a curling of segment, what i mean is just a visual shake of all segments in place even start and end and transition".
+- Cause: where it trembled (its roar, its end's explosions, buzzer and chain, its pop, its second wind, its berserk start) its head was moved a few pixels each tick, and its body, laid along its head's way, followed every one of those moves and curled up behind it.
+- Now its head stays exactly where the scene puts it, and the shake is only seen: Destroyer.shake (pixels, set each tick it is wanted, none otherwise) moves where each part is drawn, head to tail, each its own way every frame, in PreDraw, and PostDraw puts it back (it always follows PreDraw). Nothing moves; its body stays where it lies.
+- Smoothed in and out: its roar with its voice; its end's explosions 1 to 6 px as they quicken, settling to stillness over 14 ticks of the beat, back to 4 px over 8 ticks of the buzzer, easing to 3 through the chain; its pop 1.5 to 5.5; its second wind easing in to 1.5; its berserk start 3.
+- The old per-segment jitter in Destroyer.Path (which moved the segments themselves) is gone.
+- Build 0 errors, no new warnings. Not seen in game yet.
+
+
+### r82bh — Probe pairs go 15 ticks apart (2026-11-16)
+- Request: "interval between each of them the send is 15 tick only" ("orb collide send").
+- LegendsProbe.Lag 15 (was 30): each numbered pair goes 15 ticks after the one before it, so the bursts come 15 ticks apart.
+- Build 0 errors, no new warnings.
+
+
+### r82bi — The Chain, a Legends accessory from the Destroyer; Electrified on enemies (2026-11-16)
+- Request: "Legends only accessory: The Chain. 9 body segments of shrunk down destroyer with the tail, stretch and whip the npc max 25 tiles behind the body, dealing 150 damage, each count as a 'Combo Xn' with n being number of hit at n = 5 it becomes 'Electrifying' and whip (like vanilla whip) at the npc with some electricity effect dealing 200 damage and stun apply 3 seconds of electrified debuff, idle its just curled up like an S behind the body like squirrel tail"; then "Also somewhat lights up the dark a red glow or that cyan at combo x4".
+- User's choices: drops from the Legends Destroyer; strikes every 1.25 s; the game's own Electrified, on enemies: stuns all but bosses for its time and takes 20 life a second, shortened to 2 s; the game's own Destroyer pictures shrunk.
+- Content/Items/Accessories/TheChain.cs:
+  - TheChain (accessory, Pink, 6 gold sell): its picture is drawn by hand from the Destroyer's (its rest's S, in the inventory and on the ground); a teal "Legends" tooltip line.
+  - ChainPlayer: worn, hidden, the combo (lapses after 4 s without a hit); keeps the tail alive (as the Eyesore keeps its eye).
+  - TheChainTail (projectile, Generic damage 150 scaled by the wearer's): 9 body segments and the tail, the game's Destroyer pictures at 0.32, 14 px apart, each facing the one before it, drawn behind the wearer.
+    - Idle: an S from the wearer's lower back, back, up and curling forward then back at the top (turns -30 -40 -35 -25 -10 +10 +30 +40 +40 +35 degrees from 20 degrees down-back), swaying.
+    - Strike (hits 1-4): every 75 ticks, the nearest enemy within 25 tiles in sight of the wearer: out over an arch (12 ticks, pieces stretched up to 46 px apart), 3 at it (the hit, the tip only, that enemy only), 16 back. "Combo X1" to "X4" over it (red, teal at X4); a clank.
+    - Whip (the fifth): draws back over the wearer's head (12 ticks), swings over the top and cracks at the enemy quickening (14), through (6), home (16); the tip on a circle, the rest bowing behind it. 200 damage, Electrified 2 s, "Electrifying" (teal, dramatic), the whip crack (Item153) and a zap, a flash, lightning out of the tip, sparks, a little shake; its lightning down its length all the while. The combo starts again.
+    - Its light: red at every second piece; teal (#7fd4d1), its eyes too, once the next strike is the fifth and through the whip, with a crackle now and then.
+    - Its wearer's machine picks the target and the moment (ai: mode, target, combo); every machine moves and draws it from that.
+  - TheChainDrop / TheChainBag: from the Destroyer where it drops no bag, in its bag where it does, both LegendsOnly, every time.
+- Content/NPCs/ElectrifiedNPC.cs: the game's Electrified on an enemy: 20 life a second (lifeRegen -40); all but bosses (and their parts) stunned for its time through PADStaggerNPC.Stagger when it first appears (worms and the like left alone there); a crackle and electric dust while it lasts.
+- Localization: Items.Accessories.TheChain (name, tooltip, Combo X{0}, Electrifying), added to the device's newest copy, its CRLF line endings kept.
+- Checked: build 0 errors, no new warnings; a sketch of its rest, strike and whip shapes. Not seen in game yet.
+
+
+### r82bj — The Chain lashes as a whip, 25 tiles, in Destroyer-Lite's pieces (2026-11-17)
+- Requests (with a screenshot of a vanilla whip beside the Chain): "check vanilla whip why is this thing tapping?", "this thing as in the tail", "i need it to whip"; "also use deactivated probe's mech worm pet textures instead of shrunk down destroyer"; "and its standard whip length 25 tiles every time".
+- Its strikes were a stretch along an arch to the enemy and back: a tap. Now every strike is a whip's lash, after the game's own (Projectile.FillWhipControlPoints: a coil that uncurls as it swings, straight at the crack, then a flick and back), written for the tail: its root's heading swings from behind the wearer (150 degrees back; 170 for the fifth) over their head to the enemy, it lengthens, and each piece turns back from the one before by the lash's curl (0.55 rad a piece at the start, to none at the crack), so the tip trails and then snaps through. The crack at 0.62 of the lash; after it the root swings 30 degrees past, the tip flicks and it draws in, easing back to its rest. Lash 30 ticks, the electrifying crack 42.
+- Its full 25 tiles toward the enemy every time. It hurts along its whole length (line checks piece to piece, 18 px wide) while it swings through (0.37 to 0.74 of the lash), each enemy once a lash. The lash's first hit counts for its combo; anything else it catches is only hurt (and, on the fifth, electrified too).
+- Its pieces are now Destroyer-Lite's, the Deactivated Probe's pet (Projectile 887's sheet: its body frame and tail frame, at their own size, 16 px apart, turned and flipped as the game draws the pet), with the pet's own glow (GlowMask DestroyerPet) pulsing as the pet's does, recoloured to #7fd4d1 when charged (DestroyerArt.TealOf: any red glow made teal, kept once made). Its icon is drawn the same way.
+- Tooltip: "Nine segments and the tail of a Destroyer-Lite curl behind you"; "Every 1.25 seconds it lashes 25 tiles toward the nearest enemy, for 150 damage".
+- Build 0 errors, no new warnings. Not seen in game yet.
+- The device's localization had gained a line since r82bi (tModLoader's own: TheChainTail.DisplayName); the tooltip change was made on that copy.
+
+
+### r82bk — The Twins reworked (their coming, their change, both their deaths); the Sandbag (2026-11-17)
+- Requests: "rework: the Twins" (each an element: the Retinazer fire #c2380e, the Spazmatism toxic gas #3ea637). Their coming: the camera a little over the player; they cross from the back over the screen like the beetles in the clip pointed at (far ones half size, near ones twice size, darker, fast), each from opposite sides, mirrored; then drop down from above; "no string attached". "On transition of each: ... invincible til the other transition into second phase as well ... the transformed still use the move from phase 1 until both is transformed". The first death: "no zoom no pan, just expo shorter spark interval for 3 sec and black smoke coming out and fall down to the ground, at 1 HP, doesnt move and invincible and not dealling damage"; asked after: "Spark 3s in mid air then falls with big impact". The second death: pan to it, it stops, flashes its colour three seconds with a buzzer; turns to its twin; pan there; it shakes, moves, hovers up; both turn to the player; pan home; lines from both eyes; two seconds; lock; both meet there in one second; a giant fireball of gas and fire. Asked after: the fireball a big hit, dodgeable; the cord hidden the whole fight.
+- Twins (Content/NPCs/Mech/Twins*.cs, TwinsBlast.cs; GlobalNPC on both, not when the Mechdusa is up):
+  - Coming, 6.3 s: BACK 162 (each across the far sky from its own side, half size, hazed with the sky, its eye's colour showing; drawn behind walls and tiles: Main's MoonMoon layer), FRONT 64 (back the other way twice size, near black, smeared, over everything: the over-players layer), DROP 80 (from 900 px up to either side over the player, Retinazer left), HOLD 75 (eye flare, the name "The Twins" comes up; camera home). Player held and spared. Skippable (E).
+  - The cord: Main.DrawNPCs' one read of NPC.IsMechQueenUp answers yes (an IL edit), so it is never drawn.
+  - The change: vanilla's own at 40%. Done, if its twin has not changed, it goes back to its first form's AI (ai[0] 0) in its second form's frames, untouchable and not sought, a faint sheen of its colour; its life is read as just over 40% for vanilla's AI so it does not change again. Let go into its second form the moment its twin has changed (or fallen, or gone).
+  - The first to die: refused at one life; SPARK 180 (still, trembling, sparks of its colour each sooner than the last: 34 ticks then 0.8 of that each time to 3; black smoke growing), then it falls tumbling and hits the ground (the highest solid top under it): two spouts of rock, dust rolling out along the ground, a thud and a shake. It lies on its side, smoking. Harmless and untouchable throughout. If its twin goes, it goes too (no loot).
+  - The second to die: refused at one life; CEASE 180 (camera on it, flashing its colour 18 on / 12 off six times to TwinsBuzzer.ogg, made in code), TURN 45, PAN 70, SHAKE 60, STIR 36, RISE 80 (eleven tiles), AIM 40, HOME 60, then WARN 120 (player free; a line from each eye, its colour, brightening, fading at its far end; gas leaking from the Spazmatism's mouth, the Retinazer's red-hot), CHARGE 60 (lock on the player's spot; both fly to meet there at the last tick, gas and fire trailing). TwinsBlast: hurts within 9 tiles for 6 ticks (110 normal / 95 expert, as their shots are scaled); a green flash, a billowing climbing fireball, a smoke column, embers, their pieces; the gas trail catches after it. The fallen one is ended first, so the last carries the loot and the "defeated" line. Skippable to WARN.
+- The Sandbag (Content/Items/Misc/Sandbag.cs, Content/NPCs/Sandbag/SandbagDummy.cs): an original punching bag drawn in code (the reference picture was a known character, so not that), 24 x 48 on the two-pixel grid, two frames: idle, and struck (bent through the middle, the struck side caved in, turned to face the blow) for 12 ticks after each hit; a thump with sand in it (SandbagHit.ogg, made in code) and a little sand shaken out. Use: one where the cursor is (it drops to the ground), 10 at most; right click: all taken away. Never dies (life all but endless, refilled every tick: homing and minions still go for it), hurts nobody, no bar, hidden from the bestiary. Multiplayer: client asks the server (PADPacket.Sandbag). Recipe: Target Dummy + 20 Sand Block.
+- Build 0 errors, no new warnings. Not seen in game yet.
+
+
+### r82bl — The Twins: overlays put where vanilla draws them (2026-11-17)
+- Request (a screenshot of the Spazmatism waiting on its twin, its sheen drawn as a ghost above it): "misalign".
+- Vanilla draws the Twins' eye 4 px over their centre (Main.DrawNPCDirect_Inner: the frame's pivot (55, 107) from the hitbox's bottom plus 4, less the 200 px frame, plus Main.NPCAddHeight's 30 for the Twins); r82bk had it 34 over, missing the 30. Every overlay and effect placed from it was 30 px high: the waiting sheen and the end's flash, the eye light, sparks, smoke, the mark lines' start, the charge's gas and fire, the far and near passes of their coming, and the height the fallen one lies at. All of it now from vanilla's own sum, at any scale.
+- The Spazmatism's flecks (its sparks, its waiting glow, its eye flare) were embers, which cool to orange as they go; they are now motes that keep its green. The Retinazer's stay embers.
+- Build 0 errors, no new warnings.
+
+
+### r82bm — The Twins in Legends: their attacks, their attacks together; the fire system (PADFire); two debuffs (2026-11-17)
+- Requests: "Legends / New fire effect in game either by particle or seperate system" (after the clip pointed at); the Retinazer and the Spazmatism each three attacks a form, and four "Twin attacks: happens more rarely, both pauses whatever they are doing to do this ... During this twin attack they are invincible" (each quoted at its attack below); "His flaming/fire attacks does Industrial Flames dealing 30 HP/s for 3 secs"; "Chlorine Poisoning for 3 secs -30 hp/s"; "whichever is transitioned first has a round shield (like supreme calamitas) but of their respective color"; "pulse shield"; "also optimize flame system".
+- PADFire (Content/Graphics/PADFire.cs, FireAtlas.png made in code): fire as its own system on the half-size canvas (PADPixelCanvas paints it: flames and sparks as light, smoke and gas laid over). A flame is a soft tongue or a round puff that runs yellow, orange, red, ember as it ages, shrinking, climbing, swaying; young ones piled up add to white. Palettes: Fire, Toxic (the Spazmatism's green). Emitters: Burn (a fire at a place), Jet (a column: a heart of round flames, a sheath of tongues), Trail, Puff (thrown one way: muzzles; nothing radial), Burst (explosions only), and Flame / Smoke / Gas / Spark singly. Kept cheap: one fixed pool of 6000 plain structs, one loop a tick (dead ones closed over in order), one batch a pass from one 128 x 96 atlas, colour and size from tables of 64, at most 40 lights a tick, emitters thin themselves as the pool fills and make nothing off screen, nothing on a server.
+- Legends Twins (Twins.Legends.cs, Twins.Ret.cs, Twins.Spaz.cs, Twins.Duo.cs, TwinsShots.cs, TwinsArt.cs; Twins.cs, Twins.Finale.cs changed): life x1.3, damage x1.15 (as the Destroyer). Each keeps vanilla's first attack of its form going (its counts to vanilla's charges never run out) and, after each 4 to 6 s of that, does one of its two own, turn about. The one waiting on its twin keeps to its first form's attacks. In its own attacks it can be struck (unless it waits).
+  - Vanilla's shots, theirs: lasers drawn as a streak of fire with flames behind ("vanilla laser but flamin"); cursed flames and the flamethrower burn in the new fire's green; the flamethrower's flames go half as far again (their speed x1.5: "1.5x distance"). All give Industrial Flames, and a seventh more damage.
+  - Retinazer, first form. ROLL ("Rolls into a fireball ... spins and flies towards player, have some over shoot and shoot again thrice"): curls 45 ticks (spins up, its picture run through fire's colours and lit, a comet of light behind), then three charges at where the player is going and 12 tiles past (26 to 54 ticks each), 18 ticks braking between; its touch gives Industrial Flames. COLUMN ("pause in place ... indicator that flashes in straight line ... streak of fire column"): 56 ticks of a flashing line as wide as the column, following the player, locked and solid from 36; then a column of fire 3 tiles wide, 150 tiles long, 40 ticks; its recoil.
+  - Retinazer, second form. STREAKS ("Spark from cannon ... 3x ... 3/5 indicator time interval of 1 sec with recoil, doesnt stop in place, but hover far away"): 30 tiles off, drifting round the player; three times a second apart: its cannon sparks like a lighter, a line 34 ticks (locked at 24), a column 16 ticks, recoil. SPIN COLUMN ("Spining in place ... 6 tiles thick ... accels spin with time for 10 secs"): 70 ticks marked (it turns its back on the player: the column begins pointing away), then 600 ticks of a 6-tile column turning from a turn in 17 s to a turn in 3.5 s (1.7 turns in all).
+  - Spazmatism, first form. WHIRL ("Spin in a circle not in place but fast to suck in the player"): takes a ring 24 tiles out from where the player stood (36 ticks), then 5 s round it at 22 px a tick, the ring closing to 2.5 tiles, everyone within 70 tiles pulled to its middle (0.16 px a tick each tick, 0.36 by its end: the still are taken from a second in, those running against it only in its last two seconds). SWEEP ("Dashes horizontally ... full screen length ... 7 points ... 2 balls opposite eachother and perpendicular ... intervall of 1.5 sec"): three rows 120 tiles long across the player (up to 5 tiles over or under), each 90 ticks: 50 to take the row's end (the row and its 7 points marked, flashing), 40 to cross it, a cursed flame up and one down from each point as it passes.
+  - Spazmatism, second form. SPIRAL ("fibonacci sequance path of the rectangle ... the circle that encapsulate that trinagle ... diameter as the width ... dashes that path in 3 sec (2 sec planning) ... 15 points ... 2 gas projectiles perpendicular to the tangent"): the smallest circle round the player and both eyes; a golden rectangle as wide as its diameter (56 to 120 tiles) about its middle; the golden spiral in it (eight quarter turns), turned whichever of four ways ends nearest the player. 120 ticks: rectangle, squares, spiral and its 15 points drawn out while it takes the outer end; 180 ticks down it at an even pace, two clouds of chlorine out square to its way at each point (TwinsGasShot: slowing, swelling, hanging 170 ticks; Chlorine Poisoning). Checked outside the game against the picture sent (scratchpad twins/spiral_check.py). INHALE ("Stand in place and sucks in for 5 seconds, the closer the easier to suck then breathe out 3 waves even, random, even spaced out Toxic Spear"): 30 braced, 300 still and pulling everyone within 80 tiles to its mouth (0.6 px a tick each tick up close, 0.1 from 56 tiles), then three waves of Toxic Spears half a second apart: 9 evenly over 110 degrees, 10 at random, 7 evenly over 150 and faster.
+  - Together (the Retinazer keeps the count: first after 30 s of fight, then every 40 to 55 s; both break off, columns ended; untouchable, a faint shield on each). Before both have changed: PINCER ("2 points of the screen afar ... Y level above ... half screen height ... one shooting laser column, one shooting toxic spear ... interval of 30 ticks and closing in"): 55 tiles either side, 500 px over the player, eyes down; 300 ticks coming together; every 30 the Retinazer a column straight down (16 ticks of line, 12 of column), the Spazmatism a spear straight down. BINARY ("butt to butt ... click ... connected like 2 balls, and spin ... interval of 45 and the other at 25 for 7 secs"): backs together 300 px over the player, a click, 420 ticks turning about where they touch (a turn in 1.9 s), the Retinazer a flaming laser every 45 the way it faces, the Spazmatism a cursed flame every 25. After both have changed: GAS ("Spaz pauses and shakes, and start vommiting flamamble gas ... 7 secs ... gas leak sound ... doesnt harm ... slows down ... gets bigger ... Ret floats from afar with his cannon sparking flame like a lighter ... at contact with any gas projectile, it explode in chain"): 45 shaking, 420 lurching (two times in three near the player) with a cloud every 4 ticks (TwinsFlammableGas: harmless, 105 of them) to TwinsGasLeak.ogg, the Retinazer far off and high striking its cannon (TwinsLighter.ogg); then it rolls into a fireball (50) and dives at the cloud nearest the player; the first cloud touched goes up and each lights those beside it, the fire running at 24 px a tick (each hurts 8 ticks; Industrial Flames). CLASH ("look at each other and each glow the outline glow of their respective color and clash ... serious shock wave that dies down as it goes"): 30 tiles apart, 70 ticks of outline growing, 22 running in, TwinsClash.ogg, a shockwave to 70 tiles at 18 px a tick, full within 10 tiles and a tenth at its end, throwing back what it hits.
+  - Damage (vanilla doubles a boss's shot in a normal world, four times in Expert; then x1.15): column 34 / 30, spear 28 / 25, chlorine 36 / 32, gas going up 50 / 44, shockwave 46 / 40.
+  - The shield: a bubble of its colour about the one that changed first, breathing, a pulse of it going out and fading every 50 ticks (TwinsShield.png made in code; on the canvas as light). At 0.4 on both through their attacks together.
+- Industrial Flames, Chlorine Poisoning (Content/Buffs/IndustrialFlames.cs, icons drawn in code): 30 life a second each, no healing meanwhile, 3 s a hit. Industrial Flames from all their fire (the Retinazer's lasers, columns, roll and the gas going up; the Spazmatism's cursed flames and flamethrower, vanilla's Cursed Inferno still given). Chlorine Poisoning from chlorine and spears.
+- TwinsBlast (r82bk's end fireball): its damage was 110 / 95 before vanilla's doubling, far over the "about twice their touch" asked for; now 50 / 48 (100 in a normal world, 192 in Expert). Its fire is PADFire's.
+- Chosen without asking: Industrial Flames from the Spazmatism's flames as well as the Retinazer's; the life and damage scale; the 4 to 6 s of vanilla's attack between its own; how often they attack together; the Whirl's ring closing on its middle; the gas lit by the Retinazer diving in as a fireball; the shockwave's numbers.
+- Build 0 errors, no new warnings. Not seen in game yet: nothing here has been watched or balanced by play.
+
+
+### r82bn — The Twins: no shield in their attacks together; the Binary fires again (2026-11-17)
+- Requests: "As I said you dont need to draw shield on them when they just doing their twin attack, only draw on the one who transformed first"; "Also changed the code for twin attack 2 shoot frequency now it doesnt shoot anything".
+- The shield: r82bm drew a faint bubble (0.4) on both through their attacks together. Gone: it is drawn only on the one that changed first, while it waits on its twin. They are still untouchable in their attacks together.
+- The Binary (twin attack 2): its rounds were set by hand to 17 (the Retinazer's laser) and 10 (the Spazmatism's cursed flame), from 45 and 25. r82bm fired on ticks 20 and 10 of each round, which a round that short never reaches, so nothing was fired. Each now fires half way through its own round, whatever it is set to. The hand-set 17 and 10 are kept.
+- The same weakness taken out of the other rounds that can be set by hand: the Pincer's column and spear (PinEvery), the Streaks' lock and column (StreakCycle), the Sweep's dash (SweepCycle) keep their ticks inside the round if it is made shorter.
+- The first r82bn.tgz (the shield alone) was refused by its own check, Twins.Duo.cs having been changed by hand since r82bm, and nothing of it was installed; r82bn_b.tgz was refused the same way (the file saved again by hand meanwhile, one blank line changed); this is r82bn_c.tgz, made from the hand-changed file.
+- Build 0 errors, no new warnings. Not seen in game.
+
+
+### r82bo — Violent Crimes, the Twins' Legends weapon (2026-11-17)
+- Request: "Legends weapon: Violent Crimes dropped by twins. A flame thrower with hold out: Right click: spit flame like normal flame thrower. Hold right click for more than 5 seconds: Shoot auto reuse flame laser interval of 60. Left click: spit flamable gas flamable only by flame thrower and flame laser of violent crimes. left click for more than 5 seconds: Auto reuse propel player at mouse direction for 30 ticks at high vel making it travel 35 tiles interval of 60 ticks". Asked after: "Laser replaces flame"; "damaging non flamable gas along path, the flamable gas in the first 5 seconds is non damaging until lit"; ammo "Gel", "consume gel and ranged"; the sprite "Draw in code, same idea but make it 80x40".
+- The item (Content/Items/Ranged/ViolentCrimes.cs): ranged, 44 damage, Pink, sells for 8 gold; takes a Gel as a hold begins and every half second of it (ammo savers count); never used as an item (CanUseItem false): the gun in the hands reads both buttons itself. Only in a Legends world, every time: from the last of the Twins in Classic, in their bag in Expert and Master (LegendsOnly, as The Chain). A "Legends" line in their two colours.
+- In the hands (Content/Projectiles/Ranged/ViolentCrimesHoldout.cs: an idle holdout, a pose on ViolentCrimesPlayer, drawn by ViolentCrimesLayer, the Meat Hook's way): held by its rear grip, the short stock on the shoulder, both hands on it, turned to the cursor. The first button down has the gun till it is let go; a right press that belongs to a chest, a door or somebody to talk to is not the gun's. Its lights (mouth, pilot, the two lenses, the lamp: ViolentCrimesGlow.png) are unlit by the place and brighten through the last half of the five seconds; the gun flashes and clicks as it turns over.
+  - RIGHT held: FIRE, a flame every 6 ticks (ViolentCrimesFlame: vanilla's flamethrower flame's own rules: three moves a tick for 72, a hitbox that grows, through four enemies at 0.85 each, stopped by walls, put out by water; about 32 tiles). Seen as the new fire (PADFire): each burst lays flames along the gap behind it, thin and yellow by the nozzle, wide and red by its end, smoke off the far end (tried first in the fire system's stand-in: scratchpad vc/scenes.py). From tick 300 the stream stops and it fires a FLAME LASER on that tick and every 60 after (ViolentCrimesLaser: a column of fire 30 px wide from its mouth to the first wall, 90 tiles at most, 16 ticks, through everything once, 9 times a flame's damage, a kick). The laser keeps the way it was fired and follows the mouth.
+  - LEFT held: GAS, a cloud every 6 ticks (ViolentCrimesGas: slows, swells to 5 tiles, hangs 10 s, stopped by walls, harms nothing; at most 72 a holder, the oldest fading for the next). Only this gun's flames and lasers light it, and a cloud going up lights those beside it (the fire running 24 px a tick): each going up hurts what is in it for 8 ticks (4.5 times a flame's damage; one hit an enemy every 8 ticks however many go up on it) and never its holder. From tick 300 the gas stops and it THROWS its holder toward the cursor on that tick and every 60 after: 30 ticks, 35 tiles (31 px a tick down to 6), through platforms going down, no fall counted, off any mount or hook; a throw begun is finished even if the button is let go. Thrown, they face back along their way with the gun's mouth behind them (the jet), and a cloud of chlorine is left every 3 ticks (ViolentCrimesChlorine: hangs 200 ticks, hurts what stands in it 0.8 of a flame's damage every 20 ticks, never burns).
+  - Its fire gives enemies Industrial Flames and its chlorine Chlorine Poisoning: the Twins' two debuffs now work on enemies too (30 life a second for 3 s each; TwinsBurnNPC in Content/Buffs/IndustrialFlames.cs).
+- The sprite (ViolentCrimes.png, made in code: scratchpad vc/gun2.py): 40 x 20 on the two-pixel grid, 28 colours, no outline. A red tank over the barrel and a green one under it, a lens at the front of each (their two eyes, either side of its mouth), clamped to a steel barrel with a flared nozzle and a pilot light; a body, a short stock and a grip behind. The first drawing had the tanks behind the grip, which put them over the holder's head when held; they were moved forward.
+- PADFire: a flame can be born part way through its life (Flame(..., begun)), so fire laid far down a stream starts orange or red.
+- Text (hjson): the item's name and tooltip, five projectile names.
+- Chosen without asking: every number above; the laser and the throw going off on the tick it turns over; a throw finishing once begun; the holder facing backward in a throw; the debuffs on enemies; no harm to the holder from their own gas; the laser stopped by walls.
+- Build 0 errors, no new warnings. Not seen in game: nothing here has been watched or balanced by play.
+
+
+### r82bp — The mech bosses' name plates (2026-11-17)
+- Request: "rework name plate of each one: L.O.K.I, Destroyer / Spazmatism and Retinazer, the Twins / Skeletron Prime, Chemical Warfare Machine".
+- Each has a name and a line under it now (BossPlate.Register; the name is what its bar says through the fight, the line is seen only as the name comes up): "L.O.K.I" / "Destroyer"; "Spazmatism and Retinazer" / "The Twins" (both eyes' types); "Skeletron Prime" / "Chemical Warfare Machine" (Content/NPCs/Mech/Prime.cs, new: its system, which its rework will add to).
+- A plate with a line reads for two seconds more than one without. The Destroyer's and the Twins' own scenes start their names themselves, so their plates are brisk ones (as the Empress's: up, read for half a second, down to the bar, the plate's lean let go over the flight): the Destroyer's lands while it still roars, nothing else changed; the Twins hang 94 ticks instead of 75, so their scene lets go as the name starts down.
+- Skeletron Prime has no scene of its own yet, so it gets the universal arrival with the long plate (7 s) until its rework.
+- Build 0 errors, no new warnings. Not seen in game.
+
+
+### r82bq — Skeletron Prime, reworked (2026-11-17)
+- Request: "Skeletron Prime: The whole idea is the nuclear powered war machine, his attacks will be nuclear based. Cinematic: Spawn: like normal but only head comes in on top, robotic screech, then a pair of arms flies out of behind the head, then another pair, they are activated and have a red led on each, the eye also sparks red and have a trail of red in the iris. Every arms points up and shoots at the sky. Transition to no arm: Cinematic, always spikes on his head, things go dark and he shakes with sparks, and his eyes glow the nuclear green and has a long trail of that green as well. Death: each arm: non cinematic: at 1HP, invincible no damage no ai: falls down onto the ground, make it so that the limb is laid flat. Head: cinematic: pans over, shakes, opens mouth and theres a expo glowing nuclear green aura from mouth like about to shoot something, Pans to the nearest arm and its moving, flaoting and flies over to the head, pans to head and all four limbs reach the mouth at once and cover its mouth, things go darker temporarily with only the rays of green from mouth that spreads outwards, covered by hands, and create a super cool impact explosion frame, creating a giant explosion and an area that is radio active for 5 mins. Make it cool" and "also make it so that the limb length stay the same, because skeletron stretches it". Asked after: arms free-flying, each a rigid limb; its spikes a look only; the explosion a big hit, dodgeable; "Debuff: Radioactive , slow player down by 50%, defense down by 50%, life draining 60 HP/s. on npc: slow down non boss by 50%, -60HP/s".
+- Its head (Content/NPCs/Mech/Prime.cs and Prime.Enter/Change/Finale/Fx/Draw.cs: a GlobalNPC on vanilla's, as the Twins'): the server decides each step, every machine plays it. Drawn here, not by vanilla, so its look is its scenes' to say: vanilla's sheet is two blocks (eyes red, sockets dark) of three frames (mouth shut, open, spikes out) that differ only in the jaw's rows or the spikes' rows, so any look is the top of one frame over the bottom of another, cut at row 96 (spikes out with its mouth open, which vanilla has no frame for). Its green eyes are vanilla's own picture with its red turned to #bbff00 in code (PrimeArt), so a texture pack's head is followed. Its eyes trail: red and short, green and long. Its attacks are vanilla's still. The Mechdusa's is left alone.
+  - ITS COMING (7.8 s, skippable): its head alone comes down from over the screen, eyes dark; screeches (PrimeScreech), jaw open, steam; its upper arms (cannon, laser) come out from behind it and lock, then its lower (vice, saw): a great X; a red lamp comes on on each in turn with a beep; its eyes spark and light red; every arm swings up to point at the sky and they fire three volleys (seen only); its name comes up; the fight.
+  - NO ARM LEFT (4.8 s, skippable), 50 ticks after its last arm is down: the camera goes to it; things go dark about it, it shakes, red sparks sooner and sooner, its eyes gutter and go out; its spikes snap out, its eyes light green with a flash, it screeches; from then spikes and green eyes stay (a look only: vanilla's hover and spin, their numbers).
+  - ITS END (11 s, skippable up to its hands closing): held at one life. Arms still up fall with it. It shakes; its jaw drops and a green light grows in its mouth, slowly and then fast (PrimeCharge); the camera goes to the nearest arm on the ground, which stirs, its lamp green, lifts and hangs; every arm flies to its mouth and reaches it on the same tick; their hands close on it (the whine cut off). The camera comes home and the player is let go: 3.5 s to run. Things go dark (Cinematic.Shade), and over the dark its rays come out between its hands and up out of its eyes, as far at the last as the blast will hurt; its hands thrown back and forced down, sooner and sooner (PrimeSeal). Then three still frames, three ticks each: white with black lines in from every edge and it and its arms black; black with a white burst and they rimmed green; green with the burst bigger; then white, and the blast.
+- Its arms (PrimeArm.cs, a GlobalNPC on the four): each drawn as one rigid limb, its hand and two bones in a line behind it, 230 to 246 px, never changing (vanilla's two bones, drawn a set step toward its head before the arm, are stopped: an On_Main.DrawNPCDirect hook says the arm has no AI for that call). They fly free with vanilla's AI and reach; the limb lies along the way the hand points, its turning eased (0.14 a tick) so it swings and does not snap. A lamp on the collar, a jet's fire at the far end. Struck down: the death is refused (one life, untouchable, harmless, no AI, buffs taken off), it falls turning flat, lands on the highest ground under its length with dust and a clank, and lies flat till its head's end; it goes if its head goes.
+- The blast (PrimeBlast.cs): hurts within 30 tiles for 8 ticks, 140 in a normal world (264 Expert, 396 Master). Seen: white over everything, a ball of green fire going out to its reach over 10 ticks (PADFire, a new Nuclear palette; many fires of the usual size, so the grid's pixels), then a stem and a cap climbing, smoke, green arcs, the ground thrown out along itself, its pieces, embers raining. No ring. PrimeNuke.
+- The ground (PrimeFallout.cs, a ModSystem): 30 tiles round where its mouth was, 5 minutes, saved with the world and told to every machine. Players in it are Radioactive (each on their own machine), enemies and creatures too (the server's); not townsfolk or anything friendly, nor Prime and its arms. Seen as a faint green light over all of it, motes rising, a thin haze; heard as a counter's clicks, quicker toward its middle (PrimeGeiger).
+- Radioactive (Content/Buffs/Radioactive.cs, icon drawn in code): players half speed on foot, half defense, 60 life a second and no healing; enemies 60 life a second, and one that is not a boss moves half as far each tick. Lasts while they stand there and a second after.
+- Cinematic.cs: Cinematic.Light(draw), asked every tick like the rest: something drawn over the shade and its flash, under the roar and the bars, through the world's own view. Its rays and its impact frames are drawn with it. Nothing else changed in it.
+- Its plate: its bar now comes up with its name (BarWaitsForName), and its name is brisk.
+- Made in code: PrimeWedge.png, PrimeRay.png, Radioactive.png (scratchpad prime/art.py); six sounds (prime/sound/synth.py). Poses, the dark, the impact frames and the blast were drawn outside the game first with the same maths (prime/sim).
+- Chosen without asking: its loot is thrown clear of the radioactive ground (it drops just outside it, toward the nearest player; one constant in Prime.Finale.cs turns that off); arms still up fall when its head dies; town NPCs are spared the fallout; the blast gives no debuff of its own (the ground it leaves does); every timing and number above.
+- Build 0 errors, no new warnings. Not seen in game.
+
+
+### r82bq_b — Skeletron Prime: after reading it over again (2026-11-17)
+- What happens at a tick of a scene (its screech, its eyes lighting, its jaw dropping, each spark and pulse, an arm's lamp, each volley) now happens as its clock passes that tick, not only if its clock is exactly that tick: in a shared world the server can set a machine's clock on a tick or two, which would have skipped it (Prime.At, PrimeArm.At; nothing more than six ticks late, so a machine that comes to a step late does not play all of it at once).
+- An arm struck down plays its blow the first tick each machine sees it fall (it was only at its clock's zero, which a client never saw).
+- An arm flying to its head's mouth draws itself till it is within 320 px of its place, and only then is drawn by its head, over it: far off, its head is off the screen and is not drawn at all, and the arm with the camera on it would not have been either.
+- The fallout leaves alone anything that cannot be hurt at the moment (a boss in a scene of its own).
+- The two pictures its impact frames and rays are drawn with are read at once the first time they are asked for, not in the background (the frames last a fifth of a second).
+- Build 0 errors, no new warnings. Not seen in game.
+
+
+### r82bq_c — Skeletron Prime: its arms' jets off its face (2026-11-17)
+- Seen in the offline previews of its coming: out in the X, all four arms' far ends sit right behind its face (within about 30 px of its middle), and their jet fire is dust, which the game draws over every NPC, so it sat on the skull as yellow blobs. No jet fire now while an arm's far end is within 64 px of its head's middle (PrimeArm.BehindFace).
+- Build 0 errors, no new warnings. Not seen in game.
+
+
+### r82bq_d — Skeletron Prime: its end framed wide, its coming tightened (2026-11-17)
+- Asked after seeing the previews: once the player is let go to run (COVER, 22 ticks in), the camera no longer walks home. It pulls back (the lean let go, the bars out) to a shot that keeps Prime's mouth, what it puts up and the player, the player free; through DARK and IMPACT it keeps more over the mouth as the rays reach up (160 px to 400). PrimeBlast holds the shot on for 150 ticks, over the cloud's cap as it climbs, then walks the camera home over 50. The shot moves as little as it must to keep the player well inside the screen (Prime.EndShot, Prime.EndFrame, PrimeBlast.Hold).
+- Asked after: its coming fits smaller screens. It hangs 230 over the player, not 280; the shot is on a point 0.7 of that up (was 0.62); pointed at the sky, its upper hands are 172 over its middle (were 214) and its lower 44 (were 76). Upper tips about 440 px over the player, which fits 768p at 100% zoom with the bars in.
+- Build 0 errors, no new warnings. Not seen in game.
+
+
+### r82br — Skeletron Prime: Legends (2026-11-17)
+- By request ("Skeletron Prime Legends: ..."). In Legends only; out of it nothing changes but one look (the laser's lens goes green with the lamps at its head's end). Not the Mechdusa's.
+- Life: head x0.6, arms x3 (SetDefaults). The head cannot be hurt while an arm is up (as asked: "locked invincible ... untiil all arms are defeated"): vanilla's hover only, its own spin never comes. Day's rage and its leaving are vanilla's.
+- Each arm: vanilla's as its first attack, and one of its own between stretches of that, one arm at a time with a breath between (Prime.ArmMayAct; PrimeArm.Legends).
+  - Laser: its death lasers drawn green (PrimeVanillaShots), its lens green. BURST: slows and shakes 40 ticks, then 5 to 7 barrages (asked after) of 3 lasers at uneven gaps, 30 to 50 ticks between barrages, kicked back by each shot, each barrage marked 14 ticks ahead. CORNER: to the screen's upper corner on its side (880 across, 430 up), warns 44 ticks, then a column 26 px wide straight down, carried 1840 px across in 240 ticks.
+  - Cannon: every bomb vanilla would fire is a mini missile (PrimeMissile: turns 0.034 rad a tick at most, fuel 230 ticks, goes up on tiles or a player). BOMB RUN (rarer: 14 to 20 s rests): along an arc 1600 px wide over the player, ten marks each with a line down; a bomb falls from each as it passes.
+  - Vice: shut for vanilla's lunges. GRAPPLE: open and clenching 44 ticks with a line at the player, shoots out 640 px (three tries); what its jaws pass over it has (not a player who cannot be hurt that tick: asked after): its touch's damage once, then whirled five times about its far end, lifted clear of the ground, and let go upward at 18 px a tick by setting their speed (so knockback immunity does not stop it: asked after). Nothing else hurts them while whirled; their camera stays on the middle of it.
+  - Saw: vanilla's. DIG: revs 50 ticks with its way marked along the ground, dives in 330 px before the player, runs 610 px along the surface at 11.5 px a tick, comes up and throws seven clods.
+- Every 25 to 40 s every arm stops for one thing (Prime.Group, PrimeArm.Group; the head keeps the clock, arms play from it as in its coming):
+  - LASER COLUMN: head goes 430 over the player and stops; the laser's far end on a circle of 80 px about the skull, the other arms braced on that end; aims 70 ticks (start line as wide as the beam, fainter marks round to where it stops); then 240 ticks of a column 48 px wide, 400 a hit in any world (damage 200, PlayerHurtDamageIgnoresDifficultyScaling), going round about 110 degrees: it begins beyond the player and comes in through them and past straight down.
+  - NUKE DROP: cannon on the crown pointing up, others braced under it; three black shells at ticks 12, 36, 60; they come back down under parachutes from 760 px up, on the player and 410 px to either side, all landing 200 ticks after the last shot; the cannon's lamp sparks and goes green 56 ticks before, theirs with it. Each: blast of 10 tiles, and that ground radioactive 30 s (asked after).
+  - VICE HOLD: others stop; four dashes, each at where the player was 15 ticks before it goes (line shows it). Its touch does not hurt, it takes hold: held 120 ticks while the laser fires every 10 ticks and the cannon a missile every 16 from over them, and the saw swings through them.
+  - SAW TRAIN: revs 70 ticks to one side with its way marked (down, and along the ground through the player and 560 px past); drops; runs the surface at 34 px a tick with a tail of sparks; players within 250 px are carried toward it up to 6 px a tick; touch x1.5.
+  - SPIN: arms to their places as at its coming, click home (sparks, steam), then four whole turns over 480 ticks closing on the player at 1.7 px a tick; vice pumps out and in 64 px, saw sways 45 degrees either way, laser fires every 17 ticks, cannon lobs a bomb every 30; head's touch x1.5.
+  - CLASH: arms to posts 500 px from the player over their head, lines at them; lines stop on where they were; 18 ticks later all fly to that point in 16 ticks; where they meet a wave goes out (PrimeShockwave: 26 px a tick, 60 tiles, full within 170 px, a sixth at its end).
+- Head, once changed (Prime.Moves), hurtable through all of it, 150 to 240 ticks of hover between:
+  - DASH (most often): three in a row, five under 40% life; line stops on the player 10 ticks before it goes; 21 px a tick for 22 ticks; touch x1.5.
+  - DETONATE: goes to a place by the player, stops, and for 180 ticks carries players within 54 tiles toward it (0.8 rising to 3.4 px a tick: boots outrun it), a light showing its reach; goes up over 22 tiles; then 110 ticks dazed.
+  - BEAMS: stops 340 over the player, roars, 80 ticks of charge with each beam's way marked; a beam up from each eye, then each round its own side over 200 ticks to 20 degrees short of straight down (asked after: safe gap under it).
+  - LAUNCH (rare: half the others' chance, at most once a minute): roars, line stops on the player 16 ticks before; 30 px a tick; ground it passes over radioactive 30 s every 110 px; if it meets ground it loses 11% of its life (not below 1) and sits stuck 100 ticks.
+- Shots (PrimeShots), counted as vanilla counts a boss's (x2 normal, x4 Expert, x6 Master): laser 25, thin beam 30/27, eye beams 45/40, missile 30/27, bomb 40/36, nuke 60/54, detonation 60/54, head's slam 50/45, shockwave 46/40, clod 22/20. The column alone is flat.
+- PrimeFallout: each patch now has its own reach and time (Add(at, reach, lasts)); up to 48; saves and net data carry both (old saves read as before).
+- PrimeGrip (ModPlayer): the vice's hold, as the Queen Slime's.
+- Three pictures made in code on the 2x2 grid: PrimeMissile.png 14x24, PrimeNuke.png 26x38, PrimeChute.png 64x34. Display names for the eight projectiles in the hjson.
+- New: Prime.Legends.cs, Prime.Group.cs, Prime.Moves.cs, PrimeArm.Legends.cs, PrimeArm.Group.cs, PrimeGrip.cs, PrimeShots.cs, three PNGs. Changed: Prime.cs, Prime.Change.cs, Prime.Draw.cs, Prime.Finale.cs, PrimeArm.cs (now partial), PrimeArt.cs, PrimeFallout.cs, hjson.
+- Build 0 errors, no new warnings. Not seen in game. Multiplayer untested.
+
+
+### r82bs — Skeletron Prime Legends: the nukes go up in the air (2026-11-17)
+- By request ("nuke drop to detonate mid air and they should have variance of what is dropped first, detonate at the same time"), after the question whether its attacks work on a platform arena.
+- Prime.NukePlan: the first shell lays out the row. Its height: the floor under the player's feet (a platform counts: new Prime.FloorUnder, 16 tiles down, under either foot and the middle; none near: where the player is), a standing player's middle over it, and 64 px (NdAbove) over that. The same height for all three, so they go up in the air over the floor the player is on, a platform's as much as the ground's. Off to one side inside a rise of the ground: lifted over it as far.
+- The row's three places as before (on the player, 410 px ahead, 410 px behind), laid out once from where the player is at the first shell and which way they are going; which shell goes to which is shuffled each time by the attack's seed (NukeSlot). All three fuses still end on the same tick.
+- Nothing else changed: the saw's train and dig and the head's launch still go through platforms (not asked).
+- Build 0 errors, no new warnings. Not seen in game.
+
+
+### r82bt — Skeletron Prime Legends: fewer marks; the nukes at three heights (2026-11-17)
+- By request ("doing too much indicator delete indicator from Head beam, Dash, Nuke drop (this one also try to make the 3 bombs have different heigh of detonation, can be lower and above the player), laser column, Bomb run").
+- Marks gone: the head's dash (its line at the player and down its way); the head's beams (the line up from each eye and the marks round to where they stop; the light growing at each eye as they charge stays, it was asked for); the laser column (where it begins and the marks round); the bomb run (the faint arc, its ten points and the line down from each); the nuke (the light on where it goes up). DrawColumnMarks, DrawBeamMarks (now DrawBeamCharge: the eyes' light only) and DrawBombMarks are gone.
+- Nukes: each its own height about the player's standing middle over their floor (NdHeights: 120 over, 48 over, 48 under; each 14 more or less), which gets which shuffled by the attack's seed apart from which place it gets. One that would be in solid ground is held just over it; under a platform it may hang. They still go up together.
+- Build 0 errors, no new warnings. Not seen in game.
+
+
+### r82bu — Nightcall, Skeletron Prime's Legends weapon (2026-11-17)
+- By request ("Create Nightcall - Legends: a boxing weapon where you can click the same button as reload button (bind together) to open a menu to choose element of left and right fist from 4 modes making 16 different combinations: Vice, Cannon, Chainsaw and Laser ..."); asked after: the saw comes out when its enemy dies or is out of reach, or left click is let go; the vice "so it can dodge better"; its damage "basically 2x"; the menu "just circles like Andromeda UI" (Calamity's, as a look only), the pictures drawn by me first.
+- Nightcall (Content/Items/Melee/Nightcall.cs): a FistWeapon, 40 melee damage, pink. Left blow (front arm), right blow (back arm), turn about; each hand its own: VICE 2x damage, what it lands on held off 90 ticks (30 for others), its guard 1.5x as far and up 30 ticks after the blow; CANNON a blast where it lands (NightcallBlast, 3 tiles, 0.75x); LASER a bolt down the blow's line as it strikes (NightcallLaser, 0.6x, through one into a second); CHAINSAW stuck where it lands (NightcallSaw: a little way in on anything 3 tiles or bigger, at the spot on smaller), cuts only that one every 6 ticks, 0.1x rising x1.12 a cut to 0.6x, no knockback; the other hand keeps punching; out when the enemy dies, is over 100 px from the shoulder, left click is let go, or Nightcall is put away.
+- Right click (NightcallCharge): 120 ticks planted (held in the air if there), fists up and charging; a 7 tile blast (6x); thrown 22 tiles in 24 ticks the way with least hostile NPCs and shots about it (16 ways weighed; walls count); the way behind radioactive 5 s (NightcallTrail: 0.5x every half second and Radioactive 2 s); 12 s cooldown (NightcallSpent).
+- Menu (Content/UI/NightcallMenu.cs): the reload key with Nightcall in hand; two circles beside the player, a click fans the four out; hands kept with the player and told to every machine (NightcallPlayer, PADPacket.Nightcall).
+- Fist framework, additive (FistWeapon hooks: FistTextureFor, ReachingFor, BlowDamage, StepFor, HeldOffFor, GuardFor, GuardAfter, OnStrike, EndBlow; FistPlayer: Hold/FrontHeld/BackHeld, Struck(npc, ticks), Guard(facing, reach, ticks); FistPunch asks them, keeps a held arm's pose alone, keeps its guard up after if asked). Corosion and Scuttlebutt unchanged in behaviour.
+- Drop: Skeletron Prime, Legends only (from it in Classic, in its bag in Expert and Master), every time.
+- Pictures drawn in code on the 2x2 grid (scratchpad nightcall/sprites.py): the item, four fists, the forearm, the menu's circles and marks, the buff.
+- Build 0 errors, no new warnings. Not seen in game. Multiplayer untested.
+
+
+### r82bv — Skeletron Prime's death: its rays redrawn (2026-11-17)
+- By request (a screenshot of its end in the dark, "need better textures"; asked after: the green light rays).
+- PrimeRay.png drawn again (scratchpad prime/ray2.py): a shaft of light, not a petal: a thin bright core from its source, a faint haze either side, eight finer streaks of their own lengths within it; soft across and along, nothing with an edge.
+- Prime.DrawDark: each ray drawn fainter (0.2 + 0.45 of the way through the dark, was 0.3 + 0.6), so where they cross each other and its glow they stay shafts and do not fill in flat. The glow at its mouth, its eyes and its arms' shapes as before.
+- Build 0 errors, no new warnings. Not seen in game.
+
+
+### r82bw — Sandclad, the Harenaeum armour (2026-11-18)
+- By request ("Create an armorset from the ores that is from the desert. Tailored for Mage and Summoner ..."; then "Get good with the visual effect").
+- Content/Items/Armor/Sandclad.cs: Bustshield (8 def, +9% crit, 20 bars), Greaves (5 def, +4 mph, 15 bars), Headscarf (3 def, +5% magic, 10 bars), Sun Hat (3 def, +5% summon, 10 bars); at an anvil; orange.
+- Mage set: stood still 45 ticks, a sandstorm 9 tiles about the player (SandcladStorm): 16 magic damage every half second, 4 mana a hit and 20 a kill; the key (new: PADKeybinds.ArmorSet, V) throws the player toward the cursor, 50 tiles at most in 22 ticks, 30 s cooldown (SandcladSpent), seen as SandcladGust.
+- Summoner set: two sandnados in the air circling the player (SandcladDevil): 14 summon damage every 20 ticks each; the key sends both to the cursor for 6 s, 1.6x the size, 1.5x the damage, every 8 ticks; 20 s cooldown. Their hits and the storm's keep their own count per enemy (local immunity), so they neither wait on nor block any other hit.
+- Seen: ribbons of sand (smooth lines) round the mage's storm at seven heights, a warm haze, low whirls, blue motes of mana from what is hit to the player; the storms bent by their going, three ribbons wound up each, dust under them, a gold glow raging; the gust five weaving ribbons and the swirl along the way gone.
+- Worn, the game's own pictures for now (Dye Trader's turban, summer hat, fossil plate and greaves); the inventory pictures drawn in code. Mine: every number not asked for.
+- Merged: tModLoader had rewritten one hjson line (Nightcall.Hands, its quotes dropped); kept.
+- Build 0 errors, no new warnings. Not seen in game.

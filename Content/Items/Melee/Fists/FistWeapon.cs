@@ -9,11 +9,12 @@ using Terraria.ModLoader;
 
 namespace PisAndDag.Content.Items.Melee.Fists
 {
-    /// <summary>How a blow travels: straight out at the cursor, or up from under, sweeping.</summary>
+    /// <summary>How a blow travels: straight out at the cursor; up from under, sweeping; or a hook, round from high and wide and down onto the line ahead (Scuttlebutt's).</summary>
     public enum FistArc
     {
         Straight,
         Rising,
+        Hook,
     }
 
     /// <summary>
@@ -146,6 +147,38 @@ namespace PisAndDag.Content.Items.Melee.Fists
         /// <summary>One of its blows has landed. On the client that threw it.</summary>
         public virtual void OnFistHit(Player player, NPC target, FistMove move, int step, NPC.HitInfo hit, Vector2 at) { }
 
+        // ---- a weapon whose blows differ by more than the combo (Nightcall: each hand its own) ----------------------------------
+
+        /// <summary>The fist a blow of this step shows, thrown by this player. <see cref="FistTexture"/> unless said.</summary>
+        public virtual string FistTextureFor(Player player, int step) => FistTexture;
+
+        /// <summary>The colour a blow of this step shines with, thrown by this player. <see cref="Reaching"/> unless said.</summary>
+        public virtual Color ReachingFor(Player player, int step) => Reaching;
+
+        /// <summary>Times this player's blow of this step does, past what its move does. One unless said.</summary>
+        public virtual float BlowDamage(Player player, int step) => 1f;
+
+        /// <summary>The step this player's next blow is, the combo's next being <paramref name="next"/>: another, if the weapon says (a hand that is busy).</summary>
+        public virtual int StepFor(Player player, int next) => next;
+
+        /// <summary>How long one a blow of this step lands on is held off its player, in ticks (FistPlayer). FistPlayer.HeldOff unless said.</summary>
+        public virtual int HeldOffFor(Player player, int step) => FistPlayer.HeldOff;
+
+        /// <summary>Times how far ahead the guard reaches while a blow of this step is out. One unless said.</summary>
+        public virtual float GuardFor(Player player, int step) => 1f;
+
+        /// <summary>Ticks the guard stays up after a blow of this step is back. None unless said.</summary>
+        public virtual int GuardAfter(Player player, int step) => 0;
+
+        /// <summary>
+        /// A blow has gone out to strike: once a blow, on every machine, the tick it begins to be able to hit (what it
+        /// fires is the owner's to make). <paramref name="direction"/> is the way it goes.
+        /// </summary>
+        public virtual void OnStrike(Player player, Projectile blow, FistMove move, int step, Vector2 fist, Vector2 direction) { }
+
+        /// <summary>Whether a blow of this step should end now (its arm taken by something else). Asked every tick, on every machine.</summary>
+        public virtual bool EndBlow(Player player, int step) => false;
+
         /// <summary>Something to see along a blow, each tick of it, on every client: what it sheds as it goes.</summary>
         public virtual void Shed(Player player, FistMove move, int step, Vector2 hand, Vector2 reach, float extension, bool striking) { }
 
@@ -160,14 +193,18 @@ namespace PisAndDag.Content.Items.Melee.Fists
         private int Length(Player player)
         {
             FistMove[] combo = Combo;
-            return combo[player.GetModPlayer<FistPlayer>().NextStep(this) % combo.Length].Ticks;
+            return combo[Next(player, combo)].Ticks;
         }
+
+        /// <summary>The step the player's next blow is: the combo's, or another if the weapon says.</summary>
+        private int Next(Player player, FistMove[] combo) =>
+            Math.Clamp(StepFor(player, player.GetModPlayer<FistPlayer>().NextStep(this) % combo.Length), 0, combo.Length - 1);
 
         public override bool Shoot(Player player, EntitySource_ItemUse_WithAmmo source, Vector2 position, Vector2 velocity, int type, int damage, float knockback)
         {
             FistPlayer fists = player.GetModPlayer<FistPlayer>();
             FistMove[] combo = Combo;
-            int step = fists.NextStep(this) % combo.Length;
+            int step = Next(player, combo);
             FistMove move = combo[step];
 
             Vector2 aim = (Main.MouseWorld - player.MountedCenter).SafeNormalize(new Vector2(player.direction, 0f));
@@ -175,7 +212,7 @@ namespace PisAndDag.Content.Items.Melee.Fists
             // As long as the item's own use, at the player's melee speed: the punch counts its own ticks.
             int ticks = Math.Max(4, player.itemAnimationMax);
 
-            Projectile.NewProjectile(source, player.MountedCenter, aim, type, (int)Math.Round(damage * move.Damage),
+            Projectile.NewProjectile(source, player.MountedCenter, aim, type, (int)Math.Round(damage * move.Damage * BlowDamage(player, step)),
                 knockback * move.Knockback, player.whoAmI, step, ticks, Type);
 
             fists.Threw(this, step, ticks);

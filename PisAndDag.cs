@@ -73,6 +73,15 @@ namespace PisAndDag
 
         /// <summary>Client to server: a player has rung the Gilded Spur on the field before the Curtain. See KnightEncounter.</summary>
         GildedKnight,
+
+        /// <summary>Toxic sludge: which cells are sludge. Server to clients (what changed, or all of it); a client come into the world asks. See ToxicSludge.</summary>
+        Sludge,
+
+        /// <summary>Client to server: a Sandbag placed where a player points, or all of them taken away. See SandbagDummy.</summary>
+        Sandbag,
+
+        /// <summary>A player's Nightcall: what each hand is. Client to server from that player, server to the other clients. See NightcallPlayer.</summary>
+        Nightcall,
     }
 
     // Please read https://github.com/tModLoader/tModLoader/wiki/Basic-tModLoader-Modding-Guide#mod-skeleton-contents for more information about the various files in a mod.
@@ -164,6 +173,18 @@ namespace PisAndDag
 
                 case PADPacket.GildedKnight:
                     Content.NPCs.GildedKnight.KnightEncounter.HandlePacket(reader, whoAmI);
+                    break;
+
+                case PADPacket.Sludge:
+                    Content.Biomes.Sludge.ToxicSludge.HandlePacket(this, reader, whoAmI);
+                    break;
+
+                case PADPacket.Sandbag:
+                    Content.NPCs.Sandbag.SandbagDummy.HandlePacket(reader, whoAmI);
+                    break;
+
+                case PADPacket.Nightcall:
+                    Content.Items.Melee.NightcallPlayer.HandlePacket(reader, whoAmI);
                     break;
 
                 default:

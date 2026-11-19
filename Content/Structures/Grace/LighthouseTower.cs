@@ -591,6 +591,9 @@ namespace PisAndDag.Content.Structures.Grace
         /// <summary>The Signal Pistol, in the watch room's east sea chest (PADWorkFlow §16.98).</summary>
         private static int SignalPistolItem => ModContent.ItemType<global::PisAndDag.Content.Items.Ranged.SignalPistol>();
 
+        /// <summary>Scuttlebutt, in the watch room's west sea chest (by request: "Found in vast ocean's light house").</summary>
+        private static int ScuttlebuttItem => ModContent.ItemType<global::PisAndDag.Content.Items.Melee.Scuttlebutt>();
+
         /// <summary>
         /// Each storey as it was kept, from the ground up, nothing left bare (by request: "its rich,
         /// no wasted space vibe"). Each side room the same in its bones: a chandelier hung by the
@@ -699,13 +702,15 @@ namespace PisAndDag.Content.Structures.Grace
                     default:
                         // The watch room: a sea chest each side, a settle under each window to sit
                         // the watch out, a chair at each window in the skin. The east one keeps the
-                        // Signal Pistol, first (PADWorkFlow §16.98).
+                        // Signal Pistol, first (PADWorkFlow §16.98); the west one Scuttlebutt, first.
                         foreach (int side in new[] { -1, 1 })
                         {
                             var kept = Roll(Loot.Sea);
 
                             if (side > 0)
                                 kept.Insert(0, (SignalPistolItem, 1));
+                            else
+                                kept.Insert(0, (ScuttlebuttItem, 1));
 
                             c.PlaceChest(LightAt(side, 5, 2), stand, TileID.Containers, s.Chest, kept);
                             c.Place(LightAt(side, 7, 3), stand, TileID.Benches, s.Sofa);

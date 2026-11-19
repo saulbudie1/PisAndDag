@@ -23,7 +23,8 @@ namespace PisAndDag.Content.Projectiles.Melee
     /// lands, and folds it back to the guard. A blow from the back arm comes out from behind the body the same way and
     /// goes back behind it (asked: "bottom arm doesnt have to show"): the back arm is otherwise the game's own, hidden,
     /// and while it throws, the front arm keeps the guard. An uppercut drops the arm down and out and sweeps it up through
-    /// straight out to up and out, longest at the middle of the sweep. While the arm strikes, faint copies of it part way
+    /// straight out to up and out, longest at the middle of the sweep. A hook (Scuttlebutt's) is cocked high and swung
+    /// round and down from up and out through straight out onto the line a little under ahead, the same way. While the arm strikes, faint copies of it part way
     /// back to last tick's pose trail it in the weapon's colour (the smear). Past the hand the weapon's forearm runs on
     /// unbroken to the fist at the end of the reach (FistWeapon.ArmTexture); the fist grows from the hand as it goes out.
     ///
@@ -62,6 +63,9 @@ namespace PisAndDag.Content.Projectiles.Melee
         private int fistTrailCount;
         private bool started;
 
+        /// <summary>Whether it has gone out to strike yet (FistWeapon.OnStrike, once).</summary>
+        private bool struckOut;
+
         /// <summary>The step: whether this blow walks the player (decided as it is thrown), where they began, and the speed it last gave them.</summary>
         private bool stepping;
         private float stepFrom;
@@ -78,6 +82,9 @@ namespace PisAndDag.Content.Projectiles.Melee
 
         /// <summary>Where an uppercut's sweep starts, under the line ahead, and where it ends, over it.</summary>
         private static readonly float RiseFrom = MathHelper.ToRadians(45f), RiseTo = MathHelper.ToRadians(-80f);
+
+        /// <summary>Where a hook's sweep starts, high over the line ahead, and where it ends, a little under it.</summary>
+        private static readonly float HookFrom = MathHelper.ToRadians(-75f), HookTo = MathHelper.ToRadians(22f);
 
         /// <summary>How small the fist is at the hand, before it goes out.</summary>
         private const float FistAtHand = 0.55f;
@@ -180,7 +187,7 @@ namespace PisAndDag.Content.Projectiles.Melee
                 return aim;
 
             float t = Smooth((p - WindEnd(move.Strike)) / (HoldEnd(move.Strike) - WindEnd(move.Strike)));
-            float a = MathHelper.Lerp(RiseFrom, RiseTo, t);
+            float a = move.Arc == FistArc.Hook ? MathHelper.Lerp(HookFrom, HookTo, t) : MathHelper.Lerp(RiseFrom, RiseTo, t);
             return facing > 0 ? a : MathHelper.Pi - a;
         }
 
@@ -201,6 +208,35 @@ namespace PisAndDag.Content.Projectiles.Melee
         {
             float windEnd = WindEnd(move.Strike), holdEnd = HoldEnd(move.Strike);
             smear = false;
+
+            if (move.Arc == FistArc.Hook)
+            {
+                if (p < windEnd)
+                {
+                    // Cocked high and back, loaded: squashed.
+                    float t = Smooth(p / windEnd);
+                    return ArmPose.Aimed(FistArms.UpAndOut, MathHelper.Lerp(-0.45f, HookFrom - 0.25f, t),
+                        Vector2.Lerp(Vector2.One, new Vector2(0.86f, 1.08f), t));
+                }
+
+                if (p < holdEnd)
+                {
+                    // The swing: up and out, straight out, onto the line under ahead; longest at its middle.
+                    float swing = (p - windEnd) / (holdEnd - windEnd);
+                    float s = (float)Math.Sin(MathHelper.Pi * swing);
+                    ArmFrame frame = aim > 0.45f ? FistArms.DownAndOut : aim > -0.35f ? FistArms.StraightOut : FistArms.UpAndOut;
+                    smear = swing > 0.1f && swing < 0.85f;
+                    return ArmPose.Aimed(frame, aim, new Vector2(1f + 0.3f * s, 1f - 0.13f * s));
+                }
+
+                // Back up to the guard.
+                float r = Smooth((p - holdEnd) / (1f - holdEnd));
+
+                if (r < 0.5f)
+                    return ArmPose.Aimed(FistArms.StraightOut, MathHelper.Lerp(aim, -0.2f, r * 2f), new Vector2(MathHelper.Lerp(1f, 0.82f, r * 2f), 1f));
+
+                return new ArmPose(FistArms.Guard, MathHelper.Lerp(GuardTurn + 0.4f, GuardTurn, (r - 0.5f) * 2f), Vector2.One);
+            }
 
             if (move.Arc == FistArc.Rising)
             {
@@ -334,7 +370,7 @@ namespace PisAndDag.Content.Projectiles.Melee
             else
                 Time++;
 
-            if (Time >= Ticks)
+            if (Time >= Ticks || weapon.EndBlow(player, Step))
             {
                 Projectile.Kill();
                 return;
@@ -355,14 +391,17 @@ namespace PisAndDag.Content.Projectiles.Melee
 
             // The arms: posed for the drawing (FistArmLayers); the back arm left to the game while it is behind the body.
             FistPlayer fists = player.GetModPlayer<FistPlayer>();
-            fists.Smear = weapon.Reaching;
+            Color reaching = weapon.ReachingFor(player, Step);
+            fists.Smear = reaching;
 
             if (move.BackArm)
             {
                 if (striker.HasValue)
                     fists.PoseBack(striker.Value, smear);
 
-                fists.PoseFront(Guarding(p), false);
+                // The front arm keeps its guard, unless something else has it.
+                if (!fists.FrontHeld)
+                    fists.PoseFront(Guarding(p), false);
             }
             else
                 fists.PoseFront(striker.Value, smear);
@@ -402,16 +441,37 @@ namespace PisAndDag.Content.Projectiles.Melee
             bool striking = Striking(p, move.Strike);
 
             if (Projectile.owner == Main.myPlayer)
-                fists.Guard(facing, weapon.Reach * move.Reach);
+                fists.Guard(facing, weapon.Reach * move.Reach * weapon.GuardFor(player, Step));
 
             if (striker.HasValue)
                 weapon.Shed(player, move, Step, hand, fist, Extension(p, move.Strike), striking);
 
+            if (striking && !struckOut)
+            {
+                struckOut = true;
+                weapon.OnStrike(player, Projectile, move, Step, fist, angle.ToRotationVector2());
+            }
+
             if (striking)
-                Lighting.AddLight(fist, weapon.Reaching.ToVector3() * 0.35f);
+                Lighting.AddLight(fist, reaching.ToVector3() * 0.35f);
 
             sweptFrom = lastFist;
             lastFist = fist;
+        }
+
+        /// <summary>Its guard, kept up after it is back for as long as the weapon says (on its owner's machine).</summary>
+        public override void OnKill(int timeLeft)
+        {
+            Player player = Main.player[Projectile.owner];
+            FistWeapon weapon = Weapon;
+
+            if (Projectile.owner != Main.myPlayer || weapon == null || !player.active)
+                return;
+
+            int after = weapon.GuardAfter(player, Step);
+
+            if (after > 0)
+                player.GetModPlayer<FistPlayer>().Guard(Projectile.velocity.X >= 0f ? 1 : -1, weapon.Reach * Move(weapon).Reach * weapon.GuardFor(player, Step), after);
         }
 
         /// <summary>How big the fist is, from the hand (small) to full reach.</summary>
@@ -474,11 +534,11 @@ namespace PisAndDag.Content.Projectiles.Melee
             Vector2 shoulder = FistArms.ShoulderAt(player, move.BackArm);
             float point = 0f;
 
-            // The line out to the fist; and, rising, what the fist swept through since last tick.
+            // The line out to the fist; and, rising or hooking, what the fist swept through since last tick.
             if (Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), shoulder, Projectile.Center, Thickness, ref point))
                 return true;
 
-            return move.Arc == FistArc.Rising
+            return move.Arc != FistArc.Straight
                 && Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), sweptFrom, Projectile.Center, Thickness * 1.4f, ref point);
         }
 
@@ -502,7 +562,7 @@ namespace PisAndDag.Content.Projectiles.Melee
             // The stop, told to the other machines so the arm is where it is here.
             stop = HitStop;
             Projectile.netUpdate = true;
-            player.GetModPlayer<FistPlayer>().Struck(target);
+            player.GetModPlayer<FistPlayer>().Struck(target, weapon.HeldOffFor(player, Step));
 
             // A throw (an uppercut's), by how far this one can be pushed: nothing that will not be, nothing at all for a
             // boss or a part of one, less the bigger it is.
@@ -541,7 +601,12 @@ namespace PisAndDag.Content.Projectiles.Melee
             Player player = Main.player[Projectile.owner];
             FistWeapon weapon = Weapon;
 
-            if (weapon == null || !ModContent.HasAsset(weapon.FistTexture))
+            if (weapon == null)
+                return false;
+
+            string fistPath = weapon.FistTextureFor(player, Step);
+
+            if (fistPath == null || !ModContent.HasAsset(fistPath))
                 return false;
 
             FistMove move = Move(weapon);
@@ -552,7 +617,8 @@ namespace PisAndDag.Content.Projectiles.Melee
             if (!striker.HasValue)
                 return false;
 
-            Texture2D fist = ModContent.Request<Texture2D>(weapon.FistTexture).Value;
+            Texture2D fist = ModContent.Request<Texture2D>(fistPath).Value;
+            Color reaching = weapon.ReachingFor(player, Step);
             Vector2 dir = angle.ToRotationVector2();
             SpriteEffects flip = Projectile.spriteDirection < 0 ? SpriteEffects.FlipVertically : SpriteEffects.None;
             Vector2 origin = new Vector2(fist.Width * 0.75f, fist.Height * 0.5f);
@@ -566,7 +632,7 @@ namespace PisAndDag.Content.Projectiles.Melee
             // The fist's smear: where it was, faint, adding light.
             for (int i = fistTrailCount - 1; i >= 0; i--)
             {
-                Color ghost = weapon.Reaching * (i == 0 ? 0.35f : 0.18f);
+                Color ghost = reaching * (i == 0 ? 0.35f : 0.18f);
                 ghost.A = 0;
                 float s = fistTrailScale[i];
                 Main.EntitySpriteDraw(fist, fistTrail[i] - Main.screenPosition, null, ghost, fistTrailTurn[i], origin,
@@ -595,7 +661,7 @@ namespace PisAndDag.Content.Projectiles.Melee
                 }
                 else
                 {
-                    Color band = weapon.Reaching * 0.8f;
+                    Color band = reaching * 0.8f;
                     Main.EntitySpriteDraw(TextureAssets.MagicPixel.Value, hand - Main.screenPosition, new Rectangle(0, 0, 1, 1), band, angle,
                         new Vector2(0f, 0.5f), new Vector2(length, 6f), SpriteEffects.None, 0);
                 }
@@ -603,7 +669,7 @@ namespace PisAndDag.Content.Projectiles.Melee
                 // As it strikes, a shine run out along it to the fist.
                 if (Striking(p, move.Strike))
                 {
-                    Color shine = weapon.Reaching * 0.45f;
+                    Color shine = reaching * 0.45f;
                     shine.A = 0;
                     Main.EntitySpriteDraw(TextureAssets.MagicPixel.Value, hand - Main.screenPosition, new Rectangle(0, 0, 1, 1), shine, angle,
                         new Vector2(0f, 0.5f), new Vector2(length, 2f), SpriteEffects.None, 0);

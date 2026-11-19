@@ -48,6 +48,9 @@ namespace PisAndDag.Content.Particles
         private static void DrawParticlesAfterDust(On_Main.orig_DrawDust orig, Main self)
         {
             orig(self);
+
+            // The half-size canvas first (what was painted on it before this frame began), then the rest over it.
+            Graphics.PADPixelCanvas.Present(Main.spriteBatch);
             PADParticleHandler.DrawAll(Main.spriteBatch);
         }
     }

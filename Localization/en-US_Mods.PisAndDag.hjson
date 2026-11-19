@@ -1,4 +1,14 @@
 Items: {
+	AcidicMud: {
+		DisplayName: Acidic Mud
+		Tooltip: "'The Jungle drank what was poured here.'"
+	}
+
+	StainedCobblestone: {
+		DisplayName: Stained Cobblestone
+		Tooltip: "'Laid by hand, under something heavy.'"
+	}
+
 	EverclearMirror: {
 		DisplayName: Everclear Mirror
 		Tooltip:
@@ -60,7 +70,8 @@ Items: {
 		Tooltip:
 			'''
 			Cuts up, then down
-			Right click to raise a blade of light and bring it down for five times the damage
+			Right click to raise a blade of light and bring it down for 3.5 times the damage
+			Twice that in the Underworld; once every 3 seconds
 			'It has been dropped on that road before.'
 			'''
 	}
@@ -135,6 +146,17 @@ Items: {
 	}
 
 	Accessories: {
+		Eyesore: {
+			DisplayName: Eyesore
+			Tooltip:
+				'''
+				An eye at your shoulder watches the most menacing enemy within 45 tiles
+				Watched for 5 seconds, it is marked: your next three hits on it deal 2, 1.75 and 1.3 times damage
+				The eye rests 5 seconds after the third
+				'It was looking at you first.'
+				'''
+		}
+
 		GreenCandiez: {
 			DisplayName: Green Candiez
 			Tooltip:
@@ -266,6 +288,20 @@ Items: {
 				One more Magic Arsenal slot
 				'Her blessing. Above, every blessing is counted.'
 				'''
+		}
+
+		TheChain: {
+			DisplayName: The Chain
+			Tooltip:
+				'''
+				Nine segments and the tail of a Destroyer-Lite curl behind you
+				Every 1.25 seconds it lashes 25 tiles toward the nearest enemy, for 150 damage
+				Every fifth hit is electrifying: 200 damage and Electrified for 2 seconds
+				Electrified enemies lose 20 life a second, and all but bosses are stunned
+				'Nine of them would not stop moving.'
+				'''
+			Combo: Combo X{0}
+			Electrifying: Electrifying
 		}
 
 		EnterprisesComplimentary: {
@@ -445,6 +481,17 @@ Items: {
 		Tooltip: Used to write incantations and spells
 	}
 
+	Sandbag: {
+		DisplayName: Sandbag
+		Tooltip:
+			'''
+			Sets a Sandbag down where you point, ten at most
+			Right click to take them all away
+			It takes every hit and never falls
+			'It has taken worse than you.'
+			'''
+	}
+
 	TreeBranchStaff: {
 		DisplayName: Branch Staff
 		Tooltip:
@@ -603,6 +650,20 @@ Items: {
 			'''
 	}
 
+	ViolentCrimes: {
+		DisplayName: Violent Crimes
+		Tooltip:
+			'''
+			Right click sprays fire
+			Held 5 seconds, it fires a flame laser every second instead
+			Left click sprays gas, harmless until its own fire lights it
+			Held 5 seconds, it throws you 35 tiles toward the cursor every second
+			Each throw leaves chlorine behind: it hurts, and does not burn
+			Uses gel for ammo
+			'One breathes out. The other waits for it to finish.'
+			'''
+	}
+
 	FoighsRustSideSword: {
 		DisplayName: Foigh's Rust Side Sword
 		Tooltip:
@@ -731,6 +792,59 @@ Items: {
 		Tooltip: Right-click to scatter into sand and step back 10 tiles, untouchable (7 second cooldown)
 	}
 
+	SlimyFortification: {
+		DisplayName: Slimy Fortification
+		Tooltip:
+			'''
+			Throws three slimes from the cursor at the nearest enemy
+			Enough slime encases it for 5 seconds; small enemies drop where they are
+			'A king keeps what he swallows.'
+			'''
+	}
+
+	SandcladBustshield: {
+		DisplayName: Sandclad Bustshield
+		Tooltip: 9% increased critical strike chance
+	}
+
+	SandcladGreaves: {
+		DisplayName: Sandclad Greaves
+		Tooltip: Move faster
+	}
+
+	SandcladHeadscarf: {
+		DisplayName: Sandclad Headscarf
+		Tooltip: 5% increased magic damage
+	}
+
+	SandcladSunHat: {
+		DisplayName: Sandclad Sun Hat
+		Tooltip: 5% increased summon damage
+	}
+
+	Nightcall: {
+		DisplayName: Nightcall
+		Tooltip:
+			'''
+			Vice: twice the damage, and what it hits stays off you longer
+			Cannon: an explosion on every hit
+			Chainsaw: sticks in, cutting faster and faster, until you let go
+			Laser: fires a laser that goes through one enemy
+			Right-click to stand and charge for 2 seconds, explode, and be thrown clear
+			The throw leaves radiation behind it for 5 seconds (12 second cooldown)
+			'Four ways to say goodnight.'
+			'''
+	}
+
+	Scuttlebutt: {
+		DisplayName: Scuttlebutt
+		Tooltip:
+			'''
+			Right-click to plant your feet and throw fists of water at the cursor for 3 seconds (8 second cooldown)
+			'Every rumour aboard started beside it.'
+			'''
+	}
+
 	ScorpiusServus: {
 		DisplayName: Scorpius Servus
 		Tooltip: Grows a scorpion's tail from your back to fight for you
@@ -773,9 +887,106 @@ Items: {
 			Tornado shoots small enemies upwards.
 			'''
 	}
+
+	ReefRock: {
+		DisplayName: Reef Rock
+		Tooltip: ""
+	}
+
+	CoralRubble: {
+		DisplayName: Coral Rubble
+		Tooltip: ""
+	}
+
+	CorallineCrust: {
+		DisplayName: Coralline Crust
+		Tooltip: ""
+	}
+
+	BrainCoral: {
+		DisplayName: Brain Coral
+		Tooltip: ""
+	}
+
+	StarCoral: {
+		DisplayName: Star Coral
+		Tooltip: ""
+	}
+
+	StaghornCoral: {
+		DisplayName: Staghorn Coral
+		Tooltip: ""
+	}
+
+	PlateCoral: {
+		DisplayName: Plate Coral
+		Tooltip: ""
+	}
+
+	BlueCoral: {
+		DisplayName: Blue Coral
+		Tooltip: ""
+	}
+
+	OrganPipeCoral: {
+		DisplayName: Organ Pipe Coral
+		Tooltip: ""
+	}
+
+	BubbleCoral: {
+		DisplayName: Bubble Coral
+		Tooltip: ""
+	}
+
+	ReefRockWall: {
+		DisplayName: Reef Rock Wall
+		Tooltip: ""
+	}
+
+	StaghornCoralWall: {
+		DisplayName: Staghorn Coral Wall
+		Tooltip: ""
+	}
+
+	SeaFanWall: {
+		DisplayName: Sea Fan Wall
+		Tooltip: ""
+	}
+
+	BrainCoralWall: {
+		DisplayName: Brain Coral Wall
+		Tooltip: ""
+	}
 }
 
 Buffs: {
+	IndustrialFlames: {
+		DisplayName: Industrial Flames
+		Description: Burning with machine fire, losing 30 life a second
+	}
+
+	ChlorinePoisoning: {
+		DisplayName: Chlorine Poisoning
+		Description: Every breath burns, losing 30 life a second
+	}
+
+	Radioactive: {
+		DisplayName: Radioactive
+		Description: It gets into the bones: half speed, half defense, losing 60 life a second
+	}
+
+	OverwhelmingToxicity: {
+		DisplayName: Overwhelming Toxicity
+		Description: Losing life, faster with your head under
+	}
+
+	Stench: {
+		DisplayName: Stench
+		Description: Shops charge ten times as much until you wash in clean water
+		Taken: Reeking
+		Washed: Washed clean
+	}
+
 	AdrenalineRush: {
 		DisplayName: Adrenaline
 		Description: 2.5 times damage
@@ -947,6 +1158,26 @@ Buffs: {
 		Description: Cannot step through sand again yet
 	}
 
+	SandcladSpent: {
+		DisplayName: Sand Settling
+		Description: The sand cannot be called again yet
+	}
+
+	NightcallSpent: {
+		DisplayName: Spent Core
+		Description: Cannot charge the blast again yet
+	}
+
+	Winded: {
+		DisplayName: Winded
+		Description: Cannot throw the barrage again yet
+	}
+
+	Encased: {
+		DisplayName: Encased
+		Description: Held in slime
+	}
+
 	ScorpiusServusBuff: {
 		DisplayName: Scorpius Servus
 		Description: The tail will fight for you
@@ -960,6 +1191,7 @@ Buffs: {
 
 DeathText: {
 	Decommissioned: "{0} was decommissioned."
+	MantisBlade: "{0} was within the Mantis's reach."
 	ManaPoisoning: "{0} drank one potion too many."
 	KeptBehindTheWall: "{0} was kept behind the Wall."
 	UnderTheSkull: "{0} was under the skull when it came down."
@@ -1002,6 +1234,11 @@ DeathText: {
 }
 
 Tiles: {
+	AcidicMud.MapEntry: Acidic Mud
+	StainedCobblestone.MapEntry: Stained Cobblestone
+	RustedBarrel.MapEntry: Rusted Barrel
+	RustedPipe.MapEntry: Rusted Pipe
+	SludgeVat.MapEntry: Vat
 	Game_Changing_Orb.MapEntry: Ominous Orb
 	BladeOfMorsInStone.MapEntry: Blade Of Mors In Stone
 	MakeshiftAltar.MapEntry: Makeshift Altar
@@ -1024,9 +1261,69 @@ Tiles: {
 	SeepVent.MapEntry: Seep
 	LighthouseLens.MapEntry: Lighthouse Lens
 	HarenaeumOre.MapEntry: Harenaeum Ore
+	ReefRock.MapEntry: Reef Rock
+	CoralRubble.MapEntry: Coral Rubble
+	CorallineCrust.MapEntry: Coralline Crust
+	BrainCoral.MapEntry: Brain Coral
+	StarCoral.MapEntry: Star Coral
+	StaghornCoral.MapEntry: Staghorn Coral
+	PlateCoral.MapEntry: Plate Coral
+	BlueCoral.MapEntry: Blue Coral
+	OrganPipeCoral.MapEntry: Organ Pipe Coral
+	BubbleCoral.MapEntry: Bubble Coral
+
+	ReefPolyp: {
+		MapAnemone: Anemone
+		MapUrchin: Sea Urchin
+		MapStarfish: Starfish
+		MapZoanthids: Zoanthids
+	}
+
+	ReefSponge: {
+		MapTubeSponge: Tube Sponge
+		MapSeaWhip: Sea Whip
+	}
+
+	ReefCoral: {
+		MapSeaFan: Sea Fan
+		MapBranchingCoral: Branching Coral
+		MapBrainCoral: Brain Coral
+	}
+
+	ReefClam: {
+		MapGiantClam: Giant Clam
+		MapMushroomCoral: Mushroom Coral
+	}
+
+	ReefTable.MapTableCoral: Table Coral
+	ReefHanging.MapSoftCoral: Soft Coral
+	SeaPickle.MapSeaPickle: Sea Pickle
+	LabVent.MapEntry: Vent
+	LabLight.MapEntry: Fluorescent Light
+	LabCanister.MapEntry: Specimen Canister
+	LabBookshelf.MapEntry: Shelf of Records
+	LabMonitor.MapEntry: Monitor
+	LabConsole.MapEntry: Console
+	LabTerminal.MapEntry: Terminal
+	LabServerRack.MapEntry: Server Rack
+	LabFilingCabinet.MapEntry: Filing Cabinet
+	LabPipe.MapEntry: Pipe
+	LabValve.MapEntry: Valve
+	LabFan.MapEntry: Fan
+	LabHazardSign.MapEntry: Warning Sign
+	LabCanteenTable.MapEntry: Canteen Table
+	LabVendingMachine.MapEntry: Vending Machine
+	LabBunk.MapEntry: Bunk
+	LabLocker.MapEntry: Locker
+	LabCounter.MapEntry: Counter
+	LabElevatorRail.MapEntry: Elevator Rail
+	LabUVLamp.MapEntry: Ultraviolet Lamp
+	LabElevatorPanel.MapEntry: Elevator Panel
+	LabBurner.MapEntry: Incinerator
 }
 
 Projectiles: {
+	PrismCut.DisplayName: Terraprisma
 	MimicAnchor.DisplayName: Everclear Mirror
 	TentochiRocket.DisplayName: Back Rocket
 	CatapultBoulder.DisplayName: Boulder Catapult
@@ -1120,6 +1417,18 @@ Projectiles: {
 	PocketSandstormNeedle.DisplayName: Sand Needle
 	FistPunch.DisplayName: Fist
 	Sandstep.DisplayName: Sandstep
+	EyesoreEye.DisplayName: Eyesore
+	SlimyFortificationGlob.DisplayName: Slime
+	ScuttlebuttBarrage.DisplayName: Barrage
+	ScuttlebuttWaterFist.DisplayName: Water Fist
+	SandcladStorm.DisplayName: Sandstorm
+	SandcladDevil.DisplayName: Sandstorm
+	SandcladGust.DisplayName: Gust of Sand
+	NightcallSaw.DisplayName: Chainsaw
+	NightcallLaser.DisplayName: Laser
+	NightcallBlast.DisplayName: Nuclear Blast
+	NightcallCharge.DisplayName: Nightcall
+	NightcallTrail.DisplayName: Radiation
 	ScorpiusTail.DisplayName: Scorpius Servus
 	SableConstruct.DisplayName: Jelle's Sable Helper
 	SableBolt.DisplayName: Sable Bolt
@@ -1139,6 +1448,31 @@ Projectiles: {
 	KnightSweep.DisplayName: Long Blade
 	KnightSunOrb.DisplayName: Gilded Sun
 	GildedSwordSwing.DisplayName: Sword Of A Gilded Knight
+	ProbeBlast.DisplayName: Probe Blast
+	DestroyerRay.DisplayName: Destroyer Ray
+	DestroyerBolt.DisplayName: Destroyer Bolt
+	DestroyerArc.DisplayName: Destroyer Arc
+	TheChainTail.DisplayName: The Chain Tail
+	PrimeBlast.DisplayName: Skeletron Prime
+	PrimeBeam.DisplayName: Nuclear Laser
+	PrimeColumn.DisplayName: Nuclear Laser
+	PrimeMissile.DisplayName: Mini Missile
+	PrimeBomb.DisplayName: Bomb
+	PrimeNuke.DisplayName: Parachute Nuke
+	PrimeBurst.DisplayName: Nuclear Blast
+	PrimeShockwave.DisplayName: Supersonic Wave
+	PrimeClod.DisplayName: Dirt
+	TwinsBlast.DisplayName: The Twins
+	TwinsFireColumn.DisplayName: Fire Column
+	TwinsGasShot.DisplayName: Chlorine
+	TwinsToxicSpear.DisplayName: Toxic Spear
+	TwinsFlammableGas.DisplayName: Flammable Gas
+	TwinsShockwave.DisplayName: Shockwave
+	ViolentCrimesHoldout.DisplayName: Violent Crimes
+	ViolentCrimesFlame.DisplayName: Fire
+	ViolentCrimesLaser.DisplayName: Flame Laser
+	ViolentCrimesGas.DisplayName: Flammable Gas
+	ViolentCrimesChlorine.DisplayName: Chlorine
 }
 
 NPCs: {
@@ -1170,9 +1504,27 @@ NPCs: {
 		DisplayName: Gilded Knight of Grace
 		Bestiary: Plate gilded over, two swords as tall as he is, and a road before a wall that was never breached. He has been put down on that road more times than anyone has counted. He gets up.
 	}
+
+	IronBorneMantis: {
+		DisplayName: Iron Borne Mantis
+		Bestiary: A Tentochi product. The order form said pest control and gave no size for the pest. It folds its arms between jobs and measures the distance to whatever is nearest.
+	}
+
+	Culture: {
+		DisplayName: Culture
+		Bestiary: Grown in the tanks under the Mile. When the feeding stopped, it went looking.
+	}
+
+	LabElevator.DisplayName: Elevator
+	SandbagDummy.DisplayName: Sandbag
 }
 
 Biomes: {
+	SumpBiome: {
+		DisplayName: The Sump
+		TownNPCDialogueName: the Sump
+	}
+
 	WastedMileBiome: {
 		DisplayName: The Wasted Mile
 		TownNPCDialogueName: the Wasted Mile Biome
@@ -1228,6 +1580,7 @@ Subworlds: {
 	DoorNotAlone: It does not open while others share the world.
 	DoorForgot: It has forgotten where it leads.
 	DoorWall: It opened onto a wall.
+	VentShut: The grate will not lift while they are hungry.
 
 	Waygate: {
 		Question: Traverse the mysterious gateway?
@@ -1251,6 +1604,8 @@ Subworlds: {
 		GillsPotion: In the Vast Ocean it wears off faster the deeper you are, {1} times as fast from {0} feet
 		GillsFaster: Wearing off {0} times as fast at this depth
 	}
+
+	Incinerated: "{0} was burned with the waste."
 }
 
 Tips: {
@@ -1484,6 +1839,7 @@ Keybinds: {
 	Lantern.DisplayName: Switch the M.U.P.R.A.L's light
 	Adrenaline.DisplayName: Calamity Module: let adrenaline go
 	Detonate.DisplayName: Adam Kit I: detonate
+	ArmorSet.DisplayName: Armor set ability
 }
 
 Magic: {
@@ -1562,6 +1918,20 @@ UI: {
 		Empty: The sand has run out. Right-click to turn it over
 		Running: "{0} seconds of sand left"
 	}
+}
+
+Nightcall: {
+	Choose: Press {0} to choose each fist
+	Hands: Left: {0}   Right: {1}
+	Vice: Vice
+	Cannon: Cannon
+	Chainsaw: Chainsaw
+	Laser: Laser
+}
+
+Sandclad: {
+	MageSet: Standing still raises a sandstorm that hurts enemies and gathers mana for you. Press {0} to be thrown to the cursor on a gust of sand (30 second cooldown)
+	SummonSet: Two sandstorms circle you. Press {0} to gather them at the cursor, raging (20 second cooldown)
 }
 
 Tentochi: {

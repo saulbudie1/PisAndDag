@@ -36,6 +36,9 @@ namespace PisAndDag
         /// <summary>Lets a worn Adam Kit I go (TentochiPlayer.Detonate). K: no key of the game's, nor of Calamity's, and away from the hand that moves.</summary>
         public static ModKeybind Detonate { get; private set; }
 
+        /// <summary>An armour set's own ability (Sandclad's gust, its storms' rage).</summary>
+        public static ModKeybind ArmorSet { get; private set; }
+
         public override void Load()
         {
             Reload = KeybindLoader.RegisterKeybind(Mod, "Reload", "R");
@@ -46,6 +49,7 @@ namespace PisAndDag
             Lantern = KeybindLoader.RegisterKeybind(Mod, "Lantern", "L");
             Adrenaline = KeybindLoader.RegisterKeybind(Mod, "Adrenaline", "X");
             Detonate = KeybindLoader.RegisterKeybind(Mod, "Detonate", "K");
+            ArmorSet = KeybindLoader.RegisterKeybind(Mod, "ArmorSet", "V");
         }
 
         public override void Unload()
@@ -58,6 +62,7 @@ namespace PisAndDag
             Lantern = null;
             Adrenaline = null;
             Detonate = null;
+            ArmorSet = null;
         }
     }
 }

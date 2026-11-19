@@ -572,3 +572,175 @@ Then check the built size dropped.
   - (r82q) Foigh's flying slashes (phase 2 wind, phase 3 burning cuts, the wheel's great cut) pass through walls and floors and fade out at the end of their flight; one that reaches you through a wall still hits.
   - (r82r) Empress of Light: lure her out of her decagon (stand near its edge so she hovers over it, or let her dash out): about a second later she flies back in. Legends, her second half (day held): the inverted-colour negative act comes up roughly twice as often; and anything outside the decagon (a creature, another player) lights up white and loses 30,000 life a second; townspeople are spared.
   - (r82s) Vast Ocean, first section, open water: two or three manta rays swim by together, slowly beating their wings (4 frames), turning round edge on; they drift away from you if you swim at them, and fish schools part round them. New schools: Blue Chromis (blue clouds near the rock, upper sea) and Bluestripe Snapper (yellow with blue lines, Schooler Zone mostly), each in its colour variants.
+  - (r82t) Vast Ocean, sections 2 and 3: four or so wide reef fields (one under the island) of big rough floating reef islands packed close, crowned with bright coral pieces (trees, claws, domes, spires), shelves of plate coral, soft corals hanging under, anemones, urchins, starfish, sponges, sea fans, clams, table corals; thick lacy coral walls join them; glowing sea pickles light them like torches. Further down to section 6, fewer and smaller islands. Ten reef blocks and four walls to mine and place (walls 4 to a block at a work bench). The ocean regenerates (layout 10).
+  - (r82u) Vast Ocean reefs are no longer black away from lights: they take the sea's light at their depth, dimmer the deeper and by night.
+  - (r82v) Wasted Mile (extra large worlds): an iron vent stands in the middle of the Mile. Right click it: shut until Amalgaermis is dead, then it takes you down to the Abandoned Lab, a dark ruined facility (way in, corridor, two labs, ducts, a store room, the containment hall with its burst tank) with chests to find; the vent in its way in brings you back up.
+  - (r82w) Abandoned Lab: cobwebs can be cut; long green fluorescent lights on the walls cast light downward, some flickering now and then, some failing, some dead; the Mile vent is one tile wide (an old two-wide one is trimmed on load; the lab is rebuilt).
+  - (r82x) Abandoned Lab: the Culture, a knot of thin red tentacles and an eye or two that drags itself along walls and ceilings fast, flattens through one-tile gaps, leaps at you up close; shots on its tentacles throw them back and hurt it; one or two at a time; comes apart into gore that dissolves.
+  - (r82y) Fixed: going into the Abandoned Lab crashed the game while it was being made.
+  - (r82z) Fixed: a Culture near you burst on its own while you held Foigh's Rust Side (or any held weapon), as if hit; its tentacles now take only the hits the game would let land.
+  - (r82aa) Abandoned Lab: no daylight through the duct grates; the hall's fluorescent lights are red; Cultures come less often, crawl a little slower (slower still squeezing), ball up to get through a one-tile path that turns, and their tentacles let go rather than reach through walls.
+  - (r82ab) Abandoned Lab: specimen canisters (a Culture asleep in green fluid behind glass) in the specimen lab, the hall and the store room; break one with a pickaxe and the glass bursts and the Culture comes out at you (not while two are already loose).
+  - (r82ac) Abandoned Lab: a pickaxe now works on the specimen canisters (and on nothing else there); no torches in the lab, more red tubes in the hall and a light in the store room instead.
+  - (r82ad) Abandoned Lab, a new wing from the user's plan: an annex of three floors west of the way in; a document room under it with shelves of records, reached by an elevator car you ride (panels at each floor) or a sloping corridor; a dining room (canteen and kitchen); a corridor with a fallen-in floor to a safe room the Cultures won't enter, with bunks that set where you respawn; a corridor from the store room down to an incineration pit whose fire burns items, players and Cultures; one-tile unlit vents through the rock for the Cultures; the lab's own furnishings (screens, consoles, racks, cabinets, pipes, fans, signs, canteen tables, vending machines, lockers, counters).
+  - (r82ae) Abandoned Lab: white fluorescent light in the document room; the hall's red tubes now look right (they had been drawn as failing and dead ones).
+
+### r82af — Sword Of A Gilded Knight balanced (2026-11-10)
+- Request: "Balance the SwordOfAGildedKnight for player, make it decent against hardmode, 300 dps on no defense; and the light thing has a 3 sec coold down; it deals 350 damage and 2x if player is in hell".
+- Cuts unchanged: 100 damage, 3 a second = 300 dps on no defense (about 312 with base crit), one hit per target per cut.
+- Long blade (right click): 3.5x a cut = 350; 700 with player.ZoneUnderworldHeight. 3 second cooldown counted from the click (CanUseItem refuses alt while cooling; GildedSwordPlayer.longWait); gold dust + chime when ready if the sword is held.
+- Tooltip: "...for 3.5 times the damage" / "Twice that in the Underworld; once every 3 seconds".
+
+### r82ag — Culture tentacles thicker and swaying madly (2026-11-10)
+- Request: "make culture's tentacles a bit thicker and make it sway more madly; research on how carrion sway".
+- Research: Carrion's devs say the monster is "90 or 95%" physics-based and procedural; the best public breakdown models a tentacle as a spring rope with a sine wave run along it that dominates when slack. YouTube was not reachable from the sandbox this time.
+- Thickness: 6 px at the root (pale/bright/dark rows), 4 px to 60% of its length, 2 px to the tip (was 4 px for 14 px, then 2). Tentacle.ThickAlong(f).
+- Sway (Tentacle.Sway/Shown): two travelling waves across the root-to-tip line; free 6 px wide growing to the tip, held 2.5 px + 2.5% of its length, peaked mid-rope, more kinks the longer; spasms (1 in 45 ticks free, 1 in 100 held) throw a point and widen the sway 2.5x, decaying 0.9 a tick. Drawn and hit where swayed; the rope physics itself is unchanged apart from a faster free tip writhe and faster root swing.
+
+### r82ah — Culture tentacles as hooks (2026-11-10)
+- Requests: "why are its tentacles not anchoring at one point, its just touching and propell it forward, make it actually anchor faraway and pull it in; think of tentacles like hooks physics thats pulling it" / "except for when its dashing thats when it jumps" / "its tentacles also anchoring at a place its getting further and further away from, making it stretch which is not apply to a rubbery bandy tentacle physics".
+- Cause: holds were found along one random angle each (in a corridor, the floor or ceiling right beside it), movement was a fixed crawl toward its way with the holds adding little, and holds behind were only let go of 1 in 3 ticks with 3+ holding (the long trailing lines).
+- Now: up to 3 hooks out; FindHold fans 14 rays ahead and picks the furthest, most-ahead hold not near another hook (>= 3 tiles if any). A grip yanks (1.6). Move reels toward the holds (each weighted by how far and how ahead), 25% steered by its way; on one hook it hangs and swings, never further than the rope let out. Rope only shortens; a hold is let go when reached (40 px), behind, blocked, or the mass is 20 px further than its rope. Wedged squeezing unchanged; leap unchanged (lets go and jumps). Hook roots come from the side facing their hold. Unhooked: horizontal speed capped at half a crawl.
+- Python sim (corridor 4 tall, hall 6 tall, shaft 5 wide, open floor): steady ~6.6 px/tick, grips ~100 px off on average, never more than 6 px over its rope.
+
+### r82ai — let-go tentacles no longer stay stretched (2026-11-10)
+- Screenshot: a tentacle drawn out ~50 tiles along the corridor floor behind the Culture ("like why").
+- Cause: a let-go tentacle shrinks back by its rope physics, but the block clip put any point that touched a block back where it was, so a long one lying along a floor snagged and never shrank.
+- Fix (Tentacle.Update): a free tentacle more than twice its relaxed length snaps toward its root, every point a third of the way a tick, ignoring blocks; otherwise a point hitting a block slides along it (keeps its across or up-down move) before falling back to where it was.
+
+### r82aj — Culture hooks onto background walls too (2026-11-10)
+- Request: "Remember it doesnt just hook to tiles it hooks to any wall too".
+- FirstSolid: a ray stops at the first solid block as before; short of one, the hold is the furthest point on it with a wall behind, out to 70-100% of Reach (random per throw so hooks thrown the same way spread). Rays stop at the safe room's edge.
+- So in the lab (walls everywhere) it hooks out in open air ahead and reels straight along its way.
+
+### r82ak — Scuttlebutt, a fist found in the Vast Ocean's lighthouse (2026-11-10)
+- Requests: "Add a boxing weapon same as corosion: Scuttlebutt; 1.5x base damage of corosion; Found in vast ocean's light house; Start with 2 jabs, a cross and a hook. Right click stand still and perform a 3 second barrage of water fist(same texture as the fist but threshold it to black and white and map the bright ness to a rrange from #cafafc, #83add4, #4c6fb5" / "during 3 second, each second punch 3 flying fist at cursor, alternating hands, 8 second cool down" / "also move the player during left click like corosion".
+- Scuttlebutt (FistWeapon): 27 damage (Corosion 18 x 1.5), knockback 5.5, crit 6, Orange, 3 gold. Combo: jab 11t x0.8 step 8, jab 11t x0.8 step 10, cross (back arm) 14t x1.1 step 16, hook 22t x2.2 step 14 throwing (7, -2.5). Reach 44, combo window 36. Water drips (Shed), splash on hits.
+- FistArc.Hook (FistWeapon/FistPunch): cocked high, swung from -75 to +22 degrees onto the line, swept hit line like the uppercut's.
+- Right-click: ScuttlebuttBarrage, 180 ticks; planted (ScuttlebuttPlayer.SetControls blocks left/right/jump, velocity.X 0), faces the cursor; every 20 ticks an arm punches out (front, back in turn), a ScuttlebuttWaterFist leaving the hand 3 ticks in at 14 px/tick for the weapon's damage (9 in all); pierce 1, bursts on blocks. After: Winded 8 s (counted from the end of the barrage).
+- Found: the lighthouse watch room's west sea chest, first (LighthouseTower); Vast Ocean Layout 10 -> 11 so it is rebuilt with it.
+- Art (code-drawn placeholders, PlaceholderTextures.md): Scuttlebutt/Fist/Arm in oak and iron hoops on Corosion's shapes; the water fist the fist in the three asked blues by brightness; Winded icon.
+
+### r82al — Scuttlebutt barrage: 7 a second, gloves on (2026-11-10)
+- Requests: "nah make every second is 7 punches" / "and make him still wear the gloves on right click".
+- ScuttlebuttBarrage: 7 punches a second (punch k starts on tick ceil(k*60/7)), 21 in 3 s; arm out 2 ticks, held to 4, back by 8; the water fist leaves the hand 1 tick in. Each still the weapon's damage.
+- Gloves: the barrage is the held projectile, drawn over the arms: Scuttlebutt's fist on the front hand always (0.6 at the guard, to 0.85 punching) and on the back hand while it punches.
+
+### r82am — Gilded Knight's end can be skipped (2026-11-10)
+- Request: "gilded knight death animation unskippable tho".
+- GildedKnight.EndTick: in single player, near or in his field, until he comes apart (EndApart), CinematicSkip is offered (hold E, as his scene). Taken: Timer jumps to EndApart (he comes apart then; the Sun is let fall that tick and comes apart 30 ticks later), the camera pans home in 30 ticks and stops leaning in, and he perishes (loot, downed flag) 45 ticks after the Sun (EndSunApart + 45) instead of at EndTicks.
+
+### r82an — half-size canvas and the hit kit, after a study of Calamity's effects (2026-11-11)
+- Requests: "Deep learn calamity's effect choices and systems and particles; then think of what we can implement onto our mod" / "yeah 1 and 4 and what weapons can be implemented?".
+- Study (Calamity source: Particles, Effects, Graphics, Systems): a small set of generic particles reused everywhere; hits layered (flash, ring, sparks, smoke, shake); easing curves on everything; a half-resolution pass for trails/particles; draw layers; telegraphs exempt from the cap; metaballs; death into ash by BasicEffect quads; ropes, IK, enhanced darkness. Offered and not built: shaderless metaballs (AlphaTestEffect), death-into-grains for all NPCs, particle draw layers, telegraph particles, lab darkness with cut-out lights, emotes/stat arrows/sky flash/single-instance loop sound.
+- PADPixelCanvas (Content/Graphics): two half-screen render targets (alpha, additive) painted in Main.OnPreDraw, corner snapped to an even world pixel, presented x2 PointClamp at the dust layer before the other particles. PADParticle.Pixelate sends a particle through it; PADPixelCanvas.Queue(draw, additive) for anything else (drawn a frame later).
+- Hit kit: HitRing (squishable ring, world-pixel radii), ImpactStar, HitCrack (3 variants) with code-made textures; HitFx.Light/Heavy/Slash/Ground lay them down with BloomGeneric, SparkShard, SlashStreak, StoneChip, DustFog, all pixelated. /hitfx [light|heavy|slash|ground] shows them at the cursor.
+- No weapon uses HitFx yet.
+
+### r82i — town NPC chat panel installed (2026-11-11)
+- Request: "i thought we implemented the new town npc chat UI?" -> "Install it now".
+- Built earlier as round r82i and held as an open offer; installed now unchanged: TownChat (the panel in place of vanilla's chat box, buttons laid out in it, six at most with paging), ChatSlot, ChatSubBox (reforge slot box), ReforgeBox, ShopBox (shop grid inside the panel), ChatArrow/ChatSlot/ChatSubBox art, and TalkOptions.cs updated for it. Builds with 0 errors against the current mod.
+
+### r82ao — Eyesore, Slimy Fortification, the Iron Borne Mantis (2026-11-11)
+- Request: "New items Legends exclusive: Eye of Cthulhu. Accessory: Eyesore ... King Slime: Spell: Slimy Fortification ... New Hardmode boss: Iron Borne Mantis ... Im giving you creativity, spare no effort" (full text in the chat).
+- Eyesore (Items.Accessories; EoC, Legends, bag in Expert): EyesoreEye by the shoulder looks at EyesorePlayer.MostMenacing (boss first, then lifeMax + damage x12; 20% stickiness) within 45 tiles; 300 ticks on one marks it; hits 1-3 on it x2 / x1.75 / x1.3 (FinalDamage); third spends it, 300 ticks rest. Stare restarts when the target changes; a mark on something dead or 67 tiles off is dropped with no rest. Dotted stare line, red eye and pips over the marked.
+- Slimy Fortification (Spell; King Slime, Legends): 12 damage, 12 mana, 30 ticks; 3 SlimyFortificationGlob from the cursor (within 45 tiles of the caster) homing on the nearest NPC within 22 tiles of it. SlimeCasing (GlobalNPC, per caster machine): each glob adds 34 x clamp(1400/area, 0.2, 1) toward 100, drying after 3 s; full -> buff Encased 300 ticks (synced as a buff). Encased small NPC (knockback-able, area <= 2600, not a boss/part): AI not run, falls, no touch damage; bigger: 40% speed; bosses immune.
+- Iron Borne Mantis (Content/NPCs/Mantis): 34000 life, 34 defense, 70 touch, blade x1.5, landing x1.2; box 110x150. States Arrive (rear and roar), Stalk (stride 40 / stop 12, turns only stopped), Slash (wind 38 in 4 notches, fixes at 26 on prey + velocity x8 clamped 70..208 px from the shoulder, cut 8, stuck 12, fold 26; other arm if in reach, 2 a bout, 3 enraged), Crouch/Air/Land (jump when kept away 150 ticks). Under half life x1.25 pace.
+- Arms: 3 pieces (52/76/94 px), joints in 3D relative to the shoulder, FABRIK from the blade point; drawn by Strip in 6 slices a piece through View (size = 360/(360 - z)), so a piece toward the viewer is a trapezoid; cut path bulges z to ~200 (blade > 2x). Blade hit worked out per client for its own player.
+- Art by script (scratchpad mantis/rig.py, arms.py): 14 body frames 192x192, arm pieces, map head. /mantis [clear] to call it; no natural spawn, no loot, no downed flag yet (PADWorld is locked).
+
+### r82ap — the Mantis's raptorial foreleg remade: idle, pierce, slash (2026-11-11)
+- Requests: a sketch ("i meant like this": idle a tight zigzag of slivers; pierce the arm out in a line; slash the blade cocked, then one great crescent) and "idle pierce slash, remake the raptorial foreleg".
+- Art (mantis/arms.py): coxa a slim sliver; femur thick and dark, swollen at its root; tibia a clean scythe blade, its hollow edge ground bright (112x52, pivot row 36). No spines or teeth, by request: "dont put saw teeth on it, make it a blade insteead".
+- Idle: Folded() is a tight N: down-forward, straight up, blade hung down along the femur.
+- Slash (36 ready / fixes 24 / cut 10 / held 12 / fold 26): readied with the elbow lifted and the blade hanging; the cut a cubic through back-low (z 150) and low-front (z 250) to the mark, then 16,-44 past it; smear laid twice a tick, 16 long.
+- Pierce (30 / 18 / 5 / 14 / 24), new state Act.Pierce: drawn back (z -70), straight to the mark, held shaking; hit line from the first elbow. Chosen when the prey is over 150 px from the shoulder, the slash when nearer; follow-ups choose the same way.
+
+### r82aq — the Mantis's blows in real depth (2026-11-11)
+- Request (second sketch, pieces coloured: the femur a trapezoid, the blade a crescent across the picture): "its still js 2d rotatingg i meant make it Realllly dynamic".
+- Eye 360 -> 190 (size = 190/(190 - z), z capped at 145: up to 4.2x); 12 slices a piece.
+- Blows are poses in depth now, not a led point: Dirs (a way to point per piece), Blend (each piece's way turned from pose to pose, lengths kept), Reaching (IK onto the mark, elbows toward the viewer). StrikePose: slash = swung back behind the shoulder -> arm down and out at the viewer, blade swept from pointing back, through pointing at the viewer, to pointing ahead (cut 14 ticks) -> onto the mark in the world's plane -> past it; pierce = coiled with the elbow at the viewer -> out in a line, near end big, point small.
+- Idle fold by the second sketch: down, up-forward, blade hung down and turned a little away.
+- Blade hit window is the last quarter of the cut and 3 ticks after; smear thinner and fainter for the bigger blade.
+
+### r82ar — the Mantis's blade flips, smear frames, a thinner blade (2026-11-11)
+- Requests: "you know you can flip the blaade right?" / "and add a smear frame system too" / "and make the blade thinner".
+- Flip (Limb.BladeSide): the blade piece is drawn flipped over its length when needed. Cutting, whenever its tip moves over 8 px a tick, its edge (the picture's underside) is turned to where it is going, and kept so to the end of the hold; otherwise its edge is to the femur (6 px hysteresis).
+- SmearFrames (Content/Graphics, reusable): Add(tip, turnsAbout, size) while something sweeps, Fade(n) after, Draw(body, edge, reach, edgeWidth): the swept shape in the thing's own colour (alpha blend, solid at the newest, gone at the oldest, its inner end `reach` of the way back to the pivot), and its leading edge a thin added line, corners on the 2-px grid. The Mantis keeps one per arm (22 frames, two a tick while cutting, fading 3 a tick), steel (206,212,226) at 0.85, reach 0.6 slash / 0.2 pierce, plus the blade's last two poses drawn at 0.38 and 0.26. The old pink glow smear is gone.
+- Blade art thinner (mantis/arms.py: back sag 9.6, edge sag 3.6, edge band narrower, fewer red marks); hit line width 28 -> 20 x size.
+
+- The Sump (r82as): enemies of its own, a loot reason to go there, and its own music are not made yet. Bestiary card and icons are code-drawn placeholders.
+
+
+### r82ba — Destroyer slower and whole-body; Legends Destroyer (2026-11-15)
+- Test: the death leaps trace the whole body along each arc; the rising body comes up out of the ground along its way.
+- Test (Legends): second wind at 35%; each move once (pulse, storm, volley, pop, berserk, cage, sweep); Probes pairing and bursting in phase 2; multiplayer: beams and bolts show on clients.
+- Balance pass on Legends damage (bolt 24/20, beam 60/48, chain 32/26, Probe burst 52/42, storm zap 40% of contact) once played.
+- Lore (user): each mechanical boss is an element: Destroyer lightning and energy #7fd4d1 (done), Retinazer fire #c2380e, Spazmatism toxic gas #3ea637, Skeletron Prime nuclear #bbff00. Not in the Lore Bible yet.
+
+
+### r82bi — The Chain (2026-11-16)
+- Test: in a Legends world, the Destroyer drops The Chain (Classic: itself; Expert/Master: its bag). Worn: the tail curls behind you, strikes every 1.25 s, Combo X1-X4, the fifth whip Electrifying (stuns a normal enemy 2 s, 20 a second; a boss only takes the damage); red light, teal from X4.
+- Balance: 150 per strike every 1.25 s and 200 on the fifth is strong for an accessory at the Destroyer's tier; look again once played.
+
+### r82bk — The Twins, the Sandbag (2026-11-17)
+- Test the Twins: coming (both passes visible at night? the far pass is hazed toward the night sky), the change wait (one changed and untouchable till the other changes), first death (sparks, fall, impact), second death (whole scene; the fireball dodgeable by running during the 1 s flight), loot once, and in multiplayer.
+- Legends, later (by request): the Spazmatism spews flammable toxic gas everywhere (Shin Godzilla-like), then the Retinazer sparks it: 5 s of very hot, high-damage fire over all of it.
+- Sandbag: check its look beside the Target Dummy and the struck frame's flip.
+
+
+### r82bm — The Twins in Legends (2026-11-17)
+- Test in a Legends world, at night: each of the eight own attacks, the four together, the shield on the first to change, both debuffs, the columns' and marks' alignment with the eyes, and frame rate with a spin column and the gas going up on screen.
+- Balance by play, nothing has been: the pulls (Whirl, Inhale), the spin column's speed, how often they attack together, every damage number, the shockwave (it cannot be dodged, only outrun: full within 10 tiles, a tenth at 70).
+- Multiplayer untested: attacks are the server's and played from its steps and marks on every machine.
+- The earlier Legends idea (r82bk: gas everywhere, then the Retinazer lights it) is this round's GAS.
+- PADFire is there for anything else that burns (weapons, other bosses): Burn, Jet, Trail, Puff, Burst.
+
+
+### r82bo — Violent Crimes (2026-11-17)
+- Test: both buttons and their 5 s turn-over, the gas lit by fire and by laser and its chain, the throw in every direction (into ground, ceilings, platforms), running out of Gel, the pose facing both ways and under reversed gravity, the drop (Classic from the last twin, Expert from the bag), and multiplayer (another player's gun seen and heard, a throw seen from outside).
+- Balance by play: 44 damage, the laser's 9x, the gas's 4.5x, the chlorine, Gel use. The throw is flight in a mod that takes wings away: say if it should cost more or carry less.
+- Look: the gun is 80 px long in the hands; say if it should be held differently. The first throw of each hold could want a warning.
+
+
+### r82bq — Skeletron Prime (2026-11-17)
+- Test at night: its coming and the skip; each arm struck down over flat ground, slopes, platforms and a pit; the change when the fourth goes down; its end with all arms down, with some up, and with none (killed head first); the blast's reach against the rays; the fallout's edge, its five minutes, leaving the world and coming back; loot landing outside it.
+- Look: the limbs in the fight (free of the head, as asked: say if they should hang off it instead); the three impact frames (they flash the whole screen white, black, green in a fifth of a second: say if that is too much); the six sounds (made by formula, never heard).
+- Balance by play: the blast (140 / 264 / 396, 30 tiles, about 3.3 s to run); Radioactive at 60 life a second with half speed is likely death for anyone caught in the middle.
+- Multiplayer untested: scenes are the server's and played from its steps on every machine; the fallout is sent with the world's data.
+- Its attacks are still vanilla's: the nuclear ones are to come.
+- A burn on a boss held at one life in a scene shows as a blow each time it would kill it. Prime and its arms take their buffs off; the Twins and the Destroyer do not yet.
+
+
+### r82br — Skeletron Prime: Legends (2026-11-17)
+- Nothing of it has been seen in game. First look: each arm's own attack, each of the six things all arms stop for, the head's four; an arm struck down in the middle of each (it should fall out of it; the leading arm struck down ends it).
+- Balance by play (all numbers are constants at the top of Prime.Group.cs, Prime.Moves.cs, PrimeArm.Legends.cs): the column's sweep (400 a hit) against boots; the saw's train's pull; the whirl's throw (18 up); the drag of the head's detonation; how often arms act (one at a time, 100 to 170 ticks between) and how often they all stop (25 to 40 s).
+- Asked, not yet answered: Prime does not hit 15% harder in Legends as the Twins and the Destroyer do. Say if it should.
+- Fight length: arms have three times their life, so about 93,000 of arm life before the head (16,800) can be touched.
+- Multiplayer untested: who is caught is the server's; a held player is placed on every machine; missiles, bombs and clods that hit a player are ended by the server.
+- The sounds are the game's own, picked by ear from memory: say which are wrong.
+
+
+### r82bs — the nukes go up in the air (2026-11-17)
+- Look: the three hang 4 tiles over the player's head height and go up together; the order they come down in should differ each time. On a platform arena they go up over the layer the player is on.
+- Platform arenas, not asked to change: the saw's train and dig go down to solid ground under the platforms; the head's launch only slams (and loses 11%) on solid ground.
+
+
+### r82bt — fewer marks; nukes at three heights (2026-11-17)
+- Look: with no marks, the dash, the beams, the column and the bomb run are read by the attack itself (the head winding up, the eyes charging, the laser's lens charging, the cannon flying to the arc's end); say if any is now unfair.
+- Nukes: one high, one about the head, one low (on flat ground the low one sits just over the ground).
+
+
+### r82bu — Nightcall (2026-11-17)
+- First look: each hand's four (vice, cannon, chainsaw, laser), the menu on the reload key, the right click's charge, blast, throw and trail. /item or a Legends Prime kill to get it.
+- Balance by play (constants at the top of Nightcall.cs): 40 damage; vice 2x; cannon 0.75x in 3 tiles; laser 0.6x; saw 0.1x to 0.6x a sixth of a second; blast 6x in 7 tiles; trail 0.5x and Radioactive; 12 s cooldown.
+- The pictures are my first pass: say which to redraw.
+
+
+### r82bv — its death's rays (2026-11-17)
+- Look: the rays out between its arms in the dark should read as streaked shafts of light, not flat lime petals. Say if they are now too faint.
+
+
+### r82bw — Sandclad (2026-11-18)
+- Look at both sets and their key (V, "Armor set ability" in the controls). Worn pictures are vanilla stand-ins: draw or ask for real ones.
+- Balance by play: the storm 16 magic / half second and its mana; the storms 14 summon each.

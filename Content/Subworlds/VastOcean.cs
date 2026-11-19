@@ -241,8 +241,8 @@ namespace PisAndDag.Content.Subworlds
         public override int Width => Wide;
         public override int Height => High;
 
-        /// <summary>9: the Signal Pistol in the lighthouse's watch room (LighthouseTower). Before it: the ranges' caves deeper and a maze, with the eels' dens and rocks floating in their big rooms (VastOceanFloor.Caves), 8; a network of caves in each range, walled, with dripstone and the eels' crevices, 7; the lighthouse island (VastOceanIsland), 6; the floor of hills, mountains, caves and a trench, its ground deeper (VastOceanFloor), 5; half as deep again, its sections 224 rows, 4; twice the sky over it, 3; eighteen times as wide and four times as deep as the first, 2.</summary>
-        public override int Layout => 9;
+        /// <summary>11: Scuttlebutt in the lighthouse's west watch-room chest (LighthouseTower). Before it: 10: the reefs of the second to the sixth sections (VastOceanReef). Before it: the Signal Pistol in the lighthouse's watch room (LighthouseTower), 9; the ranges' caves deeper and a maze, with the eels' dens and rocks floating in their big rooms (VastOceanFloor.Caves), 8; a network of caves in each range, walled, with dripstone and the eels' crevices, 7; the lighthouse island (VastOceanIsland), 6; the floor of hills, mountains, caves and a trench, its ground deeper (VastOceanFloor), 5; half as deep again, its sections 224 rows, 4; twice the sky over it, 3; eighteen times as wide and four times as deep as the first, 2.</summary>
+        public override int Layout => 11;
 
         public override Point Door => new Point(GateLeft, GateTop);
 
@@ -458,7 +458,35 @@ namespace PisAndDag.Content.Subworlds
             int seed = Main.ActiveWorldFileData?.Seed ?? 0;
 
             VastOceanBuild.Lay(new Dune(seed), seed, new UnifiedRandom(seed ^ 0x5EA5EA), (ushort)ModContent.TileType<Waygate>(), SeaLifeTile.Plant,
-                (ushort)ModContent.TileType<LighthouseLens>());
+                (ushort)ModContent.TileType<LighthouseLens>(), ReefTypes());
+        }
+
+        /// <summary>The reefs' types, by the plan's kinds (ReefPlan), for VastOceanReef.</summary>
+        private static VastOceanReef.Types ReefTypes()
+        {
+            var types = new VastOceanReef.Types();
+            ushort[] blocks = types.Blocks, walls = types.Walls, life = types.Life;
+
+            blocks[(int)ReefPlan.Block.Rock] = (ushort)ModContent.TileType<Tiles.Reef.ReefRock>();
+            blocks[(int)ReefPlan.Block.Rubble] = (ushort)ModContent.TileType<Tiles.Reef.CoralRubble>();
+            blocks[(int)ReefPlan.Block.Crust] = (ushort)ModContent.TileType<Tiles.Reef.CorallineCrust>();
+            blocks[(int)ReefPlan.Block.Brain] = (ushort)ModContent.TileType<Tiles.Reef.BrainCoral>();
+            blocks[(int)ReefPlan.Block.Star] = (ushort)ModContent.TileType<Tiles.Reef.StarCoral>();
+            blocks[(int)ReefPlan.Block.Staghorn] = (ushort)ModContent.TileType<Tiles.Reef.StaghornCoral>();
+            blocks[(int)ReefPlan.Block.Plate] = (ushort)ModContent.TileType<Tiles.Reef.PlateCoral>();
+            blocks[(int)ReefPlan.Block.Blue] = (ushort)ModContent.TileType<Tiles.Reef.BlueCoral>();
+            blocks[(int)ReefPlan.Block.Pipe] = (ushort)ModContent.TileType<Tiles.Reef.OrganPipeCoral>();
+            blocks[(int)ReefPlan.Block.Bubble] = (ushort)ModContent.TileType<Tiles.Reef.BubbleCoral>();
+
+            walls[(int)ReefPlan.Wall.Rock] = (ushort)ModContent.WallType<Walls.Reef.ReefRockWallNatural>();
+            walls[(int)ReefPlan.Wall.Staghorn] = (ushort)ModContent.WallType<Walls.Reef.StaghornCoralWallNatural>();
+            walls[(int)ReefPlan.Wall.SeaFan] = (ushort)ModContent.WallType<Walls.Reef.SeaFanWallNatural>();
+            walls[(int)ReefPlan.Wall.Brain] = (ushort)ModContent.WallType<Walls.Reef.BrainCoralWallNatural>();
+
+            for (int k = 0; k < ReefPlan.Decors; k++)
+                life[k] = Tiles.Reef.ReefLifeTile.TypeOf((ReefPlan.Decor)k);
+
+            return types;
         }
     }
 }

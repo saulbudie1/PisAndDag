@@ -176,7 +176,8 @@ namespace PisAndDag.Content.Particles
 
             foreach (PADParticle particle in particles)
             {
-                if (particle == null)
+                // The pixelated ones are on the half-size canvas already (PADPixelCanvas).
+                if (particle == null || particle.Pixelate)
                     continue;
 
                 if (particle.UseAdditiveBlend)
@@ -192,6 +193,53 @@ namespace PisAndDag.Content.Particles
             batchedAdditive.Clear();
         }
 
+        /// <summary>Whether any particle alive is drawn through the half-size canvas.</summary>
+        internal static bool AnyPixelated()
+        {
+            if (Main.dedServ || particles == null)
+                return false;
+
+            foreach (PADParticle particle in particles)
+                if (particle != null && particle.Pixelate)
+                    return true;
+
+            return false;
+        }
+
+        /// <summary>
+        /// The pixelated particles of one blend, into a batch PADPixelCanvas has open on its canvas (its matrix takes
+        /// what they draw at screen places to the canvas's half-size grid).
+        /// </summary>
+        internal static void DrawPixelated(SpriteBatch spriteBatch, bool additive)
+        {
+            if (Main.dedServ || particles == null)
+                return;
+
+            foreach (PADParticle particle in particles)
+            {
+                if (particle == null || !particle.Pixelate || particle.UseAdditiveBlend != additive)
+                    continue;
+
+                DrawOne(spriteBatch, particle);
+            }
+        }
+
+        private static void DrawOne(SpriteBatch spriteBatch, PADParticle particle)
+        {
+            if (particle.UseCustomDraw)
+            {
+                particle.CustomDraw(spriteBatch);
+                return;
+            }
+
+            Texture2D texture = particleTextures[particle.Type];
+            Rectangle frame = texture.Frame(1, particle.FrameVariants, 0, particle.Variant);
+
+            spriteBatch.Draw(texture, particle.Position - Main.screenPosition, frame,
+                particle.Color, particle.Rotation, frame.Size() * 0.5f,
+                particle.Scale, SpriteEffects.None, 0f);
+        }
+
         private static void DrawBucket(SpriteBatch spriteBatch, List<PADParticle> bucket, BlendState blend)
         {
             if (bucket.Count == 0)
@@ -203,20 +251,7 @@ namespace PisAndDag.Content.Particles
                 DepthStencilState.None, Main.Rasterizer, null, Main.GameViewMatrix.TransformationMatrix);
 
             foreach (PADParticle particle in bucket)
-            {
-                if (particle.UseCustomDraw)
-                {
-                    particle.CustomDraw(spriteBatch);
-                    continue;
-                }
-
-                Texture2D texture = particleTextures[particle.Type];
-                Rectangle frame = texture.Frame(1, particle.FrameVariants, 0, particle.Variant);
-
-                spriteBatch.Draw(texture, particle.Position - Main.screenPosition, frame,
-                    particle.Color, particle.Rotation, frame.Size() * 0.5f,
-                    particle.Scale, SpriteEffects.None, 0f);
-            }
+                DrawOne(spriteBatch, particle);
 
             spriteBatch.End();
         }

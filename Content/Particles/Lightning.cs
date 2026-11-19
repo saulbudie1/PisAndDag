@@ -141,13 +141,14 @@ namespace PisAndDag.Content.Particles
         /// destination, and forks are sized off the trunk where they branch.</param>
         /// <param name="lifetime">Ticks it lasts. Real discharge is brief — 12 to 24 reads best.</param>
         /// <param name="forks">Branches sprouting off the main arc. 0 for a clean bolt.</param>
+        /// <param name="pixelate">Drawn on the half-size canvas (PADPixelCanvas), on the two-pixel grid.</param>
         public static void Spawn(Vector2 start, Vector2 end, Color color, float width = 26f,
-            int lifetime = 18, int forks = 2)
+            int lifetime = 18, int forks = 2, bool pixelate = false)
         {
             if (Main.dedServ)
                 return;
 
-            PADParticleHandler.SpawnParticle(new Lightning(start, end, color, width, lifetime, forks));
+            PADParticleHandler.SpawnParticle(new Lightning(start, end, color, width, lifetime, forks) { Pixelate = pixelate });
         }
 
         /// <summary>Aquamarine arc, the default electric look.</summary>

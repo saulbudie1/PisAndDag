@@ -347,6 +347,12 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         /// <summary>How far into his end's pose he starts: its first knee if a stun had him kneeling already.</summary>
         private int endFrom;
 
+        /// <summary>His end skipped (held E, in a world of one): he has come apart at once, and goes soon after the Sun.</summary>
+        private bool endSkipped;
+
+        /// <summary>Ticks after the Sun comes apart that a skipped end is over.</summary>
+        private const int SkippedAfter = 45;
+
         /// <summary>
         /// His end, by request: falls to his knees first and perishes, slowly (three times as long
         /// as it first was) and without a sound. Rocked by the last blow; the Sun falls from his
@@ -354,6 +360,11 @@ namespace PisAndDag.Content.NPCs.GildedKnight
         /// other, both hands on its hilt; his head bows; then, as the Guide perishes but in gold
         /// (by request), the gold smoulders off him, more and more, and he comes apart into golden
         /// grains that hold his shape a moment and drift away; the Sun in the grass after him.
+        ///
+        /// Held E skips it, as his scene can be skipped, in a world of one (by request: "gilded knight death animation
+        /// unskippable tho"; CinematicSkip): until he comes apart, the prompt is up; taken, he comes apart then and there
+        /// (the Sun let fall from his hand and after him a moment later), the camera goes home, and he is gone and his
+        /// loot down three quarters of a second after the Sun.
         /// </summary>
         private void EndTick()
         {
@@ -361,6 +372,19 @@ namespace PisAndDag.Content.NPCs.GildedKnight
             NPC.noTileCollide = false;
             NPC.dontTakeDamage = true;
             OutOfTheGround();
+
+            if (!Main.dedServ && Main.netMode == NetmodeID.SinglePlayer && !endSkipped && Timer < KnightMoves.EndApart
+                && (InField(Main.LocalPlayer) || Vector2.Distance(Main.LocalPlayer.Center, NPC.Center) < 1400f))
+            {
+                CinematicSkip.Offer();
+
+                if (CinematicSkip.Take())
+                {
+                    endSkipped = true;
+                    Timer = KnightMoves.EndApart;
+                    PisPlayer.PanHome(Feet + new Vector2(0f, -30f), 30);
+                }
+            }
 
             // Killed kneeling in a stun, he does not get up to fall again: his end goes on from its
             // first knee (endFrom ticks into it); its moments after that keep their times.
@@ -425,7 +449,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
                 if (InField(Main.LocalPlayer) || Vector2.Distance(Main.LocalPlayer.Center, NPC.Center) < 1400f)
                 {
                     // The camera goes to him and leans in as he kneels and comes apart.
-                    if (Timer > KnightMoves.EndPlant && Timer < KnightMoves.EndTicks - 30)
+                    if (!endSkipped && Timer > KnightMoves.EndPlant && Timer < KnightMoves.EndTicks - 30)
                     {
                         float w = Smooth((Timer - KnightMoves.EndPlant) / 180f) * 0.7f;
                         PisPlayer.BlendCamera(Feet + new Vector2(0f, -30f), w);
@@ -433,7 +457,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
                         Cinematic.Frame();
                     }
 
-                    if (At(KnightMoves.EndTicks - 30))
+                    if (!endSkipped && At(KnightMoves.EndTicks - 30))
                         PisPlayer.PanHome(Feet + new Vector2(0f, -30f), 120);
                 }
 
@@ -452,7 +476,7 @@ namespace PisAndDag.Content.NPCs.GildedKnight
                 }
             }
 
-            if (Authority && Timer >= KnightMoves.EndTicks)
+            if (Authority && Timer >= (endSkipped ? KnightMoves.EndSunApart + SkippedAfter : KnightMoves.EndTicks))
                 Perish();
         }
 

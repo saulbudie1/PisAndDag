@@ -22,6 +22,11 @@ namespace PisAndDag.Content.Subworlds
     ///   - and tModLoader's own hooks say the same (the tiles' and walls' classes below), so
     ///     that the rule holds by them alone.
     ///
+    /// One thing only is let through: the game clearing away what is left of a thing of
+    /// several tiles that is already broken (WorldGen.destroyObject: tModLoader's
+    /// CheckModTile, the game's own checks). Refused that, it asks again, and again, until
+    /// the game falls over.
+    ///
     /// NOTHING IS BUILT. A player in one cannot place, dig or pour: the game's own switch for
     /// that (Player.noBuilding, what Creative Shock sets), so a tool is swung and does
     /// nothing. Without it a block could be put down that nothing could ever take up again.
@@ -80,15 +85,19 @@ namespace PisAndDag.Content.Subworlds
         public static bool Kept => Subworld.Active && Subworld.Current.Untouched && !SubworldKeeper.RulesLifted;
 
         /// <summary>
-        /// Nothing is to be done to this tile: the whole place is kept, or this is a tile the
-        /// place keeps of its own (Subworld.KeepsTile). Not while the rules are lifted.
+        /// Nothing is to be done to this tile: the whole place is kept (but for what it lets be
+        /// broken all the same: Subworld.MayBreak), or this is a tile the place keeps of its own
+        /// (Subworld.KeepsTile). Not while the rules are lifted.
         /// </summary>
         public static bool KeptAt(int x, int y)
         {
             if (!Subworld.Active || SubworldKeeper.RulesLifted)
                 return false;
 
-            return Subworld.Current.Untouched || Subworld.Current.KeepsTile(x, y);
+            if (Subworld.Current.Untouched)
+                return !Subworld.Current.MayBreak(x, y);
+
+            return Subworld.Current.KeepsTile(x, y);
         }
 
         /// <summary>The game's own answer for "cannot be broken, and nothing is made of the attempt" (WorldGen.KillTile returns on it at once).</summary>
@@ -142,6 +151,9 @@ namespace PisAndDag.Content.Subworlds
         /// <summary>Everything in a subworld that keeps it all, and what a place keeps of its own; and a door or a waygate, wherever it stands.</summary>
         private static int NothingBreaks(On_WorldGen.orig_CheckTileBreakability orig, int x, int y)
         {
+            if (WorldGen.destroyObject)
+                return orig(x, y);
+
             if (KeptAt(x, y) || SubworldDoor.IsAt(x, y) || Waygate.IsAt(x, y))
                 return NeverAndSilently;
 
@@ -245,11 +257,11 @@ namespace PisAndDag.Content.Subworlds
     /// <summary>No tile a subworld keeps is broken, blown up, hammered into another shape or swapped for another.</summary>
     public class SubworldTiles : GlobalTile
     {
-        public override bool CanKillTile(int i, int j, int type, ref bool blockDamaged) => !SubworldRules.KeptAt(i, j);
+        public override bool CanKillTile(int i, int j, int type, ref bool blockDamaged) => WorldGen.destroyObject || !SubworldRules.KeptAt(i, j);
 
         public override void KillTile(int i, int j, int type, ref bool fail, ref bool effectOnly, ref bool noItem)
         {
-            if (SubworldRules.KeptAt(i, j))
+            if (SubworldRules.KeptAt(i, j) && !WorldGen.destroyObject)
                 fail = true;
         }
 
@@ -280,8 +292,21 @@ namespace PisAndDag.Content.Subworlds
     {
         public override void ResetEffects()
         {
-            if (SubworldRules.Kept)
+            if (SubworldRules.Kept && !Digging())
                 Player.noBuilding = true;
+        }
+
+        /// <summary>
+        /// A pick in hand, aimed at the one thing the place lets be dug open (Subworld.MayDig): the tools work for it, and
+        /// for nothing else (by request: "make the specimen canister the sole exception for being able to break tile").
+        /// What a pick then does is still only what the place lets be broken (SubworldRules.KeptAt).
+        /// </summary>
+        private bool Digging()
+        {
+            Item held = Player.HeldItem;
+            int x = Player.tileTargetX, y = Player.tileTargetY;
+
+            return held != null && !held.IsAir && held.pick > 0 && WorldGen.InWorld(x, y) && Subworld.Current.MayDig(x, y);
         }
 
         /// <summary>

@@ -51,6 +51,24 @@ namespace PisAndDag.Content.Items.Melee.Fists
         /// <summary>Ticks left of each arm's pose: 2 when the blow set it this tick, gone the tick after the blow stops.</summary>
         private int frontTicks, backTicks;
 
+        /// <summary>
+        /// Ticks left of each arm being held by something other than a blow (Nightcall's saw, stuck in what it hit): 2 when
+        /// it was held this tick. A blow leaves a held arm's pose alone.
+        /// </summary>
+        private int frontHeld, backHeld;
+
+        public bool FrontHeld => frontHeld > 0;
+        public bool BackHeld => backHeld > 0;
+
+        /// <summary>From what holds an arm, each tick it holds it.</summary>
+        public void Hold(bool back)
+        {
+            if (back)
+                backHeld = 2;
+            else
+                frontHeld = 2;
+        }
+
         /// <summary>Where each arm's pieces start in the draw list, while it is being drawn.</summary>
         internal int FrontFrom = -1, BackFrom = -1;
 
@@ -100,15 +118,22 @@ namespace PisAndDag.Content.Items.Melee.Fists
         // ---- the guard ------------------------------------------------------------------------------------------
 
         /// <summary>From the blow, each tick it is out: hold off what is ahead, to <paramref name="reach"/>.</summary>
-        public void Guard(int facing, float reach)
+        public void Guard(int facing, float reach) => Guard(facing, reach, 2);
+
+        /// <summary>Hold off what is ahead, to <paramref name="reach"/>, for <paramref name="ticks"/> (a guard that stays up after the blow).</summary>
+        public void Guard(int facing, float reach, int ticks)
         {
-            guardTicks = 2;
+            // The way the latest blow faces; the furthest reach of any still up that way.
+            guardReach = guardTicks > 0 && facing == guardFacing ? Math.Max(guardReach, reach) : reach;
             guardFacing = facing;
-            guardReach = reach;
+            guardTicks = Math.Max(guardTicks, ticks);
         }
 
         /// <summary>From the blow, when it lands on <paramref name="npc"/>.</summary>
-        public void Struck(NPC npc) => struck[npc.whoAmI] = Main.GameUpdateCount + HeldOff;
+        public void Struck(NPC npc) => Struck(npc, HeldOff);
+
+        /// <summary>From the blow, when it lands on <paramref name="npc"/>: held off for <paramref name="ticks"/>.</summary>
+        public void Struck(NPC npc, int ticks) => struck[npc.whoAmI] = Math.Max(struck[npc.whoAmI], Main.GameUpdateCount + (uint)Math.Max(0, ticks));
 
         public override void PostUpdate()
         {
@@ -123,6 +148,12 @@ namespace PisAndDag.Content.Items.Melee.Fists
 
             if (backTicks > 0)
                 backTicks--;
+
+            if (frontHeld > 0)
+                frontHeld--;
+
+            if (backHeld > 0)
+                backHeld--;
 
             if (Player.whoAmI == Main.myPlayer)
                 RightClick();

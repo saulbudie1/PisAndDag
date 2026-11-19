@@ -20,7 +20,8 @@ namespace PisAndDag.Content.Combat
     /// Anything that wants one asks for it EVERY TICK it wants it — <see cref="Frame"/>
     /// for the letterbox, <see cref="Look"/> for the camera, <see cref="Hold"/> for the
     /// player, <see cref="Lean"/> for a zoom, <see cref="Cover"/> for something laid over
-    /// the whole picture, <see cref="Fade"/> for a fade to black between play and a scene
+    /// the whole picture, <see cref="Fade"/> for a fade to black between play and a scene,
+    /// <see cref="Light"/> for something that shows over the dark
     /// — and stops asking when it is done. Nothing
     /// is switched on or off, so a boss that dies, despawns or loses its packet
     /// mid-scene cannot leave the camera stuck on a patch of dirt or the player stuck in
@@ -99,6 +100,18 @@ namespace PisAndDag.Content.Combat
 
         private static Action<SpriteBatch> coverWanted;
         private static Action<SpriteBatch> cover;
+
+        // ---- the light -------------------------------------------------------------
+        //
+        // What shows in the dark: whatever the scene asking for it draws, over the shade
+        // and its flash (so the shade does not dim it) and under the roar and the bars.
+        // Drawn through the world's own view, zoom and all, as the world is: at world
+        // places less Main.screenPosition. Asked for every tick like the cover, with the
+        // thing that draws it; stop asking and it is gone the next tick. One at a time.
+        // (Skeletron Prime's end: its rays over the dark, and its impact frames.)
+
+        private static Action<SpriteBatch> lightWanted;
+        private static Action<SpriteBatch> light;
 
         // ---- the fade ----------------------------------------------------------------
         //
@@ -280,6 +293,22 @@ namespace PisAndDag.Content.Combat
 
         /// <summary>Whether something is laid over the world right now.</summary>
         public static bool Covered => cover != null;
+
+        /// <summary>
+        /// Draw something over the shade, this tick: light in the dark, or a whole frame
+        /// laid over everything. <paramref name="draw"/> is called once a frame, inside an
+        /// open sprite batch on the world's own view (zoom and all): draw at world places
+        /// less Main.screenPosition, as anything in the world does. Over the cover, the
+        /// fade, the shade and its flash; under the roar, the bars and the interface. It
+        /// decides everything about what it draws.
+        /// </summary>
+        public static void Light(Action<SpriteBatch> draw)
+        {
+            lightWanted = draw;
+        }
+
+        /// <summary>Whether something is drawn over the shade right now.</summary>
+        public static bool Lit => light != null;
 
         /// <summary>
         /// Fade the picture of the world to black by this much, 0 (none) to 1 (all), this
@@ -492,6 +521,7 @@ namespace PisAndDag.Content.Combat
             // No easing: whoever asks for a cover, or a fade, does its own timing.
             cover = coverWanted;
             fade = fadeWanted;
+            light = lightWanted;
 
             // The pool moves wherever it is asked to be; only its strength eases, so it
             // can be handed from one subject to the next without sliding between them.
@@ -545,6 +575,7 @@ namespace PisAndDag.Content.Combat
             shadeAsked = false;
             coverWanted = null;
             fadeWanted = 0f;
+            lightWanted = null;
         }
 
         private static float MoveToward(float from, float to, float step)
@@ -593,6 +624,8 @@ namespace PisAndDag.Content.Combat
         internal static void Unload()
         {
             OverBars = null;
+            light = null;
+            lightWanted = null;
 
             Texture2D oldPool = pool;
             pool = null;
@@ -657,6 +690,8 @@ namespace PisAndDag.Content.Combat
             coverWanted = null;
             fade = 0f;
             fadeWanted = 0f;
+            light = null;
+            lightWanted = null;
         }
 
         /// <summary>
@@ -828,7 +863,10 @@ namespace PisAndDag.Content.Combat
         /// The bars are being drawn after everything this frame (the interface hidden by a sequence): anything that would
         /// sit over them must draw through <see cref="OverBars"/>, not its own layer, or the bars cover it.
         /// </summary>
-        public static bool BarsOverEverything => Main.hideUI && !Main.gameMenu && (Framed || Shaded || Roaring || Covered || Faded);
+        public static bool BarsOverEverything => Main.hideUI && !Main.gameMenu && Showing;
+
+        /// <summary>Whether any of it is on screen: the bars, the shade or its flash, a roar, a cover, a fade, a light.</summary>
+        internal static bool Showing => Framed || Shaded || Roaring || Covered || Faded || Lit;
 
         /// <summary>The <see cref="OverBars"/> draws, in interface space (the interface's scale, and the screen's size in it, as its layers have them).</summary>
         internal static void DrawOverBars(SpriteBatch spriteBatch)
@@ -858,6 +896,35 @@ namespace PisAndDag.Content.Combat
             }
         }
 
+        /// <summary>
+        /// The light: the batch is closed and opened again on the world's own view for it,
+        /// and put back as it was (raw screen pixels) after. If what draws it fails, it is
+        /// dropped (and the batch still put back), not the frame.
+        /// </summary>
+        private static void DrawLight(SpriteBatch spriteBatch)
+        {
+            if (light == null)
+                return;
+
+            spriteBatch.End();
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
+                DepthStencilState.None, RasterizerState.CullNone, null, Main.GameViewMatrix.TransformationMatrix);
+
+            try
+            {
+                light(spriteBatch);
+            }
+            catch (Exception)
+            {
+                light = null;
+                lightWanted = null;
+            }
+
+            spriteBatch.End();
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
+                DepthStencilState.None, RasterizerState.CullNone, null, Matrix.Identity);
+        }
+
         /// <summary>Height of one bar once fully in, in screen pixels, for laying a shot out between them. Zero when the screen is already this wide.</summary>
         public static float FullBarHeight => Math.Max(0f, (Main.screenHeight - Main.screenWidth / Wide) * 0.5f);
 
@@ -871,9 +938,9 @@ namespace PisAndDag.Content.Combat
         }
 
         /// <summary>
-        /// The cover, the fade, the shade, the roar and the bars, in that order, in raw screen pixels.
-        /// Called from inside an open sprite batch with no transform on it; both draw paths
-        /// below arrange that.
+        /// The cover, the fade, the shade, the light, the roar and the bars, in that order, in raw
+        /// screen pixels (but the light: through the world's view). Called from inside an open
+        /// sprite batch with no transform on it; both draw paths below arrange that.
         /// </summary>
         internal static void DrawBars(SpriteBatch spriteBatch)
         {
@@ -885,6 +952,7 @@ namespace PisAndDag.Content.Combat
                 spriteBatch.Draw(pixel, new Rectangle(0, 0, Main.screenWidth, Main.screenHeight), Color.Black * fade);
 
             DrawShade(spriteBatch);
+            DrawLight(spriteBatch);
             DrawRoar(spriteBatch);
 
             int height = BarHeight();
@@ -976,7 +1044,7 @@ namespace PisAndDag.Content.Combat
 
         public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
         {
-            if (!Cinematic.Framed && !Cinematic.Shaded && !Cinematic.Roaring && !Cinematic.Covered && !Cinematic.Faded)
+            if (!Cinematic.Showing)
                 return;
 
             layers.Insert(0, new LegacyGameInterfaceLayer("PisAndDag: Letterbox", () =>
@@ -989,7 +1057,7 @@ namespace PisAndDag.Content.Combat
         private static void DrawBarsOverEverything(GameTime gameTime)
         {
             // Only when the interface path did not run this frame.
-            if (!Main.hideUI || Main.gameMenu || (!Cinematic.Framed && !Cinematic.Shaded && !Cinematic.Roaring && !Cinematic.Covered && !Cinematic.Faded))
+            if (!Main.hideUI || Main.gameMenu || !Cinematic.Showing)
                 return;
 
             // Linear, as the interface path is: the pool and the rings are stretched far

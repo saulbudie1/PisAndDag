@@ -48,6 +48,13 @@ namespace PisAndDag.Content.Particles
         /// It uses reflection, so don't call it in a draw loop: use
         /// PADParticleHandler.GetTexture(Type) there instead.
         /// </summary>
+        /// <summary>
+        /// Drawn through the half-size canvas (PADPixelCanvas) rather than straight to the screen: whatever it draws,
+        /// however smooth its picture, comes out in squares two pixels a side on the world's own grid, as the mod's
+        /// pictures are. Set as it is made (<c>new HitRing(...) { Pixelate = true }</c>) or in its constructor.
+        /// </summary>
+        public bool Pixelate;
+
         public virtual string Texture =>
             (GetType().Namespace?.Replace('.', '/') ?? "PisAndDag") + "/" + GetType().Name;
 
